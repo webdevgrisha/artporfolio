@@ -1,0 +1,50 @@
+{
+  "functions": [
+    {
+      "source": "backend",
+      "codebase": "default",
+      "runtime": "nodejs22",
+      "ignore": [
+        ".git",
+        ".runtimeconfig.json",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "node_modules",
+        "coverage",
+        "tests"
+      ],
+      "predeploy": ["pnpm --dir \"$PROJECT_DIR\" --filter artportfolio-backend build"]
+    }
+  ],
+  "hosting": {
+    "public": "front/dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "predeploy": ["pnpm --dir \"$PROJECT_DIR\" --filter front build"],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": {
+          "functionId": "api",
+          "region": "europe-west1",
+          "pinTag": true
+        }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5501
+    },
+    "hosting": {
+      "port": 5500
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
+}
