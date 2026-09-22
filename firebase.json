@@ -11,7 +11,9 @@
         "firebase-debug.*.log",
         "node_modules",
         "coverage",
-        "tests"
+        "tests",
+        ".env",
+        ".env.*"
       ],
       "predeploy": ["pnpm --dir \"$PROJECT_DIR\" --filter artportfolio-backend build"]
     }
