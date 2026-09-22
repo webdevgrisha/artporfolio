@@ -6,7 +6,7 @@
   "scripts": {
     "dev:front": "pnpm --filter front dev",
     "dev:backend": "pnpm --filter artportfolio-backend dev",
-    "emulators": "firebase emulators:start --only functions,hosting",
+    "emulators": "pnpm build && firebase emulators:start --only functions,hosting",
     "deploy": "firebase deploy --only functions,hosting",
     "deploy:functions": "firebase deploy --only functions",
     "deploy:hosting": "firebase deploy --only hosting",

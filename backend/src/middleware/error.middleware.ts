@@ -1,7 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 
 export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
-  const message = error instanceof Error ? error.message : "Internal Server Error";
+  console.error("Unhandled request error", error);
 
-  response.status(500).json({ message });
+  response.status(500).json({ message: "Internal Server Error" });
 };

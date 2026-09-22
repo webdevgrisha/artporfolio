@@ -9,14 +9,11 @@ let baseUrl: string;
 
 beforeAll(async () => {
   await new Promise<void>((resolve, reject) => {
-    server = app.listen(0, "127.0.0.1", (error?: Error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
+    const testServer = app.listen(0, "127.0.0.1");
 
-      resolve();
-    });
+    server = testServer;
+    testServer.once("error", reject);
+    testServer.once("listening", resolve);
   });
 
   const address = server?.address();
