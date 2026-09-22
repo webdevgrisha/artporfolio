@@ -1,0 +1,37 @@
+{
+  "name": "artportfolio-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/firebase.js",
+  "engines": {
+    "node": "22"
+  },
+  "imports": {
+    "#*": {
+      "development": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsx watch --conditions=development --env-file-if-exists=.env src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "check": "pnpm type-check"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "firebase-admin": "14.4.0",
+    "firebase-functions": "7.4.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.2",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "artportfolio",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.4",
+  "scripts": {
+    "dev:front": "pnpm --filter front dev",
+    "dev:backend": "pnpm --filter artportfolio-backend dev",
+    "emulators": "firebase emulators:start --only functions,hosting",
+    "deploy": "firebase deploy --only functions,hosting",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "build": "pnpm -r build",
+    "type-check": "pnpm -r type-check",
+    "test": "pnpm -r --if-present test",
+    "test:watch": "pnpm --filter artportfolio-backend test:watch",
+    "coverage": "pnpm --filter artportfolio-backend coverage",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check": "biome check . && pnpm -r type-check",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc,css}": "biome check --write"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@vitest/coverage-v8": "5.0.1",
+    "firebase-tools": "15.30.2",
+    "husky": "9.1.7",
+    "lint-staged": "17.5.1",
+    "vitest": "5.0.1"
+  }
+}
