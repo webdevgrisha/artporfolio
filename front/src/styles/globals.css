@@ -1,0 +1,30 @@
+@font-face {
+  font-family: "Absans";
+  src: url("../assets/fonts/Absans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  font-family: "Absans", Arial, sans-serif;
+  font-synthesis: none;
+  color: #000;
+  background: #fff;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.component-preview {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.component-preview__input {
+  width: min(307px, 100%);
+}
