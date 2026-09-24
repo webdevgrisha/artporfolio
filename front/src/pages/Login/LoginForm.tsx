@@ -4,6 +4,7 @@ import adminLoginMark from "@/assets/images/adminLoginMark.png";
 import { Button } from "@/components/Button/Button";
 import { Input } from "@/components/Input/Input";
 import { PasswordInput } from "@/components/PasswordInput/PasswordInput";
+import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "@/pages/Login/LoginForm.module.css";
 
 export interface LoginFormValues {
@@ -49,7 +50,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
         />
       </div>
       <Button className={styles.submitButton} type="submit" disabled={isSubmitting}>
-        ВХОД
+        {isSubmitting ? <Spinner label="Выполняется вход" /> : "ВХОД"}
       </Button>
     </form>
   );
