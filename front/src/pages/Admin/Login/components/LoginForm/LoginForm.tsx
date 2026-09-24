@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import adminLoginMark from "@/assets/images/adminLoginMark.png";
+import portraitMark from "@/assets/images/portraitMark.png";
 import { Button } from "@/components/Button/Button";
 import { Input } from "@/components/Input/Input";
 import { PasswordInput } from "@/components/PasswordInput/PasswordInput";
@@ -28,9 +28,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 
   return (
     <form className={styles.root} noValidate onSubmit={handleSubmit(onSubmit)}>
-      <div className={styles.mark} aria-hidden="true">
-        <img className={styles.markImage} src={adminLoginMark} alt="" />
-      </div>
+      <img className={styles.mark} src={portraitMark} alt="" />
       <div className={styles.fields}>
         <Input
           label="Логин"

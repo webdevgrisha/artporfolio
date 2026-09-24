@@ -5,24 +5,15 @@
 }
 
 .mark {
-  position: relative;
   width: 135px;
   height: 135px;
-  margin: 0 auto 34px;
-  overflow: hidden;
-}
-
-.markImage {
-  position: absolute;
-  top: -10.73%;
-  left: -45.19%;
-  width: 205.93%;
-  max-width: none;
-  height: 128.86%;
+  margin-inline: auto;
+  margin-bottom: 34px;
 }
 
 .fields {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 15px;
 }
 
