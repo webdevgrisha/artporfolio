@@ -1,11 +1,9 @@
-import { Input } from "@/components/Input/Input";
+import { Button } from "@/components/Button/Button";
 
 export function App() {
   return (
     <main className="component-preview">
-      <div className="component-preview__input">
-        <Input label="Логин" name="login" placeholder="Логин" autoComplete="username" />
-      </div>
+      <Button>СОХРАНИТЬ</Button>
     </main>
   );
 }
