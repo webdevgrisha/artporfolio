@@ -6,8 +6,8 @@ import { Button } from "@/components/Button/Button";
 import { Input } from "@/components/Input/Input";
 import { PasswordInput } from "@/components/PasswordInput/PasswordInput";
 import { Spinner } from "@/components/Spinner/Spinner";
-import styles from "@/pages/Login/components/LoginForm/LoginForm.module.css";
-import { type LoginFormValues, loginSchema } from "@/pages/Login/components/LoginForm/schema";
+import styles from "@/pages/Admin/Login/components/LoginForm/LoginForm.module.css";
+import { type LoginFormValues, loginSchema } from "@/pages/Admin/Login/components/LoginForm/schema";
 
 interface LoginFormProps {
   onSubmit: (values: LoginFormValues) => Promise<void> | void;
