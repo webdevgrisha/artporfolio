@@ -1,0 +1,36 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: min(307px, 100%);
+}
+
+.mark {
+  position: relative;
+  width: 135px;
+  height: 135px;
+  margin: 0 auto 34px;
+  overflow: hidden;
+}
+
+.markImage {
+  position: absolute;
+  top: -10.73%;
+  left: -45.19%;
+  width: 205.93%;
+  max-width: none;
+  height: 128.86%;
+}
+
+.fields {
+  display: grid;
+  gap: 15px;
+}
+
+.submitButton {
+  width: 100%;
+  min-height: 57px;
+  padding: 4px 14px;
+  margin-top: 34px;
+  font-size: 32px;
+  line-height: 1;
+}

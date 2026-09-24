@@ -1,17 +1,9 @@
-import { PasswordInput } from "@/components/PasswordInput/PasswordInput";
+import { LoginForm } from "@/pages/Login/LoginForm";
 
 export function App() {
   return (
     <main className="component-preview">
-      <div className="component-preview__field">
-        <PasswordInput
-          label="Пароль"
-          placeholder="Пароль"
-          autoComplete="current-password"
-          showPasswordLabel="Показать пароль"
-          hidePasswordLabel="Скрыть пароль"
-        />
-      </div>
+      <LoginForm onSubmit={() => undefined} />
     </main>
   );
 }
