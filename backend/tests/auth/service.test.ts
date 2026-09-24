@@ -85,4 +85,18 @@ describe("auth service", () => {
 
     expect(firebase.revokeRefreshTokens).toHaveBeenCalledOnce();
   });
+
+  it("propagates a failure to revoke refresh tokens", async () => {
+    const providerError = new Error("Firebase is unavailable");
+    firebase.revokeRefreshTokens.mockRejectedValue(providerError);
+
+    await expect(revokeSession("session-cookie")).rejects.toBe(providerError);
+  });
+
+  it("allows logout when the session cookie is already invalid", async () => {
+    firebase.verifySessionCookie.mockRejectedValue(new Error("Invalid session cookie"));
+
+    await expect(revokeSession("invalid-session-cookie")).resolves.toBeUndefined();
+    expect(firebase.revokeRefreshTokens).not.toHaveBeenCalled();
+  });
 });

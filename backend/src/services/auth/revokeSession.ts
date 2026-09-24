@@ -1,3 +1,5 @@
+import type { DecodedIdToken } from "firebase-admin/auth";
+
 import { getAuthConfig } from "#config/authConfig";
 import { firebaseAuth, isAllowedAdmin } from "#services/auth/firebaseAuth";
 
@@ -7,14 +9,16 @@ export async function revokeSession(sessionCookie: string | undefined): Promise<
   }
 
   const config = getAuthConfig();
+  let claims: DecodedIdToken;
 
   try {
-    const claims = await firebaseAuth().verifySessionCookie(sessionCookie);
-
-    if (isAllowedAdmin(claims, config.adminUid)) {
-      await firebaseAuth().revokeRefreshTokens(claims.uid);
-    }
+    claims = await firebaseAuth().verifySessionCookie(sessionCookie);
   } catch {
     // Logout remains successful when the cookie is already invalid or expired.
+    return;
+  }
+
+  if (isAllowedAdmin(claims, config.adminUid)) {
+    await firebaseAuth().revokeRefreshTokens(claims.uid);
   }
 }

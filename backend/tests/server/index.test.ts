@@ -103,3 +103,17 @@ describe("request body", () => {
     });
   });
 });
+
+describe("unknown routes", () => {
+  it("returns a JSON not found response", async () => {
+    const response = await fetch(`${baseUrl}/api/unknown`);
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "NOT_FOUND",
+        message: "Route not found",
+      },
+    });
+  });
+});
