@@ -1,6 +1,12 @@
 .root {
   position: relative;
-  display: block;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+}
+
+.controlWrapper {
+  position: relative;
   width: 100%;
   height: 57px;
 }
@@ -41,6 +47,14 @@
   outline-offset: 2px;
 }
 
+.control[aria-invalid="true"] {
+  border-color: #b00020;
+}
+
+.control[aria-invalid="true"]:focus-visible {
+  outline-color: #b00020;
+}
+
 .control:disabled {
   color: #777;
   cursor: not-allowed;
@@ -59,4 +73,10 @@
   place-items: center;
   width: 57px;
   height: 57px;
+}
+
+.error {
+  font-size: 13px;
+  line-height: 18px;
+  color: #b00020;
 }

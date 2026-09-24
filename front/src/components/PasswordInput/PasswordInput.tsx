@@ -1,11 +1,11 @@
-import React, { type ComponentPropsWithRef } from "react";
+import React from "react";
 
 import { EyeIcon } from "@/components/Icon/EyeIcon";
 import { EyeOffIcon } from "@/components/Icon/EyeOffIcon";
-import { Input } from "@/components/Input/Input";
+import { Input, type InputProps } from "@/components/Input/Input";
 import styles from "@/components/PasswordInput/PasswordInput.module.css";
 
-interface PasswordInputProps extends Omit<ComponentPropsWithRef<"input">, "type"> {
+interface PasswordInputProps extends Omit<InputProps, "endAdornment" | "type"> {
   hidePasswordLabel: string;
   label: string;
   showPasswordLabel: string;

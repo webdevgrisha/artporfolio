@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import adminLoginMark from "@/assets/images/adminLoginMark.png";
@@ -5,12 +6,8 @@ import { Button } from "@/components/Button/Button";
 import { Input } from "@/components/Input/Input";
 import { PasswordInput } from "@/components/PasswordInput/PasswordInput";
 import { Spinner } from "@/components/Spinner/Spinner";
-import styles from "@/pages/Login/LoginForm.module.css";
-
-export interface LoginFormValues {
-  email: string;
-  password: string;
-}
+import styles from "@/pages/Login/components/LoginForm/LoginForm.module.css";
+import { type LoginFormValues, loginSchema } from "@/pages/Login/components/LoginForm/schema";
 
 interface LoginFormProps {
   onSubmit: (values: LoginFormValues) => Promise<void> | void;
@@ -18,13 +15,19 @@ interface LoginFormProps {
 
 export function LoginForm({ onSubmit }: LoginFormProps) {
   const {
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
     handleSubmit,
     register,
-  } = useForm<LoginFormValues>();
+  } = useForm<LoginFormValues>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    resolver: zodResolver(loginSchema),
+  });
 
   return (
-    <form className={styles.root} onSubmit={handleSubmit(onSubmit)}>
+    <form className={styles.root} noValidate onSubmit={handleSubmit(onSubmit)}>
       <div className={styles.mark} aria-hidden="true">
         <img className={styles.markImage} src={adminLoginMark} alt="" />
       </div>
@@ -34,8 +37,8 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           type="email"
           autoComplete="username"
           placeholder="Логин"
-          required
           disabled={isSubmitting}
+          error={errors.email?.message}
           {...register("email")}
         />
         <PasswordInput
@@ -44,8 +47,8 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           placeholder="Пароль"
           showPasswordLabel="Показать пароль"
           hidePasswordLabel="Скрыть пароль"
-          required
           disabled={isSubmitting}
+          error={errors.password?.message}
           {...register("password")}
         />
       </div>

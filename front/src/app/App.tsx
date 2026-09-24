@@ -1,9 +1,5 @@
-import { LoginForm } from "@/pages/Login/LoginForm";
+import { Login } from "@/pages/Login/Login";
 
 export function App() {
-  return (
-    <main className="component-preview">
-      <LoginForm onSubmit={() => undefined} />
-    </main>
-  );
+  return <Login />;
 }
