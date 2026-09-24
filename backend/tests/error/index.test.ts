@@ -1,7 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
 import { describe, expect, it, vi } from "vitest";
 
-import { errorHandler } from "#middleware/error.middleware";
+const logger = vi.hoisted(() => ({
+  error: vi.fn(),
+}));
+
+vi.mock("firebase-functions/logger", () => logger);
+
+import { errorHandler } from "#middleware/error/index";
 
 describe("errorHandler", () => {
   it("does not expose unexpected error details", () => {
@@ -9,8 +15,6 @@ describe("errorHandler", () => {
       json: vi.fn(),
       status: vi.fn(),
     } as unknown as Response;
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
-
     vi.mocked(response.status).mockReturnValue(response);
 
     errorHandler(
@@ -20,10 +24,13 @@ describe("errorHandler", () => {
       vi.fn() as NextFunction,
     );
 
-    expect(consoleError).toHaveBeenCalledOnce();
+    expect(logger.error).toHaveBeenCalledWith("Unhandled request error", expect.any(Error));
     expect(response.status).toHaveBeenCalledWith(500);
-    expect(response.json).toHaveBeenCalledWith({ message: "Internal Server Error" });
-
-    consoleError.mockRestore();
+    expect(response.json).toHaveBeenCalledWith({
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Internal Server Error",
+      },
+    });
   });
 });
