@@ -46,3 +46,17 @@
   cursor: not-allowed;
   background: #f5f5f5;
 }
+
+.controlWithAdornment {
+  padding-right: 57px;
+}
+
+.endAdornment {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 57px;
+  height: 57px;
+}

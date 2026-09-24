@@ -1,9 +1,9 @@
-import { useId } from "react";
+import React from "react";
 
 import { IconBase, type IconProps } from "@/components/Icon/IconBase";
 
 export function HeartIcon(props: IconProps) {
-  const maskId = useId();
+  const maskId = React.useId();
 
   return (
     <IconBase width={41.402} height={41.402} viewBox="-6.065 -6.062 41.402 41.402" {...props}>
