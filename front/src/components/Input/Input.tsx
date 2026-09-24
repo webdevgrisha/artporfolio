@@ -30,7 +30,7 @@ export function Input({
   return (
     <div className={styles.root}>
       <label className={styles.label} htmlFor={inputId}>
-        {label}
+        {label}:
       </label>
       <div className={styles.controlWrapper}>
         <input
