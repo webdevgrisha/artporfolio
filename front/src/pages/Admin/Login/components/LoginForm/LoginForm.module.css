@@ -17,6 +17,13 @@
   gap: 15px;
 }
 
+.submitError {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #b00020;
+}
+
 .submitButton {
   width: 100%;
   min-height: 57px;

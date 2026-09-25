@@ -11,9 +11,10 @@ import { type LoginFormValues, loginSchema } from "@/pages/Admin/Login/component
 
 interface LoginFormProps {
   onSubmit: (values: LoginFormValues) => Promise<void> | void;
+  submitError?: string;
 }
 
-export function LoginForm({ onSubmit }: LoginFormProps) {
+export function LoginForm({ onSubmit, submitError }: LoginFormProps) {
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
@@ -50,6 +51,11 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           {...register("password")}
         />
       </div>
+      {submitError ? (
+        <p className={styles.submitError} role="alert">
+          {submitError}
+        </p>
+      ) : null}
       <Button className={styles.submitButton} type="submit" disabled={isSubmitting}>
         {isSubmitting ? <Spinner label="Выполняется вход" /> : "ВХОД"}
       </Button>
