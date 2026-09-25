@@ -1,4 +1,4 @@
-import { type AuthUser, createSessionResponseSchema } from "@/api/auth/schema";
+import { type AuthUser, authUserResponseSchema } from "@/api/auth/schemas";
 import { http } from "@/http/http";
 
 interface CreateSessionParams {
@@ -16,7 +16,7 @@ export async function createSession({
     headers: {
       "X-CSRF-Token": csrfToken,
     },
-    schema: createSessionResponseSchema,
+    schema: authUserResponseSchema,
   });
 
   return response.user;

@@ -1,8 +1,7 @@
 import { signOut } from "firebase/auth";
 
-import { createSession } from "@/api/auth/createSession";
-import { getCsrfToken } from "@/api/auth/getCsrfToken";
-import type { AuthUser } from "@/api/auth/schema";
+import { createSession, getCsrfToken } from "@/api/auth";
+import type { AuthUser } from "@/api/auth/schemas";
 import { firebaseAuth } from "@/firebase/client";
 import { signIn } from "@/firebase/signIn";
 
