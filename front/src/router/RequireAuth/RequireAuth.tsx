@@ -1,18 +1,13 @@
 import { Navigate, Outlet } from "react-router";
 
-import { Spinner } from "@/components/Spinner/Spinner";
 import { useAuth } from "@/hooks/useAuth";
-import styles from "@/router/RequireAuth/RequireAuth.module.css";
+import { AuthLoading } from "@/router/AuthLoading/AuthLoading";
 
 export function RequireAuth() {
   const { isLoading, user } = useAuth();
 
   if (isLoading) {
-    return (
-      <main className={styles.loading}>
-        <Spinner label="Проверка авторизации" />
-      </main>
-    );
+    return <AuthLoading />;
   }
 
   if (!user) {

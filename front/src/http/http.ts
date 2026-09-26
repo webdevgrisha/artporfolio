@@ -27,9 +27,18 @@ interface RequestOptions extends HttpOptions {
 
 class Http {
   private readonly baseUrl: string;
+  private unauthorizedHandler?: () => void;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
+  }
+
+  onUnauthorized(handler: () => void): () => void {
+    this.unauthorizedHandler = handler;
+
+    return () => {
+      this.unauthorizedHandler = undefined;
+    };
   }
 
   async get<TSchema extends ZodType>({
@@ -89,6 +98,10 @@ class Http {
       credentials: "include",
       headers: requestHeaders,
     });
+
+    if (response.status === 401) {
+      this.unauthorizedHandler?.();
+    }
 
     if (!response.ok) {
       throw new HttpError(response.status);
