@@ -5,7 +5,7 @@ import type { AuthUser } from "@/api/auth/schemas";
 import { firebaseAuth } from "@/firebase/client";
 import { signIn } from "@/firebase/signIn";
 
-interface LoginCredentials {
+export interface LoginCredentials {
   email: string;
   password: string;
 }

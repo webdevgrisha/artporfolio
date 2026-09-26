@@ -1,13 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router";
 
-import { login } from "@/auth/login";
+import { useAuth } from "@/hooks/useAuth";
 import { LoginForm } from "@/pages/Admin/Login/components/LoginForm/LoginForm";
 import type { LoginFormValues } from "@/pages/Admin/Login/components/LoginForm/schema";
 import styles from "@/pages/Admin/Login/Login.module.css";
 
 export function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [submitError, setSubmitError] = React.useState<string>();
 
   async function handleSubmit(values: LoginFormValues) {
