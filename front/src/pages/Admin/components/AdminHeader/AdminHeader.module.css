@@ -1,0 +1,29 @@
+.header {
+  display: flex;
+  gap: 5rem;
+  justify-content: flex-end;
+  min-block-size: 7.4375rem;
+  padding-block-start: 4.125rem;
+  padding-inline: 4.875rem;
+  font-size: 1.25rem;
+  line-height: normal;
+}
+
+.email {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.role {
+  flex: none;
+}
+
+@media (max-width: 1199px) {
+  .header {
+    gap: 1.25rem;
+    min-block-size: 5rem;
+    padding-block-start: 1.5rem;
+    padding-inline: 5.625rem 1.25rem;
+    font-size: 1rem;
+  }
+}
