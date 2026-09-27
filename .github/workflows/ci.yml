@@ -35,6 +35,11 @@ jobs:
         run: pnpm test
 
       - name: Build applications
+        env:
+          VITE_FIREBASE_API_KEY: ci-placeholder
+          VITE_FIREBASE_APP_ID: ci-placeholder
+          VITE_FIREBASE_AUTH_DOMAIN: ci-placeholder.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: ci-placeholder
         run: pnpm build
 
   deploy:
@@ -73,5 +78,45 @@ jobs:
           workload_identity_provider: projects/351074606816/locations/global/workloadIdentityPools/github-actions/providers/github-provider
           service_account: github-firebase-deployer@artportfolio-b2ef4.iam.gserviceaccount.com
 
+      - name: Validate production configuration
+        env:
+          ADMIN_UID: ${{ vars.ADMIN_UID }}
+          CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+        run: |
+          required_variables=(
+            ADMIN_UID
+            CORS_ORIGINS
+            VITE_FIREBASE_API_KEY
+            VITE_FIREBASE_APP_ID
+            VITE_FIREBASE_AUTH_DOMAIN
+            VITE_FIREBASE_PROJECT_ID
+          )
+
+          for variable_name in "${required_variables[@]}"; do
+            if [[ -z "${!variable_name}" ]]; then
+              echo "Missing required production variable: ${variable_name}" >&2
+              exit 1
+            fi
+          done
+
+      - name: Configure Firebase Functions environment
+        env:
+          ADMIN_UID: ${{ vars.ADMIN_UID }}
+          CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
+        run: |
+          umask 077
+          printf 'ADMIN_UID=%s\n' "$ADMIN_UID" > backend/.env.artportfolio-b2ef4
+          printf 'SESSION_TTL_MINUTES=60\n' >> backend/.env.artportfolio-b2ef4
+          printf 'CORS_ORIGINS=%s\n' "$CORS_ORIGINS" >> backend/.env.artportfolio-b2ef4
+
       - name: Deploy Hosting and Functions
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
         run: pnpm exec firebase deploy --project artportfolio-b2ef4 --only functions,hosting --non-interactive
