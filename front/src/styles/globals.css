@@ -1,0 +1,32 @@
+@font-face {
+  font-family: "Absans";
+  src: url("../assets/fonts/Absans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --motion-duration-fast: 120ms;
+  --motion-duration-standard: 180ms;
+  --motion-duration-slow: 280ms;
+  --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  font-family: "Absans", Arial, sans-serif;
+  font-synthesis: none;
+  color: #000;
+  background: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast: 0ms;
+    --motion-duration-standard: 0ms;
+    --motion-duration-slow: 0ms;
+  }
+}
+
+body {
+  min-width: 320px;
+  min-height: 100dvh;
+}

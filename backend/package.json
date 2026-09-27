@@ -14,9 +14,7 @@
     }
   },
   "scripts": {
-    "dev": "tsx watch --conditions=development --env-file-if-exists=.env src/index.ts",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node --env-file-if-exists=.env dist/index.js",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -24,14 +22,20 @@
     "check": "pnpm type-check"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "csrf-csrf": "^4.0.3",
     "express": "^5.2.1",
-    "firebase-admin": "14.4.0",
-    "firebase-functions": "7.4.0"
+    "firebase-admin": "14.5.0",
+    "firebase-functions": "7.4.0",
+    "helmet": "^8.3.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.2",
-    "tsx": "^4.23.15",
     "typescript": "~5.9.3"
   }
 }
