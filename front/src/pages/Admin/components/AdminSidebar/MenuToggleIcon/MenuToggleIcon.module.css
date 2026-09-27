@@ -1,0 +1,18 @@
+.icon {
+  overflow: visible;
+}
+
+.topLine,
+.bottomLine {
+  transform-origin: center;
+  transform-box: fill-box;
+  transition: transform var(--motion-duration-standard) var(--motion-easing-standard);
+}
+
+.open .topLine {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.open .bottomLine {
+  transform: translateY(-6px) rotate(-45deg);
+}

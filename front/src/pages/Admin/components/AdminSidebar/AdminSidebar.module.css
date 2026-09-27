@@ -1,0 +1,112 @@
+.sidebar {
+  --sidebar-gutter: clamp(2.5rem, 4.0625vw, 4.875rem);
+
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  inline-size: var(--sidebar-width);
+  padding-block: 4.5625rem 4.75rem;
+  overflow-y: auto;
+  background-color: #fff;
+  border-inline-end: 1px solid #000;
+}
+
+.mobileMenuButton,
+.backdrop {
+  display: none;
+}
+
+.profile {
+  margin-inline: var(--sidebar-gutter);
+}
+
+.navigation {
+  margin-block-start: 5.8125rem;
+}
+
+.logout {
+  align-self: flex-start;
+  padding: 0;
+  margin-block-start: auto;
+  margin-inline-start: var(--sidebar-gutter);
+  font-size: 1rem;
+  line-height: normal;
+  color: #000;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  transition: color var(--motion-duration-standard) var(--motion-easing-standard);
+}
+
+@media (hover: hover) {
+  .logout:hover {
+    color: #777;
+  }
+}
+
+.logout:focus-visible {
+  outline: 0.125rem solid currentColor;
+  outline-offset: 0.25rem;
+}
+
+@media (max-width: 1199px) {
+  .sidebar {
+    --sidebar-gutter: 2.5rem;
+    visibility: hidden;
+
+    inline-size: min(20.9375rem, calc(100vw - 2.5rem));
+    padding-block: 6.125rem 2.375rem;
+    transform: translateX(-100%);
+    transition:
+      transform var(--motion-duration-slow) var(--motion-easing-standard),
+      visibility 0s linear var(--motion-duration-slow);
+  }
+
+  .sidebar.mobileOpen {
+    visibility: visible;
+    transform: translateX(0);
+    transition-delay: 0s;
+  }
+
+  .mobileMenuButton {
+    position: fixed;
+    inset-block-start: 2.5rem;
+    inset-inline-start: 2.5rem;
+    z-index: 11;
+    display: block;
+    inline-size: 1.9375rem;
+    block-size: 0.875rem;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+  }
+
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    display: block;
+    visibility: hidden;
+    pointer-events: none;
+    background: rgb(0 0 0 / 31%);
+    border: 0;
+    opacity: 0;
+    transition:
+      opacity var(--motion-duration-slow) var(--motion-easing-standard),
+      visibility 0s linear var(--motion-duration-slow);
+  }
+
+  .backdropVisible {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transition-delay: 0s;
+  }
+
+  .navigation {
+    margin-block-start: 3.5rem;
+  }
+}
