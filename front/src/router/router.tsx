@@ -7,6 +7,7 @@ import { Gallery } from "@/pages/Admin/Gallery/Gallery";
 import { Login } from "@/pages/Admin/Login/Login";
 import { Personalization } from "@/pages/Admin/Personalization/Personalization";
 import { Projects } from "@/pages/Admin/Projects/Projects";
+import { NotFound } from "@/pages/NotFound/NotFound";
 import { RequireAuth } from "@/router/RequireAuth/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -59,6 +60,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/admin/login" replace />,
+    element: <NotFound />,
   },
 ]);
