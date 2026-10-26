@@ -1,6 +1,11 @@
 import { getAuthConfig } from "#config/authConfig";
 import { UnauthorizedError } from "#errors/httpError";
-import { firebaseAuth, isAllowedAdmin, toAuthUser } from "#services/auth/firebaseAuth";
+import {
+  firebaseAuth,
+  isAllowedAdmin,
+  isClientAuthError,
+  toAuthUser,
+} from "#services/auth/firebaseAuth";
 import type { AuthUser } from "#services/auth/types";
 
 export async function verifySession(sessionCookie: string | undefined): Promise<AuthUser> {
@@ -18,7 +23,11 @@ export async function verifySession(sessionCookie: string | undefined): Promise<
     }
 
     return toAuthUser(claims);
-  } catch {
-    throw new UnauthorizedError();
+  } catch (error) {
+    if (error instanceof UnauthorizedError || isClientAuthError(error)) {
+      throw new UnauthorizedError();
+    }
+
+    throw error;
   }
 }

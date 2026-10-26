@@ -19,6 +19,10 @@ vi.mock("firebase-admin/auth", () => ({
 import { UnauthorizedError } from "#errors/httpError";
 import { createSession, revokeSession, verifySession } from "#services/auth/index";
 
+function authError(code: string) {
+  return Object.assign(new Error(code), { code });
+}
+
 const adminClaims = {
   auth_time: Math.floor(Date.now() / 1_000),
   email: "admin@example.com",
@@ -94,9 +98,55 @@ describe("auth service", () => {
   });
 
   it("allows logout when the session cookie is already invalid", async () => {
-    firebase.verifySessionCookie.mockRejectedValue(new Error("Invalid session cookie"));
+    firebase.verifySessionCookie.mockRejectedValue(authError("auth/session-cookie-expired"));
 
     await expect(revokeSession("invalid-session-cookie")).resolves.toBeUndefined();
     expect(firebase.revokeRefreshTokens).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid ID token as unauthorized", async () => {
+    firebase.verifyIdToken.mockRejectedValue(authError("auth/id-token-expired"));
+
+    await expect(createSession("id-token")).rejects.toBeInstanceOf(UnauthorizedError);
+  });
+
+  it("propagates infrastructure failures while creating a session", async () => {
+    const permissionError = authError("auth/insufficient-permission");
+    firebase.createSessionCookie.mockRejectedValue(permissionError);
+
+    await expect(createSession("id-token")).rejects.toBe(permissionError);
+  });
+
+  it("propagates provider outages while creating a session", async () => {
+    const providerError = new Error("Firebase is unavailable");
+    firebase.verifyIdToken.mockRejectedValue(providerError);
+
+    await expect(createSession("id-token")).rejects.toBe(providerError);
+  });
+
+  it("rejects a revoked session cookie as unauthorized", async () => {
+    firebase.verifySessionCookie.mockRejectedValue(authError("auth/session-cookie-revoked"));
+
+    await expect(verifySession("session-cookie")).rejects.toBeInstanceOf(UnauthorizedError);
+  });
+
+  it("rejects a session that does not belong to the configured admin", async () => {
+    firebase.verifySessionCookie.mockResolvedValue({ ...adminClaims, uid: "customer-uid" });
+
+    await expect(verifySession("session-cookie")).rejects.toBeInstanceOf(UnauthorizedError);
+  });
+
+  it("propagates provider outages while verifying a session", async () => {
+    const providerError = new Error("Firebase is unavailable");
+    firebase.verifySessionCookie.mockRejectedValue(providerError);
+
+    await expect(verifySession("session-cookie")).rejects.toBe(providerError);
+  });
+
+  it("propagates provider outages while checking the session on logout", async () => {
+    const providerError = new Error("Firebase is unavailable");
+    firebase.verifySessionCookie.mockRejectedValue(providerError);
+
+    await expect(revokeSession("session-cookie")).rejects.toBe(providerError);
   });
 });
