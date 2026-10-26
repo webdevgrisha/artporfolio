@@ -8,6 +8,7 @@ import { PasswordInput } from "@/components/PasswordInput/PasswordInput";
 import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "@/pages/Admin/Login/components/LoginForm/LoginForm.module.css";
 import { type LoginFormValues, loginSchema } from "@/pages/Admin/Login/components/LoginForm/schema";
+import utilities from "@/styles/utilities.module.css";
 
 interface LoginFormProps {
   onSubmit: (values: LoginFormValues) => Promise<void> | void;
@@ -56,8 +57,20 @@ export function LoginForm({ onSubmit, submitError }: LoginFormProps) {
           {submitError}
         </p>
       ) : null}
-      <Button className={styles.submitButton} type="submit" disabled={isSubmitting}>
-        {isSubmitting ? <Spinner label="Выполняется вход" /> : "ВХОД"}
+      <Button
+        className={styles.submitButton}
+        type="submit"
+        disabled={isSubmitting}
+        aria-busy={isSubmitting}
+      >
+        {isSubmitting ? (
+          <>
+            <Spinner />
+            <span className={utilities.visuallyHidden}>Выполняется вход</span>
+          </>
+        ) : (
+          "ВХОД"
+        )}
       </Button>
     </form>
   );

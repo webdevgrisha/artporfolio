@@ -20,10 +20,10 @@ export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSid
 
   return (
     <>
-      <button
+      {/* A pointer-only shortcut: keyboard and screen reader users close the menu with Escape or the close button. */}
+      <div
         className={clsx(styles.backdrop, { [styles.backdropVisible]: isOpen })}
-        type="button"
-        aria-label="Закрыть меню"
+        aria-hidden="true"
         onClick={onClose}
       />
 

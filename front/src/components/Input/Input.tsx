@@ -44,7 +44,7 @@ export function Input({
         {endAdornment ? <div className={styles.endAdornment}>{endAdornment}</div> : null}
       </div>
       {error ? (
-        <p className={styles.error} id={errorId} role="alert">
+        <p className={styles.error} id={errorId}>
           {error}
         </p>
       ) : null}
