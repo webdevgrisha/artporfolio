@@ -6,6 +6,11 @@
   font-display: swap;
 }
 
+/*
+ * Breakpoints (custom properties cannot be used in media queries):
+ * - 75rem: desktop admin shell. Also used in useAdminSidebar.ts.
+ */
+
 :root {
   --color-text: #000;
   --color-text-muted: #777;
@@ -20,6 +25,9 @@
   --color-danger: #b00020;
   --color-backdrop: rgb(0 0 0 / 31%);
 
+  --focus-ring: 2px solid var(--color-focus);
+  --min-tap-target-size: 44px;
+
   --motion-duration-fast: 120ms;
   --motion-duration-standard: 180ms;
   --motion-duration-slow: 280ms;
@@ -31,6 +39,12 @@
   background: var(--color-surface);
 }
 
+@media (pointer: coarse) {
+  :root {
+    --min-tap-target-size: 48px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-duration-fast: 0ms;
@@ -40,6 +54,6 @@
 }
 
 body {
-  min-width: 320px;
-  min-height: 100dvh;
+  min-inline-size: 320px;
+  min-block-size: 100dvh;
 }

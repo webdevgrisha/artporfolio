@@ -1,11 +1,12 @@
 .header {
   display: flex;
-  gap: 5rem;
+  gap: 1.25rem;
   justify-content: flex-end;
-  min-block-size: 7.4375rem;
-  padding-block-start: 4.125rem;
-  padding-inline: 4.875rem;
-  font-size: 1.25rem;
+  min-block-size: 5rem;
+  padding-block-start: 1.5rem;
+  /* The start padding leaves room for the fixed mobile menu button. */
+  padding-inline: 5.625rem 1.25rem;
+  font-size: 1rem;
   line-height: normal;
 }
 
@@ -18,12 +19,12 @@
   flex: none;
 }
 
-@media (width < 75rem) {
+@media (width >= 75rem) {
   .header {
-    gap: 1.25rem;
-    min-block-size: 5rem;
-    padding-block-start: 1.5rem;
-    padding-inline: 5.625rem 1.25rem;
-    font-size: 1rem;
+    gap: 5rem;
+    min-block-size: 7.4375rem;
+    padding-block-start: 4.125rem;
+    padding-inline: 4.875rem;
+    font-size: 1.25rem;
   }
 }

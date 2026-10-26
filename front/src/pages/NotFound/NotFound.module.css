@@ -14,15 +14,15 @@
 .code {
   display: grid;
   grid-template-columns: repeat(3, auto);
-  gap: clamp(0.5rem, 1.953125vw, 1.25rem);
+  gap: clamp(0.5rem, 1.95vw, 1.25rem);
   align-items: center;
-  font-size: clamp(5rem, 23.4375vw, 15rem);
+  font-size: clamp(5rem, 23.44vw, 15rem);
   font-weight: 400;
   line-height: 1;
 }
 
 .portrait {
-  inline-size: clamp(7rem, 16.40625vw, 10.5rem);
+  inline-size: clamp(7rem, 16.41vw, 10.5rem);
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 50%;
@@ -36,15 +36,15 @@
 
 .message {
   margin-block-start: 1.8125rem;
-  font-size: clamp(1rem, 2.0508vw, 1.3125rem);
+  font-size: clamp(1rem, 2.05vw, 1.3125rem);
   line-height: normal;
   text-align: center;
 }
 
 .backButton {
-  inline-size: clamp(17rem, 31.4453vw, 20.125rem);
-  min-block-size: clamp(3rem, 5.8594vw, 3.75rem);
+  inline-size: clamp(17rem, 31.45vw, 20.125rem);
+  min-block-size: clamp(3rem, 5.86vw, 3.75rem);
   padding: 0.625rem 2.375rem;
-  margin-block-start: clamp(2rem, 4.8828vw, 3.125rem);
-  font-size: clamp(1.5rem, 3.515625vw, 2.25rem);
+  margin-block-start: clamp(2rem, 4.88vw, 3.125rem);
+  font-size: clamp(1.5rem, 3.52vw, 2.25rem);
 }

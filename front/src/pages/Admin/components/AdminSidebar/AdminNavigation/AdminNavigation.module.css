@@ -27,6 +27,7 @@
   display: flex;
   align-items: center;
   block-size: var(--navigation-item-height);
+  /* --sidebar-gutter is inherited from AdminSidebar. */
   padding-inline: var(--sidebar-gutter);
   font-size: 1.25rem;
   line-height: 1;
@@ -42,6 +43,6 @@
 }
 
 .navigationLink:focus-visible {
-  outline: 0.125rem solid currentColor;
+  outline: var(--focus-ring);
   outline-offset: 0.25rem;
 }

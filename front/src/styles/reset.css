@@ -58,7 +58,6 @@ h6 {
   text-wrap: balance;
 }
 
-#root,
-#__next {
+#root {
   isolation: isolate;
 }

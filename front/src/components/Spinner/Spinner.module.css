@@ -1,9 +1,9 @@
 .root {
   display: inline-block;
-  width: 24px;
-  height: 24px;
+  inline-size: 24px;
+  block-size: 24px;
   border: 1px solid currentColor;
-  border-right-color: transparent;
+  border-inline-end-color: transparent;
   border-radius: 50%;
   animation: spin 700ms linear infinite;
 }

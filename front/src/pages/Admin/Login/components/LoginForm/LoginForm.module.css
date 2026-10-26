@@ -1,14 +1,14 @@
 .root {
   display: flex;
   flex-direction: column;
-  width: min(307px, 100%);
+  inline-size: min(19.1875rem, 100%);
 }
 
 .mark {
-  width: 135px;
-  height: 135px;
+  inline-size: 135px;
+  aspect-ratio: 1;
+  margin-block-end: 2.125rem;
   margin-inline: auto;
-  margin-bottom: 34px;
   object-fit: cover;
   border-radius: 50%;
 }
@@ -16,21 +16,21 @@
 .fields {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0.9375rem;
 }
 
 .submitError {
-  margin-top: 12px;
+  margin-block-start: 0.75rem;
   font-size: 0.8125rem;
   line-height: 1.38;
   color: var(--color-danger);
 }
 
 .submitButton {
-  width: 100%;
-  min-height: 57px;
-  padding: 4px 14px;
-  margin-top: 34px;
+  inline-size: 100%;
+  min-block-size: 3.5625rem;
+  padding: 0.25rem 0.875rem;
+  margin-block-start: 2.125rem;
   font-size: 2rem;
   line-height: 1;
 }

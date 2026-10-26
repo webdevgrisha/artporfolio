@@ -1,27 +1,24 @@
 .layout {
-  --sidebar-width: clamp(20rem, 21.875vw, 26.25rem);
-
-  min-block-size: 100dvh;
+  /* Consumed by AdminSidebar, which is rendered inside this layout. */
+  --sidebar-width: clamp(20rem, 21.88vw, 26.25rem);
 }
 
 .content {
   display: flex;
   flex-direction: column;
   min-block-size: 100dvh;
-  margin-inline-start: var(--sidebar-width);
 }
 
 .page {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding-block: 0.4375rem 4.5625rem;
-  padding-inline: 4.25rem 4.875rem;
+  padding: 1rem;
 }
 
 .title {
-  margin-block: 0 3.0625rem;
-  font-size: 1.75rem;
+  margin-block-end: 2rem;
+  font-size: 1.5rem;
   font-weight: 400;
   line-height: normal;
 }
@@ -31,17 +28,18 @@
   border: 1px solid var(--color-border);
 }
 
-@media (width < 75rem) {
+@media (width >= 75rem) {
   .content {
-    margin-inline-start: 0;
+    margin-inline-start: var(--sidebar-width);
   }
 
   .page {
-    padding: 1rem;
+    padding-block: 0.4375rem 4.5625rem;
+    padding-inline: 4.25rem 4.875rem;
   }
 
   .title {
-    margin-block-end: 2rem;
-    font-size: 1.5rem;
+    margin-block-end: 3.0625rem;
+    font-size: 1.75rem;
   }
 }
