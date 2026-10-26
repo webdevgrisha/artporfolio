@@ -1,12 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router";
 
-import { About } from "@/pages/Admin/About/About";
-import { AdminLayout } from "@/pages/Admin/AdminLayout/AdminLayout";
-import { Contacts } from "@/pages/Admin/Contacts/Contacts";
-import { Gallery } from "@/pages/Admin/Gallery/Gallery";
-import { Login } from "@/pages/Admin/Login/Login";
-import { Personalization } from "@/pages/Admin/Personalization/Personalization";
-import { Projects } from "@/pages/Admin/Projects/Projects";
 import { NotFound } from "@/pages/NotFound/NotFound";
 import { RequireAuth } from "@/router/RequireAuth/RequireAuth";
 
@@ -17,16 +10,19 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
+    lazy: async () => ({ Component: (await import("@/router/AdminRoot/AdminRoot")).AdminRoot }),
     children: [
       {
         path: "login",
-        element: <Login />,
+        lazy: async () => ({ Component: (await import("@/pages/Admin/Login/Login")).Login }),
       },
       {
         element: <RequireAuth />,
         children: [
           {
-            element: <AdminLayout />,
+            lazy: async () => ({
+              Component: (await import("@/pages/Admin/AdminLayout/AdminLayout")).AdminLayout,
+            }),
             children: [
               {
                 index: true,
@@ -34,23 +30,34 @@ export const router = createBrowserRouter([
               },
               {
                 path: "about",
-                element: <About />,
+                lazy: async () => ({
+                  Component: (await import("@/pages/Admin/About/About")).About,
+                }),
               },
               {
                 path: "contacts",
-                element: <Contacts />,
+                lazy: async () => ({
+                  Component: (await import("@/pages/Admin/Contacts/Contacts")).Contacts,
+                }),
               },
               {
                 path: "gallery",
-                element: <Gallery />,
+                lazy: async () => ({
+                  Component: (await import("@/pages/Admin/Gallery/Gallery")).Gallery,
+                }),
               },
               {
                 path: "personalization",
-                element: <Personalization />,
+                lazy: async () => ({
+                  Component: (await import("@/pages/Admin/Personalization/Personalization"))
+                    .Personalization,
+                }),
               },
               {
                 path: "projects",
-                element: <Projects />,
+                lazy: async () => ({
+                  Component: (await import("@/pages/Admin/Projects/Projects")).Projects,
+                }),
               },
             ],
           },
