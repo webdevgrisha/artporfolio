@@ -3,14 +3,10 @@ import type { RequestHandler } from "express";
 import { doubleCsrfProtection, generateCsrfToken } from "#config/csrfConfig";
 import { ForbiddenError } from "#errors/httpError";
 
-export const issueCsrfToken: RequestHandler = (request, response, next) => {
-  try {
-    const csrfToken = generateCsrfToken(request, response, { overwrite: true });
+export const issueCsrfToken: RequestHandler = (request, response) => {
+  const csrfToken = generateCsrfToken(request, response, { overwrite: true });
 
-    response.status(200).json({ csrfToken });
-  } catch (error) {
-    next(error);
-  }
+  response.status(200).json({ csrfToken });
 };
 
 export const requireCsrfToken: RequestHandler = (request, response, next) => {
