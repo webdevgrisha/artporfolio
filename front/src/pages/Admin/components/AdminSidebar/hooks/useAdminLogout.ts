@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 export function useAdminLogout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
   async function logoutAdmin() {
     if (isLoggingOut) return;

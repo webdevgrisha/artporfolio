@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React from "react";
 
 // Keep in sync with the desktop breakpoint in globals.css.
 const desktopMediaQuery = "(width >= 75rem)";
@@ -8,12 +8,12 @@ const desktopMediaQuery = "(width >= 75rem)";
  * this hook only moves focus, closes on Escape or desktop width, and locks page scroll.
  */
 export function useMobileMenu() {
-  const [isOpen, setIsOpen] = useState(false);
-  const toggleRef = useRef<HTMLButtonElement>(null);
-  const drawerRef = useRef<HTMLDivElement>(null);
-  const wasOpen = useRef(false);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const toggleRef = React.useRef<HTMLButtonElement>(null);
+  const drawerRef = React.useRef<HTMLDivElement>(null);
+  const wasOpen = React.useRef(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isOpen) {
       if (wasOpen.current) toggleRef.current?.focus();
       wasOpen.current = false;
