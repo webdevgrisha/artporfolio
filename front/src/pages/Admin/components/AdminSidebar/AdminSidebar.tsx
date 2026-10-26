@@ -5,9 +5,9 @@ import { Form, useNavigation } from "react-router";
 import avatarUrl from "@/assets/images/portraitMark.png";
 import { CloseIcon } from "@/components/Icon/CloseIcon";
 import { AdminProfile } from "@/pages/Admin/components/AdminProfile/AdminProfile";
+import { AdminNavigation } from "@/pages/Admin/components/AdminSidebar/AdminNavigation/AdminNavigation";
+import styles from "@/pages/Admin/components/AdminSidebar/AdminSidebar.module.css";
 import { logoutPath } from "@/pages/Admin/config/pages";
-import { AdminNavigation } from "./AdminNavigation/AdminNavigation";
-import styles from "./AdminSidebar.module.css";
 
 interface AdminSidebarProps {
   id: string;

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import styles from "./AdminHeader.module.css";
+import styles from "@/pages/Admin/components/AdminHeader/AdminHeader.module.css";
 
 interface AdminHeaderProps {
   adminRole: string;

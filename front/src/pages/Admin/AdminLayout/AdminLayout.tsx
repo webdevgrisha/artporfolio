@@ -1,14 +1,14 @@
 import { Outlet, useLoaderData } from "react-router";
 
 import { documentTitle } from "@/config/documentTitle";
+import styles from "@/pages/Admin/AdminLayout/AdminLayout.module.css";
+import type { adminLayoutLoader } from "@/pages/Admin/AdminLayout/adminLayoutLoader";
+import { useMobileMenu } from "@/pages/Admin/AdminLayout/hooks/useMobileMenu";
 import { AdminHeader } from "@/pages/Admin/components/AdminHeader/AdminHeader";
 import { AdminSidebar } from "@/pages/Admin/components/AdminSidebar/AdminSidebar";
 import { MobileMenuButton } from "@/pages/Admin/components/MobileMenuButton/MobileMenuButton";
 import { adminPages } from "@/pages/Admin/config/pages";
 import { useActiveAdminPageIndex } from "@/pages/Admin/hooks/useActiveAdminPageIndex";
-import styles from "./AdminLayout.module.css";
-import type { adminLayoutLoader } from "./adminLayoutLoader";
-import { useMobileMenu } from "./hooks/useMobileMenu";
 
 const sidebarId = "admin-sidebar";
 

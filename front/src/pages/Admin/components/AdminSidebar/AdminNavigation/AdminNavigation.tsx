@@ -1,10 +1,9 @@
 import clsx from "clsx";
 import type { CSSProperties } from "react";
 import { NavLink } from "react-router";
-
+import styles from "@/pages/Admin/components/AdminSidebar/AdminNavigation/AdminNavigation.module.css";
 import { adminPages } from "@/pages/Admin/config/pages";
 import { useActiveAdminPageIndex } from "@/pages/Admin/hooks/useActiveAdminPageIndex";
-import styles from "./AdminNavigation.module.css";
 
 interface AdminNavigationProps {
   className?: string;

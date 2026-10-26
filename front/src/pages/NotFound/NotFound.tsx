@@ -4,7 +4,7 @@ import portrait from "@/assets/images/portraitMark.png";
 import { ButtonLink } from "@/components/Button/Button";
 import { documentTitle } from "@/config/documentTitle";
 import { adminHomePath } from "@/pages/Admin/config/pages";
-import styles from "./NotFound.module.css";
+import styles from "@/pages/NotFound/NotFound.module.css";
 
 export function NotFound() {
   const { pathname } = useLocation();
