@@ -22,7 +22,8 @@ export const router = createBrowserRouter([
             import("@/pages/Admin/Login/loginRoute"),
           ]);
 
-          return { action, Component: Login, loader };
+          // After a failed sign-in only the action result changes; the session check is not repeated.
+          return { action, Component: Login, loader, shouldRevalidate: () => false };
         },
       },
       {

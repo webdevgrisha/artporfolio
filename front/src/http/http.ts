@@ -1,12 +1,6 @@
-import { type ZodType, z } from "zod";
+import type { ZodType, z } from "zod";
 
 import { HttpError } from "@/http/httpError";
-
-const errorResponseSchema = z.object({
-  error: z.object({
-    code: z.string(),
-  }),
-});
 
 type HttpOptions = Omit<RequestInit, "body" | "credentials" | "method">;
 
@@ -97,19 +91,10 @@ class Http {
     });
 
     if (!response.ok) {
-      throw new HttpError(response.status, await readErrorCode(response));
+      throw new HttpError(response.status);
     }
 
     return response;
-  }
-}
-
-async function readErrorCode(response: Response): Promise<string | undefined> {
-  try {
-    const result = errorResponseSchema.safeParse(await response.json());
-    return result.success ? result.data.error.code : undefined;
-  } catch {
-    return undefined;
   }
 }
 

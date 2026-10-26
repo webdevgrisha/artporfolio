@@ -40,13 +40,5 @@
         "useSortedProperties": "on"
       }
     }
-  },
-  "overrides": [
-    {
-      "includes": ["front/public/**/*.svg"],
-      "linter": {
-        "enabled": false
-      }
-    }
-  ]
+  }
 }
