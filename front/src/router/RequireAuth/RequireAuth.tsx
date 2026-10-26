@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 
 import { useAuth } from "@/hooks/useAuth";
+import { loginPath } from "@/pages/Admin/config/pages";
 import { AuthLoading } from "@/router/AuthLoading/AuthLoading";
 
 export function RequireAuth() {
@@ -12,7 +13,7 @@ export function RequireAuth() {
   }
 
   if (!user) {
-    return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to={loginPath} replace state={{ from: location.pathname }} />;
   }
 
   return <Outlet />;

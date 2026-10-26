@@ -3,10 +3,10 @@ import type { CSSProperties } from "react";
 import { NavLink } from "react-router";
 
 import { adminPages } from "@/pages/Admin/config/pages";
+import { useActiveAdminPageIndex } from "@/pages/Admin/hooks/useActiveAdminPageIndex";
 import styles from "./AdminNavigation.module.css";
 
 interface AdminNavigationProps {
-  activeIndex: number;
   className?: string;
   onNavigate: () => void;
 }
@@ -27,7 +27,9 @@ function ActiveIndicator({ activeIndex }: ActiveIndicatorProps) {
   );
 }
 
-export function AdminNavigation({ activeIndex, className, onNavigate }: AdminNavigationProps) {
+export function AdminNavigation({ className, onNavigate }: AdminNavigationProps) {
+  const activeIndex = useActiveAdminPageIndex();
+
   return (
     <nav className={clsx(styles.navigation, className)} aria-label="Основная навигация">
       <ActiveIndicator activeIndex={activeIndex} />

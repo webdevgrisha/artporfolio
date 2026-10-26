@@ -9,14 +9,13 @@ import styles from "./AdminSidebar.module.css";
 import { useAdminLogout } from "./hooks/useAdminLogout";
 
 interface AdminSidebarProps {
-  activeIndex: number;
   id: string;
   isOpen: boolean;
   onClose: () => void;
   ref?: Ref<HTMLDivElement>;
 }
 
-export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSidebarProps) {
+export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
   const { isLoggingOut, logoutAdmin } = useAdminLogout();
 
   return (
@@ -40,11 +39,7 @@ export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSid
 
         <AdminProfile className={styles.profile} imageUrl={avatarUrl} name="ANASTASIA TURKEVICH" />
 
-        <AdminNavigation
-          className={styles.navigation}
-          activeIndex={activeIndex}
-          onNavigate={onClose}
-        />
+        <AdminNavigation className={styles.navigation} onNavigate={onClose} />
 
         <button
           className={styles.logout}

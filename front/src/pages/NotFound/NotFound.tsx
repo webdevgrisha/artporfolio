@@ -3,12 +3,12 @@ import { useLocation } from "react-router";
 import portrait from "@/assets/images/portraitMark.png";
 import { ButtonLink } from "@/components/Button/Button";
 import { documentTitle } from "@/config/documentTitle";
+import { adminHomePath } from "@/pages/Admin/config/pages";
 import styles from "./NotFound.module.css";
 
 export function NotFound() {
   const { pathname } = useLocation();
-  const homePath =
-    pathname === "/admin" || pathname.startsWith("/admin/") ? "/admin/projects" : "/";
+  const homePath = pathname === "/admin" || pathname.startsWith("/admin/") ? adminHomePath : "/";
 
   return (
     <main className={styles.page}>

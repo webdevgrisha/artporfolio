@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router";
 
 import { documentTitle } from "@/config/documentTitle";
 import { useAuth } from "@/hooks/useAuth";
+import { adminHomePath } from "@/pages/Admin/config/pages";
 import { LoginForm } from "@/pages/Admin/Login/components/LoginForm/LoginForm";
 import type { LoginFormValues } from "@/pages/Admin/Login/components/LoginForm/schema";
 import styles from "@/pages/Admin/Login/Login.module.css";
@@ -20,7 +21,7 @@ function getRedirectPath(state: unknown): string {
     }
   }
 
-  return "/admin";
+  return adminHomePath;
 }
 
 export function Login() {

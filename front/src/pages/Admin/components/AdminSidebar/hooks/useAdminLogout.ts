@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router";
 
 import { useAuth } from "@/hooks/useAuth";
+import { loginPath } from "@/pages/Admin/config/pages";
 
 export function useAdminLogout() {
   const { logout } = useAuth();
@@ -19,7 +20,7 @@ export function useAdminLogout() {
       // The local session is already cleared; the redirect below is still correct.
     }
 
-    await navigate("/admin/login", { replace: true });
+    await navigate(loginPath, { replace: true });
   }
 
   return { isLoggingOut, logoutAdmin };
