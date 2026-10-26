@@ -11,13 +11,14 @@ import { type LoginFormValues, loginSchema } from "@/pages/Admin/Login/component
 import utilities from "@/styles/utilities.module.css";
 
 interface LoginFormProps {
-  onSubmit: (values: LoginFormValues) => Promise<void> | void;
-  submitError?: string;
+  isSubmitting: boolean;
+  onSubmit: (values: LoginFormValues) => void;
+  submitError?: string | undefined;
 }
 
-export function LoginForm({ onSubmit, submitError }: LoginFormProps) {
+export function LoginForm({ isSubmitting, onSubmit, submitError }: LoginFormProps) {
   const {
-    formState: { errors, isSubmitting },
+    formState: { errors },
     handleSubmit,
     register,
   } = useForm<LoginFormValues>({

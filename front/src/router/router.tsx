@@ -1,8 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router";
 
-import { adminHomePath, adminPages, loginPath } from "@/pages/Admin/config/pages";
+import { PageLoading } from "@/components/PageLoading/PageLoading";
+import { adminHomePath, adminPages, loginPath, logoutPath } from "@/pages/Admin/config/pages";
 import { NotFound } from "@/pages/NotFound/NotFound";
-import { RequireAuth } from "@/router/RequireAuth/RequireAuth";
 
 export const router = createBrowserRouter([
   {
@@ -11,30 +11,42 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    lazy: async () => ({ Component: (await import("@/router/AdminRoot/AdminRoot")).AdminRoot }),
+    // Shown on the first load while the session is being checked.
+    HydrateFallback: PageLoading,
     children: [
       {
         path: loginPath,
-        lazy: async () => ({ Component: (await import("@/pages/Admin/Login/Login")).Login }),
+        lazy: async () => {
+          const [{ Login }, { action, loader }] = await Promise.all([
+            import("@/pages/Admin/Login/Login"),
+            import("@/pages/Admin/Login/loginRoute"),
+          ]);
+
+          return { action, Component: Login, loader };
+        },
       },
       {
-        element: <RequireAuth />,
+        path: logoutPath,
+        lazy: async () => ({ action: (await import("@/auth/logout")).logoutAction }),
+      },
+      {
+        lazy: async () => {
+          const [{ AdminLayout }, { adminLayoutLoader }] = await Promise.all([
+            import("@/pages/Admin/AdminLayout/AdminLayout"),
+            import("@/pages/Admin/AdminLayout/adminLayoutLoader"),
+          ]);
+
+          return { Component: AdminLayout, loader: adminLayoutLoader };
+        },
         children: [
           {
-            lazy: async () => ({
-              Component: (await import("@/pages/Admin/AdminLayout/AdminLayout")).AdminLayout,
-            }),
-            children: [
-              {
-                index: true,
-                element: <Navigate to={adminHomePath} replace />,
-              },
-              ...adminPages.map((page) => ({
-                path: page.to,
-                lazy: async () => ({ Component: await page.load() }),
-              })),
-            ],
+            index: true,
+            element: <Navigate to={adminHomePath} replace />,
           },
+          ...adminPages.map((page) => ({
+            path: page.to,
+            lazy: async () => ({ Component: await page.load() }),
+          })),
         ],
       },
     ],

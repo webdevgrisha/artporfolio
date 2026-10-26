@@ -73,14 +73,17 @@
   margin-block-start: var(--layout-space-16);
 }
 
+.logoutForm {
+  align-self: flex-start;
+  margin-block-start: auto;
+  margin-inline-start: var(--sidebar-gutter);
+}
+
 .logout {
   display: flex;
   align-items: center;
-  align-self: flex-start;
   min-block-size: var(--min-tap-target-size);
   padding: 0;
-  margin-block-start: auto;
-  margin-inline-start: var(--sidebar-gutter);
   font-size: var(--font-size-md);
   line-height: normal;
   color: var(--color-text);

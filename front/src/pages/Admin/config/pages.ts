@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 
 export const loginPath = "/admin/login";
+export const logoutPath = "/admin/logout";
 export const adminHomePath = "/admin/projects";
 
 interface AdminPage {

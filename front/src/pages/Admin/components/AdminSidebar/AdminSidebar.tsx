@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import type { Ref } from "react";
+import { Form, useNavigation } from "react-router";
 
 import avatarUrl from "@/assets/images/portraitMark.png";
 import { CloseIcon } from "@/components/Icon/CloseIcon";
 import { AdminProfile } from "@/pages/Admin/components/AdminProfile/AdminProfile";
+import { logoutPath } from "@/pages/Admin/config/pages";
 import { AdminNavigation } from "./AdminNavigation/AdminNavigation";
 import styles from "./AdminSidebar.module.css";
-import { useAdminLogout } from "./hooks/useAdminLogout";
 
 interface AdminSidebarProps {
   id: string;
@@ -16,7 +17,8 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
-  const { isLoggingOut, logoutAdmin } = useAdminLogout();
+  const navigation = useNavigation();
+  const isLoggingOut = navigation.formAction === logoutPath;
 
   return (
     <>
@@ -41,14 +43,11 @@ export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
 
         <AdminNavigation className={styles.navigation} onNavigate={onClose} />
 
-        <button
-          className={styles.logout}
-          type="button"
-          disabled={isLoggingOut}
-          onClick={logoutAdmin}
-        >
-          Выйти
-        </button>
+        <Form className={styles.logoutForm} method="post" action={logoutPath}>
+          <button className={styles.logout} type="submit" disabled={isLoggingOut}>
+            Выйти
+          </button>
+        </Form>
       </div>
     </>
   );
