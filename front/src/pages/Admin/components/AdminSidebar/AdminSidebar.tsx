@@ -16,12 +16,15 @@ export function AdminSidebar() {
     isLoggingOut,
     isMobileMenuOpen,
     logoutAdmin,
+    menuButtonRef,
+    sidebarRef,
     toggleMobileMenu,
   } = useAdminSidebar();
 
   return (
     <>
       <button
+        ref={menuButtonRef}
         className={styles.mobileMenuButton}
         type="button"
         aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
@@ -42,6 +45,7 @@ export function AdminSidebar() {
       />
 
       <aside
+        ref={sidebarRef}
         id={sidebarId}
         className={clsx(styles.sidebar, {
           [styles.mobileOpen]: isMobileMenuOpen,
