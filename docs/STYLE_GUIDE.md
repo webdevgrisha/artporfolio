@@ -24,10 +24,10 @@ Do not reproduce fragile Figma coordinates when normal document flow, Flexbox, o
 
 - Use CSS Modules for component and page styles.
 - Keep a component's CSS beside its TSX file.
-- Keep `reset.css` limited to browser normalization.
+- Global styles live in `front/src/app/styles/`. Keep `reset.css` limited to browser normalization.
 - Keep `globals.css` limited to application-wide tokens (colors, spacing, font sizes, motion, layers) and document defaults.
 - `reset.css` and `globals.css` live in the `reset` and `base` cascade layers; CSS Modules stay unlayered, so component styles always win regardless of import order.
-- Shared helper classes such as `visuallyHidden` live in `styles/utilities.module.css`. Add a utility only when several components need the same behavior.
+- Reusable visual behavior is a component in `shared/ui`, not a global helper class. For example, text that is only for screen readers uses `<VisuallyHidden>`.
 - Keep feature-specific custom properties in the nearest owning layout or component.
 - Do not place admin-only values in global styles.
 
