@@ -1,16 +1,17 @@
-/* Mobile: an off-canvas drawer. Desktop: a fixed column (see the media query below). */
+/* Phone and tablet: an off-canvas drawer. Desktop: a sticky grid column. */
 .sidebar {
-  --sidebar-gutter: 2.5rem;
+  --sidebar-gutter: var(--layout-space-10);
 
   position: fixed;
   inset-block: 0;
   inset-inline-start: 0;
-  z-index: 10;
+  z-index: var(--layer-drawer);
   display: flex;
   visibility: hidden;
   flex-direction: column;
-  inline-size: min(20.9375rem, 100vw - 2.5rem);
-  padding-block: 6.125rem 2.375rem;
+  inline-size: min(21rem, 100vw - var(--layout-space-10));
+  /* The top padding leaves room for the menu button, which stays above the drawer. */
+  padding-block: var(--layout-space-24) var(--layout-space-8);
   overflow-y: auto;
   background-color: var(--color-surface);
   border-inline-end: 1px solid var(--color-border);
@@ -20,41 +21,16 @@
     visibility 0s linear var(--motion-duration-slow);
 }
 
-.sidebar.mobileOpen {
+.open {
   visibility: visible;
   transform: none;
   transition-delay: 0s;
 }
 
-.mobileMenuButton {
-  position: fixed;
-  inset-block-start: 2.5rem;
-  inset-inline-start: 2.5rem;
-  z-index: 11;
-  inline-size: 31px;
-  block-size: 14px;
-  padding: 0;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-}
-
-/* Extends the hit area to the minimum tap target without moving the icon. */
-.mobileMenuButton::before {
-  position: absolute;
-  inset: calc((100% - var(--min-tap-target-size)) / 2);
-  content: "";
-}
-
-.mobileMenuButton:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: 0.5rem;
-}
-
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 9;
+  z-index: var(--layer-backdrop);
   visibility: hidden;
   background: var(--color-backdrop);
   border: 0;
@@ -75,28 +51,24 @@
 }
 
 .navigation {
-  margin-block-start: 3.5rem;
+  margin-block-start: var(--layout-space-16);
 }
 
 .logout {
-  position: relative;
+  display: flex;
+  align-items: center;
   align-self: flex-start;
+  min-block-size: var(--min-tap-target-size);
   padding: 0;
   margin-block-start: auto;
   margin-inline-start: var(--sidebar-gutter);
-  font-size: 1rem;
+  font-size: var(--font-size-md);
   line-height: normal;
   color: var(--color-text);
   cursor: pointer;
   background: transparent;
   border: 0;
   transition: color var(--motion-duration-standard) var(--motion-easing-standard);
-}
-
-.logout::before {
-  position: absolute;
-  inset: calc((100% - var(--min-tap-target-size)) / 2);
-  content: "";
 }
 
 .logout:disabled {
@@ -112,26 +84,22 @@
 
 .logout:focus-visible {
   outline: var(--focus-ring);
-  outline-offset: 0.25rem;
 }
 
 @media (width >= 75rem) {
   .sidebar {
-    --sidebar-gutter: clamp(2.5rem, 4.06vw, 4.875rem);
+    position: sticky;
+    inset-block: 0 auto;
     visibility: visible;
-
-    inline-size: var(--sidebar-width);
-    padding-block: 4.5625rem 4.75rem;
+    inline-size: auto;
+    block-size: 100dvh;
+    /* --page-gutter is inherited from AdminLayout. */
+    padding-block: var(--page-gutter);
     transform: none;
     transition: none;
   }
 
-  .mobileMenuButton,
   .backdrop {
     display: none;
-  }
-
-  .navigation {
-    margin-block-start: 5.8125rem;
   }
 }

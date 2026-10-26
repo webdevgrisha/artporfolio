@@ -1,12 +1,12 @@
 .profile {
   display: flex;
-  gap: 18px;
+  gap: var(--layout-space-4);
   align-items: center;
 }
 
 .avatar {
   flex: none;
-  inline-size: 74px;
+  inline-size: 72px;
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 50%;
@@ -21,20 +21,12 @@
 /* min-content wraps at every space, so each word of the name gets its own line. */
 .name {
   inline-size: min-content;
-  font-size: 1.3125rem;
+  font-size: var(--font-size-lg);
   line-height: normal;
 }
 
 @media (width >= 75rem) {
-  .profile {
-    gap: clamp(18px, 1.46vw, 28px);
-  }
-
   .avatar {
-    inline-size: 103px;
-  }
-
-  .name {
-    font-size: 1.25rem;
+    inline-size: 104px;
   }
 }

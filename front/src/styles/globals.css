@@ -8,7 +8,9 @@
 
 /*
  * Breakpoints (custom properties cannot be used in media queries):
- * - 75rem: desktop admin shell. Also used in useAdminSidebar.ts.
+ * - phone:   below 40rem
+ * - tablet:  40rem and wider
+ * - desktop: 75rem and wider (also used in useMobileMenu.ts)
  */
 
 :root {
@@ -25,8 +27,43 @@
   --color-danger: #b00020;
   --color-backdrop: rgb(0 0 0 / 31%);
 
+  /* Spacing. See "Spacing system" in docs/STYLE_GUIDE.md. */
+  --space-unit: 0.25rem;
+
+  /* Component spacing: fixed on every device. */
+  --space-1: calc(1 * var(--space-unit));
+  --space-2: calc(2 * var(--space-unit));
+  --space-3: calc(3 * var(--space-unit));
+  --space-4: calc(4 * var(--space-unit));
+  --space-6: calc(6 * var(--space-unit));
+  --space-8: calc(8 * var(--space-unit));
+
+  /* Layout spacing: multiplied by the device coefficient. */
+  --layout-scale: 1;
+  --layout-space-4: calc(4 * var(--space-unit) * var(--layout-scale));
+  --layout-space-6: calc(6 * var(--space-unit) * var(--layout-scale));
+  --layout-space-8: calc(8 * var(--space-unit) * var(--layout-scale));
+  --layout-space-10: calc(10 * var(--space-unit) * var(--layout-scale));
+  --layout-space-12: calc(12 * var(--space-unit) * var(--layout-scale));
+  --layout-space-16: calc(16 * var(--space-unit) * var(--layout-scale));
+  --layout-space-24: calc(24 * var(--space-unit) * var(--layout-scale));
+
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 1.75rem;
+  --font-size-3xl: 2rem;
+  --font-size-4xl: 2.25rem;
+
+  --control-size: 3.5rem;
   --focus-ring: 2px solid var(--color-focus);
   --min-tap-target-size: 44px;
+
+  /* Stacking order of the mobile drawer. */
+  --layer-backdrop: 10;
+  --layer-drawer: 20;
+  --layer-drawer-toggle: 30;
 
   --motion-duration-fast: 120ms;
   --motion-duration-standard: 180ms;
@@ -37,6 +74,18 @@
   font-synthesis: none;
   color: var(--color-text);
   background: var(--color-surface);
+}
+
+@media (width >= 40rem) {
+  :root {
+    --layout-scale: 1.25;
+  }
+}
+
+@media (width >= 75rem) {
+  :root {
+    --layout-scale: 1.5;
+  }
 }
 
 @media (pointer: coarse) {

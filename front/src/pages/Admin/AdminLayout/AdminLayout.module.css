@@ -1,24 +1,32 @@
+/*
+ * Phone and tablet: a single column; the sidebar is an off-canvas drawer.
+ * Desktop: the sidebar becomes the first grid column.
+ */
 .layout {
-  /* Consumed by AdminSidebar, which is rendered inside this layout. */
-  --sidebar-width: clamp(20rem, 21.88vw, 26.25rem);
+  /* Shared by the header and the page so their edges line up. */
+  --page-gutter: var(--layout-space-4);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-block-size: 100dvh;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  min-block-size: 100dvh;
+  min-inline-size: 0;
 }
 
 .page {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 1rem;
+  padding: 0 var(--page-gutter) var(--page-gutter);
 }
 
 .title {
-  margin-block-end: 2rem;
-  font-size: 1.5rem;
+  margin-block-end: var(--layout-space-8);
+  font-size: var(--font-size-xl);
   font-weight: 400;
   line-height: normal;
 }
@@ -29,17 +37,13 @@
 }
 
 @media (width >= 75rem) {
-  .content {
-    margin-inline-start: var(--sidebar-width);
-  }
+  .layout {
+    --page-gutter: var(--layout-space-12);
 
-  .page {
-    padding-block: 0.4375rem 4.5625rem;
-    padding-inline: 4.25rem 4.875rem;
+    grid-template-columns: 20rem minmax(0, 1fr);
   }
 
   .title {
-    margin-block-end: 3.0625rem;
-    font-size: 1.75rem;
+    font-size: var(--font-size-2xl);
   }
 }

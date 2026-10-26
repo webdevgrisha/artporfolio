@@ -2,5 +2,5 @@
   display: grid;
   place-items: center;
   min-block-size: 100dvh;
-  padding: 24px;
+  padding: var(--layout-space-6);
 }

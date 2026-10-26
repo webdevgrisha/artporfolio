@@ -1,55 +1,36 @@
 import clsx from "clsx";
+import type { Ref } from "react";
 
 import avatarUrl from "@/assets/images/portraitMark.png";
 import { AdminProfile } from "@/pages/Admin/components/AdminProfile/AdminProfile";
 import { AdminNavigation } from "./AdminNavigation/AdminNavigation";
 import styles from "./AdminSidebar.module.css";
-import { useAdminSidebar } from "./hooks/useAdminSidebar";
-import { MenuToggleIcon } from "./MenuToggleIcon/MenuToggleIcon";
+import { useAdminLogout } from "./hooks/useAdminLogout";
 
-const sidebarId = "admin-sidebar";
+interface AdminSidebarProps {
+  activeIndex: number;
+  id: string;
+  isOpen: boolean;
+  onClose: () => void;
+  ref?: Ref<HTMLElement>;
+}
 
-export function AdminSidebar() {
-  const {
-    activeIndex,
-    closeMobileMenu,
-    isLoggingOut,
-    isMobileMenuOpen,
-    logoutAdmin,
-    menuButtonRef,
-    sidebarRef,
-    toggleMobileMenu,
-  } = useAdminSidebar();
+export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSidebarProps) {
+  const { isLoggingOut, logoutAdmin } = useAdminLogout();
 
   return (
     <>
       <button
-        ref={menuButtonRef}
-        className={styles.mobileMenuButton}
-        type="button"
-        aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
-        aria-controls={sidebarId}
-        aria-expanded={isMobileMenuOpen}
-        onClick={toggleMobileMenu}
-      >
-        <MenuToggleIcon isOpen={isMobileMenuOpen} />
-      </button>
-
-      <button
-        className={clsx(styles.backdrop, {
-          [styles.backdropVisible]: isMobileMenuOpen,
-        })}
+        className={clsx(styles.backdrop, { [styles.backdropVisible]: isOpen })}
         type="button"
         aria-label="Закрыть меню"
-        onClick={closeMobileMenu}
+        onClick={onClose}
       />
 
       <aside
-        ref={sidebarRef}
-        id={sidebarId}
-        className={clsx(styles.sidebar, {
-          [styles.mobileOpen]: isMobileMenuOpen,
-        })}
+        ref={ref}
+        id={id}
+        className={clsx(styles.sidebar, { [styles.open]: isOpen })}
         aria-label="Навигация администратора"
       >
         <AdminProfile className={styles.profile} imageUrl={avatarUrl} name="ANASTASIA TURKEVICH" />
@@ -57,7 +38,7 @@ export function AdminSidebar() {
         <AdminNavigation
           className={styles.navigation}
           activeIndex={activeIndex}
-          onNavigate={closeMobileMenu}
+          onNavigate={onClose}
         />
 
         <button

@@ -5,8 +5,8 @@
 }
 
 .label {
-  margin-block-end: 0.5rem;
-  font-size: 1rem;
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-md);
   line-height: 1.375;
 }
 
@@ -16,9 +16,9 @@
 
 .control {
   inline-size: 100%;
-  min-block-size: 3.5625rem;
-  padding-inline: 18px;
-  font-size: 1rem;
+  min-block-size: var(--control-size);
+  padding-inline: var(--space-4);
+  font-size: var(--font-size-md);
   color: var(--color-text);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -50,20 +50,20 @@
 }
 
 .controlWithAdornment {
-  padding-inline-end: 57px;
+  padding-inline-end: var(--control-size);
 }
 
-/* Stretches with the control, so the adornment stays centered if the text grows. */
+/* A square slot at the end of the control that stretches with its height. */
 .endAdornment {
   position: absolute;
   inset-block: 0;
   inset-inline-end: 0;
-  inline-size: 57px;
+  inline-size: var(--control-size);
 }
 
 .error {
-  margin-block-start: 0.25rem;
-  font-size: 0.8125rem;
-  line-height: 1.38;
+  margin-block-start: var(--space-1);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
   color: var(--color-danger);
 }

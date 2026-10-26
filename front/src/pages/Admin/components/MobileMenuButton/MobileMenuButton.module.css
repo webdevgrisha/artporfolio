@@ -1,0 +1,23 @@
+.root {
+  position: relative;
+  z-index: var(--layer-drawer-toggle);
+  display: grid;
+  place-items: center;
+  inline-size: var(--min-tap-target-size);
+  block-size: var(--min-tap-target-size);
+  padding: 0;
+  color: var(--color-text);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.root:focus-visible {
+  outline: var(--focus-ring);
+}
+
+@media (width >= 75rem) {
+  .root {
+    display: none;
+  }
+}

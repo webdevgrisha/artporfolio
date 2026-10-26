@@ -1,13 +1,19 @@
 .header {
   display: flex;
-  gap: 1.25rem;
-  justify-content: flex-end;
-  min-block-size: 5rem;
-  padding-block-start: 1.5rem;
-  /* The start padding leaves room for the fixed mobile menu button. */
-  padding-inline: 5.625rem 1.25rem;
-  font-size: 1rem;
+  gap: var(--layout-space-4);
+  align-items: center;
+  padding-block: var(--layout-space-6);
+  /* --page-gutter is inherited from AdminLayout. */
+  padding-inline: var(--page-gutter);
+  font-size: var(--font-size-md);
   line-height: normal;
+}
+
+.account {
+  display: flex;
+  gap: var(--layout-space-4);
+  min-inline-size: 0;
+  margin-inline-start: auto;
 }
 
 .email {
@@ -21,10 +27,11 @@
 
 @media (width >= 75rem) {
   .header {
-    gap: 5rem;
-    min-block-size: 7.4375rem;
-    padding-block-start: 4.125rem;
-    padding-inline: 4.875rem;
-    font-size: 1.25rem;
+    padding-block: var(--layout-space-12) var(--layout-space-6);
+    font-size: var(--font-size-lg);
+  }
+
+  .account {
+    gap: var(--layout-space-12);
   }
 }
