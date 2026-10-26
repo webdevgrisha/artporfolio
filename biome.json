@@ -43,6 +43,16 @@
   },
   "overrides": [
     {
+      "includes": ["**/*.test.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useComponentExportOnlyModules": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["front/public/**/*.svg"],
       "linter": {
         "enabled": false
