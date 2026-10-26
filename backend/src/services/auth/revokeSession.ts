@@ -1,6 +1,6 @@
 import type { DecodedIdToken } from "firebase-admin/auth";
 
-import { getAuthConfig } from "#config/authConfig";
+import { getEnv } from "#config/env";
 import { firebaseAuth, isAllowedAdmin, isClientAuthError } from "#services/auth/firebaseAuth";
 
 export async function revokeSession(sessionCookie: string | undefined): Promise<void> {
@@ -8,7 +8,7 @@ export async function revokeSession(sessionCookie: string | undefined): Promise<
     return;
   }
 
-  const config = getAuthConfig();
+  const config = getEnv();
   let claims: DecodedIdToken;
 
   try {

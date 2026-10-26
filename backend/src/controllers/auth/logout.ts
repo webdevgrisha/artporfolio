@@ -1,15 +1,15 @@
 import type { RequestHandler } from "express";
 
-import { authCookieNames } from "#config/authConfig";
+import { sessionCookie } from "#config/cookies";
 import { clearCsrfCookie, clearSessionCookie, readCookie } from "#http/cookies/index";
 import { revokeSession } from "#services/auth/index";
 
 export const logout: RequestHandler = async (request, response) => {
-  const sessionCookie = readCookie(request, authCookieNames.session);
+  const sessionValue = readCookie(request, sessionCookie.name);
 
   clearSessionCookie(response);
   clearCsrfCookie(response);
 
-  await revokeSession(sessionCookie);
+  await revokeSession(sessionValue);
   response.status(204).end();
 };

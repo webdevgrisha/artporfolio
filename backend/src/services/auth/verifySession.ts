@@ -1,4 +1,4 @@
-import { getAuthConfig } from "#config/authConfig";
+import { getEnv } from "#config/env";
 import { UnauthorizedError } from "#errors/httpError";
 import {
   firebaseAuth,
@@ -13,7 +13,7 @@ export async function verifySession(sessionCookie: string | undefined): Promise<
     throw new UnauthorizedError();
   }
 
-  const config = getAuthConfig();
+  const config = getEnv();
 
   try {
     const claims = await firebaseAuth().verifySessionCookie(sessionCookie, true);

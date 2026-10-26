@@ -1,4 +1,4 @@
-import { getAuthConfig, recentSignInMaxAgeMilliseconds } from "#config/authConfig";
+import { getEnv } from "#config/env";
 import { UnauthorizedError } from "#errors/httpError";
 import {
   firebaseAuth,
@@ -8,8 +8,11 @@ import {
 } from "#services/auth/firebaseAuth";
 import type { CreatedSession } from "#services/auth/types";
 
+// A session cookie may only be created right after the password was entered.
+const recentSignInMaxAgeMilliseconds = 5 * 60 * 1_000;
+
 export async function createSession(idToken: string): Promise<CreatedSession> {
-  const config = getAuthConfig();
+  const config = getEnv();
 
   try {
     const claims = await firebaseAuth().verifyIdToken(idToken, true);

@@ -1,12 +1,12 @@
 import type { RequestHandler } from "express";
 
-import { authCookieNames } from "#config/authConfig";
+import { sessionCookie } from "#config/cookies";
 import { readCookie } from "#http/cookies/index";
 import { verifySession } from "#services/auth/index";
 
 export const requireAuth: RequestHandler = async (request, response, next) => {
-  const sessionCookie = readCookie(request, authCookieNames.session);
+  const sessionValue = readCookie(request, sessionCookie.name);
 
-  response.locals.auth = await verifySession(sessionCookie);
+  response.locals.auth = await verifySession(sessionValue);
   next();
 };

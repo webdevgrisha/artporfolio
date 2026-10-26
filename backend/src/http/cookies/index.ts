@@ -1,37 +1,24 @@
-import type { CookieOptions, Request, Response } from "express";
+import type { Request, Response } from "express";
 
-import { authCookieNames, getAuthConfig } from "#config/authConfig";
-import { csrfCookieName, csrfCookieOptions } from "#config/csrfConfig";
-
-function baseCookieOptions(): CookieOptions {
-  return {
-    sameSite: "strict",
-    secure: getAuthConfig().cookieSecure,
-  };
-}
+import { csrfCookie, sessionCookie } from "#config/cookies";
+import { getEnv } from "#config/env";
 
 export function readCookie(request: Request, name: string): string | undefined {
   const value = request.cookies?.[name];
   return typeof value === "string" ? value : undefined;
 }
 
-export function setSessionCookie(response: Response, sessionCookie: string): void {
-  response.cookie(authCookieNames.session, sessionCookie, {
-    ...baseCookieOptions(),
-    httpOnly: true,
-    maxAge: getAuthConfig().sessionTtlMilliseconds,
-    path: "/api",
+export function setSessionCookie(response: Response, value: string): void {
+  response.cookie(sessionCookie.name, value, {
+    ...sessionCookie.options,
+    maxAge: getEnv().sessionTtlMilliseconds,
   });
 }
 
 export function clearSessionCookie(response: Response): void {
-  response.clearCookie(authCookieNames.session, {
-    ...baseCookieOptions(),
-    httpOnly: true,
-    path: "/api",
-  });
+  response.clearCookie(sessionCookie.name, sessionCookie.options);
 }
 
 export function clearCsrfCookie(response: Response): void {
-  response.clearCookie(csrfCookieName, csrfCookieOptions);
+  response.clearCookie(csrfCookie.name, csrfCookie.options);
 }

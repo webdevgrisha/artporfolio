@@ -55,10 +55,6 @@ async function getCsrf(sessionCookie?: string) {
 }
 
 beforeAll(async () => {
-  process.env.ADMIN_UID = admin.uid;
-  process.env.CSRF_SECRET = "test-csrf-secret-with-at-least-32-characters";
-  process.env.SESSION_TTL_MINUTES = "60";
-
   const testApp = express();
 
   testApp.use(cookieParser());

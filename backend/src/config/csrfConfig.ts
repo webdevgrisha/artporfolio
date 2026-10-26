@@ -1,28 +1,14 @@
 import { doubleCsrf } from "csrf-csrf";
-import type { Request } from "express";
 import { z } from "zod";
 
-import { authCookieNames, cookieSecure } from "#config/authConfig";
+import { csrfCookie, sessionCookie } from "#config/cookies";
+import { readCookie } from "#http/cookies/index";
 
 const csrfSecretSchema = z.string().trim().min(32);
 
-export const csrfCookieName = cookieSecure ? "__Host-admin_csrf" : "admin_csrf";
-
-export const csrfCookieOptions = {
-  httpOnly: true,
-  path: "/",
-  sameSite: "strict" as const,
-  secure: cookieSecure,
-};
-
-function getSessionIdentifier(request: Request): string {
-  const sessionCookie = request.cookies?.[authCookieNames.session];
-  return typeof sessionCookie === "string" ? sessionCookie : "anonymous";
-}
-
 export const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
-  cookieName: csrfCookieName,
-  cookieOptions: csrfCookieOptions,
+  cookieName: csrfCookie.name,
+  cookieOptions: csrfCookie.options,
   errorConfig: {
     code: "INVALID_CSRF_TOKEN",
     message: "Invalid CSRF token",
@@ -30,5 +16,5 @@ export const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
   },
   getCsrfTokenFromRequest: (request) => request.get("X-CSRF-Token"),
   getSecret: () => csrfSecretSchema.parse(process.env.CSRF_SECRET),
-  getSessionIdentifier,
+  getSessionIdentifier: (request) => readCookie(request, sessionCookie.name) ?? "anonymous",
 });

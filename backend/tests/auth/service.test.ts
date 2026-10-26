@@ -30,9 +30,6 @@ const adminClaims = {
 };
 
 beforeEach(() => {
-  process.env.ADMIN_UID = adminClaims.uid;
-  process.env.SESSION_TTL_MINUTES = "60";
-
   vi.clearAllMocks();
   firebase.createSessionCookie.mockResolvedValue("session-cookie");
   firebase.revokeRefreshTokens.mockResolvedValue(undefined);
