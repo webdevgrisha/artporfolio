@@ -26,6 +26,8 @@ Do not reproduce fragile Figma coordinates when normal document flow, Flexbox, o
 - Keep a component's CSS beside its TSX file.
 - Keep `reset.css` limited to browser normalization.
 - Keep `globals.css` limited to application-wide tokens (colors, spacing, font sizes, motion, layers) and document defaults.
+- `reset.css` and `globals.css` live in the `reset` and `base` cascade layers; CSS Modules stay unlayered, so component styles always win regardless of import order.
+- Shared helper classes such as `visuallyHidden` live in `styles/utilities.module.css`. Add a utility only when several components need the same behavior.
 - Keep feature-specific custom properties in the nearest owning layout or component.
 - Do not place admin-only values in global styles.
 

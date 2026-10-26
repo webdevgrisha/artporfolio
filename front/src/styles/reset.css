@@ -1,63 +1,71 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/*
+ * Cascade layers: reset < base < unlayered CSS Modules.
+ * Component styles always win over these defaults, regardless of import order.
+ */
+@layer reset, base;
 
-*:not(dialog) {
-  margin: 0;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    interpolate-size: allow-keywords;
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
-}
 
-body {
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.5;
-}
+  *:not(dialog) {
+    margin: 0;
+  }
 
-img,
-picture,
-video,
-canvas,
-svg {
-  display: block;
-  max-width: 100%;
-}
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      interpolate-size: allow-keywords;
+    }
+  }
 
-input,
-button,
-textarea,
-select {
-  font: inherit;
-}
+  body {
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
 
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  overflow-wrap: break-word;
-}
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
 
-p {
-  text-wrap: pretty;
-}
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  text-wrap: balance;
-}
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: break-word;
+  }
 
-#root {
-  isolation: isolate;
+  p {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+  }
+
+  #root {
+    isolation: isolate;
+  }
 }

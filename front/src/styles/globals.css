@@ -13,95 +13,98 @@
  * - desktop: 75rem and wider (also used in useMobileMenu.ts)
  */
 
-:root {
-  --color-text: #000;
-  --color-text-muted: #777;
-  --color-text-inverse: #fff;
-  --color-surface: #fff;
-  --color-surface-hover: #e0e0e0;
-  --color-surface-disabled: #f5f5f5;
-  --color-surface-inverse: #000;
-  --color-border: #000;
-  --color-border-disabled: #777;
-  --color-focus: #000;
-  --color-danger: #b00020;
-  --color-backdrop: rgb(0 0 0 / 31%);
-
-  /* Spacing. See "Spacing system" in docs/STYLE_GUIDE.md. */
-  --space-unit: 0.25rem;
-
-  /* Component spacing: fixed on every device. */
-  --space-1: calc(1 * var(--space-unit));
-  --space-2: calc(2 * var(--space-unit));
-  --space-3: calc(3 * var(--space-unit));
-  --space-4: calc(4 * var(--space-unit));
-  --space-6: calc(6 * var(--space-unit));
-  --space-8: calc(8 * var(--space-unit));
-
-  /* Layout spacing: multiplied by the device coefficient. */
-  --layout-scale: 1;
-  --layout-space-4: calc(4 * var(--space-unit) * var(--layout-scale));
-  --layout-space-6: calc(6 * var(--space-unit) * var(--layout-scale));
-  --layout-space-8: calc(8 * var(--space-unit) * var(--layout-scale));
-  --layout-space-10: calc(10 * var(--space-unit) * var(--layout-scale));
-  --layout-space-12: calc(12 * var(--space-unit) * var(--layout-scale));
-  --layout-space-16: calc(16 * var(--space-unit) * var(--layout-scale));
-  --layout-space-24: calc(24 * var(--space-unit) * var(--layout-scale));
-
-  --font-size-sm: 0.8125rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.5rem;
-  --font-size-2xl: 1.75rem;
-  --font-size-3xl: 2rem;
-  --font-size-4xl: 2.25rem;
-
-  --control-size: 3.5rem;
-  --focus-ring: 2px solid var(--color-focus);
-  --min-tap-target-size: 44px;
-
-  /* Stacking order of the mobile drawer. */
-  --layer-backdrop: 10;
-  --layer-drawer: 20;
-
-  --motion-duration-fast: 120ms;
-  --motion-duration-standard: 180ms;
-  --motion-duration-slow: 280ms;
-  --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
-
-  font-family: "Absans", Arial, sans-serif;
-  font-synthesis: none;
-  color: var(--color-text);
-  background: var(--color-surface);
-}
-
-@media (width >= 40rem) {
+@layer base {
   :root {
-    --layout-scale: 1.25;
-  }
-}
+    --color-text: #000;
+    --color-text-muted: #777;
+    --color-text-inverse: #fff;
+    --color-surface: #fff;
+    --color-surface-hover: #e0e0e0;
+    --color-surface-disabled: #f5f5f5;
+    --color-surface-inverse: #000;
+    --color-border: #000;
+    --color-border-disabled: #777;
+    --color-focus: #000;
+    --color-danger: #b00020;
+    --color-backdrop: rgb(0 0 0 / 31%);
 
-@media (width >= 75rem) {
-  :root {
-    --layout-scale: 1.5;
-  }
-}
+    /* Spacing. See "Spacing system" in docs/STYLE_GUIDE.md. */
+    --space-unit: 0.25rem;
 
-@media (pointer: coarse) {
-  :root {
-    --min-tap-target-size: 48px;
-  }
-}
+    /* Component spacing: fixed on every device. */
+    --space-1: calc(1 * var(--space-unit));
+    --space-2: calc(2 * var(--space-unit));
+    --space-3: calc(3 * var(--space-unit));
+    --space-4: calc(4 * var(--space-unit));
+    --space-6: calc(6 * var(--space-unit));
+    --space-8: calc(8 * var(--space-unit));
 
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --motion-duration-fast: 0ms;
-    --motion-duration-standard: 0ms;
-    --motion-duration-slow: 0ms;
-  }
-}
+    /* Layout spacing: multiplied by the device coefficient. */
+    --layout-scale: 1;
+    --layout-space-4: calc(4 * var(--space-unit) * var(--layout-scale));
+    --layout-space-6: calc(6 * var(--space-unit) * var(--layout-scale));
+    --layout-space-8: calc(8 * var(--space-unit) * var(--layout-scale));
+    --layout-space-10: calc(10 * var(--space-unit) * var(--layout-scale));
+    --layout-space-12: calc(12 * var(--space-unit) * var(--layout-scale));
+    --layout-space-16: calc(16 * var(--space-unit) * var(--layout-scale));
+    --layout-space-24: calc(24 * var(--space-unit) * var(--layout-scale));
 
-body {
-  min-inline-size: 320px;
-  min-block-size: 100dvh;
+    --font-size-sm: 0.8125rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 1.75rem;
+    --font-size-3xl: 2rem;
+    --font-size-4xl: 2.25rem;
+
+    --control-size: 3.5rem;
+    --focus-ring: 2px solid var(--color-focus);
+    --min-tap-target-size: 44px;
+
+    /* Stacking order of the mobile drawer. */
+    --layer-backdrop: 10;
+    --layer-drawer: 20;
+
+    --motion-duration-fast: 120ms;
+    --motion-duration-standard: 180ms;
+    --motion-duration-slow: 280ms;
+    --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+    font-family: "Absans", Arial, sans-serif;
+    font-synthesis: none;
+    color: var(--color-text);
+
+    color-scheme: light;
+    background: var(--color-surface);
+  }
+
+  @media (width >= 40rem) {
+    :root {
+      --layout-scale: 1.25;
+    }
+  }
+
+  @media (width >= 75rem) {
+    :root {
+      --layout-scale: 1.5;
+    }
+  }
+
+  @media (pointer: coarse) {
+    :root {
+      --min-tap-target-size: 48px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --motion-duration-fast: 0ms;
+      --motion-duration-standard: 0ms;
+      --motion-duration-slow: 0ms;
+    }
+  }
+
+  body {
+    min-inline-size: 320px;
+    min-block-size: 100dvh;
+  }
 }
