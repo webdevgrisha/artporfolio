@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LoginForm } from "@/pages/Admin/Login/components/LoginForm/LoginForm";
 import type { LoginFormValues } from "@/pages/Admin/Login/components/LoginForm/schema";
 import styles from "@/pages/Admin/Login/Login.module.css";
+import { getLoginErrorMessage } from "@/pages/Admin/Login/utils/getLoginErrorMessage";
 import { AuthLoading } from "@/router/AuthLoading/AuthLoading";
 
 export function Login() {
@@ -26,8 +27,8 @@ export function Login() {
     try {
       await login(values);
       await navigate("/admin", { replace: true });
-    } catch {
-      setSubmitError("Не удалось выполнить вход. Проверьте данные и попробуйте ещё раз");
+    } catch (error) {
+      setSubmitError(getLoginErrorMessage(error));
     }
   }
 
