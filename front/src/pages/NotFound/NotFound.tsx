@@ -20,9 +20,11 @@ export function NotFound() {
           <span aria-hidden="true">4</span>
         </h1>
 
-        <p className={styles.message}>Page not found</p>
+        <p className={styles.message} lang="en">
+          Page not found
+        </p>
 
-        <ButtonLink className={styles.backButton} to={homePath}>
+        <ButtonLink className={styles.backButton} to={homePath} lang="en">
           TAKE ME HOME
         </ButtonLink>
       </div>
