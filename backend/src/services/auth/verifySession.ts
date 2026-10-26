@@ -3,7 +3,7 @@ import { UnauthorizedError } from "#errors/httpError";
 import {
   firebaseAuth,
   isAllowedAdmin,
-  isClientAuthError,
+  toAuthFailure,
   toAuthUser,
 } from "#services/auth/firebaseAuth";
 import type { AuthUser } from "#services/auth/types";
@@ -24,10 +24,6 @@ export async function verifySession(sessionCookie: string | undefined): Promise<
 
     return toAuthUser(claims);
   } catch (error) {
-    if (error instanceof UnauthorizedError || isClientAuthError(error)) {
-      throw new UnauthorizedError();
-    }
-
-    throw error;
+    throw toAuthFailure(error);
   }
 }

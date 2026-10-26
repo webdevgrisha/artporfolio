@@ -1,6 +1,7 @@
 import { getApps, initializeApp } from "firebase-admin/app";
 import { type DecodedIdToken, getAuth } from "firebase-admin/auth";
 
+import { UnauthorizedError } from "#errors/httpError";
 import type { AuthUser } from "#services/auth/types";
 
 // These Admin SDK codes describe a broken backend setup, not a bad client token.
@@ -25,6 +26,16 @@ export function toAuthUser(claims: DecodedIdToken): AuthUser {
 
 export function isAllowedAdmin(claims: DecodedIdToken, adminUid: string): boolean {
   return claims.uid === adminUid;
+}
+
+/**
+ * Maps a failed token check to 401 without revealing why it failed. Infrastructure failures are
+ * returned unchanged, so the error handler logs them and responds with 500.
+ */
+export function toAuthFailure(error: unknown): unknown {
+  return error instanceof UnauthorizedError || isClientAuthError(error)
+    ? new UnauthorizedError()
+    : error;
 }
 
 export function isClientAuthError(error: unknown): boolean {
