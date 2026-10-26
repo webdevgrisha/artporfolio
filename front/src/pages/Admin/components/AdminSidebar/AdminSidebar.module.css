@@ -40,8 +40,13 @@
   transition: color var(--motion-duration-standard) var(--motion-easing-standard);
 }
 
+.logout:disabled {
+  color: #777;
+  cursor: wait;
+}
+
 @media (hover: hover) {
-  .logout:hover {
+  .logout:hover:not(:disabled) {
     color: #777;
   }
 }

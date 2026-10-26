@@ -47,8 +47,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function logout(): Promise<void> {
-    await endAuthentication();
-    setUser(null);
+    try {
+      await endAuthentication();
+    } finally {
+      // The server clears the session cookie before revoking it, so the local user is stale either way.
+      setUser(null);
+    }
   }
 
   return (

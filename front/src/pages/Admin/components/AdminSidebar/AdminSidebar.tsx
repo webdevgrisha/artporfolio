@@ -10,8 +10,14 @@ import { MenuToggleIcon } from "./MenuToggleIcon/MenuToggleIcon";
 const sidebarId = "admin-sidebar";
 
 export function AdminSidebar() {
-  const { activeIndex, closeMobileMenu, isMobileMenuOpen, logoutAdmin, toggleMobileMenu } =
-    useAdminSidebar();
+  const {
+    activeIndex,
+    closeMobileMenu,
+    isLoggingOut,
+    isMobileMenuOpen,
+    logoutAdmin,
+    toggleMobileMenu,
+  } = useAdminSidebar();
 
   return (
     <>
@@ -50,7 +56,12 @@ export function AdminSidebar() {
           onNavigate={closeMobileMenu}
         />
 
-        <button className={styles.logout} type="button" onClick={logoutAdmin}>
+        <button
+          className={styles.logout}
+          type="button"
+          disabled={isLoggingOut}
+          onClick={logoutAdmin}
+        >
           Выйти
         </button>
       </aside>

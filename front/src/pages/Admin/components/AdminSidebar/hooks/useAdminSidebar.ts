@@ -10,6 +10,7 @@ export function useAdminSidebar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const activeIndex = adminPages.findIndex((page) => isAdminPageActive(pathname, page.to));
 
@@ -33,13 +34,23 @@ export function useAdminSidebar() {
   }
 
   async function logoutAdmin() {
-    await logout();
-    navigate("/admin/login", { replace: true });
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+    } catch {
+      // The local session is already cleared; the redirect below is still correct.
+    }
+
+    await navigate("/admin/login", { replace: true });
   }
 
   return {
     activeIndex,
     closeMobileMenu,
+    isLoggingOut,
     isMobileMenuOpen,
     logoutAdmin,
     toggleMobileMenu,
