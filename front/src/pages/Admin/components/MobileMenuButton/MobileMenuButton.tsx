@@ -1,26 +1,27 @@
 import type { Ref } from "react";
-import { MenuToggleIcon } from "./MenuToggleIcon/MenuToggleIcon";
+
+import { MenuIcon } from "@/components/Icon/MenuIcon";
 import styles from "./MobileMenuButton.module.css";
 
 interface MobileMenuButtonProps {
   controls: string;
-  isOpen: boolean;
+  isExpanded: boolean;
   onClick: () => void;
   ref?: Ref<HTMLButtonElement>;
 }
 
-export function MobileMenuButton({ controls, isOpen, onClick, ref }: MobileMenuButtonProps) {
+export function MobileMenuButton({ controls, isExpanded, onClick, ref }: MobileMenuButtonProps) {
   return (
     <button
       ref={ref}
       className={styles.root}
       type="button"
-      aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
+      aria-label="Открыть меню"
       aria-controls={controls}
-      aria-expanded={isOpen}
+      aria-expanded={isExpanded}
       onClick={onClick}
     >
-      <MenuToggleIcon isOpen={isOpen} />
+      <MenuIcon />
     </button>
   );
 }

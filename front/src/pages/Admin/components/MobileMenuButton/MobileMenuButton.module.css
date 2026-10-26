@@ -1,6 +1,4 @@
 .root {
-  position: relative;
-  z-index: var(--layer-drawer-toggle);
   display: grid;
   place-items: center;
   inline-size: var(--min-tap-target-size);

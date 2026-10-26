@@ -2,6 +2,7 @@ import clsx from "clsx";
 import type { Ref } from "react";
 
 import avatarUrl from "@/assets/images/portraitMark.png";
+import { CloseIcon } from "@/components/Icon/CloseIcon";
 import { AdminProfile } from "@/pages/Admin/components/AdminProfile/AdminProfile";
 import { AdminNavigation } from "./AdminNavigation/AdminNavigation";
 import styles from "./AdminSidebar.module.css";
@@ -20,7 +21,7 @@ export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSid
 
   return (
     <>
-      {/* A pointer-only shortcut: keyboard and screen reader users close the menu with Escape or the close button. */}
+      {/* A pointer-only shortcut: keyboard users close the menu with Escape or the close button. */}
       <div
         className={clsx(styles.backdrop, { [styles.backdropVisible]: isOpen })}
         aria-hidden="true"
@@ -28,6 +29,15 @@ export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSid
       />
 
       <div ref={ref} id={id} className={clsx(styles.sidebar, { [styles.open]: isOpen })}>
+        <button
+          className={styles.closeButton}
+          type="button"
+          aria-label="Закрыть меню"
+          onClick={onClose}
+        >
+          <CloseIcon />
+        </button>
+
         <AdminProfile className={styles.profile} imageUrl={avatarUrl} name="ANASTASIA TURKEVICH" />
 
         <AdminNavigation

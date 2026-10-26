@@ -10,8 +10,8 @@
   visibility: hidden;
   flex-direction: column;
   inline-size: min(21rem, 100vw - var(--layout-space-10));
-  /* The top padding leaves room for the menu button, which stays above the drawer. */
-  padding-block: var(--layout-space-24) var(--layout-space-8);
+  /* Matches the header, so the close button sits where the menu button was. */
+  padding-block: var(--layout-space-6) var(--layout-space-8);
   overflow-y: auto;
   background-color: var(--color-surface);
   border-inline-end: 1px solid var(--color-border);
@@ -43,6 +43,26 @@
   visibility: visible;
   opacity: 1;
   transition-delay: 0s;
+}
+
+.closeButton {
+  display: grid;
+  place-items: center;
+  align-self: flex-start;
+  inline-size: var(--min-tap-target-size);
+  block-size: var(--min-tap-target-size);
+  padding: 0;
+  margin-block-end: var(--layout-space-8);
+  /* --page-gutter is inherited from AdminLayout, so the button lines up with the menu button. */
+  margin-inline-start: var(--page-gutter);
+  color: var(--color-text);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.closeButton:focus-visible {
+  outline: var(--focus-ring);
 }
 
 .profile {
@@ -98,7 +118,8 @@
     transition: none;
   }
 
-  .backdrop {
+  .backdrop,
+  .closeButton {
     display: none;
   }
 }

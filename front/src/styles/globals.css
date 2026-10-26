@@ -63,7 +63,6 @@
   /* Stacking order of the mobile drawer. */
   --layer-backdrop: 10;
   --layer-drawer: 20;
-  --layer-drawer-toggle: 30;
 
   --motion-duration-fast: 120ms;
   --motion-duration-standard: 180ms;

@@ -29,7 +29,8 @@ export function AdminLayout() {
         onClose={mobileMenu.close}
       />
 
-      <div className={styles.content}>
+      {/* While the drawer is open, the rest of the page is out of reach for focus and screen readers. */}
+      <div className={styles.content} inert={mobileMenu.isOpen}>
         <AdminHeader
           email={user?.email}
           adminRole="Админ"
@@ -37,8 +38,8 @@ export function AdminLayout() {
             <MobileMenuButton
               ref={mobileMenu.toggleRef}
               controls={sidebarId}
-              isOpen={mobileMenu.isOpen}
-              onClick={mobileMenu.toggle}
+              isExpanded={mobileMenu.isOpen}
+              onClick={mobileMenu.open}
             />
           }
         />
