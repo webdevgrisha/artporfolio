@@ -1,3 +1,3 @@
-export function Projects() {
+export function ProjectsPage() {
   return null;
 }

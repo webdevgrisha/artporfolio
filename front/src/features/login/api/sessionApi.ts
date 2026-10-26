@@ -1,5 +1,5 @@
-import { type AuthUser, authUserResponseSchema } from "@/api/auth/schemas";
-import { http } from "@/http/http";
+import { type AuthUser, authUserResponseSchema } from "@/entities/user";
+import { http } from "@/shared/api/http";
 
 interface CreateSessionParams {
   csrfToken: string;

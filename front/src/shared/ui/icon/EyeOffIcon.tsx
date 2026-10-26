@@ -1,4 +1,4 @@
-import { IconBase, type IconProps } from "@/components/Icon/IconBase";
+import { IconBase, type IconProps } from "./IconBase";
 
 export function EyeOffIcon(props: IconProps) {
   return (

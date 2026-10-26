@@ -73,39 +73,10 @@
   margin-block-start: var(--layout-space-16);
 }
 
-.logoutForm {
+.logout {
   align-self: flex-start;
   margin-block-start: auto;
   margin-inline-start: var(--sidebar-gutter);
-}
-
-.logout {
-  display: flex;
-  align-items: center;
-  min-block-size: var(--min-tap-target-size);
-  padding: 0;
-  font-size: var(--font-size-md);
-  line-height: normal;
-  color: var(--color-text);
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-  transition: color var(--motion-duration-standard) var(--motion-easing-standard);
-}
-
-.logout:disabled {
-  color: var(--color-text-muted);
-  cursor: wait;
-}
-
-@media (hover: hover) {
-  .logout:hover:not(:disabled) {
-    color: var(--color-text-muted);
-  }
-}
-
-.logout:focus-visible {
-  outline: var(--focus-ring);
 }
 
 @media (width >= 75rem) {

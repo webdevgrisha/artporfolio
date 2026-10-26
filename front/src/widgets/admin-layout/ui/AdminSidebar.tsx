@@ -1,13 +1,13 @@
 import clsx from "clsx";
 import type { Ref } from "react";
-import { Form, useNavigation } from "react-router";
 
-import avatarUrl from "@/assets/images/portraitMark.png";
-import { CloseIcon } from "@/components/Icon/CloseIcon";
-import { AdminProfile } from "@/pages/Admin/components/AdminProfile/AdminProfile";
-import { AdminNavigation } from "@/pages/Admin/components/AdminSidebar/AdminNavigation/AdminNavigation";
-import styles from "@/pages/Admin/components/AdminSidebar/AdminSidebar.module.css";
-import { logoutPath } from "@/pages/Admin/config/pages";
+import { LogoutButton } from "@/features/logout";
+import avatarUrl from "@/shared/assets/images/portraitMark.png";
+import { CloseIcon } from "@/shared/ui/icon";
+
+import { AdminNavigation } from "./AdminNavigation";
+import { AdminProfile } from "./AdminProfile";
+import styles from "./AdminSidebar.module.css";
 
 interface AdminSidebarProps {
   id: string;
@@ -17,9 +17,6 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
-  const navigation = useNavigation();
-  const isLoggingOut = navigation.formAction === logoutPath;
-
   return (
     <>
       {/* A pointer-only shortcut: keyboard users close the menu with Escape or the close button. */}
@@ -43,11 +40,7 @@ export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
 
         <AdminNavigation className={styles.navigation} onNavigate={onClose} />
 
-        <Form className={styles.logoutForm} method="post" action={logoutPath}>
-          <button className={styles.logout} type="submit" disabled={isLoggingOut}>
-            Выйти
-          </button>
-        </Form>
+        <LogoutButton className={styles.logout} />
       </div>
     </>
   );

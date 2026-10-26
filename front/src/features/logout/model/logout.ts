@@ -1,7 +1,9 @@
 import { redirect } from "react-router";
 
-import { endSession, getCsrfToken } from "@/api/auth";
-import { loginPath } from "@/pages/Admin/config/pages";
+import { getCsrfToken } from "@/shared/api/csrf";
+import { routes } from "@/shared/config/routes";
+
+import { endSession } from "../api/sessionApi";
 
 export async function logout(): Promise<void> {
   const csrfToken = await getCsrfToken();
@@ -9,6 +11,7 @@ export async function logout(): Promise<void> {
   await endSession({ csrfToken });
 }
 
+/** Route action for the logout form. */
 export async function logoutAction() {
   try {
     await logout();
@@ -16,5 +19,5 @@ export async function logoutAction() {
     // The server clears the session cookie before revoking it, so the user is signed out anyway.
   }
 
-  return redirect(loginPath);
+  return redirect(routes.login);
 }

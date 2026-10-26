@@ -1,21 +1,22 @@
-import { Outlet, useLoaderData } from "react-router";
+import { Outlet } from "react-router";
 
-import { documentTitle } from "@/config/documentTitle";
-import styles from "@/pages/Admin/AdminLayout/AdminLayout.module.css";
-import type { adminLayoutLoader } from "@/pages/Admin/AdminLayout/adminLayoutLoader";
-import { useMobileMenu } from "@/pages/Admin/AdminLayout/hooks/useMobileMenu";
-import { AdminHeader } from "@/pages/Admin/components/AdminHeader/AdminHeader";
-import { AdminSidebar } from "@/pages/Admin/components/AdminSidebar/AdminSidebar";
-import { MobileMenuButton } from "@/pages/Admin/components/MobileMenuButton/MobileMenuButton";
-import { adminPages } from "@/pages/Admin/config/pages";
-import { useActiveAdminPageIndex } from "@/pages/Admin/hooks/useActiveAdminPageIndex";
+import { useSessionUser } from "@/entities/user";
+import { adminNavigation } from "@/shared/config/routes";
+import { documentTitle } from "@/shared/lib/documentTitle";
+
+import { useActiveAdminPageIndex } from "../model/useActiveAdminPageIndex";
+import { useMobileMenu } from "../model/useMobileMenu";
+import { AdminHeader } from "./AdminHeader";
+import styles from "./AdminLayout.module.css";
+import { AdminSidebar } from "./AdminSidebar";
+import { MobileMenuButton } from "./MobileMenuButton";
 
 const sidebarId = "admin-sidebar";
 
 export function AdminLayout() {
-  const user = useLoaderData<typeof adminLayoutLoader>();
+  const user = useSessionUser();
   const mobileMenu = useMobileMenu();
-  const pageTitle = adminPages[useActiveAdminPageIndex()]?.title ?? "";
+  const pageTitle = adminNavigation[useActiveAdminPageIndex()]?.title ?? "";
 
   return (
     <div className={styles.layout}>
@@ -30,6 +31,7 @@ export function AdminLayout() {
       <div className={styles.content} inert={mobileMenu.isOpen}>
         <AdminHeader
           email={user.email}
+          adminRole="Админ"
           menuButton={
             <MobileMenuButton
               ref={mobileMenu.toggleRef}

@@ -1,3 +1,3 @@
-export function Personalization() {
+export function PersonalizationPage() {
   return null;
 }

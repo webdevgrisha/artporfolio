@@ -1,14 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import portraitMark from "@/assets/images/portraitMark.png";
-import { Button } from "@/components/Button/Button";
-import { Input } from "@/components/Input/Input";
-import { PasswordInput } from "@/components/PasswordInput/PasswordInput";
-import { Spinner } from "@/components/Spinner/Spinner";
-import styles from "@/pages/Admin/Login/components/LoginForm/LoginForm.module.css";
-import { type LoginFormValues, loginSchema } from "@/pages/Admin/Login/components/LoginForm/schema";
-import utilities from "@/styles/utilities.module.css";
+import portraitMark from "@/shared/assets/images/portraitMark.png";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { PasswordInput } from "@/shared/ui/password-input";
+import { Spinner } from "@/shared/ui/spinner";
+import { VisuallyHidden } from "@/shared/ui/visually-hidden";
+
+import { type LoginFormValues, loginSchema } from "../model/loginSchema";
+import styles from "./LoginForm.module.css";
 
 interface LoginFormProps {
   isSubmitting: boolean;
@@ -67,7 +68,7 @@ export function LoginForm({ isSubmitting, onSubmit, submitError }: LoginFormProp
         {isSubmitting ? (
           <>
             <Spinner />
-            <span className={utilities.visuallyHidden}>Выполняется вход</span>
+            <VisuallyHidden>Выполняется вход</VisuallyHidden>
           </>
         ) : (
           "ВХОД"

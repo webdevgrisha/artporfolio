@@ -1,6 +1,6 @@
 import type { ZodType, z } from "zod";
 
-import { HttpError } from "@/http/httpError";
+import { HttpError } from "./httpError";
 
 type HttpOptions = Omit<RequestInit, "body" | "credentials" | "method">;
 

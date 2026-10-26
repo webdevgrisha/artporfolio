@@ -1,9 +1,7 @@
 import React from "react";
-
-import { EyeIcon } from "@/components/Icon/EyeIcon";
-import { EyeOffIcon } from "@/components/Icon/EyeOffIcon";
-import { Input, type InputProps } from "@/components/Input/Input";
-import styles from "@/components/PasswordInput/PasswordInput.module.css";
+import { EyeIcon, EyeOffIcon } from "@/shared/ui/icon";
+import { Input, type InputProps } from "@/shared/ui/input";
+import styles from "./PasswordInput.module.css";
 
 interface PasswordInputProps extends Omit<InputProps, "endAdornment" | "type"> {
   hidePasswordLabel: string;

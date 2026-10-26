@@ -1,13 +1,13 @@
 import { createBrowserRouter, Navigate } from "react-router";
 
-import { PageLoading } from "@/components/PageLoading/PageLoading";
-import { adminHomePath, adminPages, loginPath, logoutPath } from "@/pages/Admin/config/pages";
-import { NotFound } from "@/pages/NotFound/NotFound";
+import { NotFoundPage } from "@/pages/not-found";
+import { adminHomePath, adminRouteId, routes } from "@/shared/config/routes";
+import { PageLoading } from "@/shared/ui/page-loading";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to={loginPath} replace />,
+    element: <Navigate to={routes.login} replace />,
   },
   {
     path: "/admin",
@@ -15,45 +15,66 @@ export const router = createBrowserRouter([
     HydrateFallback: PageLoading,
     children: [
       {
-        path: loginPath,
+        path: routes.login,
         lazy: async () => {
-          const [{ Login }, { action, loader }] = await Promise.all([
-            import("@/pages/Admin/Login/Login"),
-            import("@/pages/Admin/Login/loginRoute"),
-          ]);
+          const { LoginPage, loginAction, loginLoader } = await import("@/pages/login");
 
-          // After a failed sign-in only the action result changes; the session check is not repeated.
-          return { action, Component: Login, loader, shouldRevalidate: () => false };
+          return {
+            action: loginAction,
+            Component: LoginPage,
+            loader: loginLoader,
+            // After a failed sign-in only the action result changes; the session check is not repeated.
+            shouldRevalidate: () => false,
+          };
         },
       },
       {
-        path: logoutPath,
-        lazy: async () => ({ action: (await import("@/auth/logout")).logoutAction }),
+        path: routes.logout,
+        lazy: async () => ({ action: (await import("@/features/logout")).logoutAction }),
       },
       {
+        id: adminRouteId,
         lazy: async () => {
-          const [{ AdminLayout }, { adminLayoutLoader }] = await Promise.all([
-            import("@/pages/Admin/AdminLayout/AdminLayout"),
-            import("@/pages/Admin/AdminLayout/adminLayoutLoader"),
+          const [{ AdminLayout }, { requireSession }] = await Promise.all([
+            import("@/widgets/admin-layout"),
+            import("@/entities/user"),
           ]);
 
-          return { Component: AdminLayout, loader: adminLayoutLoader };
+          return { Component: AdminLayout, loader: requireSession };
         },
         children: [
           {
             index: true,
             element: <Navigate to={adminHomePath} replace />,
           },
-          ...adminPages.map((page) => ({
-            path: page.to,
-            lazy: async () => ({ Component: await page.load() }),
-          })),
+          {
+            path: routes.gallery,
+            lazy: async () => ({ Component: (await import("@/pages/gallery")).GalleryPage }),
+          },
+          {
+            path: routes.projects,
+            lazy: async () => ({ Component: (await import("@/pages/projects")).ProjectsPage }),
+          },
+          {
+            path: routes.about,
+            lazy: async () => ({ Component: (await import("@/pages/about")).AboutPage }),
+          },
+          {
+            path: routes.contacts,
+            lazy: async () => ({ Component: (await import("@/pages/contacts")).ContactsPage }),
+          },
+          {
+            path: routes.personalization,
+            lazy: async () => ({
+              Component: (await import("@/pages/personalization")).PersonalizationPage,
+            }),
+          },
         ],
       },
     ],
   },
   {
     path: "*",
-    element: <NotFound />,
+    element: <NotFoundPage />,
   },
 ]);

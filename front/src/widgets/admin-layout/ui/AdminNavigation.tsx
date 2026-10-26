@@ -1,9 +1,10 @@
 import clsx from "clsx";
 import type { CSSProperties } from "react";
 import { NavLink } from "react-router";
-import styles from "@/pages/Admin/components/AdminSidebar/AdminNavigation/AdminNavigation.module.css";
-import { adminPages } from "@/pages/Admin/config/pages";
-import { useActiveAdminPageIndex } from "@/pages/Admin/hooks/useActiveAdminPageIndex";
+import { adminNavigation } from "@/shared/config/routes";
+
+import { useActiveAdminPageIndex } from "../model/useActiveAdminPageIndex";
+import styles from "./AdminNavigation.module.css";
 
 interface AdminNavigationProps {
   className?: string;
@@ -34,7 +35,7 @@ export function AdminNavigation({ className, onNavigate }: AdminNavigationProps)
       <ActiveIndicator activeIndex={activeIndex} />
 
       <ul className={styles.list}>
-        {adminPages.map((page) => (
+        {adminNavigation.map((page) => (
           <li key={page.to}>
             <NavLink className={styles.navigationLink} to={page.to} onClick={onNavigate}>
               {page.title}

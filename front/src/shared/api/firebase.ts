@@ -1,7 +1,7 @@
 import { getApps, initializeApp } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
 
-import { firebaseAuthEmulatorUrl, firebaseConfig } from "@/config/firebaseConfig";
+import { firebaseAuthEmulatorUrl, firebaseConfig } from "@/shared/config/firebase";
 
 const firebaseApp = getApps()[0] ?? initializeApp(firebaseConfig);
 

@@ -1,12 +1,13 @@
 import { useLocation } from "react-router";
 
-import portrait from "@/assets/images/portraitMark.png";
-import { ButtonLink } from "@/components/Button/Button";
-import { documentTitle } from "@/config/documentTitle";
-import { adminHomePath } from "@/pages/Admin/config/pages";
-import styles from "@/pages/NotFound/NotFound.module.css";
+import portrait from "@/shared/assets/images/portraitMark.png";
+import { adminHomePath } from "@/shared/config/routes";
+import { documentTitle } from "@/shared/lib/documentTitle";
+import { ButtonLink } from "@/shared/ui/button";
 
-export function NotFound() {
+import styles from "./NotFoundPage.module.css";
+
+export function NotFoundPage() {
   const { pathname } = useLocation();
   const homePath = pathname === "/admin" || pathname.startsWith("/admin/") ? adminHomePath : "/";
 

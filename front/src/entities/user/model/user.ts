@@ -6,3 +6,8 @@ export const authUserSchema = z.object({
 });
 
 export type AuthUser = z.infer<typeof authUserSchema>;
+
+/** The shape of every API response that returns the signed-in user. */
+export const authUserResponseSchema = z.object({
+  user: authUserSchema,
+});

@@ -1,14 +1,14 @@
 import { useActionData, useNavigation, useSearchParams, useSubmit } from "react-router";
 
-import { documentTitle } from "@/config/documentTitle";
-import { LoginForm } from "@/pages/Admin/Login/components/LoginForm/LoginForm";
-import type { LoginFormValues } from "@/pages/Admin/Login/components/LoginForm/schema";
-import styles from "@/pages/Admin/Login/Login.module.css";
-import { type action, redirectToField } from "@/pages/Admin/Login/loginRoute";
-import utilities from "@/styles/utilities.module.css";
+import { LoginForm, type LoginFormValues } from "@/features/login";
+import { documentTitle } from "@/shared/lib/documentTitle";
+import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
-export function Login() {
-  const actionData = useActionData<typeof action>();
+import { type loginAction, redirectToField } from "../model/loginRoute";
+import styles from "./LoginPage.module.css";
+
+export function LoginPage() {
+  const actionData = useActionData<typeof loginAction>();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
   const submit = useSubmit();
@@ -23,7 +23,7 @@ export function Login() {
   return (
     <main className={styles.root}>
       <title>{documentTitle("Вход")}</title>
-      <h1 className={utilities.visuallyHidden}>Вход в админ-панель</h1>
+      <VisuallyHidden as="h1">Вход в админ-панель</VisuallyHidden>
       <LoginForm
         isSubmitting={navigation.formData !== undefined}
         onSubmit={handleSubmit}

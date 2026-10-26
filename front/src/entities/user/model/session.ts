@@ -1,15 +1,27 @@
-import { type LoaderFunctionArgs, redirect } from "react-router";
+import { type LoaderFunctionArgs, redirect, useRouteLoaderData } from "react-router";
 
-import { getCurrentUser } from "@/api/auth";
-import type { AuthUser } from "@/api/auth/schemas";
-import { loginPath } from "@/pages/Admin/config/pages";
+import { adminRouteId, routes } from "@/shared/config/routes";
 
-/** Guards every admin page: without a valid session the user is sent to the login page. */
-export async function adminLayoutLoader({ request }: LoaderFunctionArgs): Promise<AuthUser> {
+import { getCurrentUser } from "../api/getCurrentUser";
+import type { AuthUser } from "./user";
+
+/** Loader of the admin layout route: without a valid session the user is sent to the login page. */
+export async function requireSession({ request }: LoaderFunctionArgs): Promise<AuthUser> {
   try {
     return await getCurrentUser({ signal: request.signal });
   } catch {
     const redirectTo = new URL(request.url).pathname;
-    throw redirect(`${loginPath}?${new URLSearchParams({ redirectTo }).toString()}`);
+    throw redirect(`${routes.login}?${new URLSearchParams({ redirectTo }).toString()}`);
   }
+}
+
+/** The signed-in user. Available anywhere inside the admin layout route. */
+export function useSessionUser(): AuthUser {
+  const user = useRouteLoaderData<typeof requireSession>(adminRouteId);
+
+  if (!user) {
+    throw new Error("useSessionUser must be used inside the admin layout route");
+  }
+
+  return user;
 }

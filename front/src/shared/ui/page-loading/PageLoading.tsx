@@ -1,5 +1,5 @@
-import styles from "@/components/PageLoading/PageLoading.module.css";
-import { Spinner } from "@/components/Spinner/Spinner";
+import { Spinner } from "@/shared/ui/spinner";
+import styles from "./PageLoading.module.css";
 
 export function PageLoading() {
   return (

@@ -1,3 +1,3 @@
-export function About() {
+export function AboutPage() {
   return null;
 }

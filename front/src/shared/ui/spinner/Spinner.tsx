@@ -1,4 +1,4 @@
-import styles from "@/components/Spinner/Spinner.module.css";
+import styles from "./Spinner.module.css";
 
 interface SpinnerProps {
   /** Announces the spinner as a status. Omit it when the surrounding element describes the state. */

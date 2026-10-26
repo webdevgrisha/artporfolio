@@ -1,6 +1,6 @@
 import { FirebaseError } from "firebase/app";
 
-import { HttpError } from "@/http/httpError";
+import { HttpError } from "@/shared/api/httpError";
 
 const invalidCredentialsMessage = "Неверный логин или пароль";
 const tooManyRequestsMessage = "Слишком много попыток входа. Попробуйте позже";

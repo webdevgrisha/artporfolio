@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-import styles from "@/pages/Admin/components/AdminProfile/AdminProfile.module.css";
+import styles from "./AdminProfile.module.css";
 
 interface AdminProfileProps {
   className?: string;

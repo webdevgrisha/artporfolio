@@ -2,7 +2,7 @@ import clsx from "clsx";
 import type { ComponentPropsWithRef } from "react";
 import { Link } from "react-router";
 
-import styles from "@/components/Button/Button.module.css";
+import styles from "./Button.module.css";
 
 type ButtonProps = ComponentPropsWithRef<"button">;
 type ButtonLinkProps = ComponentPropsWithRef<typeof Link>;

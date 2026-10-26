@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import React, { type ComponentPropsWithRef, type ReactNode } from "react";
 
-import styles from "@/components/Input/Input.module.css";
+import styles from "./Input.module.css";
 
 export interface InputProps extends ComponentPropsWithRef<"input"> {
   endAdornment?: ReactNode;

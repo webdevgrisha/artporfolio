@@ -1,5 +1,6 @@
-import { type AuthUser, authUserResponseSchema } from "@/api/auth/schemas";
-import { http } from "@/http/http";
+import { http } from "@/shared/api/http";
+
+import { type AuthUser, authUserResponseSchema } from "../model/user";
 
 interface GetCurrentUserParams {
   signal?: AbortSignal;

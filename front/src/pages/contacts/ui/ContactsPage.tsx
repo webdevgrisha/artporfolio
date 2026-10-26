@@ -1,3 +1,3 @@
-export function Contacts() {
+export function ContactsPage() {
   return null;
 }

@@ -1,7 +1,8 @@
 import type { Ref } from "react";
 
-import { MenuIcon } from "@/components/Icon/MenuIcon";
-import styles from "@/pages/Admin/components/MobileMenuButton/MobileMenuButton.module.css";
+import { MenuIcon } from "@/shared/ui/icon";
+
+import styles from "./MobileMenuButton.module.css";
 
 interface MobileMenuButtonProps {
   controls: string;
