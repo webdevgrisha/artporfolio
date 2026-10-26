@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router";
 
+import { documentTitle } from "@/config/documentTitle";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminHeader } from "@/pages/Admin/components/AdminHeader/AdminHeader";
 import { AdminSidebar } from "@/pages/Admin/components/AdminSidebar/AdminSidebar";
@@ -43,13 +44,11 @@ export function AdminLayout() {
         />
 
         <main className={styles.page}>
+          <title>{documentTitle(pageTitle)}</title>
           <h1 className={styles.title}>{pageTitle}</h1>
-          <section
-            className={styles.contentFrame}
-            aria-label={`Содержимое страницы «${pageTitle}»`}
-          >
+          <div className={styles.contentFrame}>
             <Outlet />
-          </section>
+          </div>
         </main>
       </div>
     </div>

@@ -5,6 +5,11 @@
   position: relative;
 }
 
+.list {
+  padding: 0;
+  list-style: none;
+}
+
 .activeIndicator {
   position: absolute;
   inset-block-start: 0;

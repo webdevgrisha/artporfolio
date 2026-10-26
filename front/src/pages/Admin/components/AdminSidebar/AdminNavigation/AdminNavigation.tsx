@@ -29,14 +29,18 @@ function ActiveIndicator({ activeIndex }: ActiveIndicatorProps) {
 
 export function AdminNavigation({ activeIndex, className, onNavigate }: AdminNavigationProps) {
   return (
-    <nav className={clsx(styles.navigation, className)}>
+    <nav className={clsx(styles.navigation, className)} aria-label="Основная навигация">
       <ActiveIndicator activeIndex={activeIndex} />
 
-      {adminPages.map((page) => (
-        <NavLink key={page.to} className={styles.navigationLink} to={page.to} onClick={onNavigate}>
-          {page.title}
-        </NavLink>
-      ))}
+      <ul className={styles.list}>
+        {adminPages.map((page) => (
+          <li key={page.to}>
+            <NavLink className={styles.navigationLink} to={page.to} onClick={onNavigate}>
+              {page.title}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }

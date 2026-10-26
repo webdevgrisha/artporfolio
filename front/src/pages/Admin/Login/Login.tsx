@@ -1,12 +1,14 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router";
 
+import { documentTitle } from "@/config/documentTitle";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginForm } from "@/pages/Admin/Login/components/LoginForm/LoginForm";
 import type { LoginFormValues } from "@/pages/Admin/Login/components/LoginForm/schema";
 import styles from "@/pages/Admin/Login/Login.module.css";
 import { getLoginErrorMessage } from "@/pages/Admin/Login/utils/getLoginErrorMessage";
 import { AuthLoading } from "@/router/AuthLoading/AuthLoading";
+import utilities from "@/styles/utilities.module.css";
 
 function getRedirectPath(state: unknown): string {
   if (typeof state === "object" && state !== null && "from" in state) {
@@ -47,6 +49,8 @@ export function Login() {
 
   return (
     <main className={styles.root}>
+      <title>{documentTitle("Вход")}</title>
+      <h1 className={utilities.visuallyHidden}>Вход в админ-панель</h1>
       <LoginForm onSubmit={handleSubmit} submitError={submitError} />
     </main>
   );

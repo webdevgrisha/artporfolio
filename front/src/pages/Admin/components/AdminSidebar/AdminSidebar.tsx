@@ -12,7 +12,7 @@ interface AdminSidebarProps {
   id: string;
   isOpen: boolean;
   onClose: () => void;
-  ref?: Ref<HTMLElement>;
+  ref?: Ref<HTMLDivElement>;
 }
 
 export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSidebarProps) {
@@ -27,12 +27,7 @@ export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSid
         onClick={onClose}
       />
 
-      <aside
-        ref={ref}
-        id={id}
-        className={clsx(styles.sidebar, { [styles.open]: isOpen })}
-        aria-label="Навигация администратора"
-      >
+      <div ref={ref} id={id} className={clsx(styles.sidebar, { [styles.open]: isOpen })}>
         <AdminProfile className={styles.profile} imageUrl={avatarUrl} name="ANASTASIA TURKEVICH" />
 
         <AdminNavigation
@@ -49,7 +44,7 @@ export function AdminSidebar({ activeIndex, id, isOpen, onClose, ref }: AdminSid
         >
           Выйти
         </button>
-      </aside>
+      </div>
     </>
   );
 }

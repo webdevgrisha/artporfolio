@@ -2,6 +2,7 @@ import { useLocation } from "react-router";
 
 import portrait from "@/assets/images/portraitMark.png";
 import { ButtonLink } from "@/components/Button/Button";
+import { documentTitle } from "@/config/documentTitle";
 import styles from "./NotFound.module.css";
 
 export function NotFound() {
@@ -11,18 +12,19 @@ export function NotFound() {
 
   return (
     <main className={styles.page}>
+      <title>{documentTitle("Page not found")}</title>
       <div className={styles.content}>
-        <h1 className={styles.code} aria-label="404">
-          <span aria-hidden="true">4</span>
-          <span className={styles.portrait} aria-hidden="true">
+        <div className={styles.code} aria-hidden="true">
+          <span>4</span>
+          <span className={styles.portrait}>
             <img src={portrait} alt="" />
           </span>
-          <span aria-hidden="true">4</span>
-        </h1>
+          <span>4</span>
+        </div>
 
-        <p className={styles.message} lang="en">
+        <h1 className={styles.message} lang="en">
           Page not found
-        </p>
+        </h1>
 
         <ButtonLink className={styles.backButton} to={homePath} lang="en">
           TAKE ME HOME
