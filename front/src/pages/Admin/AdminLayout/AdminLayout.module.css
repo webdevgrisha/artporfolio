@@ -28,10 +28,10 @@
 
 .contentFrame {
   flex: 1;
-  border: 1px solid #000;
+  border: 1px solid var(--color-border);
 }
 
-@media (max-width: 1199px) {
+@media (width < 75rem) {
   .content {
     margin-inline-start: 0;
   }

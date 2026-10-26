@@ -20,12 +20,12 @@
 
 .name {
   max-width: 160px;
-  font-size: 20px;
+  font-size: 1.25rem;
   line-height: normal;
   white-space: pre-line;
 }
 
-@media (max-width: 1199px) {
+@media (width < 75rem) {
   .profile {
     gap: 18px;
   }
@@ -36,6 +36,6 @@
   }
 
   .name {
-    font-size: 21px;
+    font-size: 1.3125rem;
   }
 }

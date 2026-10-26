@@ -21,9 +21,9 @@
 
 .submitError {
   margin-top: 12px;
-  font-size: 13px;
-  line-height: 18px;
-  color: #b00020;
+  font-size: 0.8125rem;
+  line-height: 1.38;
+  color: var(--color-danger);
 }
 
 .submitButton {
@@ -31,6 +31,6 @@
   min-height: 57px;
   padding: 4px 14px;
   margin-top: 34px;
-  font-size: 32px;
+  font-size: 2rem;
   line-height: 1;
 }

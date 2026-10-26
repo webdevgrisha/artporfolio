@@ -6,13 +6,13 @@
   min-height: 40px;
   padding: 6px 14px;
   font: inherit;
-  font-size: 20px;
-  color: #000;
+  font-size: 1.25rem;
+  color: var(--color-text);
   letter-spacing: 0;
   text-decoration: none;
   cursor: pointer;
-  background: #fff;
-  border: 1px solid #000;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 0;
   transition:
     color var(--motion-duration-standard) var(--motion-easing-standard),
@@ -20,22 +20,22 @@
 }
 
 .root:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: var(--color-surface-hover);
 }
 
 .root:active:not(:disabled) {
-  color: #fff;
-  background: #000;
+  color: var(--color-text-inverse);
+  background: var(--color-surface-inverse);
 }
 
 .root:focus-visible {
-  outline: 2px solid #000;
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
 .root:disabled {
-  color: #777;
+  color: var(--color-text-muted);
   cursor: not-allowed;
-  background: #fff;
-  border-color: #777;
+  background: var(--color-surface);
+  border-color: var(--color-border-disabled);
 }

@@ -18,7 +18,7 @@
   flex: none;
 }
 
-@media (max-width: 1199px) {
+@media (width < 75rem) {
   .header {
     gap: 1.25rem;
     min-block-size: 5rem;

@@ -30,14 +30,14 @@
   padding-inline: var(--sidebar-gutter);
   font-size: 1.25rem;
   line-height: 1;
-  color: #000;
+  color: var(--color-text);
   text-decoration: none;
   transition: color var(--motion-duration-standard) var(--motion-easing-standard);
 }
 
 @media (hover: hover) {
   .navigationLink:hover {
-    color: #777;
+    color: var(--color-text-muted);
   }
 }
 
