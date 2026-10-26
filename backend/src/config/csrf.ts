@@ -2,7 +2,7 @@ import { doubleCsrf } from "csrf-csrf";
 import { z } from "zod";
 
 import { csrfCookie, sessionCookie } from "#config/cookies";
-import { readCookie } from "#http/cookies/index";
+import { readCookie } from "#http/cookies";
 
 const csrfSecretSchema = z.string().trim().min(32);
 

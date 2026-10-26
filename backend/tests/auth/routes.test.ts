@@ -10,11 +10,11 @@ const auth = vi.hoisted(() => ({
   verifySession: vi.fn(),
 }));
 
-vi.mock("#services/auth/index", () => auth);
+vi.mock("#services/auth", () => auth);
 
 import { UnauthorizedError } from "#errors/httpError";
-import { errorHandler } from "#middleware/error/index";
-import { authRouter } from "#routes/auth/index";
+import { errorHandler } from "#middleware/error";
+import { authRouter } from "#routes/auth";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 

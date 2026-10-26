@@ -3,10 +3,11 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 
-import { corsOptions } from "#config/corsConfig";
+import { corsOptions } from "#config/cors";
 import { NotFoundError } from "#errors/httpError";
-import { errorHandler } from "#middleware/error/index";
-import { authRouter, healthRouter } from "#routes/index";
+import { errorHandler } from "#middleware/error";
+import { authRouter } from "#routes/auth";
+import { healthRouter } from "#routes/health";
 
 export const server = express();
 
