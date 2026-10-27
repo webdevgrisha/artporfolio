@@ -7,5 +7,11 @@ export default defineConfig({
       reporter: ["text", "html"],
       reportsDirectory: "coverage",
     },
+    // The environment the API expects at runtime; see .env.example.
+    env: {
+      ADMIN_UID: "admin-uid",
+      CSRF_SECRET: "test-csrf-secret-with-at-least-32-characters",
+      SESSION_TTL_MINUTES: "60",
+    },
   },
 });

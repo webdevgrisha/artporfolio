@@ -47,6 +47,200 @@
       "linter": {
         "enabled": false
       }
+    },
+    {
+      "includes": ["front/src/shared/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/app",
+                      "@/app/**",
+                      "@/pages/*/**",
+                      "@/widgets/*/**",
+                      "@/features/*/**",
+                      "@/entities/*/**"
+                    ],
+                    "message": "Import a slice through its public index.ts (for example @/features/login), never its internal files. The app layer is never imported."
+                  },
+                  {
+                    "group": [
+                      "@/entities",
+                      "@/entities/**",
+                      "@/features",
+                      "@/features/**",
+                      "@/widgets",
+                      "@/widgets/**",
+                      "@/pages",
+                      "@/pages/**"
+                    ],
+                    "message": "Feature-Sliced Design: the shared layer may only import from layers below it (none)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["front/src/entities/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/app",
+                      "@/app/**",
+                      "@/pages/*/**",
+                      "@/widgets/*/**",
+                      "@/features/*/**",
+                      "@/entities/*/**"
+                    ],
+                    "message": "Import a slice through its public index.ts (for example @/features/login), never its internal files. The app layer is never imported."
+                  },
+                  {
+                    "group": [
+                      "@/features",
+                      "@/features/**",
+                      "@/widgets",
+                      "@/widgets/**",
+                      "@/pages",
+                      "@/pages/**"
+                    ],
+                    "message": "Feature-Sliced Design: the entities layer may only import from layers below it (shared)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["front/src/features/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/app",
+                      "@/app/**",
+                      "@/pages/*/**",
+                      "@/widgets/*/**",
+                      "@/features/*/**",
+                      "@/entities/*/**"
+                    ],
+                    "message": "Import a slice through its public index.ts (for example @/features/login), never its internal files. The app layer is never imported."
+                  },
+                  {
+                    "group": ["@/widgets", "@/widgets/**", "@/pages", "@/pages/**"],
+                    "message": "Feature-Sliced Design: the features layer may only import from layers below it (shared, entities)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["front/src/widgets/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/app",
+                      "@/app/**",
+                      "@/pages/*/**",
+                      "@/widgets/*/**",
+                      "@/features/*/**",
+                      "@/entities/*/**"
+                    ],
+                    "message": "Import a slice through its public index.ts (for example @/features/login), never its internal files. The app layer is never imported."
+                  },
+                  {
+                    "group": ["@/pages", "@/pages/**"],
+                    "message": "Feature-Sliced Design: the widgets layer may only import from layers below it (shared, entities, features)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["front/src/pages/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/app",
+                      "@/app/**",
+                      "@/pages/*/**",
+                      "@/widgets/*/**",
+                      "@/features/*/**",
+                      "@/entities/*/**"
+                    ],
+                    "message": "Import a slice through its public index.ts (for example @/features/login), never its internal files. The app layer is never imported."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["front/src/app/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/app",
+                      "@/app/**",
+                      "@/pages/*/**",
+                      "@/widgets/*/**",
+                      "@/features/*/**",
+                      "@/entities/*/**"
+                    ],
+                    "message": "Import a slice through its public index.ts (for example @/features/login), never its internal files. The app layer is never imported."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

@@ -1,0 +1,54 @@
+.navigation {
+  /* Fixed so the active indicator can be positioned by the item index. */
+  --navigation-item-size: 3.5rem;
+
+  position: relative;
+}
+
+.list {
+  padding: 0;
+  list-style: none;
+}
+
+.activeIndicator {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  display: flex;
+  align-items: center;
+  inline-size: 6px;
+  block-size: var(--navigation-item-size);
+  transform: translateY(calc(var(--active-index) * var(--navigation-item-size)));
+  transition: transform var(--motion-duration-slow) var(--motion-easing-standard);
+}
+
+.activeIndicator::before {
+  inline-size: 100%;
+  block-size: 2rem;
+  content: "";
+  background-color: currentColor;
+}
+
+.navigationLink {
+  display: flex;
+  align-items: center;
+  block-size: var(--navigation-item-size);
+  /* --sidebar-gutter is inherited from AdminSidebar. */
+  padding-inline: var(--sidebar-gutter);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: color var(--motion-duration-standard) var(--motion-easing-standard);
+}
+
+@media (hover: hover) {
+  .navigationLink:hover {
+    color: var(--color-text-muted);
+  }
+}
+
+.navigationLink:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -2px;
+}

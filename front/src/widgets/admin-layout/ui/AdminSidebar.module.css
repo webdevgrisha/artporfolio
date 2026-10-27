@@ -1,0 +1,99 @@
+/* Phone and tablet: an off-canvas drawer. Desktop: a sticky grid column. */
+.sidebar {
+  --sidebar-gutter: var(--layout-space-10);
+
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: var(--layer-drawer);
+  display: flex;
+  visibility: hidden;
+  flex-direction: column;
+  inline-size: min(21rem, 100vw - var(--layout-space-10));
+  /* Matches the header, so the close button sits where the menu button was. */
+  padding-block: var(--layout-space-6) var(--layout-space-8);
+  overflow-y: auto;
+  background-color: var(--color-surface);
+  border-inline-end: 1px solid var(--color-border);
+  transform: translateX(-100%);
+  transition:
+    transform var(--motion-duration-slow) var(--motion-easing-standard),
+    visibility 0s linear var(--motion-duration-slow);
+}
+
+.open {
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--layer-backdrop);
+  visibility: hidden;
+  background: var(--color-backdrop);
+  opacity: 0;
+  transition:
+    opacity var(--motion-duration-slow) var(--motion-easing-standard),
+    visibility 0s linear var(--motion-duration-slow);
+}
+
+.backdropVisible {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.closeButton {
+  display: grid;
+  place-items: center;
+  align-self: flex-start;
+  inline-size: var(--min-tap-target-size);
+  block-size: var(--min-tap-target-size);
+  padding: 0;
+  margin-block-end: var(--layout-space-8);
+  /* --page-gutter is inherited from AdminLayout, so the button lines up with the menu button. */
+  margin-inline-start: var(--page-gutter);
+  color: var(--color-text);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.closeButton:focus-visible {
+  outline: var(--focus-ring);
+}
+
+.profile {
+  margin-inline: var(--sidebar-gutter);
+}
+
+.navigation {
+  margin-block-start: var(--layout-space-16);
+}
+
+.logout {
+  align-self: flex-start;
+  margin-block-start: auto;
+  margin-inline-start: var(--sidebar-gutter);
+}
+
+@media (width >= 75rem) {
+  .sidebar {
+    position: sticky;
+    inset-block: 0 auto;
+    visibility: visible;
+    inline-size: auto;
+    block-size: 100dvh;
+    /* --page-gutter is inherited from AdminLayout. */
+    padding-block: var(--page-gutter);
+    transform: none;
+    transition: none;
+  }
+
+  .backdrop,
+  .closeButton {
+    display: none;
+  }
+}

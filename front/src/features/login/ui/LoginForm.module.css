@@ -1,0 +1,35 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  inline-size: min(19rem, 100%);
+}
+
+.mark {
+  inline-size: 135px;
+  aspect-ratio: 1;
+  margin-block-end: var(--space-8);
+  margin-inline: auto;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.submitError {
+  margin-block-start: var(--space-3);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--color-danger);
+}
+
+.submitButton {
+  inline-size: 100%;
+  min-block-size: var(--control-size);
+  margin-block-start: var(--space-8);
+  font-size: var(--font-size-3xl);
+  line-height: 1;
+}

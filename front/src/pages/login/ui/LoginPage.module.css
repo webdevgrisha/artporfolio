@@ -1,0 +1,6 @@
+.root {
+  display: grid;
+  place-items: center;
+  min-block-size: 100dvh;
+  padding: var(--layout-space-6);
+}

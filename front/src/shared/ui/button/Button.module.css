@@ -1,0 +1,41 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 9rem;
+  max-inline-size: 100%;
+  min-block-size: 2.5rem;
+  padding: var(--space-1) var(--space-4);
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  transition:
+    color var(--motion-duration-standard) var(--motion-easing-standard),
+    background-color var(--motion-duration-standard) var(--motion-easing-standard);
+}
+
+@media (hover: hover) {
+  .root:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+  }
+}
+
+.root:active:not(:disabled) {
+  color: var(--color-text-inverse);
+  background: var(--color-surface-inverse);
+}
+
+.root:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.root:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  border-color: var(--color-border-disabled);
+}

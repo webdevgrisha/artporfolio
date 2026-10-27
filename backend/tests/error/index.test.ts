@@ -7,7 +7,7 @@ const logger = vi.hoisted(() => ({
 
 vi.mock("firebase-functions/logger", () => logger);
 
-import { errorHandler } from "#middleware/error/index";
+import { errorHandler } from "#middleware/error";
 
 describe("errorHandler", () => {
   it("does not expose unexpected error details", () => {

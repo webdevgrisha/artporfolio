@@ -1,0 +1,32 @@
+.profile {
+  display: flex;
+  gap: var(--layout-space-4);
+  align-items: center;
+}
+
+.avatar {
+  flex: none;
+  inline-size: 72px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.avatar img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* min-content wraps at every space, so each word of the name gets its own line. */
+.name {
+  inline-size: min-content;
+  font-size: var(--font-size-lg);
+  line-height: normal;
+}
+
+@media (width >= 75rem) {
+  .avatar {
+    inline-size: 104px;
+  }
+}
