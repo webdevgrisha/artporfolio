@@ -9,9 +9,20 @@ import {
 import { warn as logWarning } from "firebase-functions/logger";
 
 import { contactsDocument } from "#modules/contacts/document";
-import { type ImageSource, type Photo, photoSchema } from "#modules/contacts/photo/schema";
+import {
+  type ImageSource,
+  type Photo,
+  type StoredImage,
+  type StoredPhoto,
+  storedPhotoSchema,
+} from "#modules/contacts/photo/schema";
 import { firestore } from "#shared/firebase/firestore";
-import { deleteFolder, saveDownloadableFile, saveFile } from "#shared/firebase/storage";
+import {
+  deleteFolder,
+  downloadUrl,
+  saveDownloadableFile,
+  saveFile,
+} from "#shared/firebase/storage";
 import { NotFoundError } from "#shared/http/errors";
 import {
   type EncodedImage,
@@ -26,7 +37,7 @@ const immutableCacheControl = "public, max-age=31536000, immutable";
 
 interface SavedImage {
   format: OutputFormat;
-  source: ImageSource;
+  image: StoredImage;
 }
 
 interface NewPhoto {
@@ -37,7 +48,7 @@ interface NewPhoto {
 }
 
 type PhotoChange<T> = (
-  photo: Photo | null,
+  photo: StoredPhoto | null,
   transaction: Transaction,
   document: DocumentReference,
 ) => T;
@@ -46,10 +57,25 @@ function photoFolder(version: string): string {
   return `contacts/photo/${version}`;
 }
 
-function readPhoto(snapshot: DocumentSnapshot): Photo | null {
+function readPhoto(snapshot: DocumentSnapshot): StoredPhoto | null {
   const photo: unknown = snapshot.get("photo");
 
-  return photo === undefined ? null : photoSchema.parse(photo);
+  return photo === undefined ? null : storedPhotoSchema.parse(photo);
+}
+
+function toImageSource({ path, token, width }: StoredImage): ImageSource {
+  return { url: downloadUrl({ path, token }), width };
+}
+
+/** The stored photo as the API returns it, with download URLs. */
+function toPhoto(photo: StoredPhoto): Photo {
+  return {
+    ...photo,
+    sources: {
+      avif: photo.sources.avif.map(toImageSource),
+      webp: photo.sources.webp.map(toImageSource),
+    },
+  };
 }
 
 /**
@@ -66,23 +92,23 @@ function changePhoto<T>(change: PhotoChange<T>): Promise<T> {
 
 async function saveImage(folder: string, image: EncodedImage): Promise<SavedImage> {
   const path = `${folder}/${String(image.width)}.${image.format}`;
-  const url = await saveDownloadableFile(path, image.data, {
+  const file = await saveDownloadableFile(path, image.data, {
     cacheControl: immutableCacheControl,
     contentType: `image/${image.format}`,
   });
 
-  return { format: image.format, source: { url, width: image.width } };
+  return { format: image.format, image: { ...file, width: image.width } };
 }
 
-function sourcesIn(format: OutputFormat, images: SavedImage[]): ImageSource[] {
-  return images.filter((image) => image.format === format).map((image) => image.source);
+function imagesIn(format: OutputFormat, saved: SavedImage[]): StoredImage[] {
+  return saved.filter((entry) => entry.format === format).map((entry) => entry.image);
 }
 
 /**
  * Saves the web images and the original, which is kept to rebuild the images later, and returns
  * the photo that describes them.
  */
-async function savePhotoFiles({ alt, file, processed, version }: NewPhoto): Promise<Photo> {
+async function savePhotoFiles({ alt, file, processed, version }: NewPhoto): Promise<StoredPhoto> {
   const { images, sourceFormat } = processed;
   const largest = images.reduce((widest, current) =>
     current.width > widest.width ? current : widest,
@@ -102,8 +128,8 @@ async function savePhotoFiles({ alt, file, processed, version }: NewPhoto): Prom
     fileSize: file.size,
     height: largest.height,
     sources: {
-      avif: sourcesIn("avif", savedImages),
-      webp: sourcesIn("webp", savedImages),
+      avif: imagesIn("avif", savedImages),
+      webp: imagesIn("webp", savedImages),
     },
     version,
     width: largest.width,
@@ -118,7 +144,9 @@ async function deletePhotoFilesOrWarn(version: string): Promise<void> {
 }
 
 export async function getContactPhoto(): Promise<Photo | null> {
-  return readPhoto(await contactsDocument().get());
+  const photo = readPhoto(await contactsDocument().get());
+
+  return photo && toPhoto(photo);
 }
 
 /**
@@ -128,8 +156,8 @@ export async function getContactPhoto(): Promise<Photo | null> {
 export async function saveContactPhoto(file: UploadedFile, alt: string): Promise<Photo> {
   const processed = await processImage(file.data);
   const version = randomUUID();
-  let photo: Photo;
-  let previous: Photo | null;
+  let photo: StoredPhoto;
+  let previous: StoredPhoto | null;
 
   try {
     photo = await savePhotoFiles({ alt, file, processed, version });
@@ -146,7 +174,7 @@ export async function saveContactPhoto(file: UploadedFile, alt: string): Promise
     await deletePhotoFilesOrWarn(previous.version);
   }
 
-  return photo;
+  return toPhoto(photo);
 }
 
 export function updateContactPhotoAlt(alt: string): Promise<Photo> {
@@ -156,7 +184,7 @@ export function updateContactPhotoAlt(alt: string): Promise<Photo> {
     }
 
     transaction.update(document, { "photo.alt": alt });
-    return { ...photo, alt };
+    return toPhoto({ ...photo, alt });
   });
 }
 

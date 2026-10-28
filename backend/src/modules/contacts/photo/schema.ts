@@ -12,25 +12,38 @@ export const photoAltBodySchema = z
   })
   .strict();
 
-const imageSourceSchema = z.object({
-  url: z.url(),
+/** An image file in Cloud Storage; its download URL is built from the path and token. */
+const storedImageSchema = z.object({
+  path: z.string(),
+  token: z.string(),
   width: z.number().int().positive(),
 });
 
-/** A stored photo: one image per width in every format, ready for a <picture> srcset. */
-export const photoSchema = z.object({
+/** The photo as stored in Firestore: one image per width in every format. */
+export const storedPhotoSchema = z.object({
   alt: altSchema,
   fileName: z.string().max(maxFileNameLength),
   fileSize: z.number().int().positive(),
   height: z.number().int().positive(),
   sources: z.object({
-    avif: z.array(imageSourceSchema),
-    webp: z.array(imageSourceSchema),
+    avif: z.array(storedImageSchema),
+    webp: z.array(storedImageSchema),
   }),
   version: z.string(),
   width: z.number().int().positive(),
 });
 
 export type PhotoAltBody = z.infer<typeof photoAltBodySchema>;
-export type ImageSource = z.infer<typeof imageSourceSchema>;
-export type Photo = z.infer<typeof photoSchema>;
+export type StoredImage = z.infer<typeof storedImageSchema>;
+export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
+
+/** An image as the API returns it, ready for a srcset. */
+export interface ImageSource {
+  url: string;
+  width: number;
+}
+
+/** The photo as the API returns it, with download URLs in place of the stored paths. */
+export interface Photo extends Omit<StoredPhoto, "sources"> {
+  sources: { avif: ImageSource[]; webp: ImageSource[] };
+}

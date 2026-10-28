@@ -12,6 +12,8 @@ const transaction = vi.hoisted(() => ({
 
 const storage = vi.hoisted(() => ({
   deleteFolder: vi.fn(),
+  downloadUrl: ({ path, token }: { path: string; token: string }) =>
+    `https://storage.test/${path}?token=${token}`,
   saveDownloadableFile: vi.fn(),
   saveFile: vi.fn(),
 }));
@@ -44,11 +46,20 @@ const storedPhoto = {
   fileSize: 100,
   height: 700,
   sources: {
-    avif: [{ url: "https://storage.test/old/1000.avif", width: 1_000 }],
-    webp: [{ url: "https://storage.test/old/1000.webp", width: 1_000 }],
+    avif: [{ path: "old/1000.avif", token: "avif-token", width: 1_000 }],
+    webp: [{ path: "old/1000.webp", token: "webp-token", width: 1_000 }],
   },
   version: "old-version",
   width: 1_000,
+};
+
+/** storedPhoto as the API returns it. */
+const returnedPhoto = {
+  ...storedPhoto,
+  sources: {
+    avif: [{ url: "https://storage.test/old/1000.avif?token=avif-token", width: 1_000 }],
+    webp: [{ url: "https://storage.test/old/1000.webp?token=webp-token", width: 1_000 }],
+  },
 };
 
 function encoded(format: "avif" | "webp", width: number) {
@@ -69,9 +80,10 @@ function downloadablePaths(): string[] {
 beforeEach(() => {
   vi.clearAllMocks();
   storage.deleteFolder.mockResolvedValue(undefined);
-  storage.saveDownloadableFile.mockImplementation(
-    async (path: string) => `https://storage.test/${path}`,
-  );
+  storage.saveDownloadableFile.mockImplementation(async (path: string) => ({
+    path,
+    token: "token",
+  }));
   storage.saveFile.mockResolvedValue(undefined);
   processImage.mockResolvedValue({
     images: [
@@ -90,10 +102,10 @@ describe("contact photo service", () => {
     await expect(getContactPhoto()).resolves.toBeNull();
   });
 
-  it("returns the stored photo", async () => {
+  it("returns the stored photo with download URLs built from the stored paths", async () => {
     storedAs(storedPhoto);
 
-    await expect(getContactPhoto()).resolves.toEqual(storedPhoto);
+    await expect(getContactPhoto()).resolves.toEqual(returnedPhoto);
   });
 
   it("stores the web images and the original in a new version folder", async () => {
@@ -117,25 +129,30 @@ describe("contact photo service", () => {
     expect(storage.saveFile).toHaveBeenCalledWith(`${folder}/original.jpeg`, upload.data, {
       contentType: "image/jpeg",
     });
-    expect(photo).toEqual({
+    const stored = {
       alt: "Portrait",
       fileName: "photo.png",
       fileSize: 8,
       height: 480,
       sources: {
         avif: [
-          { url: `https://storage.test/${folder}/640.avif`, width: 640 },
-          { url: `https://storage.test/${folder}/960.avif`, width: 960 },
+          { path: `${folder}/640.avif`, token: "token", width: 640 },
+          { path: `${folder}/960.avif`, token: "token", width: 960 },
         ],
         webp: [
-          { url: `https://storage.test/${folder}/640.webp`, width: 640 },
-          { url: `https://storage.test/${folder}/960.webp`, width: 960 },
+          { path: `${folder}/640.webp`, token: "token", width: 640 },
+          { path: `${folder}/960.webp`, token: "token", width: 960 },
         ],
       },
       version: photo.version,
       width: 960,
+    };
+
+    expect(transaction.set).toHaveBeenCalledWith(document, { photo: stored }, { merge: true });
+    expect(photo.sources.avif[0]).toEqual({
+      url: `https://storage.test/${folder}/640.avif?token=token`,
+      width: 640,
     });
-    expect(transaction.set).toHaveBeenCalledWith(document, { photo }, { merge: true });
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
@@ -198,7 +215,7 @@ describe("contact photo service", () => {
     storedAs(storedPhoto);
 
     await expect(updateContactPhotoAlt("New alt")).resolves.toEqual({
-      ...storedPhoto,
+      ...returnedPhoto,
       alt: "New alt",
     });
     expect(transaction.update).toHaveBeenCalledWith(document, { "photo.alt": "New alt" });
