@@ -1,0 +1,29 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--min-tap-target-size);
+  min-block-size: var(--min-tap-target-size);
+  padding: 0;
+  color: var(--color-text);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  transition: color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+@media (hover: hover) {
+  .root:hover:not(:disabled) {
+    color: var(--color-text-muted);
+  }
+}
+
+.root:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -4px;
+}
+
+.root:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}

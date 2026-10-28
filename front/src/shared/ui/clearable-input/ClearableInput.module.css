@@ -1,0 +1,10 @@
+/* Fills the end adornment slot of the input. */
+.clearButton {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.clearIcon {
+  inline-size: 1.6875rem;
+  block-size: 1.9375rem;
+}
