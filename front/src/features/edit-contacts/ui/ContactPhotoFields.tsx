@@ -1,9 +1,9 @@
 import clsx from "clsx";
 import React from "react";
-import { useFormContext, useFormState, useWatch } from "react-hook-form";
+import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import type { ContactPhoto } from "@/entities/contacts";
-import { Input } from "@/shared/ui/input";
+import { ClearableInput } from "@/shared/ui/clearable-input";
 import { type MediaItem, MediaPicker } from "@/shared/ui/media-picker";
 
 import { type ContactsFormValues, savedPhoto } from "../model/contactsFormSchema";
@@ -19,9 +19,19 @@ interface ContactPhotoFieldsProps {
 
 /** The photo tab of `EditContactsForm`; it reads the form from its context. */
 export function ContactPhotoFields({ className, isSaving, serverPhoto }: ContactPhotoFieldsProps) {
-  const { control, register, setValue } = useFormContext<ContactsFormValues>();
+  const { control, register, setFocus, setValue } = useFormContext<ContactsFormValues>();
   const { dirtyFields, errors, isSubmitted } = useFormState({ control });
-  const photo = useWatch({ control, name: "photo" });
+  // A controller registers the field: react-hook-form resets only registered fields, so without
+  // it a save would not update the photo's saved value and a revert would bring back the old one.
+  const { field: photoField } = useController({ control, name: "photo" });
+  const photo = photoField.value;
+  const photoAlt = useWatch({ control, name: "photoAlt" });
+
+  function clearPhotoAlt() {
+    // After the first submit, fields are revalidated on change; clearing is a change too.
+    setValue("photoAlt", "", { shouldDirty: true, shouldValidate: isSubmitted });
+    setFocus("photoAlt");
+  }
 
   const photoItems = React.useMemo((): MediaItem[] => {
     if (photo instanceof File) {
@@ -44,10 +54,6 @@ export function ContactPhotoFields({ className, isSaving, serverPhoto }: Contact
     ];
   }, [photo, serverPhoto]);
 
-  function setPhoto(value: ContactsFormValues["photo"]) {
-    setValue("photo", value, { shouldDirty: true, shouldValidate: isSubmitted });
-  }
-
   return (
     <div className={clsx(styles.root, className)}>
       <MediaPicker
@@ -58,18 +64,21 @@ export function ContactPhotoFields({ className, isSaving, serverPhoto }: Contact
         items={photoItems}
         disabled={isSaving}
         isModified={photo !== (serverPhoto ? savedPhoto : null)}
-        onAdd={([file]) => setPhoto(file ?? null)}
-        onRemove={() => setPhoto(null)}
+        onAdd={([file]) => photoField.onChange(file ?? null)}
+        onRemove={() => photoField.onChange(null)}
       />
       {/* Without a photo there is nothing to describe; the text comes back with the photo. */}
       {photo === null ? null : (
-        <Input
+        <ClearableInput
           label="Описание фото"
           hint="Коротко: что на фото. Это прочитают незрячие и поисковики"
           placeholder="Например: Анастасия в мастерской"
           disabled={isSaving}
           error={errors.photoAlt?.message}
           isModified={Boolean(dirtyFields.photoAlt)}
+          hasValue={Boolean(photoAlt)}
+          clearLabel="Очистить описание фото"
+          onClear={clearPhotoAlt}
           {...register("photoAlt")}
         />
       )}
