@@ -46,9 +46,9 @@ pnpm deploy:firestore-rules --project artportfolio-b2ef4
 
 ## Cloud Storage
 
-The API stores the contact photo in the default Cloud Storage bucket. Enable it once in the
-Firebase console: **Storage → Get started**, Production mode, location `europe-west1`. Storage
-requires the Blaze plan.
+The API stores the contact photo and the main photos of the pages in the default Cloud Storage
+bucket. Enable it once in the Firebase console: **Storage → Get started**, Production mode,
+location `europe-west1`. Storage requires the Blaze plan.
 
 Browsers read the photos only through Firebase download URLs, which bypass the rules, so
 [`storage.rules`](storage.rules) denies all other client access. Deploy the rules manually after

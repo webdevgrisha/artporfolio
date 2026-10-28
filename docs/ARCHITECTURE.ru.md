@@ -108,7 +108,8 @@ backend/src/
 │   ├── auth/           routes, controller, service, schema, middleware (requireAuth)
 │   ├── contacts/       ссылки для связи; document.ts — документ Firestore, общий с photo/
 │   │   └── photo/      фото для контактов, подключается роутером contacts
-│   └── health/
+│   ├── health/
+│   └── pages/          страницы публичного сайта и их главные фото (hero)
 └── shared/             без знания о предметной области
     ├── config/         env, cookies, cors, csrf
     ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
