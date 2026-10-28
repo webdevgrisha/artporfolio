@@ -93,7 +93,7 @@ backend/src/
 ├── routes/         one router per domain
 ├── middleware/     auth, csrf, validation, error
 ├── controllers/    request handlers, one file per domain
-├── services/       business logic (auth) and Firebase access
+├── services/       business logic (auth, contacts) and Firebase access
 ├── schemas/        zod request schemas
 ├── errors/         HttpError and its subclasses
 ├── http/           cookie helpers
@@ -109,6 +109,7 @@ backend/src/
 - Express 5 forwards rejected promises to the error middleware, so handlers do not wrap code in `try/catch` only to call `next(error)`.
 - Environment variables are read through `getEnv()` in `config/env.ts`, validated once on first use. `CSRF_SECRET` is a Secret Manager value read by the CSRF config.
 - Errors meant for the client are thrown as `HttpError` subclasses. Anything else is logged and returned as a generic 500.
+- Endpoints are documented in [API.md](API.md), updated in the same commit as the endpoint.
 
 ## Tests
 

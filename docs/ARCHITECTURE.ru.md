@@ -93,7 +93,7 @@ backend/src/
 ├── routes/         по роутеру на домен
 ├── middleware/     auth, csrf, validation, error
 ├── controllers/    обработчики запросов, по файлу на домен
-├── services/       бизнес-логика (auth) и доступ к Firebase
+├── services/       бизнес-логика (auth, contacts) и доступ к Firebase
 ├── schemas/        zod-схемы запросов
 ├── errors/         HttpError и его подклассы
 ├── http/           работа с cookies
@@ -109,6 +109,7 @@ backend/src/
 - Express 5 сам передаёт отклонённые промисы в middleware ошибок, поэтому обработчики не оборачивают код в `try/catch` только ради `next(error)`.
 - Переменные окружения читаются через `getEnv()` из `config/env.ts` и проверяются один раз при первом обращении. `CSRF_SECRET` хранится в Secret Manager и читается конфигом CSRF.
 - Ошибки для клиента выбрасываются как подклассы `HttpError`. Всё остальное логируется и возвращается как общий ответ 500.
+- Эндпоинты описаны в [API.ru.md](API.ru.md) и обновляются в том же коммите, что и эндпоинт.
 
 ## Тесты
 
