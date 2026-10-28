@@ -241,6 +241,26 @@
           }
         }
       }
+    },
+    {
+      "includes": ["backend/src/shared/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#modules/**", "#server", "#firebase"],
+                    "message": "shared/ holds code with no knowledge of the site's domain, so it never imports modules/ or the app entry points."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
