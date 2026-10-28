@@ -39,12 +39,18 @@
   outline-offset: 2px;
 }
 
+/*
+ * Modified and invalid states get a 2px frame: the inset shadow adds the second pixel inside the
+ * border, so the text does not shift. An error takes precedence through its higher specificity.
+ */
 .controlModified {
   border-color: var(--color-border-modified);
+  box-shadow: inset 0 0 0 1px var(--color-border-modified);
 }
 
 .control[aria-invalid="true"] {
   border-color: var(--color-danger);
+  box-shadow: inset 0 0 0 1px var(--color-danger);
 }
 
 .control[aria-invalid="true"]:focus-visible {
