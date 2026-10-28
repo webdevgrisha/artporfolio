@@ -1,4 +1,5 @@
-/* Fills the end adornment slot of the input. */
+/* The tooltip wrapper and the button fill the end adornment slot of the input. */
+.clearTooltip,
 .clearButton {
   inline-size: 100%;
   block-size: 100%;
