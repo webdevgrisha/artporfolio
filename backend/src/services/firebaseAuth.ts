@@ -1,5 +1,6 @@
-import { getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+
+import { firebaseApp } from "#services/firebaseApp";
 
 // These Admin SDK codes describe a broken backend setup, not a bad client token.
 const infrastructureAuthErrorCodes = new Set([
@@ -10,8 +11,7 @@ const infrastructureAuthErrorCodes = new Set([
 ]);
 
 export function firebaseAuth() {
-  const app = getApps()[0] ?? initializeApp();
-  return getAuth(app);
+  return getAuth(firebaseApp());
 }
 
 /** True for token problems caused by the client: invalid, expired or revoked credentials. */
