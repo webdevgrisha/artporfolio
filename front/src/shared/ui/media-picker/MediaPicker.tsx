@@ -14,7 +14,10 @@ import styles from "./MediaPicker.module.css";
 import type { MediaItem } from "./mediaItem";
 
 interface MediaPickerProps {
-  /** Accepted MIME types, e.g. `["image/jpeg", "image/png"]`. */
+  /**
+   * Accepted MIME types and, for files whose type the browser does not know, extensions, as in
+   * the `accept` attribute: `["image/jpeg", ".jpg"]`.
+   */
   accept: readonly string[];
   /** The accepted types for people, e.g. `JPEG или PNG`. */
   acceptLabel: string;
