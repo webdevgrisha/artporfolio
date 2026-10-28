@@ -1,3 +1,4 @@
+export { ArrowLeftIcon } from "./ArrowLeftIcon";
 export { AttachmentIcon } from "./AttachmentIcon";
 export { CloseIcon } from "./CloseIcon";
 export { EditIcon } from "./EditIcon";
