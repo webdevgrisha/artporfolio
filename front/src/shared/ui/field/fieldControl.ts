@@ -6,17 +6,29 @@ import styles from "./Field.module.css";
 interface FieldIdsParams {
   "aria-describedby"?: string;
   error?: string;
+  hint?: string;
   id?: string;
 }
 
-/** Ids that link a control to its label and error, keeping a description passed by the caller. */
-export function useFieldIds({ "aria-describedby": ariaDescribedBy, error, id }: FieldIdsParams) {
+/**
+ * Ids that link a control to its label, hint and error, keeping a description passed by the
+ * caller. The hint is read before the error.
+ */
+export function useFieldIds({
+  "aria-describedby": ariaDescribedBy,
+  error,
+  hint,
+  id,
+}: FieldIdsParams) {
   const generatedId = React.useId();
   const controlId = id ?? generatedId;
   const errorId = `${controlId}-error`;
-  const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
+  const hintId = `${controlId}-hint`;
+  const describedBy = [ariaDescribedBy, hint ? hintId : undefined, error ? errorId : undefined]
+    .filter(Boolean)
+    .join(" ");
 
-  return { controlId, describedBy: describedBy || undefined, errorId };
+  return { controlId, describedBy: describedBy || undefined, errorId, hintId };
 }
 
 /**

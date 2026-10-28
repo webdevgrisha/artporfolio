@@ -7,6 +7,8 @@ import styles from "./Textarea.module.css";
 
 interface TextareaProps extends ComponentPropsWithRef<"textarea"> {
   error?: string;
+  /** A short explanation under the control, e.g. what to enter. */
+  hint?: string;
   /** Highlights a value that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
   label: string;
@@ -17,15 +19,17 @@ export function Textarea({
   "aria-invalid": ariaInvalid,
   className,
   error,
+  hint,
   id,
   isModified = false,
   label,
   ref,
   ...textareaProps
 }: TextareaProps) {
-  const { controlId, describedBy, errorId } = useFieldIds({
+  const { controlId, describedBy, errorId, hintId } = useFieldIds({
     "aria-describedby": ariaDescribedBy,
     error,
+    hint,
     id,
   });
 
@@ -35,6 +39,8 @@ export function Textarea({
       controlId={controlId}
       error={error}
       errorId={errorId}
+      hint={hint}
+      hintId={hintId}
       label={label}
     >
       <textarea

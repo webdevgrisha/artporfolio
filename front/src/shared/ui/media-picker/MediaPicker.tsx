@@ -2,6 +2,7 @@ import clsx from "clsx";
 import React, { type ChangeEvent, type DragEvent } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
+import { FieldHint } from "@/shared/ui/field";
 import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
 import { PreviewDialog } from "@/shared/ui/preview-dialog";
@@ -195,9 +196,9 @@ export function MediaPicker({
           />
         </div>
 
-        <p className={styles.hint} id={hintId}>
+        <FieldHint id={hintId}>
           {acceptLabel}, до {formatFileSize(maxFileSize)}
-        </p>
+        </FieldHint>
         {/* Announces a rejected file: the focus stays on the attachment button. */}
         <div aria-live="polite">
           {shownError ? (

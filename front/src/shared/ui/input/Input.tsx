@@ -8,6 +8,8 @@ import styles from "./Input.module.css";
 export interface InputProps extends ComponentPropsWithRef<"input"> {
   endAdornment?: ReactNode;
   error?: string;
+  /** A short explanation under the control, e.g. what to enter. */
+  hint?: string;
   /** Highlights a value that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
   label: string;
@@ -18,20 +20,29 @@ export function Input({
   "aria-invalid": ariaInvalid,
   endAdornment,
   error,
+  hint,
   id,
   isModified = false,
   label,
   ref,
   ...inputProps
 }: InputProps) {
-  const { controlId, describedBy, errorId } = useFieldIds({
+  const { controlId, describedBy, errorId, hintId } = useFieldIds({
     "aria-describedby": ariaDescribedBy,
     error,
+    hint,
     id,
   });
 
   return (
-    <Field controlId={controlId} error={error} errorId={errorId} label={label}>
+    <Field
+      controlId={controlId}
+      error={error}
+      errorId={errorId}
+      hint={hint}
+      hintId={hintId}
+      label={label}
+    >
       <div className={styles.controlWrapper}>
         <input
           ref={ref}
