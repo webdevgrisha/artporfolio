@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React, { type ChangeEvent, type DragEvent } from "react";
+import React, { type ChangeEvent } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { FieldHint } from "@/shared/ui/field";
@@ -12,6 +12,7 @@ import { MediaImage } from "./MediaImage";
 import styles from "./MediaPicker.module.css";
 import { MediaPreviewDialog } from "./MediaPreviewDialog";
 import type { MediaItem } from "./mediaItem";
+import { useFileDrop } from "./useFileDrop";
 
 interface MediaPickerProps {
   /**
@@ -59,7 +60,6 @@ export function MediaPicker({
   const errorId = `${id}-error`;
   const inputRef = React.useRef<HTMLInputElement>(null);
   const selectButtonRef = React.useRef<HTMLButtonElement>(null);
-  const [isDragOver, setIsDragOver] = React.useState(false);
   const [viewedItemId, setViewedItemId] = React.useState<string>();
   // A rejected file never reaches the owner, so the picker explains it itself. The message belongs
   // to the files it was given with: once the owner changes them (a pick, a removal, a revert),
@@ -69,6 +69,7 @@ export function MediaPicker({
   const shownError = (rejection?.itemsKey === itemsKey ? rejection.message : undefined) ?? error;
   const hasItems = items.length > 0;
   const selectLabel = hasItems ? "Заменить файл" : "Выбрать файл";
+  const { dropTargetProps, isDragOver } = useFileDrop({ disabled, onDrop: addFiles });
 
   function addFiles(fileList: FileList) {
     const files = Array.from(fileList);
@@ -90,30 +91,6 @@ export function MediaPicker({
     event.currentTarget.value = "";
   }
 
-  function handleDragOver(event: DragEvent<HTMLFieldSetElement>) {
-    if (disabled) return;
-
-    // Allows the drop; without it the browser would open the file instead.
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "copy";
-    setIsDragOver(true);
-  }
-
-  function handleDragLeave(event: DragEvent<HTMLFieldSetElement>) {
-    // Moving over a child element also fires dragleave on the fieldset.
-    if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) {
-      return;
-    }
-
-    setIsDragOver(false);
-  }
-
-  function handleDrop(event: DragEvent<HTMLFieldSetElement>) {
-    event.preventDefault();
-    setIsDragOver(false);
-    if (!disabled) addFiles(event.dataTransfer.files);
-  }
-
   function openFilePicker() {
     inputRef.current?.click();
   }
@@ -132,9 +109,7 @@ export function MediaPicker({
         disabled={disabled}
         aria-describedby={[hintId, shownError ? errorId : undefined].filter(Boolean).join(" ")}
         // Dropping is a shortcut for the pointer; the attachment button is the accessible way.
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        {...dropTargetProps}
       >
         <legend className={styles.label}>{label}</legend>
 
