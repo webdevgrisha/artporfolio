@@ -20,9 +20,14 @@ interface PostVoidOptions<TBody extends object> extends HttpOptions {
   path: string;
 }
 
+interface DeleteOptions extends HttpOptions {
+  path: string;
+}
+
 interface RequestOptions extends HttpOptions {
+  /** Sent as JSON; `FormData` is sent as `multipart/form-data`. */
   body?: object;
-  method: "GET" | "POST" | "PUT";
+  method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 }
 
 class Http {
@@ -75,6 +80,21 @@ class Http {
     return schema.parse(await response.json());
   }
 
+  async patch<TBody extends object, TSchema extends ZodType>({
+    body,
+    path,
+    schema,
+    ...options
+  }: BodyOptions<TBody, TSchema>): Promise<z.output<TSchema>> {
+    const response = await this.request(path, {
+      ...options,
+      body,
+      method: "PATCH",
+    });
+
+    return schema.parse(await response.json());
+  }
+
   async postVoid<TBody extends object = never>({
     body,
     path,
@@ -87,14 +107,23 @@ class Http {
     });
   }
 
+  async delete({ path, ...options }: DeleteOptions): Promise<void> {
+    await this.request(path, {
+      ...options,
+      method: "DELETE",
+    });
+  }
+
   private async request(
     path: string,
     { body, headers, ...options }: RequestOptions,
   ): Promise<Response> {
-    const requestBody = body ? JSON.stringify(body) : undefined;
+    const isFormData = body instanceof FormData;
+    const requestBody = isFormData ? body : body ? JSON.stringify(body) : undefined;
     const requestHeaders = new Headers(headers);
 
-    if (body) {
+    // The browser sets the multipart Content-Type itself, with the boundary.
+    if (body && !isFormData) {
       requestHeaders.set("Content-Type", "application/json");
     }
 
