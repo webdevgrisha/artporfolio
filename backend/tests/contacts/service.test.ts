@@ -9,7 +9,7 @@ vi.mock("#shared/firebase/firestore", () => ({
   firestore: () => ({ doc: () => document }),
 }));
 
-import { getContacts, saveContacts } from "#services/contacts";
+import { getContacts, saveContacts } from "#modules/contacts/service";
 
 const contacts = {
   email: "artist@example.com",

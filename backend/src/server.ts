@@ -2,10 +2,10 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
+
 import { authRouter } from "#modules/auth/routes";
+import { contactsRouter } from "#modules/contacts/routes";
 import { healthRouter } from "#modules/health/routes";
-import { contactPhotoRouter } from "#routes/contactPhoto";
-import { contactsRouter } from "#routes/contacts";
 import { corsOptions } from "#shared/config/cors";
 import { NotFoundError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";
@@ -19,7 +19,6 @@ server.use(express.json());
 
 server.use("/api/health", healthRouter);
 server.use("/api/auth", authRouter);
-server.use("/api/contacts/photo", contactPhotoRouter);
 server.use("/api/contacts", contactsRouter);
 
 server.use((_request, _response, next) => {

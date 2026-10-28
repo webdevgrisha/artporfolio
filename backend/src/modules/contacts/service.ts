@@ -1,5 +1,5 @@
-import { type Contacts, contactsSchema } from "#schemas/contacts";
-import { firestore } from "#shared/firebase/firestore";
+import { contactsDocument } from "#modules/contacts/document";
+import { type Contacts, contactsSchema } from "#modules/contacts/schema";
 
 const emptyContacts: Contacts = {
   email: "",
@@ -7,11 +7,6 @@ const emptyContacts: Contacts = {
   linkedin: "",
   youtube: "",
 };
-
-/** The single document that holds the contacts and the contact photo. */
-export function contactsDocument() {
-  return firestore().doc("site/contacts");
-}
 
 export async function getContacts(): Promise<Contacts> {
   const snapshot = await contactsDocument().get();

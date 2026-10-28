@@ -1,8 +1,9 @@
 import { Router } from "express";
 
-import { readContacts, updateContacts } from "#controllers/contacts";
 import { requireAuth } from "#modules/auth/middleware";
-import { contactsBodySchema } from "#schemas/contacts";
+import { readContacts, updateContacts } from "#modules/contacts/controller";
+import { photoRouter } from "#modules/contacts/photo/routes";
+import { contactsBodySchema } from "#modules/contacts/schema";
 import { requireCsrfToken } from "#shared/middleware/csrf";
 import { validateBody } from "#shared/middleware/validation";
 
@@ -17,3 +18,4 @@ contactsRouter.put(
   validateBody(contactsBodySchema),
   updateContacts,
 );
+contactsRouter.use("/photo", photoRouter);

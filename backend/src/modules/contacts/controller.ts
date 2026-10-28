@@ -1,8 +1,8 @@
 import type { RequestHandler } from "express";
 
-import type { Contacts } from "#schemas/contacts";
-import { getContactPhoto } from "#services/contactPhoto";
-import { getContacts, saveContacts } from "#services/contacts";
+import { getContactPhoto } from "#modules/contacts/photo/service";
+import type { Contacts } from "#modules/contacts/schema";
+import { getContacts, saveContacts } from "#modules/contacts/service";
 
 export const readContacts: RequestHandler = async (_request, response) => {
   const [contacts, photo] = await Promise.all([getContacts(), getContactPhoto()]);

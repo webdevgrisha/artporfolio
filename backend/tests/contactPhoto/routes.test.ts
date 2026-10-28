@@ -17,10 +17,10 @@ const photoService = vi.hoisted(() => ({
 }));
 
 vi.mock("#modules/auth/service", () => auth);
-vi.mock("#services/contactPhoto", () => photoService);
+vi.mock("#modules/contacts/photo/service", () => photoService);
 
 import { authRouter } from "#modules/auth/routes";
-import { contactPhotoRouter } from "#routes/contactPhoto";
+import { photoRouter } from "#modules/contacts/photo/routes";
 import { NotFoundError, UnauthorizedError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";
 
@@ -64,7 +64,7 @@ beforeAll(async () => {
   testApp.use(cookieParser());
   testApp.use(express.json());
   testApp.use("/api/auth", authRouter);
-  testApp.use("/api/contacts/photo", contactPhotoRouter);
+  testApp.use("/api/contacts/photo", photoRouter);
   testApp.use(errorHandler);
 
   await new Promise<void>((resolve, reject) => {

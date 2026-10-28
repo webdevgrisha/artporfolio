@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { photoAltBodySchema } from "#schemas/contactPhoto";
+import { photoAltBodySchema } from "#modules/contacts/photo/schema";
 
 function isValid(body: unknown): boolean {
   return photoAltBodySchema.safeParse(body).success;

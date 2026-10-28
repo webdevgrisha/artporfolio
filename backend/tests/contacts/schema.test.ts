@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { contactsBodySchema } from "#schemas/contacts";
+import { contactsBodySchema } from "#modules/contacts/schema";
 
 const contacts = {
   email: "artist@example.com",

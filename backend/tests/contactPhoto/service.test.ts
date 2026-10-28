@@ -18,7 +18,7 @@ const storage = vi.hoisted(() => ({
 
 const processImage = vi.hoisted(() => vi.fn());
 
-vi.mock("#services/contacts", () => ({ contactsDocument: () => document }));
+vi.mock("#modules/contacts/document", () => ({ contactsDocument: () => document }));
 vi.mock("#shared/firebase/firestore", () => ({
   firestore: () => ({
     runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
@@ -33,7 +33,7 @@ import {
   getContactPhoto,
   saveContactPhoto,
   updateContactPhotoAlt,
-} from "#services/contactPhoto";
+} from "#modules/contacts/photo/service";
 import { NotFoundError } from "#shared/http/errors";
 
 const upload = { data: Buffer.from("original"), name: "photo.png", size: 8 };

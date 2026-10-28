@@ -7,8 +7,9 @@ import {
   type Transaction,
 } from "firebase-admin/firestore";
 import { warn as logWarning } from "firebase-functions/logger";
-import { type ImageSource, type Photo, photoSchema } from "#schemas/contactPhoto";
-import { contactsDocument } from "#services/contacts";
+
+import { contactsDocument } from "#modules/contacts/document";
+import { type ImageSource, type Photo, photoSchema } from "#modules/contacts/photo/schema";
 import { firestore } from "#shared/firebase/firestore";
 import { deleteFolder, saveDownloadableFile, saveFile } from "#shared/firebase/storage";
 import { NotFoundError } from "#shared/http/errors";
