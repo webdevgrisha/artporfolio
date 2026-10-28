@@ -44,42 +44,50 @@ export const router = createBrowserRouter([
         },
         children: [
           {
-            index: true,
-            element: <Navigate to={adminHomePath} replace />,
-          },
-          {
-            path: routes.gallery,
-            lazy: async () => ({ Component: (await import("@/pages/gallery")).GalleryPage }),
-          },
-          {
-            path: routes.projects,
-            lazy: async () => ({ Component: (await import("@/pages/projects")).ProjectsPage }),
-          },
-          {
-            path: routes.about,
-            lazy: async () => ({ Component: (await import("@/pages/about")).AboutPage }),
-          },
-          {
-            path: routes.contacts,
-            lazy: async () => {
-              const { ContactsPage, contactsAction, contactsLoader } = await import(
-                "@/pages/contacts"
-              );
-
-              return {
-                action: contactsAction,
-                Component: ContactsPage,
-                loader: contactsLoader,
-                // A save returns the stored values, so the contacts are not loaded again.
-                shouldRevalidate: () => false,
-              };
-            },
-          },
-          {
-            path: routes.personalization,
+            // A pathless route: a failed page is replaced inside the layout, the navigation stays.
             lazy: async () => ({
-              Component: (await import("@/pages/personalization")).PersonalizationPage,
+              ErrorBoundary: (await import("@/widgets/admin-layout")).AdminPageError,
             }),
+            children: [
+              {
+                index: true,
+                element: <Navigate to={adminHomePath} replace />,
+              },
+              {
+                path: routes.gallery,
+                lazy: async () => ({ Component: (await import("@/pages/gallery")).GalleryPage }),
+              },
+              {
+                path: routes.projects,
+                lazy: async () => ({ Component: (await import("@/pages/projects")).ProjectsPage }),
+              },
+              {
+                path: routes.about,
+                lazy: async () => ({ Component: (await import("@/pages/about")).AboutPage }),
+              },
+              {
+                path: routes.contacts,
+                lazy: async () => {
+                  const { ContactsPage, contactsAction, contactsLoader } = await import(
+                    "@/pages/contacts"
+                  );
+
+                  return {
+                    action: contactsAction,
+                    Component: ContactsPage,
+                    loader: contactsLoader,
+                    // A save returns the stored values, so the contacts are not loaded again.
+                    shouldRevalidate: () => false,
+                  };
+                },
+              },
+              {
+                path: routes.personalization,
+                lazy: async () => ({
+                  Component: (await import("@/pages/personalization")).PersonalizationPage,
+                }),
+              },
+            ],
           },
         ],
       },
