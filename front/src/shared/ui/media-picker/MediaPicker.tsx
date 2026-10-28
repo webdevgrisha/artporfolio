@@ -54,9 +54,12 @@ export function MediaPicker({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const selectButtonRef = React.useRef<HTMLButtonElement>(null);
   const [isDragOver, setIsDragOver] = React.useState(false);
-  // A rejected file never reaches the owner, so the picker explains it itself.
-  const [rejection, setRejection] = React.useState<string>();
-  const shownError = rejection ?? error;
+  // A rejected file never reaches the owner, so the picker explains it itself. The message belongs
+  // to the files it was given with: once the owner changes them (a pick, a removal, a revert),
+  // it is outdated.
+  const itemsKey = items.map((item) => item.id).join("\n");
+  const [rejection, setRejection] = React.useState<{ itemsKey: string; message: string }>();
+  const shownError = (rejection?.itemsKey === itemsKey ? rejection.message : undefined) ?? error;
   const selectLabel = items.length > 0 ? "Заменить файл" : "Выбрать файл";
 
   function addFiles(fileList: FileList) {
@@ -69,7 +72,7 @@ export function MediaPicker({
         ? "Можно выбрать только один файл"
         : getFileRejection(file, { accept, acceptLabel, maxFileSize });
 
-    setRejection(fileRejection);
+    setRejection(fileRejection ? { itemsKey, message: fileRejection } : undefined);
     if (!fileRejection) onAdd(files);
   }
 
@@ -104,7 +107,6 @@ export function MediaPicker({
   }
 
   function removeItem(itemId: string) {
-    setRejection(undefined);
     onRemove(itemId);
     // The remove button disappears together with the file.
     selectButtonRef.current?.focus();
