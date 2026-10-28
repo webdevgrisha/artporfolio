@@ -9,7 +9,7 @@ interface GetOptions<TSchema extends ZodType> extends HttpOptions {
   schema: TSchema;
 }
 
-interface PostOptions<TBody extends object, TSchema extends ZodType> extends HttpOptions {
+interface BodyOptions<TBody extends object, TSchema extends ZodType> extends HttpOptions {
   body: TBody;
   path: string;
   schema: TSchema;
@@ -22,7 +22,7 @@ interface PostVoidOptions<TBody extends object> extends HttpOptions {
 
 interface RequestOptions extends HttpOptions {
   body?: object;
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "PUT";
 }
 
 class Http {
@@ -50,11 +50,26 @@ class Http {
     path,
     schema,
     ...options
-  }: PostOptions<TBody, TSchema>): Promise<z.output<TSchema>> {
+  }: BodyOptions<TBody, TSchema>): Promise<z.output<TSchema>> {
     const response = await this.request(path, {
       ...options,
       body,
       method: "POST",
+    });
+
+    return schema.parse(await response.json());
+  }
+
+  async put<TBody extends object, TSchema extends ZodType>({
+    body,
+    path,
+    schema,
+    ...options
+  }: BodyOptions<TBody, TSchema>): Promise<z.output<TSchema>> {
+    const response = await this.request(path, {
+      ...options,
+      body,
+      method: "PUT",
     });
 
     return schema.parse(await response.json());
