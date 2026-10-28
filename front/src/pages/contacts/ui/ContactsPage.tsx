@@ -11,7 +11,7 @@ import styles from "./ContactsPage.module.css";
 const saveToastId = "contacts-save";
 
 export function ContactsPage() {
-  const loadedContacts = useLoaderData<typeof contactsLoader>();
+  const { contacts: loadedContacts } = useLoaderData<typeof contactsLoader>();
   // A fetcher, not a navigation: saving stays on the page and adds no history entry.
   const fetcher = useFetcher<typeof contactsAction>();
   // Kept apart from fetcher.data, which a failed save replaces.
