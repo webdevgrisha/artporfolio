@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import React, { type ChangeEvent, type DragEvent } from "react";
+import { flushSync } from "react-dom";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { FieldHint } from "@/shared/ui/field";
@@ -68,7 +69,7 @@ export function MediaPicker({
   const itemsKey = items.map((item) => item.id).join("\n");
   const [rejection, setRejection] = React.useState<{ itemsKey: string; message: string }>();
   const shownError = (rejection?.itemsKey === itemsKey ? rejection.message : undefined) ?? error;
-  const selectLabel = items.length > 0 ? "Заменить файл" : "Выбрать файл";
+  const hasItems = items.length > 0;
 
   function addFiles(fileList: FileList) {
     const files = Array.from(fileList);
@@ -114,9 +115,14 @@ export function MediaPicker({
     if (!disabled) addFiles(event.dataTransfer.files);
   }
 
+  function openFilePicker() {
+    inputRef.current?.click();
+  }
+
   function removeItem(itemId: string) {
-    onRemove(itemId);
-    // The remove button disappears together with the file.
+    // The remove button disappears together with the file, so the focus moves to the button that
+    // picks a file. Without files that is another button, rendered by the removal.
+    flushSync(() => onRemove(itemId));
     selectButtonRef.current?.focus();
   }
 
@@ -127,7 +133,7 @@ export function MediaPicker({
         className={clsx(styles.root, className)}
         disabled={disabled}
         aria-describedby={[hintId, shownError ? errorId : undefined].filter(Boolean).join(" ")}
-        // Dropping is a shortcut for the pointer; the attachment button is the accessible way.
+        // Dropping is a shortcut for the pointer; the select buttons are the accessible way.
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -140,9 +146,10 @@ export function MediaPicker({
             [styles.frameInvalid]: Boolean(shownError),
             [styles.frameDragOver]: isDragOver,
             [styles.frameDisabled]: disabled,
+            [styles.frameEmpty]: !hasItems,
           })}
         >
-          {items.length > 0 ? (
+          {hasItems ? (
             <ul className={styles.items}>
               {items.map((item) => {
                 const removeLabel = `Удалить ${item.name}`;
@@ -152,7 +159,8 @@ export function MediaPicker({
                   <li key={item.id} className={styles.item}>
                     <div className={styles.itemHeader}>
                       <span className={styles.fileName}>
-                        {item.name} ({formatFileSize(item.size)})
+                        {item.name}{" "}
+                        <span className={styles.fileSize}>({formatFileSize(item.size)})</span>
                       </span>
                       <Tooltip content={removeLabel}>
                         <IconButton label={removeLabel} onClick={() => removeItem(item.id)}>
@@ -174,20 +182,27 @@ export function MediaPicker({
               })}
             </ul>
           ) : (
-            <p className={styles.placeholder}>Перетащите файл сюда или выберите его</p>
-          )}
-
-          <Tooltip className={styles.selectTooltip} content={selectLabel}>
-            <IconButton
+            // Without files the whole frame picks one: a large target that says what to do.
+            <button
               ref={selectButtonRef}
-              label={selectLabel}
-              onClick={() => inputRef.current?.click()}
+              className={styles.emptyButton}
+              type="button"
+              onClick={openFilePicker}
             >
               <AttachmentIcon className={styles.selectIcon} />
-            </IconButton>
-          </Tooltip>
+              Перетащите файл или нажмите, чтобы выбрать
+            </button>
+          )}
 
-          {/* Opened by the attachment button, which is the accessible control. */}
+          {hasItems ? (
+            <Tooltip className={styles.selectTooltip} content="Заменить файл">
+              <IconButton ref={selectButtonRef} label="Заменить файл" onClick={openFilePicker}>
+                <AttachmentIcon className={styles.selectIcon} />
+              </IconButton>
+            </Tooltip>
+          ) : null}
+
+          {/* Opened by the select buttons, which are the accessible controls. */}
           <input
             ref={inputRef}
             className={styles.fileInput}
@@ -202,7 +217,7 @@ export function MediaPicker({
         <FieldHint id={hintId}>
           {acceptLabel}, до {formatFileSize(maxFileSize)}
         </FieldHint>
-        {/* Announces a rejected file: the focus stays on the attachment button. */}
+        {/* Announces a rejected file: the focus stays on the select button. */}
         <div aria-live="polite">
           {shownError ? (
             <p className={styles.error} id={errorId}>
