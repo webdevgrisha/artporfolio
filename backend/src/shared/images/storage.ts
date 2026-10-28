@@ -8,7 +8,7 @@ import {
   saveFile,
 } from "#shared/firebase/storage";
 import type { EncodedImage, OutputFormat, ProcessedImage } from "#shared/images/processing";
-import { maxFileNameLength, type UploadedFile } from "#shared/middleware/upload";
+import type { UploadedFile } from "#shared/middleware/upload";
 
 // Every upload gets its own folder and therefore new URLs, so the files can be cached forever.
 const immutableCacheControl = "public, max-age=31536000, immutable";
@@ -22,7 +22,7 @@ const storedImageFileSchema = z.object({
 
 /** An uploaded image as stored in Firestore: one file per width in every format. */
 export const storedImageSchema = z.object({
-  fileName: z.string().max(maxFileNameLength),
+  fileName: z.string(),
   fileSize: z.number().int().positive(),
   height: z.number().int().positive(),
   sources: z.object({
