@@ -4,7 +4,7 @@ import React from "react";
 import { flushSync } from "react-dom";
 import { type FieldErrors, useForm, useWatch } from "react-hook-form";
 
-import type { ContactsWithPhoto } from "@/entities/contacts";
+import type { Contacts, ContactsWithPhoto } from "@/entities/contacts";
 import { useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
 import { Button } from "@/shared/ui/button";
 import { ClearableInput } from "@/shared/ui/clearable-input";
@@ -25,9 +25,10 @@ import {
   contactsFormSchema,
   savedPhoto,
 } from "../model/contactsFormSchema";
-import { toContactsFormValues } from "../model/contactsFormValues";
+import { toContactsFormValues, toPhotoFormValues } from "../model/contactsFormValues";
 import { getContactsChanges } from "../model/getContactsChanges";
 import { photoRules } from "../model/photoRules";
+import type { SaveContactsResult } from "../model/saveContacts";
 import styles from "./EditContactsForm.module.css";
 
 const revertLabel = "Отменить изменения";
@@ -44,10 +45,9 @@ interface EditContactsFormProps {
   className?: string;
   isSaving: boolean;
   onSubmit: (changes: ContactsChanges) => void;
-  /**
-   * The last saved values. A save replaces only the parts it saved, so the form resets only the
-   * fields of a part whose object changed and keeps the unsaved changes of a part that failed.
-   */
+  /** The result of the last save. The parts it returns become the baseline of their fields. */
+  saveResult: SaveContactsResult | undefined;
+  /** The last saved values, including the parts saved by `saveResult`. */
   savedContacts: ContactsWithPhoto;
 }
 
@@ -55,6 +55,7 @@ export function EditContactsForm({
   className,
   isSaving,
   onSubmit,
+  saveResult,
   savedContacts,
 }: EditContactsFormProps) {
   const {
@@ -76,26 +77,27 @@ export function EditContactsForm({
   const photo = useWatch({ control, name: "photo" });
   const [tab, setTab] = React.useState<ContactsTab>("links");
   const saveButtonRef = React.useRef<HTMLButtonElement>(null);
-  const previousSavedRef = React.useRef(savedContacts);
   const unsavedChangesGuard = useUnsavedChangesGuard(isDirty);
 
-  // What was saved becomes the new baseline of its fields: they are no longer modified.
+  // What was saved is no longer modified. A part that failed is not in the result, so its fields
+  // keep the unsaved changes.
   React.useEffect(() => {
-    const previousSaved = previousSavedRef.current;
-    previousSavedRef.current = savedContacts;
-    const savedValues = toContactsFormValues(savedContacts);
+    if (!saveResult) return;
 
-    if (savedContacts.contacts !== previousSaved.contacts) {
+    const { contacts: savedLinks, photo: savedPhotoValue } = saveResult;
+
+    if (savedLinks) {
       for (const field of contactFields) {
-        resetField(field.name, { defaultValue: savedValues[field.name] });
+        resetField(field.name, { defaultValue: savedLinks[field.name] });
       }
     }
 
-    if (savedContacts.photo !== previousSaved.photo) {
-      resetField("photo", { defaultValue: savedValues.photo });
-      resetField("photoAlt", { defaultValue: savedValues.photoAlt });
+    if (savedPhotoValue !== undefined) {
+      const photoValues = toPhotoFormValues(savedPhotoValue);
+      resetField("photo", { defaultValue: photoValues.photo });
+      resetField("photoAlt", { defaultValue: photoValues.photoAlt });
     }
-  }, [resetField, savedContacts]);
+  }, [resetField, saveResult]);
 
   const photoItems = React.useMemo((): MediaItem[] => {
     if (photo instanceof File) {
@@ -110,7 +112,7 @@ export function EditContactsForm({
     return [{ id: saved.version, name: saved.fileName, size: saved.fileSize, source: preview.url }];
   }, [photo, savedContacts.photo]);
 
-  function clearField(name: (typeof contactFields)[number]["name"]) {
+  function clearField(name: keyof Contacts) {
     // After the first submit, fields are revalidated on change; clearing is a change too.
     setValue(name, "", { shouldDirty: true, shouldValidate: isSubmitted });
     setFocus(name);

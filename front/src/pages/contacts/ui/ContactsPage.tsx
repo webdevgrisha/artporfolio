@@ -27,7 +27,7 @@ export function ContactsPage() {
 
     const { contacts, photo } = saveResult;
 
-    // Only the saved parts are replaced: the form keeps the changes of a part that failed.
+    // Only the saved parts are replaced; the form resets their fields from the same result.
     if (contacts || photo !== undefined) {
       setSavedContacts((previous) => ({
         contacts: contacts ?? previous.contacts,
@@ -54,6 +54,7 @@ export function ContactsPage() {
       <EditContactsForm
         className={styles.form}
         isSaving={fetcher.state !== "idle"}
+        saveResult={saveResult}
         savedContacts={savedContacts}
         onSubmit={handleSubmit}
       />
