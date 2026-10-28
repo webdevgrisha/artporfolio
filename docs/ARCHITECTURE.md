@@ -85,35 +85,42 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 
 ## Backend
 
+The backend is split by **domain modules**, as recommended by [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices#1-project-architecture-practices): everything about one domain lives in one folder. Code that knows nothing about the domain lives in `shared/`.
+
 ```text
 backend/src/
-├── firebase.ts     Cloud Function entry point
-├── server.ts       Express app: middleware and routers
-├── config/         env, cookies, cors, csrf
-├── routes/         one router per domain
-├── middleware/     auth, csrf, validation, upload, error
-├── controllers/    request handlers, one file per domain
-├── services/       business logic (auth, contacts, contactPhoto), image processing and Firebase access
-├── schemas/        zod request schemas
-├── errors/         HttpError and its subclasses
-├── http/           cookie helpers
-├── types/          global type declarations (Express Locals)
-├── database/       reserved for data access
-├── models/         reserved for data models
-└── utils/          reserved for shared helpers
+├── firebase.ts         Cloud Function entry point
+├── server.ts           Express app: global middleware and top-level module routers
+├── modules/            one folder per domain
+│   ├── auth/           routes, controller, service, schema, middleware (requireAuth)
+│   ├── contacts/       contact links; document.ts is the Firestore document shared with photo/
+│   │   └── photo/      the contact photo, mounted by the contacts router
+│   └── health/
+├── shared/             no knowledge of the domain
+│   ├── config/         env, cookies, cors, csrf
+│   ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
+│   ├── http/           HttpError, cookie helpers, Express request typing
+│   ├── images/         image processing with sharp
+│   └── middleware/     csrf, validation, upload, error
+├── database/           reserved for data access
+├── models/             reserved for data models
+└── utils/              reserved for shared helpers
 ```
 
-- The request flow is route → middleware → controller → service.
-- Each layer has one file per domain (`routes/auth.ts`, `controllers/auth.ts`). There are no barrel files.
-- Modules import each other through subpath imports: `#services/auth`.
+- A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. The request flow is route → middleware → controller → service.
+- `shared/` never imports `modules/`; Biome enforces it. A module may use another module, as `contacts` uses `requireAuth` from `auth`.
+- `server.ts` mounts only top-level modules. A submodule is mounted by its parent's router, as `contacts` mounts `photo`.
+- Global Express typing lives with its owner: `modules/auth/express.d.ts` declares `Locals.auth`, `shared/http/express.d.ts` declares `Request.file` and `rawBody`.
+- Code imports through subpath imports (`#modules/auth/service`, `#shared/http/errors`). There are no barrel files.
 - Express 5 forwards rejected promises to the error middleware, so handlers do not wrap code in `try/catch` only to call `next(error)`.
-- Environment variables are read through `getEnv()` in `config/env.ts`, validated once on first use. `CSRF_SECRET` is a Secret Manager value read by the CSRF config.
+- Environment variables are read through `getEnv()` in `shared/config/env.ts`, validated once on first use. `CSRF_SECRET` is a Secret Manager value read by the CSRF config.
 - Errors meant for the client are thrown as `HttpError` subclasses. Anything else is logged and returned as a generic 500.
 - Endpoints are documented in [API.md](API.md), updated in the same commit as the endpoint.
 
 ## Tests
 
-- Backend tests live in `backend/tests`, mirroring `src`, and run with Vitest. Their environment is set in `backend/vitest.config.ts`.
+- Backend tests live in `backend/tests`, mirroring `src` (`tests/modules/contacts/photo/service.test.ts` tests `src/modules/contacts/photo/service.ts`), and run with Vitest. Their environment is set in `backend/vitest.config.ts`.
+- `tests/support` holds shared helpers: `startTestServer` runs an Express app on a free port, `adminHeaders` returns the cookies and CSRF header of a signed-in admin. Import them with a relative path ending in `.js`.
 - The frontend currently has no automated tests.
 
 ## Adding an admin page

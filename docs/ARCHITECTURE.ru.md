@@ -85,35 +85,42 @@ features/login/
 
 ## Бэкенд
 
+Бэкенд разбит на **предметные модули**, как рекомендует [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices#1-project-architecture-practices): всё, что относится к одной сущности, лежит в одной папке. Код, который ничего не знает о предметной области, лежит в `shared/`.
+
 ```text
 backend/src/
-├── firebase.ts     точка входа Cloud Function
-├── server.ts       приложение Express: middleware и роутеры
-├── config/         env, cookies, cors, csrf
-├── routes/         по роутеру на домен
-├── middleware/     auth, csrf, validation, upload, error
-├── controllers/    обработчики запросов, по файлу на домен
-├── services/       бизнес-логика (auth, contacts, contactPhoto), обработка изображений и доступ к Firebase
-├── schemas/        zod-схемы запросов
-├── errors/         HttpError и его подклассы
-├── http/           работа с cookies
-├── types/          глобальные объявления типов (Express Locals)
-├── database/       зарезервировано под доступ к данным
-├── models/         зарезервировано под модели данных
-└── utils/          зарезервировано под общие утилиты
+├── firebase.ts         точка входа Cloud Function
+├── server.ts           приложение Express: общие middleware и роутеры модулей верхнего уровня
+├── modules/            по папке на сущность
+│   ├── auth/           routes, controller, service, schema, middleware (requireAuth)
+│   ├── contacts/       ссылки для связи; document.ts — документ Firestore, общий с photo/
+│   │   └── photo/      фото для контактов, подключается роутером contacts
+│   └── health/
+├── shared/             без знания о предметной области
+│   ├── config/         env, cookies, cors, csrf
+│   ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
+│   ├── http/           HttpError, работа с cookies, типы запроса Express
+│   ├── images/         обработка изображений через sharp
+│   └── middleware/     csrf, validation, upload, error
+├── database/           зарезервировано под доступ к данным
+├── models/             зарезервировано под модели данных
+└── utils/              зарезервировано под общие утилиты
 ```
 
-- Запрос проходит путь: маршрут → middleware → контроллер → сервис.
-- В каждом слое по файлу на домен (`routes/auth.ts`, `controllers/auth.ts`). Файлов-реэкспортов нет.
-- Модули импортируют друг друга через subpath imports: `#services/auth`.
+- В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.
+- `shared/` никогда не импортирует `modules/`, это проверяет Biome. Модуль может использовать другой модуль, как `contacts` использует `requireAuth` из `auth`.
+- `server.ts` подключает только модули верхнего уровня. Вложенный модуль подключает роутер родителя, как `contacts` подключает `photo`.
+- Глобальные типы Express лежат у своего владельца: `modules/auth/express.d.ts` объявляет `Locals.auth`, `shared/http/express.d.ts` — `Request.file` и `rawBody`.
+- Код импортируется через subpath imports (`#modules/auth/service`, `#shared/http/errors`). Файлов-реэкспортов нет.
 - Express 5 сам передаёт отклонённые промисы в middleware ошибок, поэтому обработчики не оборачивают код в `try/catch` только ради `next(error)`.
-- Переменные окружения читаются через `getEnv()` из `config/env.ts` и проверяются один раз при первом обращении. `CSRF_SECRET` хранится в Secret Manager и читается конфигом CSRF.
+- Переменные окружения читаются через `getEnv()` из `shared/config/env.ts` и проверяются один раз при первом обращении. `CSRF_SECRET` хранится в Secret Manager и читается конфигом CSRF.
 - Ошибки для клиента выбрасываются как подклассы `HttpError`. Всё остальное логируется и возвращается как общий ответ 500.
 - Эндпоинты описаны в [API.ru.md](API.ru.md) и обновляются в том же коммите, что и эндпоинт.
 
 ## Тесты
 
-- Тесты бэкенда лежат в `backend/tests`, повторяя структуру `src`, и запускаются Vitest. Их окружение задано в `backend/vitest.config.ts`.
+- Тесты бэкенда лежат в `backend/tests`, повторяя структуру `src` (`tests/modules/contacts/photo/service.test.ts` тестирует `src/modules/contacts/photo/service.ts`), и запускаются Vitest. Их окружение задано в `backend/vitest.config.ts`.
+- В `tests/support` лежат общие помощники: `startTestServer` запускает приложение Express на свободном порту, `adminHeaders` возвращает cookies и CSRF-заголовок вошедшего администратора. Импортируйте их относительным путём с окончанием `.js`.
 - У фронтенда пока нет автоматических тестов.
 
 ## Как добавить страницу админки
