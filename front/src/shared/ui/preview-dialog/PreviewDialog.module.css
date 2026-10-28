@@ -8,6 +8,11 @@
   border: 1px solid var(--color-border);
 }
 
+/* The dialog takes the focus only to start reading from its title; it is not a control. */
+.root:focus {
+  outline: none;
+}
+
 .root::backdrop {
   background: var(--color-backdrop);
 }

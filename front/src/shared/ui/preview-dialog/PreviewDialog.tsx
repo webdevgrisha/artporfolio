@@ -35,6 +35,12 @@ export function PreviewDialog({
   const titleId = React.useId();
   const descriptionId = React.useId();
 
+  // showModal() focuses the close button. The content is what was opened, so the dialog itself
+  // takes the focus instead: screen readers start from the title, and Tab reaches the button.
+  React.useEffect(() => {
+    if (isOpen) dialogRef.current?.focus();
+  }, [dialogRef, isOpen]);
+
   // The content fills the dialog, so only a click on the backdrop reaches the dialog itself.
   // Keyboard users close it with Escape or the close button.
   function handleClick(event: MouseEvent<HTMLDialogElement>) {
@@ -46,6 +52,7 @@ export function PreviewDialog({
     <dialog
       ref={dialogRef}
       className={styles.root}
+      tabIndex={-1}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       onCancel={handleCancel}
