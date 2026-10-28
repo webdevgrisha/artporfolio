@@ -11,6 +11,11 @@ const toasterStyle = {
   fontFamily: "inherit",
 } as CSSProperties;
 
+// Sonner sets a pixel font size on every toast, which ignores the browser font size.
+const toastStyle: CSSProperties = {
+  fontSize: "var(--font-size-md)",
+};
+
 /** Renders the toasts shown with `showSuccessToast` and `showErrorToast`. Mount once. */
 export function Toaster() {
   return (
@@ -18,7 +23,7 @@ export function Toaster() {
       position="bottom-right"
       style={toasterStyle}
       containerAriaLabel="Уведомления"
-      toastOptions={{ closeButtonAriaLabel: "Закрыть уведомление" }}
+      toastOptions={{ closeButtonAriaLabel: "Закрыть уведомление", style: toastStyle }}
     />
   );
 }
