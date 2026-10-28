@@ -1,5 +1,6 @@
-import React, { type MouseEvent, type ReactNode, type SyntheticEvent } from "react";
+import React, { type MouseEvent, type ReactNode } from "react";
 
+import { useModalDialog } from "@/shared/lib/useModalDialog";
 import { CloseIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Tooltip } from "@/shared/ui/tooltip";
@@ -30,27 +31,9 @@ export function PreviewDialog({
   onClose,
   title,
 }: PreviewDialogProps) {
-  const dialogRef = React.useRef<HTMLDialogElement>(null);
+  const { dialogRef, handleCancel } = useModalDialog(isOpen, onClose);
   const titleId = React.useId();
   const descriptionId = React.useId();
-
-  React.useEffect(() => {
-    const dialog = dialogRef.current;
-
-    if (!dialog) return;
-
-    if (isOpen && !dialog.open) {
-      dialog.showModal();
-    } else if (!isOpen && dialog.open) {
-      dialog.close();
-    }
-  }, [isOpen]);
-
-  // Escape closes the dialog natively; the parent owns the open state, so it decides instead.
-  function handleCancel(event: SyntheticEvent<HTMLDialogElement>) {
-    event.preventDefault();
-    onClose();
-  }
 
   // The content fills the dialog, so only a click on the backdrop reaches the dialog itself.
   // Keyboard users close it with Escape or the close button.

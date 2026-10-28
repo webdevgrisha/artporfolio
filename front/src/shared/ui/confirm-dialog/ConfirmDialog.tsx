@@ -1,5 +1,6 @@
-import React, { type SyntheticEvent } from "react";
+import React from "react";
 
+import { useModalDialog } from "@/shared/lib/useModalDialog";
 import { Button } from "@/shared/ui/button";
 
 import styles from "./ConfirmDialog.module.css";
@@ -28,27 +29,9 @@ export function ConfirmDialog({
   onConfirm,
   title,
 }: ConfirmDialogProps) {
-  const dialogRef = React.useRef<HTMLDialogElement>(null);
+  const { dialogRef, handleCancel } = useModalDialog(isOpen, onCancel);
   const titleId = React.useId();
   const descriptionId = React.useId();
-
-  React.useEffect(() => {
-    const dialog = dialogRef.current;
-
-    if (!dialog) return;
-
-    if (isOpen && !dialog.open) {
-      dialog.showModal();
-    } else if (!isOpen && dialog.open) {
-      dialog.close();
-    }
-  }, [isOpen]);
-
-  // Escape closes the dialog natively; the parent owns the open state, so it decides instead.
-  function handleCancel(event: SyntheticEvent<HTMLDialogElement>) {
-    event.preventDefault();
-    onCancel();
-  }
 
   return (
     <dialog
