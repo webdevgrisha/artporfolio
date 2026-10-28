@@ -4,30 +4,6 @@
   gap: var(--layout-space-8);
 }
 
-.links {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--layout-space-6) var(--layout-space-8);
-}
-
-/* `hidden` must win over the grid and flex display of the panels. */
-.links[hidden],
-.photo[hidden] {
-  display: none;
-}
-
-.photo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--layout-space-6);
-  max-inline-size: 24rem;
-}
-
-/* The preview is cropped the way the site shows the photo. */
-.photoPicker {
-  --media-picker-preview-aspect-ratio: 764 / 534;
-}
-
 /* Pushed to the bottom when the form is taller than its fields. */
 .actions {
   display: flex;
@@ -39,10 +15,4 @@
 
 .saveButton {
   text-transform: uppercase;
-}
-
-@media (width >= 40rem) {
-  .links {
-    grid-template-columns: repeat(2, minmax(0, 24rem));
-  }
 }
