@@ -7,10 +7,8 @@ import { HttpError } from "@/shared/api/httpError";
 import { imageUploadRules } from "@/shared/api/image";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
-/** For a save that failed before any page was sent. */
+/** For a save that failed before any page was sent: invalid changes or no CSRF token. */
 export function getSavePageHeroesErrorMessage(error: unknown): string {
-  if (isSessionExpiredError(error)) return sessionExpiredMessage;
-
   return getRequestErrorMessage(error, "Не удалось сохранить изменения. Попробуйте ещё раз");
 }
 
