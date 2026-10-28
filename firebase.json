@@ -21,6 +21,9 @@
   "firestore": {
     "rules": "firestore.rules"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "hosting": {
     "public": "front/dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -52,6 +55,9 @@
     },
     "hosting": {
       "port": 5500
+    },
+    "storage": {
+      "port": 5503
     },
     "ui": {
       "enabled": false

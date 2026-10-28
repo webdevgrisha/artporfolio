@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Browsers never access Cloud Storage directly: the API writes files through the Admin SDK, and
+// visitors read them through download URLs, which bypass these rules.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
