@@ -32,3 +32,9 @@ export class NotFoundError extends HttpError {
     super(404, "NOT_FOUND", message);
   }
 }
+
+export class PayloadTooLargeError extends HttpError {
+  constructor(message = "Request is too large") {
+    super(413, "PAYLOAD_TOO_LARGE", message);
+  }
+}
