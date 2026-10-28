@@ -6,6 +6,8 @@ import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field"
 import styles from "./Textarea.module.css";
 
 interface TextareaProps extends ComponentPropsWithRef<"textarea"> {
+  /** Positions the field: the label, the control, the hint and the error. */
+  className?: string;
   error?: string;
   /** A short explanation under the control, e.g. what to enter. */
   hint?: string;

@@ -6,6 +6,8 @@ import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field"
 import styles from "./Input.module.css";
 
 export interface InputProps extends ComponentPropsWithRef<"input"> {
+  /** Positions the field: the label, the control, the hint and the error. */
+  className?: string;
   endAdornment?: ReactNode;
   error?: string;
   /** A short explanation under the control, e.g. what to enter. */
@@ -18,6 +20,7 @@ export interface InputProps extends ComponentPropsWithRef<"input"> {
 export function Input({
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
+  className,
   endAdornment,
   error,
   hint,
@@ -36,6 +39,7 @@ export function Input({
 
   return (
     <Field
+      className={className}
       controlId={controlId}
       error={error}
       errorId={errorId}
