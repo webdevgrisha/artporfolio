@@ -1,13 +1,10 @@
-import type { Server } from "node:http";
-
 import express, { type RequestHandler } from "express";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-
 import { errorHandler } from "#shared/middleware/error";
 import { parseUpload } from "#shared/middleware/upload";
+import { startTestServer, type TestServer } from "../../support/testServer.js";
 
-let server: Server | undefined;
-let baseUrl: string;
+let server: TestServer;
 
 const echoUpload: RequestHandler = (request, response) => {
   response.json({
@@ -24,7 +21,7 @@ const moveBodyToRawBody: RequestHandler = (request, _response, next) => {
 };
 
 function upload(path: string, body: FormData | string, contentType?: string) {
-  return fetch(`${baseUrl}${path}`, {
+  return fetch(`${server.baseUrl}${path}`, {
     body,
     method: "POST",
     ...(contentType ? { headers: { "Content-Type": contentType } } : {}),
@@ -53,39 +50,10 @@ beforeAll(async () => {
   testApp.post("/raw-body", readBodyLikeCloudFunctions, moveBodyToRawBody, parse, echoUpload);
   testApp.use(errorHandler);
 
-  await new Promise<void>((resolve, reject) => {
-    const testServer = testApp.listen(0, "127.0.0.1");
-
-    server = testServer;
-    testServer.once("error", reject);
-    testServer.once("listening", resolve);
-  });
-
-  const address = server?.address();
-
-  if (!address || typeof address === "string") {
-    throw new Error("Test server did not bind to a TCP port");
-  }
-
-  baseUrl = `http://127.0.0.1:${String(address.port)}`;
+  server = await startTestServer(testApp);
 });
 
-afterAll(async () => {
-  if (!server?.listening) {
-    return;
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    server?.close((error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve();
-    });
-  });
-});
+afterAll(() => server.close());
 
 describe("upload middleware", () => {
   it.each(["/stream", "/raw-body"])("parses the file and text fields at %s", async (path) => {

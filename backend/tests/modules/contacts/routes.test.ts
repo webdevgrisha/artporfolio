@@ -1,8 +1,8 @@
-import type { Server } from "node:http";
-
 import cookieParser from "cookie-parser";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { adminHeaders, adminSessionCookie } from "../../support/adminSession.js";
+import { startTestServer, type TestServer } from "../../support/testServer.js";
 
 const auth = vi.hoisted(() => ({
   createSession: vi.fn(),
@@ -29,7 +29,6 @@ import { UnauthorizedError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
-const sessionCookie = "admin_session=firebase-session";
 
 const contacts = {
   email: "artist@example.com",
@@ -38,26 +37,12 @@ const contacts = {
   youtube: "",
 };
 
-let server: Server | undefined;
-let baseUrl: string;
-
-/** Headers of a signed-in admin request with a valid CSRF token. */
-async function adminHeaders(): Promise<Record<string, string>> {
-  const response = await fetch(`${baseUrl}/api/auth/csrf`, { headers: { Cookie: sessionCookie } });
-  const { csrfToken } = (await response.json()) as { csrfToken: string };
-  const csrfCookie = response.headers.get("set-cookie")?.split(";", 1)[0];
-
-  return {
-    "Content-Type": "application/json",
-    Cookie: `${sessionCookie}; ${String(csrfCookie)}`,
-    "X-CSRF-Token": csrfToken,
-  };
-}
+let server: TestServer;
 
 function putContacts(body: unknown, headers: Record<string, string>) {
-  return fetch(`${baseUrl}/api/contacts`, {
+  return fetch(`${server.baseUrl}/api/contacts`, {
     body: JSON.stringify(body),
-    headers,
+    headers: { "Content-Type": "application/json", ...headers },
     method: "PUT",
   });
 }
@@ -71,21 +56,7 @@ beforeAll(async () => {
   testApp.use("/api/contacts", contactsRouter);
   testApp.use(errorHandler);
 
-  await new Promise<void>((resolve, reject) => {
-    const testServer = testApp.listen(0, "127.0.0.1");
-
-    server = testServer;
-    testServer.once("error", reject);
-    testServer.once("listening", resolve);
-  });
-
-  const address = server?.address();
-
-  if (!address || typeof address === "string") {
-    throw new Error("Test server did not bind to a TCP port");
-  }
-
-  baseUrl = `http://127.0.0.1:${String(address.port)}`;
+  server = await startTestServer(testApp);
 });
 
 beforeEach(() => {
@@ -96,26 +67,11 @@ beforeEach(() => {
   contactsService.saveContacts.mockResolvedValue(undefined);
 });
 
-afterAll(async () => {
-  if (!server?.listening) {
-    return;
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    server?.close((error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve();
-    });
-  });
-});
+afterAll(() => server.close());
 
 describe("contacts routes", () => {
   it("returns contacts without a session", async () => {
-    const response = await fetch(`${baseUrl}/api/contacts`);
+    const response = await fetch(`${server.baseUrl}/api/contacts`);
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ contacts, photo: null });
@@ -125,7 +81,7 @@ describe("contacts routes", () => {
   it("saves trimmed contacts for the admin", async () => {
     const response = await putContacts(
       { ...contacts, linkedin: "  https://linkedin.com/in/artist  " },
-      await adminHeaders(),
+      await adminHeaders(server.baseUrl),
     );
     const saved = { ...contacts, linkedin: "https://linkedin.com/in/artist" };
 
@@ -135,7 +91,7 @@ describe("contacts routes", () => {
   });
 
   it("rejects saving without a session", async () => {
-    const headers = await adminHeaders();
+    const headers = await adminHeaders(server.baseUrl);
     auth.verifySession.mockRejectedValue(new UnauthorizedError());
 
     const response = await putContacts(contacts, headers);
@@ -147,7 +103,7 @@ describe("contacts routes", () => {
   it("rejects saving without a CSRF token", async () => {
     const response = await putContacts(contacts, {
       "Content-Type": "application/json",
-      Cookie: sessionCookie,
+      Cookie: adminSessionCookie,
     });
 
     expect(response.status).toBe(403);
@@ -157,7 +113,7 @@ describe("contacts routes", () => {
   it("rejects invalid contacts", async () => {
     const response = await putContacts(
       { ...contacts, instagram: "javascript:alert(1)" },
-      await adminHeaders(),
+      await adminHeaders(server.baseUrl),
     );
 
     expect(response.status).toBe(400);

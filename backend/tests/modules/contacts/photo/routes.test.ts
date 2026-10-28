@@ -1,8 +1,8 @@
-import type { Server } from "node:http";
-
 import cookieParser from "cookie-parser";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { adminHeaders, adminSessionCookie } from "../../../support/adminSession.js";
+import { startTestServer, type TestServer } from "../../../support/testServer.js";
 
 const auth = vi.hoisted(() => ({
   createSession: vi.fn(),
@@ -25,20 +25,9 @@ import { NotFoundError, UnauthorizedError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
-const sessionCookie = "admin_session=firebase-session";
 const photo = { alt: "Portrait", version: "version" };
 
-let server: Server | undefined;
-let baseUrl: string;
-
-/** Cookie and CSRF headers of a signed-in admin request. */
-async function adminHeaders(): Promise<Record<string, string>> {
-  const response = await fetch(`${baseUrl}/api/auth/csrf`, { headers: { Cookie: sessionCookie } });
-  const { csrfToken } = (await response.json()) as { csrfToken: string };
-  const csrfCookie = response.headers.get("set-cookie")?.split(";", 1)[0];
-
-  return { Cookie: `${sessionCookie}; ${String(csrfCookie)}`, "X-CSRF-Token": csrfToken };
-}
+let server: TestServer;
 
 function photoForm(fields: { alt?: string; file?: Blob }): FormData {
   const form = new FormData();
@@ -55,7 +44,7 @@ function photoForm(fields: { alt?: string; file?: Blob }): FormData {
 }
 
 function sendPhoto(method: string, headers: Record<string, string>, body?: FormData | string) {
-  return fetch(`${baseUrl}/api/contacts/photo`, { body: body ?? null, headers, method });
+  return fetch(`${server.baseUrl}/api/contacts/photo`, { body: body ?? null, headers, method });
 }
 
 beforeAll(async () => {
@@ -67,21 +56,7 @@ beforeAll(async () => {
   testApp.use("/api/contacts/photo", photoRouter);
   testApp.use(errorHandler);
 
-  await new Promise<void>((resolve, reject) => {
-    const testServer = testApp.listen(0, "127.0.0.1");
-
-    server = testServer;
-    testServer.once("error", reject);
-    testServer.once("listening", resolve);
-  });
-
-  const address = server?.address();
-
-  if (!address || typeof address === "string") {
-    throw new Error("Test server did not bind to a TCP port");
-  }
-
-  baseUrl = `http://127.0.0.1:${String(address.port)}`;
+  server = await startTestServer(testApp);
 });
 
 beforeEach(() => {
@@ -92,28 +67,13 @@ beforeEach(() => {
   photoService.updateContactPhotoAlt.mockResolvedValue(photo);
 });
 
-afterAll(async () => {
-  if (!server?.listening) {
-    return;
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    server?.close((error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve();
-    });
-  });
-});
+afterAll(() => server.close());
 
 describe("contact photo routes", () => {
   it("uploads a photo with its alt text", async () => {
     const response = await sendPhoto(
       "PUT",
-      await adminHeaders(),
+      await adminHeaders(server.baseUrl),
       photoForm({ alt: "  Portrait  ", file: new Blob(["image"]) }),
     );
 
@@ -128,7 +88,7 @@ describe("contact photo routes", () => {
   it("requires alt text with the photo", async () => {
     const response = await sendPhoto(
       "PUT",
-      await adminHeaders(),
+      await adminHeaders(server.baseUrl),
       photoForm({ alt: " ", file: new Blob(["image"]) }),
     );
 
@@ -137,14 +97,18 @@ describe("contact photo routes", () => {
   });
 
   it("requires a file", async () => {
-    const response = await sendPhoto("PUT", await adminHeaders(), photoForm({ alt: "Portrait" }));
+    const response = await sendPhoto(
+      "PUT",
+      await adminHeaders(server.baseUrl),
+      photoForm({ alt: "Portrait" }),
+    );
 
     expect(response.status).toBe(400);
     expect(photoService.saveContactPhoto).not.toHaveBeenCalled();
   });
 
   it("rejects an upload without a session", async () => {
-    const headers = await adminHeaders();
+    const headers = await adminHeaders(server.baseUrl);
     auth.verifySession.mockRejectedValue(new UnauthorizedError());
 
     const response = await sendPhoto(
@@ -160,7 +124,7 @@ describe("contact photo routes", () => {
   it("rejects an upload without a CSRF token", async () => {
     const response = await sendPhoto(
       "PUT",
-      { Cookie: sessionCookie },
+      { Cookie: adminSessionCookie },
       photoForm({ alt: "Portrait", file: new Blob(["image"]) }),
     );
 
@@ -171,7 +135,7 @@ describe("contact photo routes", () => {
   it("updates the alt text", async () => {
     const response = await sendPhoto(
       "PATCH",
-      { ...(await adminHeaders()), "Content-Type": "application/json" },
+      { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
       JSON.stringify({ alt: "New alt" }),
     );
 
@@ -185,7 +149,7 @@ describe("contact photo routes", () => {
 
     const response = await sendPhoto(
       "PATCH",
-      { ...(await adminHeaders()), "Content-Type": "application/json" },
+      { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
       JSON.stringify({ alt: "New alt" }),
     );
 
@@ -193,7 +157,7 @@ describe("contact photo routes", () => {
   });
 
   it("deletes the photo", async () => {
-    const response = await sendPhoto("DELETE", await adminHeaders());
+    const response = await sendPhoto("DELETE", await adminHeaders(server.baseUrl));
 
     expect(response.status).toBe(204);
     expect(photoService.deleteContactPhoto).toHaveBeenCalled();

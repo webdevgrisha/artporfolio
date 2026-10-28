@@ -1,52 +1,18 @@
-import type { Server } from "node:http";
-
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-
 import { server as application } from "#server";
+import { startTestServer, type TestServer } from "./support/testServer.js";
 
-let server: Server | undefined;
-let baseUrl: string;
+let server: TestServer;
 
 beforeAll(async () => {
-  await new Promise<void>((resolve, reject) => {
-    const testServer = application.listen(0, "127.0.0.1");
-
-    server = testServer;
-    testServer.once("error", reject);
-    testServer.once("listening", resolve);
-  });
-
-  const address = server?.address();
-
-  if (!address || typeof address === "string") {
-    throw new Error("Test server did not bind to a TCP port");
-  }
-
-  baseUrl = `http://127.0.0.1:${String(address.port)}`;
+  server = await startTestServer(application);
 });
 
-afterAll(async () => {
-  const testServer = server;
-
-  if (!testServer?.listening) {
-    return;
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    testServer.close((error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve();
-    });
-  });
-});
+afterAll(() => server.close());
 
 describe("GET /api/health", () => {
   it("returns the API health status", async () => {
-    const response = await fetch(`${baseUrl}/api/health`);
+    const response = await fetch(`${server.baseUrl}/api/health`);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
@@ -57,7 +23,7 @@ describe("GET /api/health", () => {
 
 describe("CORS", () => {
   it("allows credentialed requests from the configured origin", async () => {
-    const response = await fetch(`${baseUrl}/api/auth/login`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       headers: {
         "Access-Control-Request-Headers": "content-type,x-csrf-token",
         "Access-Control-Request-Method": "POST",
@@ -72,7 +38,7 @@ describe("CORS", () => {
   });
 
   it("rejects requests from an origin outside the allowlist", async () => {
-    const response = await fetch(`${baseUrl}/api/health`, {
+    const response = await fetch(`${server.baseUrl}/api/health`, {
       headers: { Origin: "https://attacker.example" },
     });
 
@@ -88,7 +54,7 @@ describe("CORS", () => {
 
 describe("request body", () => {
   it("returns a bad request response for malformed JSON", async () => {
-    const response = await fetch(`${baseUrl}/api/auth/login`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: '{"idToken":',
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -106,7 +72,7 @@ describe("request body", () => {
 
 describe("unknown routes", () => {
   it("returns a JSON not found response", async () => {
-    const response = await fetch(`${baseUrl}/api/unknown`);
+    const response = await fetch(`${server.baseUrl}/api/unknown`);
 
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({

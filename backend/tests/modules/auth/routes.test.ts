@@ -1,8 +1,7 @@
-import type { Server } from "node:http";
-
 import cookieParser from "cookie-parser";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { startTestServer, type TestServer } from "../../support/testServer.js";
 
 const auth = vi.hoisted(() => ({
   createSession: vi.fn(),
@@ -18,8 +17,7 @@ import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 
-let server: Server | undefined;
-let baseUrl: string;
+let server: TestServer;
 
 function csrfHeaders(
   csrfToken: string,
@@ -43,7 +41,7 @@ async function getCsrf(sessionCookie?: string) {
   const options: RequestInit = sessionCookie
     ? { headers: { Cookie: `admin_session=${sessionCookie}` } }
     : {};
-  const response = await fetch(`${baseUrl}/api/auth/csrf`, options);
+  const response = await fetch(`${server.baseUrl}/api/auth/csrf`, options);
   const body = (await response.json()) as { csrfToken: string };
   const csrfCookie = response.headers.get("set-cookie")?.split(";", 1)[0];
 
@@ -62,21 +60,7 @@ beforeAll(async () => {
   testApp.use("/api/auth", authRouter);
   testApp.use(errorHandler);
 
-  await new Promise<void>((resolve, reject) => {
-    const testServer = testApp.listen(0, "127.0.0.1");
-
-    server = testServer;
-    testServer.once("error", reject);
-    testServer.once("listening", resolve);
-  });
-
-  const address = server?.address();
-
-  if (!address || typeof address === "string") {
-    throw new Error("Test server did not bind to a TCP port");
-  }
-
-  baseUrl = `http://127.0.0.1:${String(address.port)}`;
+  server = await startTestServer(testApp);
 });
 
 beforeEach(() => {
@@ -86,22 +70,7 @@ beforeEach(() => {
   auth.verifySession.mockResolvedValue(admin);
 });
 
-afterAll(async () => {
-  if (!server?.listening) {
-    return;
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    server?.close((error) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve();
-    });
-  });
-});
+afterAll(() => server.close());
 
 describe("auth routes", () => {
   it("issues a CSRF token and matching cookie", async () => {
@@ -118,7 +87,7 @@ describe("auth routes", () => {
 
   it("exchanges an ID token for an httpOnly session cookie", async () => {
     const { csrfCookie, csrfToken } = await getCsrf();
-    const response = await fetch(`${baseUrl}/api/auth/login`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({ idToken: "firebase-id-token" }),
       headers: csrfHeaders(csrfToken, csrfCookie),
       method: "POST",
@@ -135,7 +104,7 @@ describe("auth routes", () => {
   });
 
   it("rejects login without a matching CSRF token", async () => {
-    const response = await fetch(`${baseUrl}/api/auth/login`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({ idToken: "firebase-id-token" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -147,7 +116,7 @@ describe("auth routes", () => {
 
   it("rejects login without an ID token", async () => {
     const { csrfCookie, csrfToken } = await getCsrf();
-    const response = await fetch(`${baseUrl}/api/auth/login`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({}),
       headers: csrfHeaders(csrfToken, csrfCookie),
       method: "POST",
@@ -159,7 +128,7 @@ describe("auth routes", () => {
 
   it("rejects login with an invalid request body", async () => {
     const { csrfCookie, csrfToken } = await getCsrf();
-    const response = await fetch(`${baseUrl}/api/auth/login`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({ idToken: 42 }),
       headers: csrfHeaders(csrfToken, csrfCookie),
       method: "POST",
@@ -177,7 +146,7 @@ describe("auth routes", () => {
 
   it("rejects unknown login fields", async () => {
     const { csrfCookie, csrfToken } = await getCsrf();
-    const response = await fetch(`${baseUrl}/api/auth/login`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({ idToken: "firebase-id-token", role: "admin" }),
       headers: csrfHeaders(csrfToken, csrfCookie),
       method: "POST",
@@ -188,7 +157,7 @@ describe("auth routes", () => {
   });
 
   it("returns the authenticated admin", async () => {
-    const response = await fetch(`${baseUrl}/api/auth/me`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/me`, {
       headers: { Cookie: "admin_session=firebase-session" },
     });
 
@@ -200,7 +169,7 @@ describe("auth routes", () => {
   it("rejects a missing session", async () => {
     auth.verifySession.mockRejectedValue(new UnauthorizedError());
 
-    const response = await fetch(`${baseUrl}/api/auth/me`);
+    const response = await fetch(`${server.baseUrl}/api/auth/me`);
 
     expect(response.status).toBe(401);
     expect(auth.verifySession).toHaveBeenCalledWith(undefined);
@@ -208,7 +177,7 @@ describe("auth routes", () => {
 
   it("revokes the session and clears auth cookies", async () => {
     const { csrfCookie, csrfToken } = await getCsrf("firebase-session");
-    const response = await fetch(`${baseUrl}/api/auth/logout`, {
+    const response = await fetch(`${server.baseUrl}/api/auth/logout`, {
       headers: csrfHeaders(csrfToken, csrfCookie, "firebase-session"),
       method: "POST",
     });
