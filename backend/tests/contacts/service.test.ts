@@ -25,7 +25,7 @@ beforeEach(() => {
 
 describe("contacts service", () => {
   it("returns empty contacts before they are first saved", async () => {
-    document.get.mockResolvedValue({ exists: false });
+    document.get.mockResolvedValue({ data: () => undefined });
 
     await expect(getContacts()).resolves.toEqual({
       email: "",
@@ -38,10 +38,20 @@ describe("contacts service", () => {
   it("returns saved contacts without fields the form does not own", async () => {
     document.get.mockResolvedValue({
       data: () => ({ ...contacts, photo: { name: "photo.png" } }),
-      exists: true,
     });
 
     await expect(getContacts()).resolves.toEqual(contacts);
+  });
+
+  it("returns empty contacts when the document holds only the photo", async () => {
+    document.get.mockResolvedValue({ data: () => ({ photo: { name: "photo.png" } }) });
+
+    await expect(getContacts()).resolves.toEqual({
+      email: "",
+      instagram: "",
+      linkedin: "",
+      youtube: "",
+    });
   });
 
   it("merges contacts so other fields of the document are kept", async () => {

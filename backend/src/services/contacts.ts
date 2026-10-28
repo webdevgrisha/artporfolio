@@ -8,14 +8,16 @@ const emptyContacts: Contacts = {
   youtube: "",
 };
 
-function contactsDocument() {
+/** The single document that holds the contacts and the contact photo. */
+export function contactsDocument() {
   return firestore().doc("site/contacts");
 }
 
 export async function getContacts(): Promise<Contacts> {
   const snapshot = await contactsDocument().get();
 
-  return snapshot.exists ? contactsSchema.parse(snapshot.data()) : emptyContacts;
+  // The document may not exist yet, or hold only the photo when the links were never saved.
+  return contactsSchema.parse({ ...emptyContacts, ...snapshot.data() });
 }
 
 export async function saveContacts(contacts: Contacts): Promise<void> {
