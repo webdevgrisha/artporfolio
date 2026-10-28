@@ -2,6 +2,8 @@
 
 React frontend for ArtPortfolio, built with TypeScript and Vite.
 
+Frontend CSS and responsive-layout conventions are documented in the project [style guide](../docs/STYLE_GUIDE.md).
+
 Run commands from the repository root:
 
 ```bash
