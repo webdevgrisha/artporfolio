@@ -3,6 +3,7 @@ node_modules/
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
+firestore-debug.log
 gha-creds-*.json
 .DS_Store
 .env
