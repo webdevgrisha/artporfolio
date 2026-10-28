@@ -83,6 +83,11 @@
   white-space: nowrap;
 }
 
+/* A long file name takes the rest of the row; the button keeps its size. */
+.removeTooltip {
+  flex: none;
+}
+
 .removeIcon {
   inline-size: 1rem;
   block-size: 1.125rem;

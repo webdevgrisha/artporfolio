@@ -134,7 +134,7 @@ export function MediaPicker({
                         {item.name}{" "}
                         <span className={styles.fileSize}>({formatFileSize(item.size)})</span>
                       </span>
-                      <Tooltip content={removeLabel}>
+                      <Tooltip className={styles.removeTooltip} content={removeLabel}>
                         <IconButton label={removeLabel} onClick={() => removeItem(item.id)}>
                           <TrashIcon className={styles.removeIcon} />
                         </IconButton>
