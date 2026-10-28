@@ -71,13 +71,13 @@ export function PreviewDialog({
                 </p>
               ) : null}
             </div>
-            <Tooltip content={closeLabel}>
+            <Tooltip className={styles.close} content={closeLabel}>
               <IconButton label={closeLabel} onClick={onClose}>
                 <CloseIcon className={styles.closeIcon} />
               </IconButton>
             </Tooltip>
           </div>
-          <div className={styles.body}>{children}</div>
+          {children}
         </div>
       ) : null}
     </dialog>

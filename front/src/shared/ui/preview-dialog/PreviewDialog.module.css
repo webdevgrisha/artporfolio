@@ -20,14 +20,17 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-2) var(--space-4) var(--space-4);
+  gap: var(--space-4);
+  padding: var(--space-4);
 }
 
 .header {
+  /* The height of the title line; the close button is centred on it. */
+  --title-line-size: 1.75rem;
+
   display: flex;
   gap: var(--space-4);
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -39,6 +42,7 @@
   min-inline-size: 0;
   font-size: var(--font-size-lg);
   font-weight: 400;
+  line-height: var(--title-line-size);
   overflow-wrap: anywhere;
 }
 
@@ -49,11 +53,17 @@
   color: var(--color-text-muted);
 }
 
+/*
+ * The button keeps its full tap target but is pulled into the padding, so its icon lines up with
+ * the title line and the right edge of the content.
+ */
+.close {
+  flex: none;
+  margin-block-start: calc((var(--title-line-size) - var(--min-tap-target-size)) / 2);
+  margin-inline-end: calc((var(--title-line-size) - var(--min-tap-target-size)) / 2);
+}
+
 .closeIcon {
   inline-size: 1.25rem;
   block-size: 1.25rem;
-}
-
-.body {
-  padding-inline-end: var(--space-2);
 }
