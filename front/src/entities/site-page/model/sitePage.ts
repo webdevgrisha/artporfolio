@@ -17,5 +17,7 @@ export const sitePagesSchema = z.object({
   projects: sitePageSchema,
 });
 
+export const sitePageIds = sitePagesSchema.keyof().options;
+
 export type SitePages = z.infer<typeof sitePagesSchema>;
 export type SitePageId = keyof SitePages;
