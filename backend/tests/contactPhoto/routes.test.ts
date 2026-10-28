@@ -16,10 +16,10 @@ const photoService = vi.hoisted(() => ({
   updateContactPhotoAlt: vi.fn(),
 }));
 
-vi.mock("#services/auth", () => auth);
+vi.mock("#modules/auth/service", () => auth);
 vi.mock("#services/contactPhoto", () => photoService);
 
-import { authRouter } from "#routes/auth";
+import { authRouter } from "#modules/auth/routes";
 import { contactPhotoRouter } from "#routes/contactPhoto";
 import { NotFoundError, UnauthorizedError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";

@@ -16,7 +16,7 @@ vi.mock("firebase-admin/auth", () => ({
   getAuth: () => firebase,
 }));
 
-import { createSession, revokeSession, verifySession } from "#services/auth";
+import { createSession, revokeSession, verifySession } from "#modules/auth/service";
 import { UnauthorizedError } from "#shared/http/errors";
 
 function authError(code: string) {

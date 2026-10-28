@@ -19,11 +19,11 @@ const photoService = vi.hoisted(() => ({
   getContactPhoto: vi.fn(),
 }));
 
-vi.mock("#services/auth", () => auth);
+vi.mock("#modules/auth/service", () => auth);
 vi.mock("#services/contacts", () => contactsService);
 vi.mock("#services/contactPhoto", () => photoService);
 
-import { authRouter } from "#routes/auth";
+import { authRouter } from "#modules/auth/routes";
 import { contactsRouter } from "#routes/contacts";
 import { UnauthorizedError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";

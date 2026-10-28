@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { deletePhoto, updatePhotoAlt, uploadPhoto } from "#controllers/contactPhoto";
-import { requireAuth } from "#middleware/auth";
+import { requireAuth } from "#modules/auth/middleware";
 import { photoAltBodySchema } from "#schemas/contactPhoto";
 import { requireCsrfToken } from "#shared/middleware/csrf";
 import { parseUpload } from "#shared/middleware/upload";

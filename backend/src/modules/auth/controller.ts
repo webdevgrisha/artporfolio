@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
-import type { LoginBody } from "#schemas/auth";
-import { createSession, revokeSession } from "#services/auth";
+import type { LoginBody } from "#modules/auth/schema";
+import { createSession, revokeSession } from "#modules/auth/service";
 import { sessionCookie } from "#shared/config/cookies";
 import {
   clearCsrfCookie,

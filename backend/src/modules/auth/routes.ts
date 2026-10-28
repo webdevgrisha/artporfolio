@@ -1,8 +1,8 @@
 import { Router } from "express";
 
-import { login, logout, me } from "#controllers/auth";
-import { requireAuth } from "#middleware/auth";
-import { loginBodySchema } from "#schemas/auth";
+import { login, logout, me } from "#modules/auth/controller";
+import { requireAuth } from "#modules/auth/middleware";
+import { loginBodySchema } from "#modules/auth/schema";
 import { issueCsrfToken, requireCsrfToken } from "#shared/middleware/csrf";
 import { validateBody } from "#shared/middleware/validation";
 

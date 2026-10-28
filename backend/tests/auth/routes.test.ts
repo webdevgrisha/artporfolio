@@ -10,9 +10,9 @@ const auth = vi.hoisted(() => ({
   verifySession: vi.fn(),
 }));
 
-vi.mock("#services/auth", () => auth);
+vi.mock("#modules/auth/service", () => auth);
 
-import { authRouter } from "#routes/auth";
+import { authRouter } from "#modules/auth/routes";
 import { UnauthorizedError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";
 

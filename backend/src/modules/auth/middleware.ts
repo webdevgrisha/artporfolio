@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { verifySession } from "#services/auth";
+import { verifySession } from "#modules/auth/service";
 import { sessionCookie } from "#shared/config/cookies";
 import { readCookie } from "#shared/http/cookies";
 

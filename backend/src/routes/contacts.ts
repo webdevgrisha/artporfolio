@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { readContacts, updateContacts } from "#controllers/contacts";
-import { requireAuth } from "#middleware/auth";
+import { requireAuth } from "#modules/auth/middleware";
 import { contactsBodySchema } from "#schemas/contacts";
 import { requireCsrfToken } from "#shared/middleware/csrf";
 import { validateBody } from "#shared/middleware/validation";
