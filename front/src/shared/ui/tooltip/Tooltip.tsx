@@ -10,6 +10,7 @@ import {
   useFocus,
   useHover,
   useInteractions,
+  useTransitionStatus,
 } from "@floating-ui/react";
 import clsx from "clsx";
 import React, { type ReactNode } from "react";
@@ -20,6 +21,9 @@ import styles from "./Tooltip.module.css";
 const triggerGap = 8;
 const viewportPadding = 8;
 const openDelay = 300;
+// Keep in sync with --motion-duration-standard in Tooltip.module.css: the tooltip stays mounted
+// until its closing transition ends.
+const transitionDuration = 180;
 
 interface TooltipProps {
   /** The trigger. It must already have the same accessible name as `content`. */
@@ -36,7 +40,7 @@ interface TooltipProps {
  */
 export function Tooltip({ children, className, content }: TooltipProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const { context, floatingStyles, refs } = useFloating({
+  const { context, floatingStyles, placement, refs } = useFloating({
     middleware: [offset(triggerGap), flip(), shift({ padding: viewportPadding })],
     onOpenChange: setIsOpen,
     open: isOpen,
@@ -50,6 +54,7 @@ export function Tooltip({ children, className, content }: TooltipProps) {
     useFocus(context, { visibleOnly: true }),
     useDismiss(context),
   ]);
+  const { isMounted, status } = useTransitionStatus(context, { duration: transitionDuration });
 
   return (
     <>
@@ -61,7 +66,7 @@ export function Tooltip({ children, className, content }: TooltipProps) {
       >
         {children}
       </span>
-      {isOpen ? (
+      {isMounted ? (
         <FloatingPortal>
           <span
             ref={refs.setFloating}
@@ -70,7 +75,14 @@ export function Tooltip({ children, className, content }: TooltipProps) {
             aria-hidden="true"
             {...getFloatingProps()}
           >
-            {content}
+            {/* An inner element animates: the outer one is positioned with `transform`. */}
+            <span
+              className={styles.content}
+              data-side={placement.split("-")[0]}
+              data-status={status}
+            >
+              {content}
+            </span>
           </span>
         </FloatingPortal>
       ) : null}
