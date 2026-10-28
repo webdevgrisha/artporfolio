@@ -7,6 +7,9 @@ import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
 import type { contactsAction, contactsLoader } from "../model/contactsRoute";
 import styles from "./ContactsPage.module.css";
 
+// One toast for the result of saving: a new result replaces the previous one.
+const saveToastId = "contacts-save";
+
 export function ContactsPage() {
   const loadedContacts = useLoaderData<typeof contactsLoader>();
   // A fetcher, not a navigation: saving stays on the page and adds no history entry.
@@ -20,9 +23,9 @@ export function ContactsPage() {
 
     if (saveResult.ok) {
       setSavedContacts(saveResult.contacts);
-      showSuccessToast("Изменения сохранены");
+      showSuccessToast("Изменения сохранены", { id: saveToastId });
     } else {
-      showErrorToast(saveResult.error);
+      showErrorToast(saveResult.error, { id: saveToastId });
     }
   }, [saveResult]);
 
