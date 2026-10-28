@@ -2,6 +2,7 @@
   inline-size: min(28rem, 100% - 2 * var(--space-4));
   padding: var(--space-6);
   color: var(--color-text);
+  text-align: center;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
 }
@@ -26,6 +27,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  justify-content: flex-end;
+  justify-content: center;
   margin-block-start: var(--space-6);
 }
