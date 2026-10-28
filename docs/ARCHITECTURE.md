@@ -91,9 +91,9 @@ backend/src/
 ├── server.ts       Express app: middleware and routers
 ├── config/         env, cookies, cors, csrf
 ├── routes/         one router per domain
-├── middleware/     auth, csrf, validation, error
+├── middleware/     auth, csrf, validation, upload, error
 ├── controllers/    request handlers, one file per domain
-├── services/       business logic (auth, contacts) and Firebase access
+├── services/       business logic (auth, contacts, contactPhoto), image processing and Firebase access
 ├── schemas/        zod request schemas
 ├── errors/         HttpError and its subclasses
 ├── http/           cookie helpers

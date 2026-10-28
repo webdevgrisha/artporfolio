@@ -91,9 +91,9 @@ backend/src/
 ├── server.ts       приложение Express: middleware и роутеры
 ├── config/         env, cookies, cors, csrf
 ├── routes/         по роутеру на домен
-├── middleware/     auth, csrf, validation, error
+├── middleware/     auth, csrf, validation, upload, error
 ├── controllers/    обработчики запросов, по файлу на домен
-├── services/       бизнес-логика (auth, contacts) и доступ к Firebase
+├── services/       бизнес-логика (auth, contacts, contactPhoto), обработка изображений и доступ к Firebase
 ├── schemas/        zod-схемы запросов
 ├── errors/         HttpError и его подклассы
 ├── http/           работа с cookies
