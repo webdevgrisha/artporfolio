@@ -1,5 +1,7 @@
 import clsx from "clsx";
-import React, { type ComponentPropsWithRef, type ReactNode } from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
+
+import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field";
 
 import styles from "./Input.module.css";
 
@@ -22,36 +24,27 @@ export function Input({
   ref,
   ...inputProps
 }: InputProps) {
-  const generatedId = React.useId();
-  const inputId = id ?? generatedId;
-  const errorId = `${inputId}-error`;
-  const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
-  const controlClassName = clsx(styles.control, {
-    [styles.controlModified]: isModified,
-    [styles.controlWithAdornment]: Boolean(endAdornment),
+  const { controlId, describedBy, errorId } = useFieldIds({
+    "aria-describedby": ariaDescribedBy,
+    error,
+    id,
   });
 
   return (
-    <div className={styles.root}>
-      <label className={styles.label} htmlFor={inputId}>
-        {label}
-      </label>
+    <Field controlId={controlId} error={error} errorId={errorId} label={label}>
       <div className={styles.controlWrapper}>
         <input
           ref={ref}
-          id={inputId}
-          className={controlClassName}
-          aria-describedby={describedBy || undefined}
+          id={controlId}
+          className={clsx(getFieldControlClassName(isModified), styles.control, {
+            [styles.controlWithAdornment]: Boolean(endAdornment),
+          })}
+          aria-describedby={describedBy}
           aria-invalid={ariaInvalid ?? Boolean(error)}
           {...inputProps}
         />
         {endAdornment ? <div className={styles.endAdornment}>{endAdornment}</div> : null}
       </div>
-      {error ? (
-        <p className={styles.error} id={errorId}>
-          {error}
-        </p>
-      ) : null}
-    </div>
+    </Field>
   );
 }
