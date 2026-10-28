@@ -46,11 +46,6 @@
   background: var(--color-surface-hover);
 }
 
-/* The empty frame is a single button that fills it. */
-.frameEmpty {
-  padding: 0;
-}
-
 .frameDisabled {
   color: var(--color-text-muted);
   background: var(--color-surface-disabled);
@@ -125,37 +120,10 @@
   object-fit: contain;
 }
 
-.emptyButton {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--space-3);
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-4);
-  font: inherit;
+.placeholder {
+  padding-block-start: var(--space-2);
   font-size: var(--font-size-md);
   color: var(--color-text-muted);
-  text-align: center;
-  cursor: pointer;
-  background: none;
-  border: 0;
-  transition: color var(--motion-duration-fast) var(--motion-easing-standard);
-}
-
-@media (hover: hover) {
-  .emptyButton:hover:not(:disabled) {
-    color: var(--color-text);
-  }
-}
-
-.emptyButton:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: -4px;
-}
-
-.emptyButton:disabled {
-  cursor: not-allowed;
 }
 
 /* The attachment button sits in the bottom corner, as in a message composer. */
