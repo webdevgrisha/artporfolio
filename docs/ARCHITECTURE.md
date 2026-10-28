@@ -113,7 +113,7 @@ backend/src/
     ├── config/         env, cookies, cors, csrf
     ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
     ├── http/           HttpError, cookie helpers, Express request typing
-    ├── images/         image processing with sharp
+    ├── images/         image processing with sharp, image files in Cloud Storage
     └── middleware/     csrf, validation, upload, error
 ```
 

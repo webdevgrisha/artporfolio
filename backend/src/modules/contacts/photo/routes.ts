@@ -3,11 +3,10 @@ import { Router } from "express";
 import { requireAuth } from "#modules/auth/middleware";
 import { deletePhoto, updatePhotoAlt, uploadPhoto } from "#modules/contacts/photo/controller";
 import { photoAltBodySchema } from "#modules/contacts/photo/schema";
+import { maxSourceFileSize } from "#shared/images/processing";
 import { requireCsrfToken } from "#shared/middleware/csrf";
 import { parseUpload } from "#shared/middleware/upload";
 import { validateBody } from "#shared/middleware/validation";
-
-const maxPhotoSize = 15 * 1024 * 1024;
 
 export const photoRouter = Router();
 
@@ -16,7 +15,7 @@ photoRouter.use(requireAuth, requireCsrfToken);
 
 photoRouter.put(
   "/",
-  parseUpload({ fileField: "file", maxFileSize: maxPhotoSize }),
+  parseUpload({ fileField: "file", maxFileSize: maxSourceFileSize }),
   validateBody(photoAltBodySchema),
   uploadPhoto,
 );

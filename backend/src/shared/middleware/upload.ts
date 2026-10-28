@@ -4,7 +4,7 @@ import type { Request, RequestHandler } from "express";
 import { BadRequestError, PayloadTooLargeError } from "#shared/http/errors";
 
 /** The longest file name most file systems allow. */
-const maxFileNameLength = 255;
+export const maxFileNameLength = 255;
 
 export interface UploadedFile {
   data: Buffer;

@@ -14,6 +14,9 @@ const sourceFormats = ["jpeg", "png"] as const;
 // Rejects decompression bombs: small files that decode into huge images.
 const maxInputPixels = 50_000_000;
 
+/** The largest source photo an upload may send, in bytes. */
+export const maxSourceFileSize = 15 * 1024 * 1024;
+
 export type OutputFormat = (typeof outputFormats)[number];
 export type SourceFormat = (typeof sourceFormats)[number];
 
