@@ -1,0 +1,131 @@
+.root {
+  /* Overridden by the owner to match how the image is cropped on the site. */
+  --media-picker-preview-aspect-ratio: 1;
+
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+/* Matches the label of Input. */
+.label {
+  padding: 0;
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-md);
+  line-height: 1.375;
+}
+
+.label::after {
+  content: ":";
+}
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-block-size: 10rem;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  transition: background-color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+/* The same 2px frames as Input; an error takes precedence by coming later. */
+.frameModified {
+  border-color: var(--color-border-modified);
+  box-shadow: inset 0 0 0 1px var(--color-border-modified);
+}
+
+.frameInvalid {
+  border-color: var(--color-danger);
+  box-shadow: inset 0 0 0 1px var(--color-danger);
+}
+
+.frameDragOver {
+  background: var(--color-surface-hover);
+}
+
+.frameDisabled {
+  color: var(--color-text-muted);
+  background: var(--color-surface-disabled);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.itemHeader {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.fileName {
+  min-inline-size: 0;
+  font-size: var(--font-size-lg);
+  overflow-wrap: anywhere;
+}
+
+.removeIcon {
+  inline-size: 1rem;
+  block-size: 1.125rem;
+}
+
+.preview {
+  display: block;
+  inline-size: calc(100% - var(--space-2));
+  aspect-ratio: var(--media-picker-preview-aspect-ratio);
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
+
+.placeholder {
+  padding-block-start: var(--space-2);
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+}
+
+/* The attachment button sits in the bottom corner, as in a message composer. */
+.selectTooltip {
+  align-self: flex-end;
+  margin-block-start: auto;
+}
+
+.selectIcon {
+  inline-size: auto;
+  block-size: 1.875rem;
+  rotate: 36deg;
+}
+
+.fileInput {
+  display: none;
+}
+
+.hint {
+  margin-block-start: var(--space-1);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
+/* Matches the error of Input. */
+.error {
+  margin-block-start: var(--space-1);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--color-danger);
+}
