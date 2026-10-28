@@ -4,10 +4,14 @@ import type { Ref } from "react";
 import { LogoutButton } from "@/features/logout";
 import avatarUrl from "@/shared/assets/images/portraitMark.png";
 import { CloseIcon } from "@/shared/ui/icon";
+import { IconButton } from "@/shared/ui/icon-button";
+import { Tooltip } from "@/shared/ui/tooltip";
 
 import { AdminNavigation } from "./AdminNavigation";
 import { AdminProfile } from "./AdminProfile";
 import styles from "./AdminSidebar.module.css";
+
+const closeLabel = "Закрыть меню";
 
 interface AdminSidebarProps {
   id: string;
@@ -27,14 +31,11 @@ export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
       />
 
       <div ref={ref} id={id} className={clsx(styles.sidebar, { [styles.open]: isOpen })}>
-        <button
-          className={styles.closeButton}
-          type="button"
-          aria-label="Закрыть меню"
-          onClick={onClose}
-        >
-          <CloseIcon />
-        </button>
+        <Tooltip className={styles.close} content={closeLabel}>
+          <IconButton label={closeLabel} onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Tooltip>
 
         <AdminProfile className={styles.profile} imageUrl={avatarUrl} name="ANASTASIA TURKEVICH" />
 
