@@ -1,14 +1,14 @@
 import { useObjectUrl } from "@/shared/lib/useObjectUrl";
 
-interface MediaPreviewProps {
+interface MediaImageProps {
   className?: string;
   source: File | string;
 }
 
-export function MediaPreview({ className, source }: MediaPreviewProps) {
+/** An image of a picked file or from a URL. Decorative: the file name is always shown with it. */
+export function MediaImage({ className, source }: MediaImageProps) {
   const objectUrl = useObjectUrl(source instanceof File ? source : undefined);
   const src = typeof source === "string" ? source : objectUrl;
 
-  // Decorative: the file name is shown next to the preview.
   return src ? <img className={className} src={src} alt="" decoding="async" /> : null;
 }

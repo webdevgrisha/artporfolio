@@ -4,8 +4,3 @@
   gap: var(--layout-space-6);
   max-inline-size: 24rem;
 }
-
-/* The preview is cropped the way the site shows the photo. */
-.picker {
-  --media-picker-preview-aspect-ratio: 764 / 534;
-}

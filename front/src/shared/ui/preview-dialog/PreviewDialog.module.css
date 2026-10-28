@@ -1,0 +1,43 @@
+/* Sized by its content, up to the viewport minus a margin on every side. */
+.root {
+  max-inline-size: calc(100vw - 2 * var(--space-4));
+  max-block-size: calc(100dvh - 2 * var(--space-4));
+  padding: 0;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.root::backdrop {
+  background: var(--color-backdrop);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-4) var(--space-4);
+}
+
+.header {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  min-inline-size: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.closeIcon {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
+.body {
+  padding-inline-end: var(--space-2);
+}

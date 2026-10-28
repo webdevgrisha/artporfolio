@@ -28,16 +28,18 @@ export function ContactPhotoFields({ className, isSaving, serverPhoto }: Contact
       return [{ id: "picked", name: photo.name, size: photo.size, source: photo }];
     }
 
-    const preview = serverPhoto?.sources.webp[0];
-    if (photo !== savedPhoto || !serverPhoto || !preview) return [];
+    // Ordered by width: the smallest one for the thumbnail, the largest for the preview dialog.
+    const images = serverPhoto?.sources.webp ?? [];
+    const thumbnail = images.at(0);
+    if (photo !== savedPhoto || !serverPhoto || !thumbnail) return [];
 
-    // The smallest image is wider than the preview.
     return [
       {
+        fullSizeSource: images.at(-1)?.url,
         id: serverPhoto.version,
         name: serverPhoto.fileName,
         size: serverPhoto.fileSize,
-        source: preview.url,
+        source: thumbnail.url,
       },
     ];
   }, [photo, serverPhoto]);
@@ -49,7 +51,6 @@ export function ContactPhotoFields({ className, isSaving, serverPhoto }: Contact
   return (
     <div className={clsx(styles.root, className)}>
       <MediaPicker
-        className={styles.picker}
         label="Фото"
         accept={photoRules.accept}
         acceptLabel={photoRules.acceptLabel}

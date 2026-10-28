@@ -1,7 +1,4 @@
 .root {
-  /* Overridden by the owner to match how the image is cropped on the site. */
-  --media-picker-preview-aspect-ratio: 1;
-
   display: flex;
   flex-direction: column;
   inline-size: 100%;
@@ -85,12 +82,36 @@
   block-size: 1.125rem;
 }
 
-.preview {
-  display: block;
-  inline-size: calc(100% - var(--space-2));
-  aspect-ratio: var(--media-picker-preview-aspect-ratio);
-  object-fit: cover;
+.thumbnailTooltip {
+  align-self: flex-start;
+}
+
+/* A square thumbnail, as in Figma; the whole image is in the preview dialog. */
+.thumbnailButton {
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
   border: 1px solid var(--color-border);
+}
+
+.thumbnail {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+@media (hover: hover) {
+  .thumbnailButton:hover:not(:disabled) .thumbnail {
+    opacity: 0.8;
+  }
+}
+
+/* The whole image, as large as the dialog allows, leaving room for its header. */
+.fullSizeImage {
+  display: block;
+  max-inline-size: 100%;
+  max-block-size: calc(100dvh - 8rem);
+  object-fit: contain;
 }
 
 .placeholder {
