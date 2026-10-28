@@ -2,7 +2,7 @@ import clsx from "clsx";
 import React, { type ChangeEvent } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
-import { FieldHint } from "@/shared/ui/field";
+import { FieldError, FieldHint } from "@/shared/ui/field";
 import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Tooltip } from "@/shared/ui/tooltip";
@@ -181,11 +181,7 @@ export function MediaPicker({
         </FieldHint>
         {/* Announces a rejected file: the focus stays on the attachment button. */}
         <div aria-live="polite">
-          {shownError ? (
-            <p className={styles.error} id={errorId}>
-              {shownError}
-            </p>
-          ) : null}
+          {shownError ? <FieldError id={errorId}>{shownError}</FieldError> : null}
         </div>
       </fieldset>
 

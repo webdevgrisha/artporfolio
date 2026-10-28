@@ -133,11 +133,3 @@
 .fileInput {
   display: none;
 }
-
-/* Matches the error of Field. */
-.error {
-  margin-block-start: var(--space-1);
-  font-size: var(--font-size-sm);
-  line-height: 1.4;
-  color: var(--color-danger);
-}

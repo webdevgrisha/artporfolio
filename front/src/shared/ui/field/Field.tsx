@@ -2,6 +2,7 @@ import clsx from "clsx";
 import type { ReactNode } from "react";
 
 import styles from "./Field.module.css";
+import { FieldError } from "./FieldError";
 import { FieldHint } from "./FieldHint";
 
 interface FieldProps {
@@ -34,11 +35,7 @@ export function Field({
       </label>
       {children}
       {hint ? <FieldHint id={hintId}>{hint}</FieldHint> : null}
-      {error ? (
-        <p className={styles.error} id={errorId}>
-          {error}
-        </p>
-      ) : null}
+      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </div>
   );
 }
