@@ -11,11 +11,14 @@ import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { ArrowLeftIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Spinner } from "@/shared/ui/spinner";
+import { Tooltip } from "@/shared/ui/tooltip";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import { contactFields } from "../model/contactFields";
 import { type ContactsFormValues, contactsFormSchema } from "../model/contactsFormSchema";
 import styles from "./EditContactsForm.module.css";
+
+const revertLabel = "Отменить изменения";
 
 interface EditContactsFormProps {
   className?: string;
@@ -88,9 +91,11 @@ export function EditContactsForm({
 
       <div className={styles.actions}>
         {isDirty ? (
-          <IconButton label="Отменить изменения" disabled={isSaving} onClick={revertChanges}>
-            <ArrowLeftIcon />
-          </IconButton>
+          <Tooltip content={revertLabel}>
+            <IconButton label={revertLabel} disabled={isSaving} onClick={revertChanges}>
+              <ArrowLeftIcon />
+            </IconButton>
+          </Tooltip>
         ) : null}
         <Button
           ref={saveButtonRef}
