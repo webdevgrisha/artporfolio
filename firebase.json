@@ -18,6 +18,9 @@
       "predeploy": ["pnpm --dir \"$PROJECT_DIR\" --filter artportfolio-backend build"]
     }
   ],
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "hosting": {
     "public": "front/dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -40,6 +43,9 @@
   "emulators": {
     "auth": {
       "port": 9099
+    },
+    "firestore": {
+      "port": 5502
     },
     "functions": {
       "port": 5501
