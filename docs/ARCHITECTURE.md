@@ -62,7 +62,7 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 
 - Folders of slices and of `shared/ui` components: kebab-case (`admin-layout`, `password-input`).
 - Component files: PascalCase, one component per file, CSS Module beside it (`LoginForm.tsx`, `LoginForm.module.css`).
-- Other files: camelCase, named after the main export (`getCurrentUser.ts`), or after their topic when they export several equal functions (`shared/ui/toast/toast.ts`).
+- Other files: camelCase, named after what they contain (`getCurrentUser.ts`, `toast.ts`, `contactsRoute.ts`).
 - Page components end with `Page` (`GalleryPage`).
 
 ### Routing and data

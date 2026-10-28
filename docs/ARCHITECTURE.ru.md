@@ -62,7 +62,7 @@ features/login/
 
 - Папки слайсов и компонентов `shared/ui`: kebab-case (`admin-layout`, `password-input`).
 - Файлы компонентов: PascalCase, один компонент на файл, CSS Module рядом (`LoginForm.tsx`, `LoginForm.module.css`).
-- Остальные файлы: camelCase по имени главного экспорта (`getCurrentUser.ts`) или по теме, если файл экспортирует несколько равноправных функций (`shared/ui/toast/toast.ts`).
+- Остальные файлы: camelCase, по смыслу содержимого (`getCurrentUser.ts`, `toast.ts`, `contactsRoute.ts`).
 - Компоненты страниц заканчиваются на `Page` (`GalleryPage`).
 
 ### Маршруты и данные
