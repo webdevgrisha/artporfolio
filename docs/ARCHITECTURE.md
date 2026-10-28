@@ -74,16 +74,19 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
   - inside the admin area, `useSessionUser()` returns the signed-in user;
   - the login page has its own loader and action in `pages/login/model/loginRoute.ts`;
   - logout is a `<Form method="post">` to the `/admin/logout` action (`features/logout`);
-  - an edit page saves through `useFetcher` to its route action (`pages/contacts/model/contactsRoute.ts`): saving stays on the page and adds no history entry. The action returns the saved values, so the route turns revalidation off with `shouldRevalidate`.
+  - an edit page saves through `useFetcher` to its route action (`pages/contacts/model/contactsRoute.ts`): saving stays on the page and adds no history entry. The action returns the saved values, so the route turns revalidation off with `shouldRevalidate`. A form with a file submits `multipart/form-data`, the only body that carries a file (`contactsChangesToFormData`), and the action validates it again.
 - `PageLoading` is the `HydrateFallback` shown while the first loaders run.
 - Admin pages are nested in a pathless route whose `ErrorBoundary` is `AdminPageError` (`widgets/admin-layout`): a page that fails to load or render is replaced inside the layout, and the navigation stays usable.
 
 ### Forms and feedback
 
 - Forms use react-hook-form with a zod schema that mirrors the server rules. Modified fields are highlighted with `Input`'s `isModified`.
+- A form with several sections uses `Tabs` (`shared/ui`) inside one `<form>` with one save button. Hidden panels stay mounted, so their fields keep their values. The form sets `shouldFocusError: false` and, on an invalid submit, opens the tab of the first invalid field before focusing it.
+- Files are picked with `MediaPicker` (`shared/ui`). It checks the type and size and shows the preview, but it uploads nothing: the form keeps the picked `File` and sends it on save, so revert and the unsaved-changes guard cover it too.
+- A save that calls several endpoints sends only the changed parts and saves them independently (`saveContacts`). The page replaces only the parts that were saved, and the form resets only their fields, so a part that failed keeps its changes.
 - A form with unsaved changes calls `useUnsavedChangesGuard(isDirty)` (`shared/lib`) and asks with `ConfirmDialog`. React Router allows one blocker at a time, so a page has one guarded form.
 - The result of an action is shown with `showSuccessToast` or `showErrorToast` (`shared/ui/toast`). Errors stay until closed. Toasts of one action share an `id`, so a new result replaces the previous one.
-- Request error texts come from `getRequestErrorMessage` (`shared/api`), which covers no connection and server errors; a feature handles its own cases first, as `getSaveContactsErrorMessage` does.
+- Request error texts come from `getRequestErrorMessage` (`shared/api`), which covers no connection and server errors; a feature handles its own cases first, as `getSaveContactsErrorMessage` and `getSavePhotoErrorMessage` do.
 - An icon-only button is an `IconButton` with a `label`, wrapped in a `Tooltip` with the same text.
 
 ### React conventions
