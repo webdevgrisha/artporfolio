@@ -62,7 +62,7 @@ features/login/
 
 - Папки слайсов и компонентов `shared/ui`: kebab-case (`admin-layout`, `password-input`).
 - Файлы компонентов: PascalCase, один компонент на файл, CSS Module рядом (`LoginForm.tsx`, `LoginForm.module.css`).
-- Остальные файлы: camelCase по имени главного экспорта (`getCurrentUser.ts`).
+- Остальные файлы: camelCase по имени главного экспорта (`getCurrentUser.ts`) или по теме, если файл экспортирует несколько равноправных функций (`shared/ui/toast/toast.ts`).
 - Компоненты страниц заканчиваются на `Page` (`GalleryPage`).
 
 ### Маршруты и данные
@@ -73,8 +73,18 @@ features/login/
   - маршрут лейаута админки использует `requireSession` (`entities/user`), который перенаправляет гостя на `/admin/login?redirectTo=…`;
   - внутри админки `useSessionUser()` возвращает текущего пользователя;
   - у страницы входа свои loader и action в `pages/login/model/loginRoute.ts`;
-  - выход — это `<Form method="post">` на action `/admin/logout` (`features/logout`).
+  - выход — это `<Form method="post">` на action `/admin/logout` (`features/logout`);
+  - страница редактирования сохраняет данные через `useFetcher` в action своего маршрута (`pages/contacts/model/contactsRoute.ts`): сохранение не уводит со страницы и не добавляет запись в историю. Action возвращает сохранённые значения, поэтому маршрут отключает повторную загрузку через `shouldRevalidate`.
 - `PageLoading` — это `HydrateFallback`, который виден, пока выполняются первые loader.
+- Страницы админки вложены в маршрут без пути, у которого `ErrorBoundary` — `AdminPageError` (`widgets/admin-layout`): страница, которая не загрузилась или упала при рендере, заменяется сообщением внутри лейаута, а навигация продолжает работать.
+
+### Формы и обратная связь
+
+- Формы построены на react-hook-form со схемой zod, которая повторяет правила сервера. Изменённые поля подсвечиваются пропом `isModified` у `Input`.
+- Форма с несохранёнными изменениями вызывает `useUnsavedChangesGuard(isDirty)` (`shared/lib`) и спрашивает через `ConfirmDialog`. React Router допускает только один блокировщик одновременно, поэтому на странице одна защищённая форма.
+- Результат действия показывается через `showSuccessToast` или `showErrorToast` (`shared/ui/toast`). Ошибки висят, пока их не закроют. У уведомлений одного действия общий `id`, поэтому новый результат заменяет предыдущий.
+- Тексты ошибок запросов берутся из `getRequestErrorMessage` (`shared/api`): он покрывает отсутствие соединения и ошибки сервера, а фича сначала обрабатывает свои случаи, как `getSaveContactsErrorMessage`.
+- Кнопка только с иконкой — это `IconButton` с `label`, обёрнутая в `Tooltip` с тем же текстом.
 
 ### Соглашения React
 
@@ -125,4 +135,4 @@ backend/src/
 1. Добавьте путь в `routes` и заголовок в `adminNavigation` в `shared/config/routes.ts`.
 2. Создайте `pages/<name>/ui/<Name>Page.tsx` и `pages/<name>/index.ts`.
 3. Зарегистрируйте маршрут в `app/router.tsx` с ленивым импортом `@/pages/<name>`.
-4. Загрузку данных положите в loader в сегменте `model` страницы. Переиспользуемые действия — в `features`, модели данных и запросы — в `entities`.
+4. Загрузку данных положите в loader, а сохранение — в action в сегменте `model` страницы. Переиспользуемые действия — в `features`, модели данных и запросы — в `entities`.

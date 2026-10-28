@@ -62,7 +62,7 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 
 - Folders of slices and of `shared/ui` components: kebab-case (`admin-layout`, `password-input`).
 - Component files: PascalCase, one component per file, CSS Module beside it (`LoginForm.tsx`, `LoginForm.module.css`).
-- Other files: camelCase, named after the main export (`getCurrentUser.ts`).
+- Other files: camelCase, named after the main export (`getCurrentUser.ts`), or after their topic when they export several equal functions (`shared/ui/toast/toast.ts`).
 - Page components end with `Page` (`GalleryPage`).
 
 ### Routing and data
@@ -73,8 +73,18 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
   - the admin layout route uses `requireSession` (`entities/user`), which redirects guests to `/admin/login?redirectTo=…`;
   - inside the admin area, `useSessionUser()` returns the signed-in user;
   - the login page has its own loader and action in `pages/login/model/loginRoute.ts`;
-  - logout is a `<Form method="post">` to the `/admin/logout` action (`features/logout`).
+  - logout is a `<Form method="post">` to the `/admin/logout` action (`features/logout`);
+  - an edit page saves through `useFetcher` to its route action (`pages/contacts/model/contactsRoute.ts`): saving stays on the page and adds no history entry. The action returns the saved values, so the route turns revalidation off with `shouldRevalidate`.
 - `PageLoading` is the `HydrateFallback` shown while the first loaders run.
+- Admin pages are nested in a pathless route whose `ErrorBoundary` is `AdminPageError` (`widgets/admin-layout`): a page that fails to load or render is replaced inside the layout, and the navigation stays usable.
+
+### Forms and feedback
+
+- Forms use react-hook-form with a zod schema that mirrors the server rules. Modified fields are highlighted with `Input`'s `isModified`.
+- A form with unsaved changes calls `useUnsavedChangesGuard(isDirty)` (`shared/lib`) and asks with `ConfirmDialog`. React Router allows one blocker at a time, so a page has one guarded form.
+- The result of an action is shown with `showSuccessToast` or `showErrorToast` (`shared/ui/toast`). Errors stay until closed. Toasts of one action share an `id`, so a new result replaces the previous one.
+- Request error texts come from `getRequestErrorMessage` (`shared/api`), which covers no connection and server errors; a feature handles its own cases first, as `getSaveContactsErrorMessage` does.
+- An icon-only button is an `IconButton` with a `label`, wrapped in a `Tooltip` with the same text.
 
 ### React conventions
 
@@ -125,4 +135,4 @@ backend/src/
 1. Add the path to `routes` and the title to `adminNavigation` in `shared/config/routes.ts`.
 2. Create `pages/<name>/ui/<Name>Page.tsx` and `pages/<name>/index.ts`.
 3. Register the route in `app/router.tsx` with a lazy import of `@/pages/<name>`.
-4. Put data loading in a loader in the page's `model` segment. Put reusable actions in `features`, and data models and requests in `entities`.
+4. Put data loading in a loader and saving in an action in the page's `model` segment. Put reusable actions in `features`, and data models and requests in `entities`.
