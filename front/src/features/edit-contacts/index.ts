@@ -1,4 +1,8 @@
-export { getSaveContactsErrorMessage } from "./lib/getSaveContactsErrorMessage";
-export { type ContactsFormValues, contactsFormSchema } from "./model/contactsFormSchema";
-export { saveContacts } from "./model/saveContacts";
+export { getSaveContactsErrorMessage } from "./lib/saveErrorMessages";
+export {
+  type ContactsChanges,
+  contactsChangesToFormData,
+  parseContactsChanges,
+} from "./model/contactsChanges";
+export { type SaveContactsResult, saveContacts } from "./model/saveContacts";
 export { EditContactsForm } from "./ui/EditContactsForm";

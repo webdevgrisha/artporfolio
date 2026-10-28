@@ -1,7 +1,11 @@
 import React from "react";
 import { useFetcher, useLoaderData } from "react-router";
 
-import { type ContactsFormValues, EditContactsForm } from "@/features/edit-contacts";
+import {
+  type ContactsChanges,
+  contactsChangesToFormData,
+  EditContactsForm,
+} from "@/features/edit-contacts";
 import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
 
 import type { contactsAction, contactsLoader } from "../model/contactsRoute";
@@ -11,26 +15,38 @@ import styles from "./ContactsPage.module.css";
 const saveToastId = "contacts-save";
 
 export function ContactsPage() {
-  const { contacts: loadedContacts } = useLoaderData<typeof contactsLoader>();
+  const loadedContacts = useLoaderData<typeof contactsLoader>();
   // A fetcher, not a navigation: saving stays on the page and adds no history entry.
   const fetcher = useFetcher<typeof contactsAction>();
-  // Kept apart from fetcher.data, which a failed save replaces.
+  // Kept apart from fetcher.data, which the next save replaces.
   const [savedContacts, setSavedContacts] = React.useState(loadedContacts);
   const saveResult = fetcher.data;
 
   React.useEffect(() => {
     if (!saveResult) return;
 
-    if (saveResult.ok) {
-      setSavedContacts(saveResult.contacts);
-      showSuccessToast("Изменения сохранены", { id: saveToastId });
-    } else {
+    const { contacts, photo } = saveResult;
+
+    // Only the saved parts are replaced: the form keeps the changes of a part that failed.
+    if (contacts || photo !== undefined) {
+      setSavedContacts((previous) => ({
+        contacts: contacts ?? previous.contacts,
+        photo: photo === undefined ? previous.photo : photo,
+      }));
+    }
+
+    if (saveResult.error) {
       showErrorToast(saveResult.error, { id: saveToastId });
+    } else {
+      showSuccessToast("Изменения сохранены", { id: saveToastId });
     }
   }, [saveResult]);
 
-  function handleSubmit(values: ContactsFormValues) {
-    void fetcher.submit(values, { encType: "application/json", method: "put" });
+  function handleSubmit(changes: ContactsChanges) {
+    void fetcher.submit(contactsChangesToFormData(changes), {
+      encType: "multipart/form-data",
+      method: "put",
+    });
   }
 
   return (
