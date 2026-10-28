@@ -21,8 +21,8 @@ import styles from "./Tooltip.module.css";
 const triggerGap = 8;
 const viewportPadding = 8;
 const openDelay = 300;
-// Keep in sync with --motion-duration-standard in Tooltip.module.css: the tooltip stays mounted
-// until its closing transition ends.
+// Keep in sync with --motion-duration-standard (globals.css), which Tooltip.module.css uses for
+// the fade: the tooltip stays mounted until its closing transition ends.
 const transitionDuration = 180;
 
 interface TooltipProps {
