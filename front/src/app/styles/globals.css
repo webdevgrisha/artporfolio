@@ -24,6 +24,7 @@
     --color-surface-inverse: #000;
     --color-border: #000;
     --color-border-disabled: #777;
+    --color-border-modified: #1d4ed8;
     --color-focus: #000;
     --color-danger: #b00020;
     --color-backdrop: rgb(0 0 0 / 31%);

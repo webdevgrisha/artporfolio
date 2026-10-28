@@ -6,6 +6,8 @@ import styles from "./Input.module.css";
 export interface InputProps extends ComponentPropsWithRef<"input"> {
   endAdornment?: ReactNode;
   error?: string;
+  /** Highlights a value that differs from the saved one. An error takes precedence. */
+  isModified?: boolean;
   label: string;
 }
 
@@ -15,6 +17,7 @@ export function Input({
   endAdornment,
   error,
   id,
+  isModified = false,
   label,
   ref,
   ...inputProps
@@ -24,6 +27,7 @@ export function Input({
   const errorId = `${inputId}-error`;
   const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
   const controlClassName = clsx(styles.control, {
+    [styles.controlModified]: isModified,
     [styles.controlWithAdornment]: Boolean(endAdornment),
   });
 

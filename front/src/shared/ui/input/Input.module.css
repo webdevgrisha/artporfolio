@@ -39,6 +39,10 @@
   outline-offset: 2px;
 }
 
+.controlModified {
+  border-color: var(--color-border-modified);
+}
+
 .control[aria-invalid="true"] {
   border-color: var(--color-danger);
 }
