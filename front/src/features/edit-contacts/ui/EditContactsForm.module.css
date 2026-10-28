@@ -1,0 +1,18 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-8);
+}
+
+/* Pushed to the bottom when the form is taller than its fields. */
+.actions {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  justify-content: flex-end;
+  margin-block-start: auto;
+}
+
+.saveButton {
+  text-transform: uppercase;
+}

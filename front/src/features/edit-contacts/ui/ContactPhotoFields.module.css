@@ -1,0 +1,13 @@
+/* The photo and its description side by side, in the same columns as the links tab. */
+.root {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--layout-space-6) var(--layout-space-8);
+  align-items: start;
+}
+
+@media (width >= 40rem) {
+  .root {
+    grid-template-columns: repeat(2, minmax(0, 24rem));
+  }
+}

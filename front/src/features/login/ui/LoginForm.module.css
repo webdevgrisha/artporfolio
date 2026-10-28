@@ -32,4 +32,5 @@
   margin-block-start: var(--space-8);
   font-size: var(--font-size-3xl);
   line-height: 1;
+  text-transform: uppercase;
 }

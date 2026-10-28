@@ -31,14 +31,43 @@ pnpm exec firebase functions:secrets:set CSRF_SECRET --project artportfolio-b2ef
 
 The deployed `api` function declares this secret in its runtime configuration.
 
+## Firestore
+
+The API stores site content in Firestore. Create the database once in the Firebase console:
+**Firestore Database → Create database**, Production mode, location `europe-west1` (the region of
+the `api` function; it cannot be changed later).
+
+Browsers never access Firestore directly, so [`firestore.rules`](firestore.rules) denies all client
+access. The CI workflow does not deploy these rules; deploy them manually after changing them:
+
+```sh
+pnpm deploy:firestore-rules --project artportfolio-b2ef4
+```
+
+## Cloud Storage
+
+The API stores the contact photo in the default Cloud Storage bucket. Enable it once in the
+Firebase console: **Storage → Get started**, Production mode, location `europe-west1`. Storage
+requires the Blaze plan.
+
+Browsers read the photos only through Firebase download URLs, which bypass the rules, so
+[`storage.rules`](storage.rules) denies all other client access. Deploy the rules manually after
+changing them:
+
+```sh
+pnpm deploy:storage-rules --project artportfolio-b2ef4
+```
+
 ## Local development
 
 Copy the frontend and backend `.env.example` files to `.env.local` and provide local values. Start
-the Auth and Functions emulators, then run Vite in another terminal:
+the Auth, Firestore, Functions and Storage emulators, then run Vite in another terminal:
 
 ```sh
 pnpm dev:backend
 pnpm dev:front
 ```
 
-Vite proxies `/api` requests to the `api` function running in the local Functions Emulator.
+Vite proxies `/api` requests to the `api` function running in the local Functions Emulator. The
+Functions Emulator connects the Admin SDK to the Firestore and Storage emulators automatically. The
+Firestore Emulator needs Java 21 or later.

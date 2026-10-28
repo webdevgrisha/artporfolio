@@ -45,24 +45,11 @@
   transition-delay: 0s;
 }
 
-.closeButton {
-  display: grid;
-  place-items: center;
+.close {
   align-self: flex-start;
-  inline-size: var(--min-tap-target-size);
-  block-size: var(--min-tap-target-size);
-  padding: 0;
   margin-block-end: var(--layout-space-8);
   /* --page-gutter is inherited from AdminLayout, so the button lines up with the menu button. */
   margin-inline-start: var(--page-gutter);
-  color: var(--color-text);
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-}
-
-.closeButton:focus-visible {
-  outline: var(--focus-ring);
 }
 
 .profile {
@@ -93,7 +80,7 @@
   }
 
   .backdrop,
-  .closeButton {
+  .close {
     display: none;
   }
 }

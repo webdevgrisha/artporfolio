@@ -31,8 +31,11 @@
   line-height: normal;
 }
 
+/* A column, so a page can stretch to the full height of the frame. */
 .contentFrame {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   border: 1px solid var(--color-border);
 }
 

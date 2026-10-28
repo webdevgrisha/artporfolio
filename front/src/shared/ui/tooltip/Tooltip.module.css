@@ -1,0 +1,48 @@
+.trigger {
+  display: inline-flex;
+}
+
+.tooltip {
+  z-index: var(--layer-tooltip);
+}
+
+.content {
+  display: block;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--color-text-inverse);
+  white-space: nowrap;
+  background: var(--color-surface-inverse);
+  transition:
+    opacity var(--motion-duration-standard) var(--motion-easing-standard),
+    translate var(--motion-duration-standard) var(--motion-easing-standard);
+}
+
+/*
+ * Fades in from the trigger when inserted, and out while Floating UI keeps it mounted in the
+ * "close" status. The start of the opening comes from @starting-style, because the "initial"
+ * status can be replaced before the browser has rendered it.
+ */
+.content[data-status="close"] {
+  opacity: 0;
+  translate: 0 4px;
+}
+
+@starting-style {
+  .content {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
+/* Flipped below the trigger near the top edge of the viewport. */
+.content[data-side="bottom"][data-status="close"] {
+  translate: 0 -4px;
+}
+
+@starting-style {
+  .content[data-side="bottom"] {
+    translate: 0 -4px;
+  }
+}

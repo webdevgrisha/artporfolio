@@ -1,0 +1,70 @@
+.toast {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  inline-size: var(--width);
+  max-inline-size: 100%;
+  padding: var(--space-4);
+  font-size: var(--font-size-md);
+  line-height: 1.4;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.error {
+  border-color: var(--color-danger);
+}
+
+.icon {
+  display: flex;
+  flex: none;
+}
+
+.error .icon {
+  color: var(--color-danger);
+}
+
+.statusIcon {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
+.content {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+/* Sonner renders the close button first; it is moved to the end of the row. */
+.closeButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  order: 1;
+  inline-size: var(--min-tap-target-size);
+  block-size: var(--min-tap-target-size);
+  padding: 0;
+  margin-block: calc(-1 * var(--space-3));
+  margin-inline-end: calc(-1 * var(--space-3));
+  color: var(--color-text);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  transition: color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+@media (hover: hover) {
+  .closeButton:hover {
+    color: var(--color-text-muted);
+  }
+}
+
+.closeButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -4px;
+}
+
+.closeIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}

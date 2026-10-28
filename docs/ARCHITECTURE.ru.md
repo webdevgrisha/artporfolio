@@ -62,7 +62,7 @@ features/login/
 
 - Папки слайсов и компонентов `shared/ui`: kebab-case (`admin-layout`, `password-input`).
 - Файлы компонентов: PascalCase, один компонент на файл, CSS Module рядом (`LoginForm.tsx`, `LoginForm.module.css`).
-- Остальные файлы: camelCase по имени главного экспорта (`getCurrentUser.ts`).
+- Остальные файлы: camelCase, по смыслу содержимого (`getCurrentUser.ts`, `toast.ts`, `contactsRoute.ts`).
 - Компоненты страниц заканчиваются на `Page` (`GalleryPage`).
 
 ### Маршруты и данные
@@ -73,8 +73,21 @@ features/login/
   - маршрут лейаута админки использует `requireSession` (`entities/user`), который перенаправляет гостя на `/admin/login?redirectTo=…`;
   - внутри админки `useSessionUser()` возвращает текущего пользователя;
   - у страницы входа свои loader и action в `pages/login/model/loginRoute.ts`;
-  - выход — это `<Form method="post">` на action `/admin/logout` (`features/logout`).
+  - выход — это `<Form method="post">` на action `/admin/logout` (`features/logout`);
+  - страница редактирования сохраняет данные через `useFetcher` в action своего маршрута (`pages/contacts/model/contactsRoute.ts`): сохранение не уводит со страницы и не добавляет запись в историю. Action возвращает сохранённые значения, поэтому маршрут отключает повторную загрузку через `shouldRevalidate`. Форма с файлом отправляет `multipart/form-data` — единственное тело, в котором можно передать файл (`contactsChangesToFormData`), и action проверяет его заново.
 - `PageLoading` — это `HydrateFallback`, который виден, пока выполняются первые loader.
+- Страницы админки вложены в маршрут без пути, у которого `ErrorBoundary` — `AdminPageError` (`widgets/admin-layout`): страница, которая не загрузилась или упала при рендере, заменяется сообщением внутри лейаута, а навигация продолжает работать.
+
+### Формы и обратная связь
+
+- Формы построены на react-hook-form со схемой zod, которая повторяет правила сервера. Текстовые поля, такие как `Input`, построены на `Field` (`shared/ui`), который отвечает за подпись, подсказку (`hint`), ошибку и рамку; изменённые поля подсвечиваются пропом `isModified`.
+- Форма из нескольких разделов использует `Tabs` (`shared/ui`) внутри одного `<form>` с одной кнопкой сохранения. Скрытые панели остаются смонтированными, поэтому их поля сохраняют значения. Форма задаёт `shouldFocusError: false` и при отправке с ошибками сначала открывает вкладку первого неверного поля, потом ставит на него фокус.
+- Файлы выбираются через `MediaPicker` (`shared/ui`). Он проверяет тип и размер и показывает миниатюры, которые открываются в `PreviewDialog`, но ничего не загружает: форма хранит выбранный `File` и отправляет его при сохранении, поэтому на него тоже действуют отмена изменений и защита от ухода со страницы.
+- Сохранение, которое обращается к нескольким эндпоинтам, отправляет только изменённые части и сохраняет их независимо (`saveContacts`). Страница заменяет только сохранённые части, а форма сбрасывает только их поля, поэтому часть, которая не сохранилась, сохраняет изменения.
+- Форма с несохранёнными изменениями вызывает `useUnsavedChangesGuard(isDirty)` (`shared/lib`) и спрашивает через `ConfirmDialog`. React Router допускает только один блокировщик одновременно, поэтому на странице одна защищённая форма.
+- Результат действия показывается через `showSuccessToast` или `showErrorToast` (`shared/ui/toast`). Ошибки висят, пока их не закроют. У уведомлений одного действия общий `id`, поэтому новый результат заменяет предыдущий.
+- Тексты ошибок запросов берутся из `getRequestErrorMessage` (`shared/api`): он покрывает отсутствие соединения и ошибки сервера, а фича сначала обрабатывает свои случаи, как `getSaveContactsErrorMessage` и `getSavePhotoErrorMessage`.
+- Кнопка только с иконкой — это `IconButton` с `label`, обёрнутая в `Tooltip` с тем же текстом.
 
 ### Соглашения React
 
@@ -85,34 +98,39 @@ features/login/
 
 ## Бэкенд
 
+Бэкенд разбит на **предметные модули**, как рекомендует [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices#1-project-architecture-practices): всё, что относится к одной сущности, лежит в одной папке. Код, который ничего не знает о предметной области, лежит в `shared/`.
+
 ```text
 backend/src/
-├── firebase.ts     точка входа Cloud Function
-├── server.ts       приложение Express: middleware и роутеры
-├── config/         env, cookies, cors, csrf
-├── routes/         по роутеру на домен
-├── middleware/     auth, csrf, validation, error
-├── controllers/    обработчики запросов, по файлу на домен
-├── services/       бизнес-логика (auth) и доступ к Firebase
-├── schemas/        zod-схемы запросов
-├── errors/         HttpError и его подклассы
-├── http/           работа с cookies
-├── types/          глобальные объявления типов (Express Locals)
-├── database/       зарезервировано под доступ к данным
-├── models/         зарезервировано под модели данных
-└── utils/          зарезервировано под общие утилиты
+├── firebase.ts         точка входа Cloud Function
+├── server.ts           приложение Express: общие middleware и роутеры модулей верхнего уровня
+├── modules/            по папке на сущность
+│   ├── auth/           routes, controller, service, schema, middleware (requireAuth)
+│   ├── contacts/       ссылки для связи; document.ts — документ Firestore, общий с photo/
+│   │   └── photo/      фото для контактов, подключается роутером contacts
+│   └── health/
+└── shared/             без знания о предметной области
+    ├── config/         env, cookies, cors, csrf
+    ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
+    ├── http/           HttpError, работа с cookies, типы запроса Express
+    ├── images/         обработка изображений через sharp
+    └── middleware/     csrf, validation, upload, error
 ```
 
-- Запрос проходит путь: маршрут → middleware → контроллер → сервис.
-- В каждом слое по файлу на домен (`routes/auth.ts`, `controllers/auth.ts`). Файлов-реэкспортов нет.
-- Модули импортируют друг друга через subpath imports: `#services/auth`.
+- В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.
+- `shared/` никогда не импортирует `modules/`, это проверяет Biome. Модуль может использовать другой модуль, как `contacts` использует `requireAuth` из `auth`.
+- `server.ts` подключает только модули верхнего уровня. Вложенный модуль подключает роутер родителя, как `contacts` подключает `photo`.
+- Глобальные типы Express лежат у своего владельца: `modules/auth/express.d.ts` объявляет `Locals.auth`, `shared/http/express.d.ts` — `Request.file` и `rawBody`.
+- Код импортируется через subpath imports (`#modules/auth/service`, `#shared/http/errors`). Файлов-реэкспортов нет.
 - Express 5 сам передаёт отклонённые промисы в middleware ошибок, поэтому обработчики не оборачивают код в `try/catch` только ради `next(error)`.
-- Переменные окружения читаются через `getEnv()` из `config/env.ts` и проверяются один раз при первом обращении. `CSRF_SECRET` хранится в Secret Manager и читается конфигом CSRF.
+- Переменные окружения читаются через `getEnv()` из `shared/config/env.ts` и проверяются один раз при первом обращении. `CSRF_SECRET` хранится в Secret Manager и читается конфигом CSRF.
 - Ошибки для клиента выбрасываются как подклассы `HttpError`. Всё остальное логируется и возвращается как общий ответ 500.
+- Эндпоинты описаны в [API.ru.md](API.ru.md) и обновляются в том же коммите, что и эндпоинт.
 
 ## Тесты
 
-- Тесты бэкенда лежат в `backend/tests`, повторяя структуру `src`, и запускаются Vitest. Их окружение задано в `backend/vitest.config.ts`.
+- Тесты бэкенда лежат в `backend/tests`, повторяя структуру `src` (`tests/modules/contacts/photo/service.test.ts` тестирует `src/modules/contacts/photo/service.ts`), и запускаются Vitest. Их окружение задано в `backend/vitest.config.ts`.
+- В `tests/support` лежат общие помощники: `startTestServer` запускает приложение Express на свободном порту, `adminHeaders` возвращает cookies и CSRF-заголовок вошедшего администратора. Импортируйте их относительным путём с окончанием `.js`.
 - У фронтенда пока нет автоматических тестов.
 
 ## Как добавить страницу админки
@@ -120,4 +138,4 @@ backend/src/
 1. Добавьте путь в `routes` и заголовок в `adminNavigation` в `shared/config/routes.ts`.
 2. Создайте `pages/<name>/ui/<Name>Page.tsx` и `pages/<name>/index.ts`.
 3. Зарегистрируйте маршрут в `app/router.tsx` с ленивым импортом `@/pages/<name>`.
-4. Загрузку данных положите в loader в сегменте `model` страницы. Переиспользуемые действия — в `features`, модели данных и запросы — в `entities`.
+4. Загрузку данных положите в loader, а сохранение — в action в сегменте `model` страницы. Переиспользуемые действия — в `features`, модели данных и запросы — в `entities`.

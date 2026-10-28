@@ -1,53 +1,65 @@
 import clsx from "clsx";
-import React, { type ComponentPropsWithRef, type ReactNode } from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
+
+import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field";
 
 import styles from "./Input.module.css";
 
 export interface InputProps extends ComponentPropsWithRef<"input"> {
+  /** Positions the field: the label, the control, the hint and the error. */
+  className?: string;
   endAdornment?: ReactNode;
   error?: string;
+  /** A short explanation under the control, e.g. what to enter. */
+  hint?: string;
+  /** Highlights a value that differs from the saved one. An error takes precedence. */
+  isModified?: boolean;
   label: string;
 }
 
 export function Input({
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
+  className,
   endAdornment,
   error,
+  hint,
   id,
+  isModified = false,
   label,
   ref,
   ...inputProps
 }: InputProps) {
-  const generatedId = React.useId();
-  const inputId = id ?? generatedId;
-  const errorId = `${inputId}-error`;
-  const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
-  const controlClassName = clsx(styles.control, {
-    [styles.controlWithAdornment]: Boolean(endAdornment),
+  const { controlId, describedBy, errorId, hintId } = useFieldIds({
+    "aria-describedby": ariaDescribedBy,
+    error,
+    hint,
+    id,
   });
 
   return (
-    <div className={styles.root}>
-      <label className={styles.label} htmlFor={inputId}>
-        {label}
-      </label>
+    <Field
+      className={className}
+      controlId={controlId}
+      error={error}
+      errorId={errorId}
+      hint={hint}
+      hintId={hintId}
+      label={label}
+    >
       <div className={styles.controlWrapper}>
         <input
           ref={ref}
-          id={inputId}
-          className={controlClassName}
-          aria-describedby={describedBy || undefined}
+          id={controlId}
+          className={clsx(getFieldControlClassName(isModified), styles.control, {
+            [styles.controlWithAdornment]: Boolean(endAdornment),
+          })}
+          aria-describedby={describedBy}
           aria-invalid={ariaInvalid ?? Boolean(error)}
           {...inputProps}
         />
         {endAdornment ? <div className={styles.endAdornment}>{endAdornment}</div> : null}
       </div>
-      {error ? (
-        <p className={styles.error} id={errorId}>
-          {error}
-        </p>
-      ) : null}
-    </div>
+    </Field>
   );
 }

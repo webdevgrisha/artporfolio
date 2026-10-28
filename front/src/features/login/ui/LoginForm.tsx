@@ -71,7 +71,7 @@ export function LoginForm({ isSubmitting, onSubmit, submitError }: LoginFormProp
             <VisuallyHidden>Выполняется вход</VisuallyHidden>
           </>
         ) : (
-          "ВХОД"
+          "Вход"
         )}
       </Button>
     </form>

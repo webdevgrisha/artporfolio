@@ -1,6 +1,9 @@
+export { ArrowLeftIcon } from "./ArrowLeftIcon";
 export { AttachmentIcon } from "./AttachmentIcon";
+export { CheckIcon } from "./CheckIcon";
 export { CloseIcon } from "./CloseIcon";
 export { EditIcon } from "./EditIcon";
+export { ErrorIcon } from "./ErrorIcon";
 export { EyeIcon } from "./EyeIcon";
 export { EyeOffIcon } from "./EyeOffIcon";
 export { HeartIcon } from "./HeartIcon";
