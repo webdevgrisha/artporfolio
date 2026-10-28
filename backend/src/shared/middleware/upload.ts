@@ -1,7 +1,7 @@
 import busboy from "busboy";
 import type { Request, RequestHandler } from "express";
 
-import { BadRequestError, PayloadTooLargeError } from "#errors/httpError";
+import { BadRequestError, PayloadTooLargeError } from "#shared/http/errors";
 
 /** The longest file name most file systems allow. */
 const maxFileNameLength = 255;

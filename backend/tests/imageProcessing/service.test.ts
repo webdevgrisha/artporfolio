@@ -3,8 +3,8 @@ import { crc32, deflateSync } from "node:zlib";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
-import { BadRequestError } from "#errors/httpError";
-import { processImage } from "#services/imageProcessing";
+import { BadRequestError } from "#shared/http/errors";
+import { processImage } from "#shared/images/processing";
 
 function solidImage(width: number, height: number) {
   return sharp({ create: { background: "#a33", channels: 3, height, width } });

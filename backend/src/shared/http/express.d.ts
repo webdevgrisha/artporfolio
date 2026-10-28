@@ -1,5 +1,5 @@
-import type { UploadedFile } from "#middleware/upload";
 import type { AuthUser } from "#services/auth";
+import type { UploadedFile } from "#shared/middleware/upload";
 
 declare global {
   namespace Express {

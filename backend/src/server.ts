@@ -2,14 +2,13 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-
-import { corsOptions } from "#config/cors";
-import { NotFoundError } from "#errors/httpError";
-import { errorHandler } from "#middleware/error";
 import { authRouter } from "#routes/auth";
 import { contactPhotoRouter } from "#routes/contactPhoto";
 import { contactsRouter } from "#routes/contacts";
 import { healthRouter } from "#routes/health";
+import { corsOptions } from "#shared/config/cors";
+import { NotFoundError } from "#shared/http/errors";
+import { errorHandler } from "#shared/middleware/error";
 
 export const server = express();
 

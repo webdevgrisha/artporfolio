@@ -1,7 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 import { error as logError } from "firebase-functions/logger";
 
-import { HttpError } from "#errors/httpError";
+import { HttpError } from "#shared/http/errors";
 
 interface JsonSyntaxError extends SyntaxError {
   status: 400;

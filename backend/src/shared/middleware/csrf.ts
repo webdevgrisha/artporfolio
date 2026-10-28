@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express";
 
-import { doubleCsrfProtection, generateCsrfToken } from "#config/csrf";
-import { ForbiddenError } from "#errors/httpError";
+import { doubleCsrfProtection, generateCsrfToken } from "#shared/config/csrf";
+import { ForbiddenError } from "#shared/http/errors";
 
 export const issueCsrfToken: RequestHandler = (request, response) => {
   const csrfToken = generateCsrfToken(request, response, { overwrite: true });

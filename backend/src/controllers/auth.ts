@@ -1,9 +1,13 @@
 import type { RequestHandler } from "express";
-
-import { sessionCookie } from "#config/cookies";
-import { clearCsrfCookie, clearSessionCookie, readCookie, setSessionCookie } from "#http/cookies";
 import type { LoginBody } from "#schemas/auth";
 import { createSession, revokeSession } from "#services/auth";
+import { sessionCookie } from "#shared/config/cookies";
+import {
+  clearCsrfCookie,
+  clearSessionCookie,
+  readCookie,
+  setSessionCookie,
+} from "#shared/http/cookies";
 
 export const login: RequestHandler<object, unknown, LoginBody> = async (request, response) => {
   const session = await createSession(request.body.idToken);

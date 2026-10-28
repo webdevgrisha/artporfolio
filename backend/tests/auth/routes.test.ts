@@ -12,9 +12,9 @@ const auth = vi.hoisted(() => ({
 
 vi.mock("#services/auth", () => auth);
 
-import { UnauthorizedError } from "#errors/httpError";
-import { errorHandler } from "#middleware/error";
 import { authRouter } from "#routes/auth";
+import { UnauthorizedError } from "#shared/http/errors";
+import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 

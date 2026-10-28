@@ -23,10 +23,10 @@ vi.mock("#services/auth", () => auth);
 vi.mock("#services/contacts", () => contactsService);
 vi.mock("#services/contactPhoto", () => photoService);
 
-import { UnauthorizedError } from "#errors/httpError";
-import { errorHandler } from "#middleware/error";
 import { authRouter } from "#routes/auth";
 import { contactsRouter } from "#routes/contacts";
+import { UnauthorizedError } from "#shared/http/errors";
+import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const sessionCookie = "admin_session=firebase-session";

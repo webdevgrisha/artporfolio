@@ -1,7 +1,7 @@
 import type { CorsOptions } from "cors";
 
-import { getEnv } from "#config/env";
-import { ForbiddenError } from "#errors/httpError";
+import { getEnv } from "#shared/config/env";
+import { ForbiddenError } from "#shared/http/errors";
 
 export const corsOptions: CorsOptions = {
   allowedHeaders: ["Content-Type", "X-CSRF-Token"],

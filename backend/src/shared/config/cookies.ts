@@ -1,6 +1,6 @@
 import type { CookieOptions } from "express";
 
-import { isLocalRuntime } from "#config/env";
+import { isLocalRuntime } from "#shared/config/env";
 
 // Local runs use plain HTTP, where browsers reject Secure and __Host- cookies.
 const secure = !isLocalRuntime;

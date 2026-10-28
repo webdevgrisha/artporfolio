@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 
-import { csrfCookie, sessionCookie } from "#config/cookies";
-import { getEnv } from "#config/env";
+import { csrfCookie, sessionCookie } from "#shared/config/cookies";
+import { getEnv } from "#shared/config/env";
 
 export function readCookie(request: Request, name: string): string | undefined {
   const value = request.cookies?.[name];

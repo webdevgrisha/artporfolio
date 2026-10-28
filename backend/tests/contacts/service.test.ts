@@ -5,7 +5,7 @@ const document = vi.hoisted(() => ({
   set: vi.fn(),
 }));
 
-vi.mock("#services/firestore", () => ({
+vi.mock("#shared/firebase/firestore", () => ({
   firestore: () => ({ doc: () => document }),
 }));
 

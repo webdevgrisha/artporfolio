@@ -2,10 +2,10 @@ import { Router } from "express";
 
 import { deletePhoto, updatePhotoAlt, uploadPhoto } from "#controllers/contactPhoto";
 import { requireAuth } from "#middleware/auth";
-import { requireCsrfToken } from "#middleware/csrf";
-import { parseUpload } from "#middleware/upload";
-import { validateBody } from "#middleware/validation";
 import { photoAltBodySchema } from "#schemas/contactPhoto";
+import { requireCsrfToken } from "#shared/middleware/csrf";
+import { parseUpload } from "#shared/middleware/upload";
+import { validateBody } from "#shared/middleware/validation";
 
 const maxPhotoSize = 15 * 1024 * 1024;
 

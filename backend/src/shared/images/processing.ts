@@ -1,6 +1,6 @@
 import sharp, { type Sharp } from "sharp";
 
-import { BadRequestError } from "#errors/httpError";
+import { BadRequestError } from "#shared/http/errors";
 
 /** Widths for the srcset: phones, tablets and 1x desktops, up to 2x desktops. */
 const targetWidths = [640, 960, 1_280, 1_920];

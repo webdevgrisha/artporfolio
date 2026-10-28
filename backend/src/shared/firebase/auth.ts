@@ -1,6 +1,6 @@
 import { getAuth } from "firebase-admin/auth";
 
-import { firebaseApp } from "#services/firebaseApp";
+import { firebaseApp } from "#shared/firebase/app";
 
 // These Admin SDK codes describe a broken backend setup, not a bad client token.
 const infrastructureAuthErrorCodes = new Set([

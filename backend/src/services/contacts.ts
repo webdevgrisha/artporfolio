@@ -1,5 +1,5 @@
 import { type Contacts, contactsSchema } from "#schemas/contacts";
-import { firestore } from "#services/firestore";
+import { firestore } from "#shared/firebase/firestore";
 
 const emptyContacts: Contacts = {
   email: "",

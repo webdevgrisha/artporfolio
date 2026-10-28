@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { getStorage } from "firebase-admin/storage";
 
-import { firebaseApp } from "#services/firebaseApp";
+import { firebaseApp } from "#shared/firebase/app";
 
 // A type alias, not an interface: the Storage SDK expects metadata with an index signature.
 export type FileMetadata = {

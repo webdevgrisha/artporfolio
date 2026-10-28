@@ -7,19 +7,18 @@ import {
   type Transaction,
 } from "firebase-admin/firestore";
 import { warn as logWarning } from "firebase-functions/logger";
-
-import { NotFoundError } from "#errors/httpError";
-import type { UploadedFile } from "#middleware/upload";
 import { type ImageSource, type Photo, photoSchema } from "#schemas/contactPhoto";
 import { contactsDocument } from "#services/contacts";
-import { firestore } from "#services/firestore";
+import { firestore } from "#shared/firebase/firestore";
+import { deleteFolder, saveDownloadableFile, saveFile } from "#shared/firebase/storage";
+import { NotFoundError } from "#shared/http/errors";
 import {
   type EncodedImage,
   type OutputFormat,
   type ProcessedImage,
   processImage,
-} from "#services/imageProcessing";
-import { deleteFolder, saveDownloadableFile, saveFile } from "#services/storage";
+} from "#shared/images/processing";
+import type { UploadedFile } from "#shared/middleware/upload";
 
 // Every upload gets its own folder and therefore new URLs, so the files can be cached forever.
 const immutableCacheControl = "public, max-age=31536000, immutable";

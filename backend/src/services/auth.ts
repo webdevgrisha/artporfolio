@@ -1,8 +1,8 @@
 import type { DecodedIdToken } from "firebase-admin/auth";
 
-import { getEnv } from "#config/env";
-import { UnauthorizedError } from "#errors/httpError";
-import { firebaseAuth, isClientAuthError } from "#services/firebaseAuth";
+import { getEnv } from "#shared/config/env";
+import { firebaseAuth, isClientAuthError } from "#shared/firebase/auth";
+import { UnauthorizedError } from "#shared/http/errors";
 
 export interface AuthUser {
   email: string | null;

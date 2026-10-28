@@ -2,9 +2,9 @@ import { Router } from "express";
 
 import { login, logout, me } from "#controllers/auth";
 import { requireAuth } from "#middleware/auth";
-import { issueCsrfToken, requireCsrfToken } from "#middleware/csrf";
-import { validateBody } from "#middleware/validation";
 import { loginBodySchema } from "#schemas/auth";
+import { issueCsrfToken, requireCsrfToken } from "#shared/middleware/csrf";
+import { validateBody } from "#shared/middleware/validation";
 
 export const authRouter = Router();
 

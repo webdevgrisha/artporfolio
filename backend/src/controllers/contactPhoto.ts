@@ -1,12 +1,11 @@
 import type { RequestHandler } from "express";
-
-import { uploadedFile } from "#middleware/upload";
 import type { PhotoAltBody } from "#schemas/contactPhoto";
 import {
   deleteContactPhoto,
   saveContactPhoto,
   updateContactPhotoAlt,
 } from "#services/contactPhoto";
+import { uploadedFile } from "#shared/middleware/upload";
 
 export const uploadPhoto: RequestHandler<object, unknown, PhotoAltBody> = async (
   request,

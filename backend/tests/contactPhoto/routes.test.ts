@@ -19,10 +19,10 @@ const photoService = vi.hoisted(() => ({
 vi.mock("#services/auth", () => auth);
 vi.mock("#services/contactPhoto", () => photoService);
 
-import { NotFoundError, UnauthorizedError } from "#errors/httpError";
-import { errorHandler } from "#middleware/error";
 import { authRouter } from "#routes/auth";
 import { contactPhotoRouter } from "#routes/contactPhoto";
+import { NotFoundError, UnauthorizedError } from "#shared/http/errors";
+import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const sessionCookie = "admin_session=firebase-session";

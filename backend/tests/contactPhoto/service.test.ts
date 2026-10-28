@@ -19,22 +19,22 @@ const storage = vi.hoisted(() => ({
 const processImage = vi.hoisted(() => vi.fn());
 
 vi.mock("#services/contacts", () => ({ contactsDocument: () => document }));
-vi.mock("#services/firestore", () => ({
+vi.mock("#shared/firebase/firestore", () => ({
   firestore: () => ({
     runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
   }),
 }));
-vi.mock("#services/storage", () => storage);
-vi.mock("#services/imageProcessing", () => ({ processImage }));
+vi.mock("#shared/firebase/storage", () => storage);
+vi.mock("#shared/images/processing", () => ({ processImage }));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
-import { NotFoundError } from "#errors/httpError";
 import {
   deleteContactPhoto,
   getContactPhoto,
   saveContactPhoto,
   updateContactPhotoAlt,
 } from "#services/contactPhoto";
+import { NotFoundError } from "#shared/http/errors";
 
 const upload = { data: Buffer.from("original"), name: "photo.png", size: 8 };
 

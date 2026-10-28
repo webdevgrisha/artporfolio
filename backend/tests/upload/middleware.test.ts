@@ -3,8 +3,8 @@ import type { Server } from "node:http";
 import express, { type RequestHandler } from "express";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { errorHandler } from "#middleware/error";
-import { parseUpload } from "#middleware/upload";
+import { errorHandler } from "#shared/middleware/error";
+import { parseUpload } from "#shared/middleware/upload";
 
 let server: Server | undefined;
 let baseUrl: string;
