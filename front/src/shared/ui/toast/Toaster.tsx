@@ -16,7 +16,8 @@ const toasterStyle = {
 export function Toaster() {
   return (
     <SonnerToaster
-      position="bottom-right"
+      // At the top, toasts do not cover the form actions, which sit at the bottom of admin pages.
+      position="top-right"
       style={toasterStyle}
       containerAriaLabel="Уведомления"
       // The message and the border colour tell success from error; no status icons.
