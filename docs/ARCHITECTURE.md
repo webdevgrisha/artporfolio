@@ -96,15 +96,12 @@ backend/src/
 │   ├── contacts/       contact links; document.ts is the Firestore document shared with photo/
 │   │   └── photo/      the contact photo, mounted by the contacts router
 │   └── health/
-├── shared/             no knowledge of the domain
-│   ├── config/         env, cookies, cors, csrf
-│   ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
-│   ├── http/           HttpError, cookie helpers, Express request typing
-│   ├── images/         image processing with sharp
-│   └── middleware/     csrf, validation, upload, error
-├── database/           reserved for data access
-├── models/             reserved for data models
-└── utils/              reserved for shared helpers
+└── shared/             no knowledge of the domain
+    ├── config/         env, cookies, cors, csrf
+    ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
+    ├── http/           HttpError, cookie helpers, Express request typing
+    ├── images/         image processing with sharp
+    └── middleware/     csrf, validation, upload, error
 ```
 
 - A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. The request flow is route → middleware → controller → service.

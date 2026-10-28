@@ -96,15 +96,12 @@ backend/src/
 │   ├── contacts/       ссылки для связи; document.ts — документ Firestore, общий с photo/
 │   │   └── photo/      фото для контактов, подключается роутером contacts
 │   └── health/
-├── shared/             без знания о предметной области
-│   ├── config/         env, cookies, cors, csrf
-│   ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
-│   ├── http/           HttpError, работа с cookies, типы запроса Express
-│   ├── images/         обработка изображений через sharp
-│   └── middleware/     csrf, validation, upload, error
-├── database/           зарезервировано под доступ к данным
-├── models/             зарезервировано под модели данных
-└── utils/              зарезервировано под общие утилиты
+└── shared/             без знания о предметной области
+    ├── config/         env, cookies, cors, csrf
+    ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
+    ├── http/           HttpError, работа с cookies, типы запроса Express
+    ├── images/         обработка изображений через sharp
+    └── middleware/     csrf, validation, upload, error
 ```
 
 - В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.
