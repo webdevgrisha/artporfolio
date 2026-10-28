@@ -5,15 +5,9 @@ import { flushSync } from "react-dom";
 import { type FieldErrors, FormProvider, useForm } from "react-hook-form";
 
 import type { ContactsWithPhoto } from "@/entities/contacts";
-import { useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
-import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { ArrowLeftIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
-import { Spinner } from "@/shared/ui/spinner";
+import { FormActions } from "@/shared/ui/form-actions";
 import { Tab, TabList, TabPanel, Tabs } from "@/shared/ui/tabs";
-import { Tooltip } from "@/shared/ui/tooltip";
-import { VisuallyHidden } from "@/shared/ui/visually-hidden";
+import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
 
 import { contactFields } from "../model/contactFields";
 import type { ContactsChanges } from "../model/contactsChanges";
@@ -24,8 +18,6 @@ import type { SaveContactsResult } from "../model/saveContacts";
 import { ContactLinksFields } from "./ContactLinksFields";
 import { ContactPhotoFields } from "./ContactPhotoFields";
 import styles from "./EditContactsForm.module.css";
-
-const revertLabel = "Отменить изменения";
 
 type ContactsTab = "links" | "photo";
 
@@ -66,8 +58,6 @@ export function EditContactsForm({
     setFocus,
   } = form;
   const [tab, setTab] = React.useState<ContactsTab>("links");
-  const saveButtonRef = React.useRef<HTMLButtonElement>(null);
-  const unsavedChangesGuard = useUnsavedChangesGuard(isDirty);
 
   // What was saved is no longer modified. A part that failed is not in the result, so its fields
   // keep the unsaved changes.
@@ -88,12 +78,6 @@ export function EditContactsForm({
       resetField("photoAlt", { defaultValue: photoValues.photoAlt });
     }
   }, [resetField, saveResult]);
-
-  function revertChanges() {
-    reset();
-    // The revert button disappears together with the changes, so the focus moves to its neighbour.
-    saveButtonRef.current?.focus();
-  }
 
   function submitChanges(submittedValues: ContactsFormValues) {
     onSubmit(getContactsChanges(submittedValues, dirtyFields, savedContacts));
@@ -131,41 +115,13 @@ export function EditContactsForm({
           </TabPanel>
         </Tabs>
 
-        <div className={styles.actions}>
-          {isDirty ? (
-            <Tooltip content={revertLabel}>
-              <IconButton label={revertLabel} disabled={isSaving} onClick={revertChanges}>
-                <ArrowLeftIcon />
-              </IconButton>
-            </Tooltip>
-          ) : null}
-          <Button
-            ref={saveButtonRef}
-            className={styles.saveButton}
-            type="submit"
-            disabled={isSaving}
-            aria-busy={isSaving}
-          >
-            {isSaving ? (
-              <>
-                <Spinner />
-                <VisuallyHidden>Сохранение</VisuallyHidden>
-              </>
-            ) : (
-              "Сохранить"
-            )}
-          </Button>
-        </div>
-
-        <ConfirmDialog
-          isOpen={unsavedChangesGuard.isBlocked}
-          title="Уйти без сохранения?"
-          description="Несохранённые изменения будут потеряны."
-          cancelLabel="Остаться"
-          confirmLabel="Уйти"
-          onCancel={unsavedChangesGuard.stay}
-          onConfirm={unsavedChangesGuard.leave}
+        <FormActions
+          className={styles.actions}
+          hasUnsavedChanges={isDirty}
+          isSaving={isSaving}
+          onRevert={() => reset()}
         />
+        <UnsavedChangesDialog hasUnsavedChanges={isDirty} />
       </form>
     </FormProvider>
   );
