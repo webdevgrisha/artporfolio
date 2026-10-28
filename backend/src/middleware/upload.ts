@@ -111,3 +111,12 @@ export function parseUpload(options: UploadOptions): RequestHandler {
     next();
   };
 }
+
+/** The file parsed by parseUpload, for handlers mounted after it. */
+export function uploadedFile(request: Pick<Request, "file">): UploadedFile {
+  if (!request.file) {
+    throw new Error("parseUpload must run before the handler that reads the file");
+  }
+
+  return request.file;
+}

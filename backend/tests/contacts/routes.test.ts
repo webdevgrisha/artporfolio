@@ -15,8 +15,13 @@ const contactsService = vi.hoisted(() => ({
   saveContacts: vi.fn(),
 }));
 
+const photoService = vi.hoisted(() => ({
+  getContactPhoto: vi.fn(),
+}));
+
 vi.mock("#services/auth", () => auth);
 vi.mock("#services/contacts", () => contactsService);
+vi.mock("#services/contactPhoto", () => photoService);
 
 import { UnauthorizedError } from "#errors/httpError";
 import { errorHandler } from "#middleware/error";
@@ -87,6 +92,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
   contactsService.getContacts.mockResolvedValue(contacts);
+  photoService.getContactPhoto.mockResolvedValue(null);
   contactsService.saveContacts.mockResolvedValue(undefined);
 });
 
@@ -112,7 +118,7 @@ describe("contacts routes", () => {
     const response = await fetch(`${baseUrl}/api/contacts`);
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ contacts });
+    await expect(response.json()).resolves.toEqual({ contacts, photo: null });
     expect(auth.verifySession).not.toHaveBeenCalled();
   });
 
