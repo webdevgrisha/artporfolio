@@ -11,6 +11,8 @@ const closeLabel = "Закрыть";
 interface PreviewDialogProps {
   /** What to show large, such as an image. Rendered only while the dialog is open. */
   children: ReactNode;
+  /** A short line under the title, such as the image size. */
+  description?: string;
   isOpen: boolean;
   /** Called on the close button, on Escape and on a click outside the content. */
   onClose: () => void;
@@ -21,9 +23,16 @@ interface PreviewDialogProps {
  * A modal for viewing content in full, on the native `<dialog>`: it traps the focus and returns
  * it to the opening control when it closes.
  */
-export function PreviewDialog({ children, isOpen, onClose, title }: PreviewDialogProps) {
+export function PreviewDialog({
+  children,
+  description,
+  isOpen,
+  onClose,
+  title,
+}: PreviewDialogProps) {
   const dialogRef = React.useRef<HTMLDialogElement>(null);
   const titleId = React.useId();
+  const descriptionId = React.useId();
 
   React.useEffect(() => {
     const dialog = dialogRef.current;
@@ -55,15 +64,23 @@ export function PreviewDialog({ children, isOpen, onClose, title }: PreviewDialo
       ref={dialogRef}
       className={styles.root}
       aria-labelledby={titleId}
+      aria-describedby={description ? descriptionId : undefined}
       onCancel={handleCancel}
       onClick={handleClick}
     >
       {isOpen ? (
         <div className={styles.content}>
           <div className={styles.header}>
-            <h2 className={styles.title} id={titleId}>
-              {title}
-            </h2>
+            <div className={styles.heading}>
+              <h2 className={styles.title} id={titleId}>
+                {title}
+              </h2>
+              {description ? (
+                <p className={styles.description} id={descriptionId}>
+                  {description}
+                </p>
+              ) : null}
+            </div>
             <Tooltip content={closeLabel}>
               <IconButton label={closeLabel} onClick={onClose}>
                 <CloseIcon className={styles.closeIcon} />

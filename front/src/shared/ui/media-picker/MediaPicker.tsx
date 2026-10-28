@@ -62,6 +62,9 @@ export function MediaPicker({
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [viewedItemId, setViewedItemId] = React.useState<string>();
   const viewedItem = items.find((item) => item.id === viewedItemId);
+  // Measured from the image once it loads; kept with its item, so another item never shows it.
+  const [loadedSize, setLoadedSize] = React.useState<{ id: string; text: string }>();
+  const viewedSize = loadedSize && loadedSize.id === viewedItemId ? loadedSize.text : undefined;
   // A rejected file never reaches the owner, so the picker explains it itself. The message belongs
   // to the files it was given with: once the owner changes them (a pick, a removal, a revert),
   // it is outdated.
@@ -219,12 +222,19 @@ export function MediaPicker({
       <PreviewDialog
         isOpen={Boolean(viewedItem)}
         title={viewedItem?.name ?? ""}
+        description={viewedSize}
         onClose={() => setViewedItemId(undefined)}
       >
         {viewedItem ? (
           <MediaImage
             className={styles.fullSizeImage}
             source={viewedItem.fullSizeSource ?? viewedItem.source}
+            onLoad={({ currentTarget }) =>
+              setLoadedSize({
+                id: viewedItem.id,
+                text: `${String(currentTarget.naturalWidth)} × ${String(currentTarget.naturalHeight)} px`,
+              })
+            }
           />
         ) : null}
       </PreviewDialog>

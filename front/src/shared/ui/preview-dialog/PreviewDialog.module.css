@@ -26,11 +26,22 @@
   justify-content: space-between;
 }
 
+.heading {
+  min-inline-size: 0;
+}
+
 .title {
   min-inline-size: 0;
   font-size: var(--font-size-lg);
   font-weight: 400;
   overflow-wrap: anywhere;
+}
+
+.description {
+  margin-block-start: var(--space-1);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  color: var(--color-text-muted);
 }
 
 .closeIcon {
