@@ -1,0 +1,7 @@
+.control {
+  display: block;
+  min-block-size: var(--control-size);
+  padding: var(--space-3) var(--space-4);
+  line-height: 1.4;
+  resize: vertical;
+}

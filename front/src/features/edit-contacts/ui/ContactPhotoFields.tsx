@@ -3,8 +3,8 @@ import React from "react";
 import { useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import type { ContactPhoto } from "@/entities/contacts";
-import { Input } from "@/shared/ui/input";
 import { type MediaItem, MediaPicker } from "@/shared/ui/media-picker";
+import { Textarea } from "@/shared/ui/textarea";
 
 import { type ContactsFormValues, savedPhoto } from "../model/contactsFormSchema";
 import { photoRules } from "../model/photoRules";
@@ -63,8 +63,9 @@ export function ContactPhotoFields({ className, isSaving, serverPhoto }: Contact
       />
       {/* Without a photo there is nothing to describe; the text comes back with the photo. */}
       {photo === null ? null : (
-        <Input
+        <Textarea
           label="Описание фото"
+          rows={5}
           placeholder="Что на фото: для незрячих и поисковиков"
           disabled={isSaving}
           error={errors.photoAlt?.message}
