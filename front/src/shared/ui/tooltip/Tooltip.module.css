@@ -1,38 +1,20 @@
-.root {
-  position: relative;
+.trigger {
   display: inline-flex;
 }
 
 .tooltip {
-  --tooltip-gap: var(--space-2);
-
-  position: absolute;
-  inset-block-end: calc(100% + var(--tooltip-gap));
-  inset-inline-start: 50%;
-  visibility: hidden;
+  z-index: var(--layer-tooltip);
   padding: var(--space-1) var(--space-2);
   font-size: var(--font-size-sm);
   line-height: 1.4;
   color: var(--color-text-inverse);
   white-space: nowrap;
   background: var(--color-surface-inverse);
-  opacity: 0;
-  translate: -50% 0;
-  transition:
-    opacity var(--motion-duration-fast) var(--motion-easing-standard),
-    visibility var(--motion-duration-fast) var(--motion-easing-standard);
+  transition: opacity var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
-/* Bridges the gap, so the pointer can move onto the tooltip without closing it (WCAG 1.4.13). */
-.tooltip::after {
-  position: absolute;
-  inset-block-start: 100%;
-  inset-inline: 0;
-  block-size: var(--tooltip-gap);
-  content: "";
-}
-
-.tooltip[data-open="true"] {
-  visibility: visible;
-  opacity: 1;
+@starting-style {
+  .tooltip {
+    opacity: 0;
+  }
 }

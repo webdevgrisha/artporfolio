@@ -62,9 +62,10 @@
     --focus-ring: 2px solid var(--color-focus);
     --min-tap-target-size: 44px;
 
-    /* Stacking order of the mobile drawer. */
+    /* Stacking order of overlays. */
     --layer-backdrop: 10;
     --layer-drawer: 20;
+    --layer-tooltip: 30;
 
     --motion-duration-fast: 120ms;
     --motion-duration-standard: 180ms;

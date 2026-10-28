@@ -1,6 +1,24 @@
-import React, { type FocusEvent, type PointerEvent, type ReactNode } from "react";
+import {
+  autoUpdate,
+  FloatingPortal,
+  flip,
+  offset,
+  safePolygon,
+  shift,
+  useDismiss,
+  useFloating,
+  useFocus,
+  useHover,
+  useInteractions,
+} from "@floating-ui/react";
+import React, { type ReactNode } from "react";
 
 import styles from "./Tooltip.module.css";
+
+// Pixels: the distance to the trigger and to the viewport edge stay the same at any font size.
+const triggerGap = 8;
+const viewportPadding = 8;
+const openDelay = 300;
 
 interface TooltipProps {
   /** The trigger. It must already have the same accessible name as `content`. */
@@ -11,47 +29,44 @@ interface TooltipProps {
 /**
  * A visible label for an icon-only control, shown on mouse hover and keyboard focus.
  * It only repeats the trigger's accessible name, so it is hidden from assistive technology.
- * Escape hides it without moving the pointer or the focus (WCAG 1.4.13).
+ * Escape hides it, and the pointer can move onto it without closing it (WCAG 1.4.13).
  */
 export function Tooltip({ children, content }: TooltipProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!isOpen) return;
-
-    function closeOnEscape(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") setIsOpen(false);
-    }
-
-    // On document: a hovered trigger does not have the focus, so it gets no key events.
-    document.addEventListener("keydown", closeOnEscape);
-
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [isOpen]);
-
-  function handlePointerEnter(event: PointerEvent) {
+  const { context, floatingStyles, refs } = useFloating({
+    middleware: [offset(triggerGap), flip(), shift({ padding: viewportPadding })],
+    onOpenChange: setIsOpen,
+    open: isOpen,
+    placement: "top",
+    whileElementsMounted: autoUpdate,
+  });
+  const { getFloatingProps, getReferenceProps } = useInteractions([
     // A tap is not a hover: on touch screens the tooltip would stay open after the tap.
-    if (event.pointerType === "mouse") setIsOpen(true);
-  }
-
-  function handleFocus(event: FocusEvent) {
+    useHover(context, { delay: { open: openDelay }, handleClose: safePolygon(), mouseOnly: true }),
     // Only keyboard focus: a mouse click already had the hover.
-    if (event.target.matches(":focus-visible")) setIsOpen(true);
-  }
+    useFocus(context, { visibleOnly: true }),
+    useDismiss(context),
+  ]);
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: Listens to events bubbling from the trigger; the wrapper itself is not interactive.
-    <span
-      className={styles.root}
-      onBlur={() => setIsOpen(false)}
-      onFocus={handleFocus}
-      onPointerEnter={handlePointerEnter}
-      onPointerLeave={() => setIsOpen(false)}
-    >
-      {children}
-      <span className={styles.tooltip} data-open={isOpen} aria-hidden="true">
-        {content}
+    <>
+      {/* The wrapper receives the trigger's bubbling events, so any trigger works without a ref. */}
+      <span ref={refs.setReference} className={styles.trigger} {...getReferenceProps()}>
+        {children}
       </span>
-    </span>
+      {isOpen ? (
+        <FloatingPortal>
+          <span
+            ref={refs.setFloating}
+            className={styles.tooltip}
+            style={floatingStyles}
+            aria-hidden="true"
+            {...getFloatingProps()}
+          >
+            {content}
+          </span>
+        </FloatingPortal>
+      ) : null}
+    </>
   );
 }
