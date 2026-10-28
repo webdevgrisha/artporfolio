@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { Toaster as SonnerToaster } from "sonner";
 
-import { CloseIcon } from "@/shared/ui/icon";
+import { CheckIcon, CloseIcon, ErrorIcon } from "@/shared/ui/icon";
 
 import styles from "./Toaster.module.css";
 
@@ -20,15 +20,22 @@ export function Toaster() {
       position="top-right"
       style={toasterStyle}
       containerAriaLabel="Уведомления"
-      // The message and the border colour tell success from error; no status icons.
-      icons={{ close: <CloseIcon className={styles.closeIcon} />, error: null, success: null }}
+      // The status is shown by an icon as well as by colour, which alone is not enough (WCAG 1.4.1).
+      icons={{
+        close: <CloseIcon className={styles.closeIcon} />,
+        error: <ErrorIcon className={styles.statusIcon} />,
+        success: <CheckIcon className={styles.statusIcon} />,
+      }}
       toastOptions={{
         classNames: {
           closeButton: styles.closeButton,
           content: styles.content,
           error: styles.error,
+          icon: styles.icon,
           toast: styles.toast,
         },
+        // Every toast can be closed at once, also from the keyboard.
+        closeButton: true,
         closeButtonAriaLabel: "Закрыть уведомление",
         unstyled: true,
       }}

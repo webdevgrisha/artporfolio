@@ -16,6 +16,20 @@
   border-color: var(--color-danger);
 }
 
+.icon {
+  display: flex;
+  flex: none;
+}
+
+.error .icon {
+  color: var(--color-danger);
+}
+
+.statusIcon {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
 .content {
   flex: 1;
   min-inline-size: 0;
