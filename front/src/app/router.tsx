@@ -63,7 +63,11 @@ export const router = createBrowserRouter([
               },
               {
                 path: routes.about,
-                lazy: async () => ({ Component: (await import("@/pages/about")).AboutPage }),
+                lazy: async () => {
+                  const { AboutPage, aboutLoader } = await import("@/pages/about");
+
+                  return { Component: AboutPage, loader: aboutLoader };
+                },
               },
               {
                 path: routes.contacts,
