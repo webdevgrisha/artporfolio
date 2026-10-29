@@ -115,7 +115,7 @@ backend/src/
     ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
     ├── http/           HttpError, cookie helpers, Express request typing
     ├── images/         image processing with sharp, image files in Cloud Storage
-    └── middleware/     csrf, validation, upload, error
+    └── middleware/     csrf, content-type, validation, upload, error
 ```
 
 - A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. The request flow is route → middleware → controller → service.

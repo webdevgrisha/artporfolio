@@ -110,6 +110,16 @@ describe("contacts routes", () => {
     expect(contactsService.saveContacts).not.toHaveBeenCalled();
   });
 
+  it("rejects a body that is not JSON", async () => {
+    const response = await putContacts(contacts, {
+      ...(await adminHeaders(server.baseUrl)),
+      "Content-Type": "text/plain",
+    });
+
+    expect(response.status).toBe(415);
+    expect(contactsService.saveContacts).not.toHaveBeenCalled();
+  });
+
   it("rejects invalid contacts", async () => {
     const response = await putContacts(
       { ...contacts, instagram: "javascript:alert(1)" },

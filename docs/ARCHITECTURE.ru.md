@@ -115,7 +115,7 @@ backend/src/
     ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
     ├── http/           HttpError, работа с cookies, типы запроса Express
     ├── images/         обработка изображений через sharp, файлы изображений в Cloud Storage
-    └── middleware/     csrf, validation, upload, error
+    └── middleware/     csrf, content-type, validation, upload, error
 ```
 
 - В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.

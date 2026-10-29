@@ -46,3 +46,9 @@ export class PayloadTooLargeError extends HttpError {
     super(413, message);
   }
 }
+
+export class UnsupportedMediaTypeError extends HttpError {
+  constructor(message = "Unsupported request body format") {
+    super(415, message);
+  }
+}

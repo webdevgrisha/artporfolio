@@ -7,7 +7,7 @@ Endpoints of the `api` Cloud Function. Update this file in the same commit as th
 - All paths start with `/api`; bodies are JSON unless stated otherwise.
 - **Session.** `POST /api/auth/login` sets the httpOnly `admin_session` cookie. Endpoints marked *Session* return `401` without a valid admin session.
 - **CSRF.** Endpoints marked *CSRF* need the `X-CSRF-Token` header with a token from `GET /api/auth/csrf`, otherwise they return `403`. The token is bound to the session, so request a new one after login.
-- **Validation.** An invalid body returns `400`. Unknown fields are rejected. A path parameter that names nothing, such as an unknown page, returns `404`.
+- **Validation.** A body in a format the endpoint does not take, such as JSON sent to an upload, returns `415`. An invalid body returns `400`. Unknown fields are rejected. A path parameter that names nothing, such as an unknown page, returns `404`.
 - **Errors** are Problem Details ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)), sent as
   `application/problem+json`:
 

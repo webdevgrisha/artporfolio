@@ -116,6 +116,12 @@ describe("upload middleware", () => {
   it("rejects a body that is not multipart/form-data", async () => {
     const response = await upload("/stream", "{}", "application/json");
 
+    expect(response.status).toBe(415);
+  });
+
+  it("rejects a multipart body without a boundary", async () => {
+    const response = await upload("/stream", "{}", "multipart/form-data");
+
     expect(response.status).toBe(400);
   });
 });

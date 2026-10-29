@@ -1,7 +1,11 @@
 import busboy from "busboy";
 import type { Request, RequestHandler } from "express";
 
-import { BadRequestError, PayloadTooLargeError } from "#shared/http/errors";
+import {
+  BadRequestError,
+  PayloadTooLargeError,
+  UnsupportedMediaTypeError,
+} from "#shared/http/errors";
 
 /** The longest file name most file systems allow. */
 const maxFileNameLength = 255;
@@ -32,8 +36,9 @@ function createParser(request: Request, { maxFileSize }: UploadOptions) {
       limits: { fields: 10, fileSize: maxFileSize, files: 1 },
     });
   } catch {
-    // busboy throws when the Content-Type is not multipart/form-data.
-    throw new BadRequestError("Expected a multipart/form-data body");
+    // The Content-Type is multipart/form-data, so busboy throws only on a malformed one, such as
+    // a missing boundary.
+    throw new BadRequestError("Invalid multipart/form-data body");
   }
 }
 
@@ -100,6 +105,10 @@ function readMultipart(request: Request, options: UploadOptions): Promise<Multip
  */
 export function parseUpload(options: UploadOptions): RequestHandler {
   return async (request, _response, next) => {
+    if (!request.is("multipart/form-data")) {
+      throw new UnsupportedMediaTypeError("Expected a multipart/form-data body");
+    }
+
     const { fields, file } = await readMultipart(request, options);
 
     if (!file) {

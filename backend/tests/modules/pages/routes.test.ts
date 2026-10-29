@@ -115,7 +115,7 @@ describe("page routes", () => {
   });
 
   it("rejects an unknown page before reading the body", async () => {
-    // Not a multipart body: reading it would fail with 400, so 404 means it was never read.
+    // Not a multipart body: reading it would fail with 415, so 404 means it was never read.
     const response = await sendHero(
       "PUT",
       "contact",
