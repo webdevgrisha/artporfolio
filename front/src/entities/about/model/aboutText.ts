@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-/** The texts of the About page: plain text, paragraphs separated by a blank line. */
+/**
+ * The texts of the About page: plain text, paragraphs separated by a blank line. An empty text
+ * hides its section on the site.
+ */
 export const aboutTextSchema = z.object({
   /** The short introduction next to «Моё фото». */
   about: z.string(),

@@ -10,11 +10,11 @@ export const aboutTextMaxLengths: Readonly<Record<keyof AboutText, number>> = {
 };
 const maxAltLength = 250;
 
+/** An empty text hides its section on the site. */
 function aboutText(maxLength: number) {
   return z
     .string()
     .trim()
-    .min(1, "Заполните поле")
     .max(maxLength, `Не длиннее ${String(maxLength)} символов`);
 }
 
