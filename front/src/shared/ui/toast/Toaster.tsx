@@ -12,7 +12,7 @@ const toasterStyle = {
   fontFamily: "inherit",
 } as CSSProperties;
 
-/** Renders the toasts shown with `showSuccessToast` and `showErrorToast`. Mount once. */
+/** Renders the toasts shown with `showSaveResultToast`. Mount once. */
 export function Toaster() {
   return (
     <SonnerToaster
