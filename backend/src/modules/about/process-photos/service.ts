@@ -58,12 +58,6 @@ function findPhoto(photos: StoredProcessPhoto[], id: string): StoredProcessPhoto
   return photo;
 }
 
-function assertRoomForPhoto(photos: StoredProcessPhoto[]): void {
-  if (photos.length >= maxProcessPhotos) {
-    throw new ConflictError(`The page already has ${String(maxProcessPhotos)} process photos`);
-  }
-}
-
 function writePhotos(
   transaction: Transaction,
   document: DocumentReference,
@@ -98,13 +92,10 @@ export async function getProcessPhoto(id: string): Promise<ProcessPhoto> {
 }
 
 /**
- * Adds the photo after the others. A full list is rejected before the costly encoding, and again
- * in the transaction, which is the check that counts. If storing fails halfway, the files saved
+ * Adds the photo after the others. If storing fails halfway, or the list is full, the files saved
  * so far are removed.
  */
 export async function addProcessPhoto(file: UploadedFile, alt: string): Promise<ProcessPhoto> {
-  assertRoomForPhoto(await readCurrentPhotos());
-
   const processed = await processImage(file.data);
   const id = randomUUID();
   const version = randomUUID();
@@ -119,7 +110,10 @@ export async function addProcessPhoto(file: UploadedFile, alt: string): Promise<
     });
     photo = { ...image, alt, id };
     await changePhotos((photos, transaction, document) => {
-      assertRoomForPhoto(photos);
+      if (photos.length >= maxProcessPhotos) {
+        throw new ConflictError(`The page already has ${String(maxProcessPhotos)} process photos`);
+      }
+
       writePhotos(transaction, document, [...photos, photo]);
     });
   } catch (error) {
@@ -132,16 +126,14 @@ export async function addProcessPhoto(file: UploadedFile, alt: string): Promise<
 
 /**
  * Replaces the file and the alt text; the id and the position stay. The new version is stored
- * before the previous one is removed, so the site never links to missing files.
+ * before the previous one is removed, so the site never links to missing files. If storing fails
+ * halfway, or there is no such photo, the new files are removed.
  */
 export async function replaceProcessPhoto(
   id: string,
   file: UploadedFile,
   alt: string,
 ): Promise<ProcessPhoto> {
-  // An unknown id is rejected before the costly encoding.
-  findPhoto(await readCurrentPhotos(), id);
-
   const processed = await processImage(file.data);
   const version = randomUUID();
   const folder = versionFolder(id, version);
@@ -209,8 +201,10 @@ export function reorderProcessPhotos(ids: string[]): Promise<string[]> {
   return changePhotos((photos, transaction, document) => {
     const byId = new Map(photos.map((photo) => [photo.id, photo]));
     const reordered = ids.flatMap((id) => byId.get(id) ?? []);
+    const everyIdKnown = reordered.length === ids.length;
 
-    if (ids.length !== photos.length || reordered.length !== photos.length) {
+    // The ids are distinct, so known ids as many as the photos name every photo once.
+    if (!everyIdKnown || ids.length !== photos.length) {
       throw new ConflictError("The ids must name every process photo once");
     }
 

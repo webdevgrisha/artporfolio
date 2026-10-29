@@ -131,18 +131,7 @@ describe("process photo service", () => {
     expect(transaction.set).toHaveBeenCalledWith(document, expect.anything(), { merge: true });
   });
 
-  it("rejects a photo over the limit before encoding it", async () => {
-    storedAs(
-      Array.from({ length: maxProcessPhotos }, (_, index) =>
-        storedPhoto(`${String(index).padStart(8, "0")}-1111-4111-8111-111111111111`),
-      ),
-    );
-
-    await expect(addProcessPhoto(upload, "Sketch")).rejects.toBeInstanceOf(ConflictError);
-    expect(processImage).not.toHaveBeenCalled();
-  });
-
-  it("removes the new files when the list filled up in the meantime", async () => {
+  it("rejects a photo over the limit and removes its files", async () => {
     const full = Array.from({ length: maxProcessPhotos }, () => storedPhoto(firstId));
     transaction.get.mockResolvedValue({ get: () => full });
 
@@ -169,14 +158,7 @@ describe("process photo service", () => {
     );
   });
 
-  it("rejects replacing an unknown photo before encoding it", async () => {
-    await expect(replaceProcessPhoto(unknownId, upload, "Sketch")).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
-    expect(processImage).not.toHaveBeenCalled();
-  });
-
-  it("removes the new version when the photo was deleted in the meantime", async () => {
+  it("rejects replacing an unknown photo and removes the new version", async () => {
     transaction.get.mockResolvedValue({ get: () => [storedPhoto(secondId)] });
 
     await expect(replaceProcessPhoto(firstId, upload, "Sketch")).rejects.toBeInstanceOf(
