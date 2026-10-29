@@ -69,12 +69,12 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 
 - Paths and admin navigation titles are defined once in `shared/config/routes.ts`.
 - `app/router.tsx` maps paths to lazily loaded pages.
-- Data is loaded and changed through React Router loaders and actions, not effects:
+- Data is loaded through React Router loaders, not effects. An action is used only for a change that leads to another page:
   - the admin layout route uses `requireSession` (`entities/user`), which redirects guests to `/admin/login?redirectTo=…`;
   - inside the admin area, `useSessionUser()` returns the signed-in user;
   - the login page has its own loader and action in `pages/login/model/loginRoute.ts`;
   - logout is a `<Form method="post">` to the `/admin/logout` action (`features/logout`);
-  - an edit page saves through `useFetcher` to its route action (`pages/contacts/model/contactsRoute.ts`): saving stays on the page and adds no history entry. The action returns the saved values, so the route turns revalidation off with `shouldRevalidate`. A form with a file submits `multipart/form-data`, the only body that carries a file (`contactsChangesToFormData`), and the action validates it again.
+  - an edit page reads its data in a loader (`pages/contacts/model/contactsRoute.ts`) and passes it to the form. The form stays on the page, so it saves in its react-hook-form submit handler (`EditContactsForm`): it sends the changes, reloads the route data with `useRevalidator`, resets the saved fields and shows the result. `isSubmitting` disables the form meanwhile.
 - `PageLoading` is the `HydrateFallback` shown while the first loaders run.
 - Admin pages are nested in a pathless route whose `ErrorBoundary` is `AdminPageError` (`widgets/admin-layout`): a page that fails to load or render is replaced inside the layout, and the navigation stays usable.
 
@@ -83,7 +83,7 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 - Forms use react-hook-form with a zod schema that mirrors the server rules. Text controls such as `Input` are built on `Field` (`shared/ui`), which owns the label, the `hint`, the error and the frame; modified fields are highlighted with `isModified`.
 - A form with several sections uses `Tabs` (`shared/ui`) inside one `<form>` with one save button. Hidden panels stay mounted, so their fields keep their values. The form sets `shouldFocusError: false` and, on an invalid submit, opens the tab of the first invalid field before focusing it.
 - Files are picked with `MediaPicker` (`shared/ui`). It checks the type and size and shows thumbnails that open in `PreviewDialog`, but it uploads nothing: the form keeps the picked `File` and sends it on save, so revert and the unsaved-changes guard cover it too. The upload rules (`imageUploadRules`) and the image the API returns (`imageSchema`) live in `shared/api/image`; `imageToMediaItem` shows a stored image in the picker.
-- A save that calls several endpoints sends only the changed parts and saves them independently (`saveContacts`). The page replaces only the parts that were saved, and the form resets only their fields, so a part that failed keeps its changes. Several photos are uploaded one at a time (`savePageHeroes`), because the server encodes each one.
+- A save that calls several endpoints sends only the changed parts and saves them independently (`saveContacts`). The form resets only the fields of the saved parts, so a part that failed keeps its changes. Several photos are uploaded one at a time (`savePageHeroes`), because the server encodes each one.
 - An edit form ends with `FormActions` (`shared/ui`): the save button, and the revert button while there are unsaved changes. It also renders `UnsavedChangesDialog` (`shared/ui`), which stops leaving with unsaved changes through `useUnsavedChangesGuard` (`shared/lib`) and asks with `ConfirmDialog`. React Router allows one blocker at a time, so a page has one guarded form.
 - The result of an action is shown with `showSuccessToast` or `showErrorToast` (`shared/ui/toast`). Errors stay until closed. Toasts of one action share an `id`, so a new result replaces the previous one.
 - Request error texts come from `getRequestErrorMessage` (`shared/api`), which covers no connection and server errors; a feature handles its own cases first, as `getSaveContactsErrorMessage` and `getSavePhotoErrorMessage` do. A save rejected for an expired session (`isSessionExpiredError`) shows `sessionExpiredMessage`.
