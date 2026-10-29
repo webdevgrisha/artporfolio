@@ -143,8 +143,10 @@ backend/src/
 ## Тесты
 
 - Тесты бэкенда лежат в `backend/tests`, повторяя структуру `src` (`tests/modules/contacts/photo/service.test.ts` тестирует `src/modules/contacts/photo/service.ts`), и запускаются Vitest. Их окружение задано в `backend/vitest.config.ts`.
-- В `tests/support` лежат общие помощники: `startTestServer` запускает приложение Express на свободном порту, `adminHeaders` возвращает cookies и CSRF-заголовок вошедшего администратора, `apiImage` возвращает полное изображение для замоканных сервисов, `routeApp` собирает приложение для теста маршрутов: общие middleware, маршруты авторизации и тестируемый роутер. Импортируйте их относительным путём с окончанием `.js`.
-- У фронтенда пока нет автоматических тестов.
+- В `backend/tests/support` лежат общие помощники: `startTestServer` запускает приложение Express на свободном порту, `adminHeaders` возвращает cookies и CSRF-заголовок вошедшего администратора, `apiImage` возвращает полное изображение для замоканных сервисов, `routeApp` собирает приложение для теста маршрутов: общие middleware, маршруты авторизации и тестируемый роутер. Импортируйте их относительным путём с окончанием `.js`.
+- Тесты фронтенда лежат в `front/tests`, так же повторяя структуру `src`, и запускаются Vitest в happy-dom (`front/vitest.config.ts`). Они покрывают логику: схемы форм, изменения, которые отправляет сохранение, функции сохранения, сообщения об ошибках, loader'ы и action'ы маршрутов, хуки. Компоненты пока не тестируются.
+- Тесты фронтенда работают с API через MSW: `tests/support/server.ts` перехватывает все запросы, а запрос без обработчика роняет тест. Каждый тест задаёт свои обработчики через `server.use`; `recordRequests` возвращает отправленные запросы по порядку. Другие помощники в `front/tests/support`: `csrfHandler`, `problem` и `noContent` (`handlers.ts`), `apiImage`, `apiPhoto`, `apiProcessPhoto` и `imageFile` (`images.ts`), `fieldErrors` для схем, `routeArgs`, `formActionArgs` и `thrownResponse` для loader'ов и action'ов.
+- Тесты фронтенда импортируют тестируемый модуль по его собственному пути (`@/features/edit-about/model/saveProcessPhotos`), а не через `index.ts` слайса. `vi.mock` остаётся для того, что MSW не заменит: Firebase и тостов.
 
 ## Как добавить страницу админки
 
