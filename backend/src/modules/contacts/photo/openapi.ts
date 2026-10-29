@@ -47,6 +47,7 @@ export const contactPhotoPaths = {
         401: unauthorizedResponse,
         403: forbiddenResponse,
         404: notFoundResponse,
+        413: payloadTooLargeResponse,
         415: unsupportedMediaTypeResponse,
       },
     },

@@ -11,8 +11,10 @@ const description = `
 API of the art portfolio: the public site reads it, the admin panel changes it.
 
 - Bodies are JSON unless an operation says otherwise. Unknown fields are rejected.
-- Errors are Problem Details (RFC 9457), sent as \`application/problem+json\`. Any operation can
-  answer \`500\`, which is logged and has no \`detail\`.
+- Errors are Problem Details (RFC 9457), sent as \`application/problem+json\`.
+- Any operation can answer \`403\` to a browser request from an origin outside the CORS allowlist,
+  and \`500\` to an unexpected error, which is logged and has no \`detail\`.
+- A JSON body is limited to 100 KB; a larger one returns \`413\`.
 - A path parameter that names nothing, such as an unknown page, returns \`404\`.
 `.trim();
 

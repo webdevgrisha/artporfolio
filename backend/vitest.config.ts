@@ -7,6 +7,8 @@ export default defineConfig({
       reporter: ["text", "html"],
       reportsDirectory: "coverage",
     },
+    // Fails a test whose responses break the OpenAPI document; see tests/support/contract.ts.
+    setupFiles: ["tests/support/setup.ts"],
     // The environment the API expects at runtime; see .env.example.
     env: {
       ADMIN_UID: "admin-uid",

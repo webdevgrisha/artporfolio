@@ -10,6 +10,7 @@ import {
   badRequestResponse,
   forbiddenResponse,
   jsonResponse,
+  payloadTooLargeResponse,
   unauthorizedResponse,
   unsupportedMediaTypeResponse,
 } from "#shared/openapi/responses";
@@ -38,6 +39,7 @@ export const contactsPaths = {
         400: badRequestResponse,
         401: unauthorizedResponse,
         403: forbiddenResponse,
+        413: payloadTooLargeResponse,
         415: unsupportedMediaTypeResponse,
       },
     },

@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { adminHeaders, adminSessionCookie } from "../../support/adminSession.js";
+import { apiImage } from "../../support/images.js";
 import { startTestServer, type TestServer } from "../../support/testServer.js";
 
 const auth = vi.hoisted(() => ({
@@ -25,8 +26,14 @@ import { UnauthorizedError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
-const hero = { fileName: "painting.jpg", version: "version" };
-const pages = { about: { hero }, home: { hero: null } };
+const hero = apiImage("painting.jpg");
+const pages = {
+  home: { hero: null },
+  gallery: { hero: null },
+  projects: { hero: null },
+  about: { hero },
+  contacts: { hero: null },
+};
 
 let server: TestServer;
 
