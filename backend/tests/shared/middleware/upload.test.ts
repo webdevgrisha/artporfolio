@@ -124,4 +124,23 @@ describe("upload middleware", () => {
 
     expect(response.status).toBe(400);
   });
+
+  it.each(["/stream", "/raw-body"])(
+    "rejects a body that ends inside the file at %s",
+    async (path) => {
+      const truncated = [
+        "--boundary",
+        'Content-Disposition: form-data; name="file"; filename="photo.png"',
+        "Content-Type: image/png",
+        "",
+        "123",
+      ].join("\r\n");
+
+      const response = await upload(path, truncated, "multipart/form-data; boundary=boundary");
+
+      expect(response.status).toBe(400);
+      // The server is still up and answers the next upload.
+      expect((await upload(path, form({ file: new Blob(["1"]) }))).status).toBe(200);
+    },
+  );
 });

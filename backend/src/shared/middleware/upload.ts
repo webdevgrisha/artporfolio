@@ -67,6 +67,10 @@ function readMultipart(request: Request, options: UploadOptions): Promise<Multip
     });
 
     parser.on("file", (field, stream, { filename = "" }) => {
+      // busboy destroys the file stream with an error when the body ends inside the file. Without
+      // a listener that error would crash the process.
+      stream.on("error", () => reject(new BadRequestError("Invalid multipart/form-data body")));
+
       const error = fileError(field, filename, options);
 
       if (error) {
@@ -94,6 +98,12 @@ function readMultipart(request: Request, options: UploadOptions): Promise<Multip
     if (request.rawBody) {
       parser.end(request.rawBody);
     } else {
+      // pipe does not pass on the errors of the request, such as a client that disconnected, so
+      // the parser would wait for the rest of the body forever.
+      request.on("error", () => {
+        reject(new BadRequestError("The upload was interrupted"));
+        parser.destroy();
+      });
       request.pipe(parser);
     }
   });
