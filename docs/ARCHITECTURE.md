@@ -8,7 +8,7 @@ A pnpm monorepo with two packages, deployed to Firebase:
 
 | Package | Stack | Runs on |
 | --- | --- | --- |
-| `front` | React 19, React Router (data mode), Vite, CSS Modules, zod | Firebase Hosting |
+| `front` | React 19, React Router (data mode), TanStack Query, react-hook-form, Vite, CSS Modules, zod | Firebase Hosting |
 | `backend` | Express 5, Firebase Admin, zod | Cloud Functions (`api`, europe-west1) |
 
 Firebase Hosting serves the frontend and rewrites `/api/**` to the `api` function, so the browser talks to one origin.
@@ -74,7 +74,10 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
   - inside the admin area, `useSessionUser()` returns the signed-in user;
   - the login page has its own loader and action in `pages/login/model/loginRoute.ts`;
   - logout is a `<Form method="post">` to the `/admin/logout` action (`features/logout`);
-  - an edit page reads its data in a loader (`pages/contacts/model/contactsRoute.ts`) and passes it to the form. The form stays on the page, so it saves in its react-hook-form submit handler (`EditContactsForm`): it sends the changes, reloads the route data with `useRevalidator`, resets the saved fields and shows the result. `isSubmitting` disables the form meanwhile.
+  - server data lives in the TanStack Query cache (`queryClient` in `shared/api/queryClient.ts`). An entity exposes each request as query options (`contactsQuery` in `entities/contacts`). Nothing refetches in the background: the admin is the only one who changes the data;
+  - an edit page loads its data afresh on entering it: its loader calls `queryClient.fetchQuery` (`pages/contacts/model/contactsRoute.ts`), and the page reads it with `useSuspenseQuery` and passes it to the form;
+  - the form stays on the page, so it saves in its react-hook-form submit handler (`EditContactsForm`) through a mutation hook (`useSaveContacts`). The mutation sends the changes and invalidates the page's query after every save, a failed one included, since a failed request may still have changed the server; then the form resets the saved fields and shows the result. `isSubmitting` disables the form meanwhile;
+  - logout clears the query cache.
 - `PageLoading` is the `HydrateFallback` shown while the first loaders run.
 - Admin pages are nested in a pathless route whose `ErrorBoundary` is `AdminPageError` (`widgets/admin-layout`): a page that fails to load or render is replaced inside the layout, and the navigation stays usable.
 

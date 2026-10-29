@@ -8,7 +8,7 @@
 
 | Пакет | Стек | Где работает |
 | --- | --- | --- |
-| `front` | React 19, React Router (data mode), Vite, CSS Modules, zod | Firebase Hosting |
+| `front` | React 19, React Router (data mode), TanStack Query, react-hook-form, Vite, CSS Modules, zod | Firebase Hosting |
 | `backend` | Express 5, Firebase Admin, zod | Cloud Functions (`api`, europe-west1) |
 
 Firebase Hosting отдаёт фронтенд и перенаправляет `/api/**` в функцию `api`, поэтому браузер работает с одним источником (origin).
@@ -74,7 +74,10 @@ features/login/
   - внутри админки `useSessionUser()` возвращает текущего пользователя;
   - у страницы входа свои loader и action в `pages/login/model/loginRoute.ts`;
   - выход — это `<Form method="post">` на action `/admin/logout` (`features/logout`);
-  - страница редактирования читает данные в loader (`pages/contacts/model/contactsRoute.ts`) и передаёт их форме. Форма остаётся на странице, поэтому сохраняет в обработчике отправки react-hook-form (`EditContactsForm`): отправляет изменения, перезагружает данные маршрута через `useRevalidator`, сбрасывает сохранённые поля и показывает результат. Пока идёт сохранение, `isSubmitting` блокирует форму.
+  - данные сервера хранятся в кэше TanStack Query (`queryClient` в `shared/api/queryClient.ts`). Сущность отдаёт каждый запрос как query options (`contactsQuery` в `entities/contacts`). Фоновых перезапросов нет: данные меняет только админка;
+  - страница редактирования загружает данные заново при каждом входе: её loader вызывает `queryClient.fetchQuery` (`pages/contacts/model/contactsRoute.ts`), а страница читает их через `useSuspenseQuery` и передаёт форме;
+  - форма остаётся на странице, поэтому сохраняет в обработчике отправки react-hook-form (`EditContactsForm`) через хук мутации (`useSaveContacts`). Мутация отправляет изменения и инвалидирует запрос страницы после каждого сохранения, в том числе неудачного: упавший запрос мог всё же изменить данные на сервере. Затем форма сбрасывает сохранённые поля и показывает результат. Пока идёт сохранение, `isSubmitting` блокирует форму;
+  - при выходе кэш запросов очищается.
 - `PageLoading` — это `HydrateFallback`, который виден, пока выполняются первые loader.
 - Страницы админки вложены в маршрут без пути, у которого `ErrorBoundary` — `AdminPageError` (`widgets/admin-layout`): страница, которая не загрузилась или упала при рендере, заменяется сообщением внутри лейаута, а навигация продолжает работать.
 
