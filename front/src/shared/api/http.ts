@@ -15,8 +15,7 @@ interface BodyOptions<TBody extends object, TSchema extends ZodType> extends Htt
   schema: TSchema;
 }
 
-interface PostVoidOptions<TBody extends object> extends HttpOptions {
-  body?: TBody;
+interface PostVoidOptions extends HttpOptions {
   path: string;
 }
 
@@ -95,14 +94,10 @@ class Http {
     return schema.parse(await response.json());
   }
 
-  async postVoid<TBody extends object = never>({
-    body,
-    path,
-    ...options
-  }: PostVoidOptions<TBody>): Promise<void> {
+  /** A POST without a body whose response has no content, such as an action endpoint. */
+  async postVoid({ path, ...options }: PostVoidOptions): Promise<void> {
     await this.request(path, {
       ...options,
-      body,
       method: "POST",
     });
   }
