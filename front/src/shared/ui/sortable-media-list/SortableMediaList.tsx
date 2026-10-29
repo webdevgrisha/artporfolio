@@ -17,7 +17,7 @@ import clsx from "clsx";
 import React, { type ChangeEvent, type ReactNode } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
-import { getFileRejection } from "@/shared/lib/getFileRejection";
+import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { Button } from "@/shared/ui/button";
 import { FieldError, FieldHint } from "@/shared/ui/field";
@@ -38,13 +38,6 @@ export interface SortableMediaItem extends MediaItem {
 }
 
 interface SortableMediaListProps {
-  /**
-   * Accepted MIME types and, for files whose type the browser does not know, extensions, as in
-   * the `accept` attribute: `["image/jpeg", ".jpg"]`.
-   */
-  accept: readonly string[];
-  /** The accepted types for people, e.g. `JPEG или PNG`. */
-  acceptLabel: string;
   className?: string;
   disabled?: boolean;
   error?: string;
@@ -53,8 +46,6 @@ interface SortableMediaListProps {
   /** The current items, in order. */
   items: readonly SortableMediaItem[];
   label: string;
-  /** In bytes. */
-  maxFileSize: number;
   maxItems: number;
   /** Receives the picked files that pass the checks and fit under `maxItems`. */
   onAdd: (files: File[]) => void;
@@ -64,6 +55,7 @@ interface SortableMediaListProps {
   onReplace: (id: string, file: File) => void;
   /** The fields of an item, such as its description, shown under its file. */
   renderItemFields?: (item: SortableMediaItem, index: number) => ReactNode;
+  rules: FileRules;
 }
 
 /** Where the focus goes once the items are updated: a control of a row, or the add button. */
@@ -79,21 +71,19 @@ const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 
  * the changes: the owner keeps the files and uploads them on save.
  */
 export function SortableMediaList({
-  accept,
-  acceptLabel,
   className,
   disabled = false,
   error,
   isModified = false,
   items,
   label,
-  maxFileSize,
   maxItems,
   onAdd,
   onMove,
   onRemove,
   onReplace,
   renderItemFields,
+  rules,
 }: SortableMediaListProps) {
   const id = React.useId();
   const hintId = `${id}-hint`;
@@ -160,7 +150,7 @@ export function SortableMediaList({
     const accepted: File[] = [];
 
     for (const file of files) {
-      const fileRejection = getFileRejection(file, { accept, acceptLabel, maxFileSize });
+      const fileRejection = getFileRejection(file, rules);
       if (fileRejection) {
         rejections.add(fileRejection);
       } else {
@@ -184,7 +174,7 @@ export function SortableMediaList({
     replacedItemIdRef.current = undefined;
     if (!file || !itemId) return;
 
-    const fileRejection = getFileRejection(file, { accept, acceptLabel, maxFileSize });
+    const fileRejection = getFileRejection(file, rules);
     setRejection(fileRejection);
     if (!fileRejection) onReplace(itemId, file);
   }
@@ -311,7 +301,7 @@ export function SortableMediaList({
             ref={addInputRef}
             className={styles.fileInput}
             type="file"
-            accept={accept.join(",")}
+            accept={rules.accept.join(",")}
             multiple
             tabIndex={-1}
             aria-hidden="true"
@@ -321,7 +311,7 @@ export function SortableMediaList({
             ref={replaceInputRef}
             className={styles.fileInput}
             type="file"
-            accept={accept.join(",")}
+            accept={rules.accept.join(",")}
             tabIndex={-1}
             aria-hidden="true"
             onChange={handleReplaceInputChange}
@@ -329,7 +319,8 @@ export function SortableMediaList({
         </div>
 
         <FieldHint id={hintId}>
-          {acceptLabel}, до {formatFileSize(maxFileSize)}. Фото: {items.length} из {maxItems}
+          {rules.acceptLabel}, до {formatFileSize(rules.maxFileSize)}. Фото: {items.length} из{" "}
+          {maxItems}
         </FieldHint>
         {/* Announces a rejected file: the focus stays on the button that picked it. */}
         <div aria-live="polite">

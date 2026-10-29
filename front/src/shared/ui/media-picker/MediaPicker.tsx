@@ -2,7 +2,7 @@ import clsx from "clsx";
 import React, { type ChangeEvent } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
-import { getFileRejection } from "@/shared/lib/getFileRejection";
+import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { FieldError, FieldHint } from "@/shared/ui/field";
 import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
@@ -13,13 +13,6 @@ import { Tooltip } from "@/shared/ui/tooltip";
 import styles from "./MediaPicker.module.css";
 
 interface MediaPickerProps {
-  /**
-   * Accepted MIME types and, for files whose type the browser does not know, extensions, as in
-   * the `accept` attribute: `["image/jpeg", ".jpg"]`.
-   */
-  accept: readonly string[];
-  /** The accepted types for people, e.g. `JPEG или PNG`. */
-  acceptLabel: string;
   className?: string;
   disabled?: boolean;
   error?: string;
@@ -28,11 +21,10 @@ interface MediaPickerProps {
   /** The current files. A single file for now: picking another one is a replacement. */
   items: readonly MediaItem[];
   label: string;
-  /** In bytes. */
-  maxFileSize: number;
   /** Receives the picked files once they pass the type and size checks. */
   onAdd: (files: File[]) => void;
   onRemove: (id: string) => void;
+  rules: FileRules;
 }
 
 /**
@@ -41,17 +33,15 @@ interface MediaPickerProps {
  * uploads them on save.
  */
 export function MediaPicker({
-  accept,
-  acceptLabel,
   className,
   disabled = false,
   error,
   isModified = false,
   items,
   label,
-  maxFileSize,
   onAdd,
   onRemove,
+  rules,
 }: MediaPickerProps) {
   const id = React.useId();
   const hintId = `${id}-hint`;
@@ -75,9 +65,7 @@ export function MediaPicker({
     if (!file) return;
 
     const fileRejection =
-      files.length > 1
-        ? "Можно выбрать только один файл"
-        : getFileRejection(file, { accept, acceptLabel, maxFileSize });
+      files.length > 1 ? "Можно выбрать только один файл" : getFileRejection(file, rules);
 
     setRejection(fileRejection ? { itemsKey, message: fileRejection } : undefined);
     if (!fileRejection) onAdd(files);
@@ -167,7 +155,7 @@ export function MediaPicker({
             ref={inputRef}
             className={styles.fileInput}
             type="file"
-            accept={accept.join(",")}
+            accept={rules.accept.join(",")}
             tabIndex={-1}
             aria-hidden="true"
             onChange={handleInputChange}
@@ -175,7 +163,7 @@ export function MediaPicker({
         </div>
 
         <FieldHint id={hintId}>
-          {acceptLabel}, до {formatFileSize(maxFileSize)}
+          {rules.acceptLabel}, до {formatFileSize(rules.maxFileSize)}
         </FieldHint>
         {/* Announces a rejected file: the focus stays on the attachment button. */}
         <div aria-live="polite">

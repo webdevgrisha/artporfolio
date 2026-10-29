@@ -1,8 +1,15 @@
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
-interface FileRules {
+/** Which files a picker takes, such as `imageUploadRules`. */
+export interface FileRules {
+  /**
+   * Accepted MIME types and, for files whose type the browser does not know, extensions, as in
+   * the `accept` attribute: `["image/jpeg", ".jpg"]`.
+   */
   accept: readonly string[];
+  /** The accepted types for people, e.g. `JPEG или PNG`. */
   acceptLabel: string;
+  /** In bytes. */
   maxFileSize: number;
 }
 

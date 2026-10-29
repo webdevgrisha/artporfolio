@@ -46,9 +46,7 @@ export function ContactPhotoFields({ className, isSaving, serverPhoto }: Contact
     <div className={clsx(styles.root, className)}>
       <MediaPicker
         label="Фото"
-        accept={imageUploadRules.accept}
-        acceptLabel={imageUploadRules.acceptLabel}
-        maxFileSize={imageUploadRules.maxFileSize}
+        rules={imageUploadRules}
         items={photoItems}
         disabled={isSaving}
         isModified={photo !== (serverPhoto ? savedPhoto : null)}

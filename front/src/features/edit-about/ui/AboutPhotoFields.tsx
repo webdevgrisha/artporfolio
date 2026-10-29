@@ -46,9 +46,7 @@ export function AboutPhotoFields({ className, isSaving, serverPhoto }: AboutPhot
     <div className={clsx(styles.root, className)}>
       <MediaPicker
         label="Моё фото"
-        accept={imageUploadRules.accept}
-        acceptLabel={imageUploadRules.acceptLabel}
-        maxFileSize={imageUploadRules.maxFileSize}
+        rules={imageUploadRules}
         items={photoItems}
         disabled={isSaving}
         isModified={photo !== (serverPhoto ? savedPhoto : null)}

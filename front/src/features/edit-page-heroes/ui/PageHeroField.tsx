@@ -33,9 +33,7 @@ export function PageHeroField({ control, disabled, label, page, serverHero }: Pa
   return (
     <MediaPicker
       label={label}
-      accept={imageUploadRules.accept}
-      acceptLabel={imageUploadRules.acceptLabel}
-      maxFileSize={imageUploadRules.maxFileSize}
+      rules={imageUploadRules}
       items={items}
       disabled={disabled}
       isModified={hero !== (serverHero ? savedHero : null)}

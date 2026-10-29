@@ -73,9 +73,7 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
     <div className={clsx(styles.root, className)}>
       <SortableMediaList
         label="Фото процесса"
-        accept={imageUploadRules.accept}
-        acceptLabel={imageUploadRules.acceptLabel}
-        maxFileSize={imageUploadRules.maxFileSize}
+        rules={imageUploadRules}
         maxItems={maxProcessPhotos}
         items={items}
         disabled={isSaving}
