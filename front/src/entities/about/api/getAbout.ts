@@ -18,10 +18,11 @@ const aboutSchema = z.object({
 export type About = z.infer<typeof aboutSchema>;
 
 interface GetAboutParams {
-  signal?: AbortSignal;
+  /** Cancels the request, e.g. when the route loader is no longer needed. */
+  signal: AbortSignal;
 }
 
-export async function getAbout({ signal }: GetAboutParams = {}): Promise<About> {
+export async function getAbout({ signal }: GetAboutParams): Promise<About> {
   return http.get({
     path: "/about",
     schema: aboutSchema,

@@ -9,10 +9,11 @@ const sitePagesResponseSchema = z.object({
 });
 
 interface GetSitePagesParams {
-  signal?: AbortSignal;
+  /** Cancels the request, e.g. when the route loader is no longer needed. */
+  signal: AbortSignal;
 }
 
-export async function getSitePages({ signal }: GetSitePagesParams = {}): Promise<SitePages> {
+export async function getSitePages({ signal }: GetSitePagesParams): Promise<SitePages> {
   const response = await http.get({
     path: "/pages",
     schema: sitePagesResponseSchema,

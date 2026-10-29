@@ -14,10 +14,11 @@ const contactsWithPhotoSchema = z.object({
 export type ContactsWithPhoto = z.infer<typeof contactsWithPhotoSchema>;
 
 interface GetContactsParams {
-  signal?: AbortSignal;
+  /** Cancels the request, e.g. when the route loader is no longer needed. */
+  signal: AbortSignal;
 }
 
-export async function getContacts({ signal }: GetContactsParams = {}): Promise<ContactsWithPhoto> {
+export async function getContacts({ signal }: GetContactsParams): Promise<ContactsWithPhoto> {
   return http.get({
     path: "/contacts",
     schema: contactsWithPhotoSchema,
