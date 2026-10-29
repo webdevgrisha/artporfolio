@@ -1,6 +1,5 @@
 import { http } from "@/shared/api/http";
-
-import { type AboutPhoto, aboutPhotoResponseSchema } from "../model/aboutPhoto";
+import { type Photo, photoResponseSchema } from "@/shared/api/photo";
 
 interface UploadAboutPhotoParams {
   alt: string;
@@ -13,7 +12,7 @@ export async function uploadAboutPhoto({
   alt,
   csrfToken,
   file,
-}: UploadAboutPhotoParams): Promise<AboutPhoto> {
+}: UploadAboutPhotoParams): Promise<Photo> {
   const body = new FormData();
   body.set("alt", alt);
   body.set("file", file);
@@ -24,7 +23,7 @@ export async function uploadAboutPhoto({
     headers: {
       "X-CSRF-Token": csrfToken,
     },
-    schema: aboutPhotoResponseSchema,
+    schema: photoResponseSchema,
   });
 
   return response.photo;

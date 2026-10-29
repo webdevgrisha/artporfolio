@@ -6,13 +6,11 @@ import {
   uploadAboutPhoto,
 } from "@/entities/about";
 import { getCsrfToken } from "@/shared/api/csrf";
+import { getSavePhotoErrorMessage } from "@/shared/api/photo";
+import type { PhotoChange } from "@/shared/lib/photoForm";
 
-import {
-  getSaveAboutErrorMessage,
-  getSavePhotoErrorMessage,
-  getSaveTextErrorMessage,
-} from "../lib/saveErrorMessages";
-import type { AboutChanges, PhotoChange } from "./aboutChanges";
+import { getSaveAboutErrorMessage, getSaveTextErrorMessage } from "../lib/saveErrorMessages";
+import type { AboutChanges } from "./aboutChanges";
 import { type SaveProcessPhotosResult, saveProcessPhotos } from "./saveProcessPhotos";
 
 export interface SaveAboutResult {

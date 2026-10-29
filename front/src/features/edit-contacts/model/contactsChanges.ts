@@ -1,14 +1,10 @@
 import type { FieldNamesMarkedBoolean } from "react-hook-form";
 
 import type { Contacts, ContactsWithPhoto } from "@/entities/contacts";
+import { getPhotoChange, type PhotoChange } from "@/shared/lib/photoForm";
 
 import { contactFields } from "./contactFields";
 import type { ContactsFormValues } from "./contactsFormSchema";
-
-export type PhotoChange =
-  | { alt: string; file: File; type: "upload" }
-  | { alt: string; type: "updateAlt" }
-  | { type: "delete" };
 
 /** What a save sends to the server: only the parts that were changed. */
 export interface ContactsChanges {
@@ -30,14 +26,11 @@ export function getContactsChanges(
     changes.contacts = { email, instagram, linkedin, youtube };
   }
 
-  // The photo is compared by value: react-hook-form does not track changes inside a File.
-  if (values.photo instanceof File) {
-    changes.photo = { alt: values.photoAlt, file: values.photo, type: "upload" };
-  } else if (values.photo === null) {
-    if (saved.photo) changes.photo = { type: "delete" };
-  } else if (dirtyFields.photoAlt) {
-    changes.photo = { alt: values.photoAlt, type: "updateAlt" };
-  }
+  const photo = getPhotoChange(values, {
+    hasServerPhoto: saved.photo !== null,
+    isAltDirty: Boolean(dirtyFields.photoAlt),
+  });
+  if (photo) changes.photo = photo;
 
   return changes;
 }

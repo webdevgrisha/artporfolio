@@ -1,14 +1,14 @@
 import { z } from "zod";
 
 import { http } from "@/shared/api/http";
+import { photoSchema } from "@/shared/api/photo";
 
-import { contactPhotoSchema } from "../model/contactPhoto";
 import { contactsSchema } from "../model/contacts";
 
 const contactsWithPhotoSchema = z.object({
   contacts: contactsSchema,
   /** `null` until a photo is uploaded. */
-  photo: contactPhotoSchema.nullable(),
+  photo: photoSchema.nullable(),
 });
 
 export type ContactsWithPhoto = z.infer<typeof contactsWithPhotoSchema>;

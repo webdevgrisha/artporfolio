@@ -6,7 +6,9 @@ import { type FieldErrors, FormProvider, useForm } from "react-hook-form";
 import { useRevalidator } from "react-router";
 
 import type { ContactsWithPhoto } from "@/entities/contacts";
+import { toSavedPhotoValues } from "@/shared/lib/photoForm";
 import { FormActions } from "@/shared/ui/form-actions";
+import { PhotoFields } from "@/shared/ui/photo-fields";
 import { Tab, TabList, TabPanel, Tabs } from "@/shared/ui/tabs";
 import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
 import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
@@ -14,10 +16,9 @@ import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
 import { contactFields } from "../model/contactFields";
 import { getContactsChanges } from "../model/contactsChanges";
 import { type ContactsFormValues, contactsFormSchema } from "../model/contactsFormSchema";
-import { toContactsFormValues, toSavedPhotoValues } from "../model/contactsFormValues";
+import { toContactsFormValues } from "../model/contactsFormValues";
 import { saveContacts } from "../model/saveContacts";
 import { ContactLinksFields } from "./ContactLinksFields";
-import { ContactPhotoFields } from "./ContactPhotoFields";
 import styles from "./EditContactsForm.module.css";
 
 // One toast for the result of saving: a new result replaces the previous one.
@@ -112,7 +113,7 @@ export function EditContactsForm({ className, contacts }: EditContactsFormProps)
             <ContactLinksFields isSaving={isSubmitting} />
           </TabPanel>
           <TabPanel value="photo">
-            <ContactPhotoFields isSaving={isSubmitting} serverPhoto={contacts.photo} />
+            <PhotoFields label="Фото" isSaving={isSubmitting} serverPhoto={contacts.photo} />
           </TabPanel>
         </Tabs>
 

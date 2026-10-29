@@ -1,6 +1,5 @@
 import { http } from "@/shared/api/http";
-
-import { type ContactPhoto, contactPhotoResponseSchema } from "../model/contactPhoto";
+import { type Photo, photoResponseSchema } from "@/shared/api/photo";
 
 interface UpdateContactPhotoAltParams {
   alt: string;
@@ -11,14 +10,14 @@ interface UpdateContactPhotoAltParams {
 export async function updateContactPhotoAlt({
   alt,
   csrfToken,
-}: UpdateContactPhotoAltParams): Promise<ContactPhoto> {
+}: UpdateContactPhotoAltParams): Promise<Photo> {
   const response = await http.patch({
     path: "/contacts/photo",
     body: { alt },
     headers: {
       "X-CSRF-Token": csrfToken,
     },
-    schema: contactPhotoResponseSchema,
+    schema: photoResponseSchema,
   });
 
   return response.photo;

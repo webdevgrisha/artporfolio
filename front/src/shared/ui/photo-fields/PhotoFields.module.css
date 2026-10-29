@@ -1,4 +1,4 @@
-/* The photo and its description side by side. */
+/* The photo and its description side by side, in the columns of the other form fields. */
 .root {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

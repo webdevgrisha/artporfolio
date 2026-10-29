@@ -1,15 +1,11 @@
 import type { FieldNamesMarkedBoolean } from "react-hook-form";
 
 import type { About, AboutText } from "@/entities/about";
+import { getPhotoChange, type PhotoChange } from "@/shared/lib/photoForm";
 
 import type { AboutFormValues } from "./aboutFormSchema";
 import { aboutTextFields } from "./aboutTextFields";
 import { getProcessPhotosChanges, type ProcessPhotosChanges } from "./processPhotosChanges";
-
-export type PhotoChange =
-  | { alt: string; file: File; type: "upload" }
-  | { alt: string; type: "updateAlt" }
-  | { type: "delete" };
 
 /** What a save sends to the server: only the parts that were changed. */
 export interface AboutChanges {
@@ -32,14 +28,11 @@ export function getAboutChanges(
     changes.text = { about, biography, creation };
   }
 
-  // The photo is compared by value: react-hook-form does not track changes inside a File.
-  if (values.photo instanceof File) {
-    changes.photo = { alt: values.photoAlt, file: values.photo, type: "upload" };
-  } else if (values.photo === null) {
-    if (saved.photo) changes.photo = { type: "delete" };
-  } else if (dirtyFields.photoAlt) {
-    changes.photo = { alt: values.photoAlt, type: "updateAlt" };
-  }
+  const photo = getPhotoChange(values, {
+    hasServerPhoto: saved.photo !== null,
+    isAltDirty: Boolean(dirtyFields.photoAlt),
+  });
+  if (photo) changes.photo = photo;
 
   const processPhotos = getProcessPhotosChanges(values.processPhotos, saved.processPhotos);
   if (processPhotos) changes.processPhotos = processPhotos;

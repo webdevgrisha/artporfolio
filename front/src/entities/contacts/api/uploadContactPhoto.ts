@@ -1,6 +1,5 @@
 import { http } from "@/shared/api/http";
-
-import { type ContactPhoto, contactPhotoResponseSchema } from "../model/contactPhoto";
+import { type Photo, photoResponseSchema } from "@/shared/api/photo";
 
 interface UploadContactPhotoParams {
   alt: string;
@@ -13,7 +12,7 @@ export async function uploadContactPhoto({
   alt,
   csrfToken,
   file,
-}: UploadContactPhotoParams): Promise<ContactPhoto> {
+}: UploadContactPhotoParams): Promise<Photo> {
   const body = new FormData();
   body.set("alt", alt);
   body.set("file", file);
@@ -24,7 +23,7 @@ export async function uploadContactPhoto({
     headers: {
       "X-CSRF-Token": csrfToken,
     },
-    schema: contactPhotoResponseSchema,
+    schema: photoResponseSchema,
   });
 
   return response.photo;

@@ -5,9 +5,11 @@ import {
   uploadContactPhoto,
 } from "@/entities/contacts";
 import { getCsrfToken } from "@/shared/api/csrf";
+import { getSavePhotoErrorMessage } from "@/shared/api/photo";
+import type { PhotoChange } from "@/shared/lib/photoForm";
 
-import { getSaveContactsErrorMessage, getSavePhotoErrorMessage } from "../lib/saveErrorMessages";
-import type { ContactsChanges, PhotoChange } from "./contactsChanges";
+import { getSaveContactsErrorMessage } from "../lib/saveErrorMessages";
+import type { ContactsChanges } from "./contactsChanges";
 
 export interface SaveContactsResult {
   /** Why some part was not saved. */

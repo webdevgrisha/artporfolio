@@ -1,15 +1,14 @@
 import { z } from "zod";
 
 import { type AboutText, maxProcessPhotos } from "@/entities/about";
-import { imageFieldValueSchema } from "@/shared/lib/imageFieldValue";
+import { photoAltSchema, photoFieldsShape, refinePhotoAlt } from "@/shared/lib/photoForm";
 
-// Mirror the server rules in backend/src/modules/about/schema.ts and shared/images/photo.ts.
+// Mirror the server rules in backend/src/modules/about/schema.ts.
 export const aboutTextMaxLengths: Readonly<Record<keyof AboutText, number>> = {
   about: 500,
   biography: 2_000,
   creation: 2_000,
 };
-const maxAltLength = 250;
 
 /** An empty text hides its section on the site. */
 function aboutText(maxLength: number) {
@@ -18,12 +17,6 @@ function aboutText(maxLength: number) {
     .trim()
     .max(maxLength, `Не длиннее ${String(maxLength)} символов`);
 }
-
-const photoAltSchema = z
-  .string()
-  .trim()
-  .min(1, "Опишите, что на фото")
-  .max(maxAltLength, `Не длиннее ${String(maxAltLength)} символов`);
 
 const processPhotoRowSchema = z.discriminatedUnion("status", [
   z.object({
@@ -48,22 +41,12 @@ export const aboutFormSchema = z
     about: aboutText(aboutTextMaxLengths.about),
     biography: aboutText(aboutTextMaxLengths.biography),
     creation: aboutText(aboutTextMaxLengths.creation),
-    photo: imageFieldValueSchema,
-    photoAlt: z.string().trim(),
+    ...photoFieldsShape,
     /** In the order the site shows them. */
     processPhotos: z
       .array(processPhotoRowSchema)
       .max(maxProcessPhotos, `Не больше ${String(maxProcessPhotos)} фото`),
   })
-  .superRefine(({ photo, photoAlt }, context) => {
-    // Without a photo the alt text is hidden and not saved.
-    if (photo === null) return;
-
-    const alt = photoAltSchema.safeParse(photoAlt);
-
-    for (const issue of alt.error?.issues ?? []) {
-      context.addIssue({ code: "custom", message: issue.message, path: ["photoAlt"] });
-    }
-  });
+  .superRefine(refinePhotoAlt);
 
 export type AboutFormValues = z.infer<typeof aboutFormSchema>;

@@ -6,21 +6,18 @@ import { type FieldErrors, type FieldPath, FormProvider, useForm } from "react-h
 import { useRevalidator } from "react-router";
 
 import type { About } from "@/entities/about";
+import { toSavedPhotoValues } from "@/shared/lib/photoForm";
 import { FormActions } from "@/shared/ui/form-actions";
+import { PhotoFields } from "@/shared/ui/photo-fields";
 import { Tab, TabList, TabPanel, Tabs } from "@/shared/ui/tabs";
 import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
 import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
 
 import { getAboutChanges } from "../model/aboutChanges";
 import { type AboutFormValues, aboutFormSchema } from "../model/aboutFormSchema";
-import {
-  toAboutFormValues,
-  toProcessPhotoRows,
-  toSavedPhotoValues,
-} from "../model/aboutFormValues";
+import { toAboutFormValues, toProcessPhotoRows } from "../model/aboutFormValues";
 import { aboutTextFields } from "../model/aboutTextFields";
 import { saveAbout } from "../model/saveAbout";
-import { AboutPhotoFields } from "./AboutPhotoFields";
 import { AboutTextFields } from "./AboutTextFields";
 import styles from "./EditAboutForm.module.css";
 import { ProcessPhotoFields } from "./ProcessPhotoFields";
@@ -140,7 +137,7 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
             <AboutTextFields isSaving={isSubmitting} />
           </TabPanel>
           <TabPanel value="photo">
-            <AboutPhotoFields isSaving={isSubmitting} serverPhoto={about.photo} />
+            <PhotoFields label="Моё фото" isSaving={isSubmitting} serverPhoto={about.photo} />
           </TabPanel>
           <TabPanel value="process">
             <ProcessPhotoFields isSaving={isSubmitting} serverPhotos={about.processPhotos} />

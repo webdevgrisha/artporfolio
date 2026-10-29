@@ -3,5 +3,4 @@ export { type ContactsWithPhoto, getContacts } from "./api/getContacts";
 export { updateContactPhotoAlt } from "./api/updateContactPhotoAlt";
 export { updateContacts } from "./api/updateContacts";
 export { uploadContactPhoto } from "./api/uploadContactPhoto";
-export type { ContactPhoto } from "./model/contactPhoto";
 export type { Contacts } from "./model/contacts";
