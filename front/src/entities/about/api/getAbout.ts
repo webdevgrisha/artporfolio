@@ -4,12 +4,15 @@ import { http } from "@/shared/api/http";
 
 import { aboutPhotoSchema } from "../model/aboutPhoto";
 import { aboutTextSchema } from "../model/aboutText";
+import { processPhotoSchema } from "../model/processPhoto";
 
 const aboutSchema = z.object({
   /** `null` until the texts are first saved. */
   text: aboutTextSchema.nullable(),
   /** `null` until a photo is uploaded. */
   photo: aboutPhotoSchema.nullable(),
+  /** In the order the site shows them. */
+  processPhotos: z.array(processPhotoSchema),
 });
 
 export type About = z.infer<typeof aboutSchema>;

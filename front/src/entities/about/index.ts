@@ -1,7 +1,13 @@
+export { addProcessPhoto } from "./api/addProcessPhoto";
 export { deleteAboutPhoto } from "./api/deleteAboutPhoto";
+export { deleteProcessPhoto } from "./api/deleteProcessPhoto";
 export { type About, getAbout } from "./api/getAbout";
+export { reorderProcessPhotos } from "./api/reorderProcessPhotos";
+export { replaceProcessPhoto } from "./api/replaceProcessPhoto";
 export { updateAboutPhotoAlt } from "./api/updateAboutPhotoAlt";
 export { updateAboutText } from "./api/updateAboutText";
+export { updateProcessPhotoAlt } from "./api/updateProcessPhotoAlt";
 export { uploadAboutPhoto } from "./api/uploadAboutPhoto";
 export type { AboutPhoto } from "./model/aboutPhoto";
 export type { AboutText } from "./model/aboutText";
+export { maxProcessPhotos, type ProcessPhoto } from "./model/processPhoto";
