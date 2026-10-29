@@ -1,0 +1,4 @@
+/* Wide enough for a file name and a description side by side with the row buttons. */
+.root {
+  max-inline-size: 48rem;
+}

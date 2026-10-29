@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import React from "react";
 import { flushSync } from "react-dom";
-import { type FieldErrors, FormProvider, useForm } from "react-hook-form";
+import { type FieldErrors, type FieldPath, FormProvider, useForm } from "react-hook-form";
 import { useRevalidator } from "react-router";
 
 import type { About } from "@/entities/about";
@@ -23,13 +23,17 @@ import { saveAbout } from "../model/saveAbout";
 import { AboutPhotoFields } from "./AboutPhotoFields";
 import { AboutTextFields } from "./AboutTextFields";
 import styles from "./EditAboutForm.module.css";
+import { ProcessPhotoFields } from "./ProcessPhotoFields";
 
 // One toast for the result of saving: a new result replaces the previous one.
 const saveToastId = "about-save";
 
-type AboutTab = "photo" | "text";
+type AboutTab = "photo" | "process" | "text";
 
-/** The fields that can be invalid, in display order, with the tab that shows each of them. */
+/**
+ * The fields that can be invalid, in display order, with the tab that shows each of them. The
+ * process photos come last, on their own tab.
+ */
 const validatedFields: readonly (readonly [keyof AboutFormValues, AboutTab])[] = [
   ...aboutTextFields.map((field) => [field.name, "text"] as const),
   ["photoAlt", "photo"],
@@ -50,6 +54,7 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
   });
   const {
     formState: { dirtyFields, isDirty, isSubmitting },
+    getValues,
     handleSubmit,
     reset,
     resetField,
@@ -96,18 +101,28 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
     }
   }
 
-  function handleInvalid(fieldErrors: FieldErrors<AboutFormValues>) {
-    const firstInvalid = validatedFields.find(([name]) => fieldErrors[name]);
-    if (!firstInvalid) return;
-
-    const [name, fieldTab] = firstInvalid;
+  function focusField(name: FieldPath<AboutFormValues>, fieldTab: AboutTab) {
     // The tab is rendered synchronously, so its field can take the focus right away.
     flushSync(() => setTab(fieldTab));
     setFocus(name);
   }
 
+  function handleInvalid(fieldErrors: FieldErrors<AboutFormValues>) {
+    const firstInvalid = validatedFields.find(([name]) => fieldErrors[name]);
+    if (firstInvalid) {
+      const [name, fieldTab] = firstInvalid;
+      focusField(name, fieldTab);
+      return;
+    }
+
+    const invalidRow = getValues("processPhotos").findIndex(
+      (_row, index) => fieldErrors.processPhotos?.[index]?.alt,
+    );
+    if (invalidRow !== -1) focusField(`processPhotos.${invalidRow}.alt`, "process");
+  }
+
   return (
-    // The fields of both tabs read the form from the context.
+    // The fields of every tab read the form from the context.
     <FormProvider {...form}>
       <form
         className={clsx(styles.root, className)}
@@ -118,6 +133,7 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
           <TabList label="Разделы страницы «О сайте»">
             <Tab value="text">Тексты</Tab>
             <Tab value="photo">Моё фото</Tab>
+            <Tab value="process">Процесс</Tab>
           </TabList>
 
           <TabPanel value="text">
@@ -125,6 +141,9 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
           </TabPanel>
           <TabPanel value="photo">
             <AboutPhotoFields isSaving={isSubmitting} serverPhoto={about.photo} />
+          </TabPanel>
+          <TabPanel value="process">
+            <ProcessPhotoFields isSaving={isSubmitting} serverPhotos={about.processPhotos} />
           </TabPanel>
         </Tabs>
 
