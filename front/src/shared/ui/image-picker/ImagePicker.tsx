@@ -1,5 +1,3 @@
-import React from "react";
-
 import { type Image, imageUploadRules } from "@/shared/api/image";
 import { type ImageFieldValue, savedImage, toImageFieldValue } from "@/shared/lib/imageFieldValue";
 import { MediaPicker } from "@/shared/ui/media-picker";
@@ -16,6 +14,14 @@ interface ImagePickerProps {
   value: ImageFieldValue;
 }
 
+function toMediaItem(value: ImageFieldValue, serverImage: Image | null): MediaItem | undefined {
+  if (value instanceof File) {
+    return { id: "picked", name: value.name, size: value.size, source: value };
+  }
+
+  return value === savedImage && serverImage ? imageToMediaItem(serverImage) : undefined;
+}
+
 /**
  * A `MediaPicker` for one image of the upload rules: it shows the image on the server or the
  * picked file, and highlights a value that differs from the server.
@@ -28,23 +34,15 @@ export function ImagePicker({
   serverImage,
   value,
 }: ImagePickerProps) {
-  const items = React.useMemo((): MediaItem[] => {
-    if (value instanceof File) {
-      return [{ id: "picked", name: value.name, size: value.size, source: value }];
-    }
-
-    return value === savedImage && serverImage ? [imageToMediaItem(serverImage)] : [];
-  }, [value, serverImage]);
-
   return (
     <MediaPicker
       className={className}
       label={label}
       rules={imageUploadRules}
-      items={items}
+      item={toMediaItem(value, serverImage)}
       disabled={disabled}
       isModified={value !== toImageFieldValue(serverImage)}
-      onAdd={([file]) => onChange(file)}
+      onPick={onChange}
       onRemove={() => onChange(null)}
     />
   );
