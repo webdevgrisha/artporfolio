@@ -63,6 +63,9 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
+      '@redocly/cli':
+        specifier: 2.72.0
+        version: 2.72.0
       '@types/busboy':
         specifier: 1.5.5
         version: 1.5.5
@@ -1280,6 +1283,11 @@ packages:
 
   '@protobufjs/utf8@1.1.2':
     resolution: {integrity: sha512-b1UQwcEZ4yCnMCD8DAL1VlbvBJE9/IX4FTIp7BG1xYpf29SLazLSrqUkj4w7Y5y7cCVP6E5tcqqcI0xemPkHug==}
+
+  '@redocly/cli@2.72.0':
+    resolution: {integrity: sha512-uxBuakWcy/myh7WzwVtMCW49Aehs5xSgCj860MeguXBoTnOrGH5LfLrte+U7V1ZtcLAXPeJIxiv5BnV+5WC3qA==}
+    engines: {node: '>=22.12.0 || >=20.19.0 <21.0.0', npm: '>=10'}
+    hasBin: true
 
   '@remix-run/route-pattern@0.22.1':
     resolution: {integrity: sha512-czdGJWh09Lapvcqt7Vb09KlrU2PhRJ8xQaI+AItTuD9aDJ5MAgxnS38lnys6Ll+6RJEqPiaUqTwIQhVLwFvv+w==}
@@ -5205,6 +5213,8 @@ snapshots:
   '@protobufjs/pool@1.1.0': {}
 
   '@protobufjs/utf8@1.1.2': {}
+
+  '@redocly/cli@2.72.0': {}
 
   '@remix-run/route-pattern@0.22.1': {}
 

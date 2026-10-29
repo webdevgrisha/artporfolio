@@ -7,12 +7,18 @@ info:
 
     - Bodies are JSON unless an operation says otherwise. Unknown fields are rejected.
     - Errors are Problem Details (RFC 9457), sent as `application/problem+json`.
-    - Any operation can answer `403` to a browser request from an origin outside the CORS allowlist,
-      and `500` to an unexpected error, which is logged and has no `detail`.
+    - A browser request from an origin outside the CORS allowlist gets `403`.
+    - Any operation can answer `500` to an unexpected error, which is logged and has no `detail`.
     - A JSON body is limited to 100 KB; a larger one returns `413`.
     - A path parameter that names nothing, such as an unknown page, returns `404`.
+servers:
+  - url: https://artportfolio-b2ef4.web.app
+    description: Production
+  - url: http://127.0.0.1:5500
+    description: Local emulators (`pnpm emulators`)
 tags:
   - name: Health
+    description: Monitoring.
   - name: Auth
     description: The admin session and CSRF protection.
   - name: Contacts
@@ -26,6 +32,7 @@ paths:
       tags:
         - Health
       summary: Check that the API is up
+      security: []
       responses:
         "200":
           description: The API is up.
@@ -40,6 +47,8 @@ paths:
                 required:
                   - status
                 additionalProperties: false
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /api/auth/csrf:
     get:
       operationId: issueCsrfToken
@@ -47,6 +56,7 @@ paths:
         - Auth
       summary: Issue a CSRF token
       description: Every request that changes data needs the token in the `X-CSRF-Token` header.
+      security: []
       responses:
         "200":
           description: A new token.
@@ -68,6 +78,8 @@ paths:
                 required:
                   - csrfToken
                 additionalProperties: false
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /api/auth/login:
     post:
       operationId: login
@@ -146,6 +158,8 @@ paths:
                 additionalProperties: false
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /api/auth/logout:
     post:
       operationId: logout
@@ -166,7 +180,8 @@ paths:
       tags:
         - Contacts
       summary: Get the contact links and the contact photo
-      description: Public. Returns empty strings until the links are first saved.
+      description: Returns empty strings until the links are first saved.
+      security: []
       responses:
         "200":
           description: The contacts.
@@ -186,6 +201,8 @@ paths:
                   - contacts
                   - photo
                 additionalProperties: false
+        "403":
+          $ref: "#/components/responses/Forbidden"
     put:
       operationId: replaceContacts
       tags:
@@ -384,7 +401,7 @@ paths:
       tags:
         - Pages
       summary: Get every page of the public site
-      description: Public.
+      security: []
       responses:
         "200":
           description: Every page, by id.
@@ -394,20 +411,12 @@ paths:
                 type: object
                 properties:
                   pages:
-                    type: object
-                    propertyNames:
-                      $ref: "#/components/schemas/PageId"
-                    additionalProperties:
-                      $ref: "#/components/schemas/Page"
-                    required:
-                      - home
-                      - gallery
-                      - projects
-                      - about
-                      - contacts
+                    $ref: "#/components/schemas/Pages"
                 required:
                   - pages
                 additionalProperties: false
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /api/pages/{page}/hero:
     put:
       operationId: uploadPageHero
@@ -513,22 +522,6 @@ components:
         - projects
         - about
         - contacts
-    User:
-      type: object
-      properties:
-        email:
-          anyOf:
-            - type: string
-              format: email
-              pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
-            - type: "null"
-        uid:
-          type: string
-      required:
-        - email
-        - uid
-      additionalProperties: false
-      description: The signed-in admin.
     ProblemDetails:
       type: object
       properties:
@@ -572,6 +565,22 @@ components:
         - detail
         - pointer
       additionalProperties: false
+    User:
+      type: object
+      properties:
+        email:
+          anyOf:
+            - type: string
+              format: email
+              pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+            - type: "null"
+        uid:
+          type: string
+      required:
+        - email
+        - uid
+      additionalProperties: false
+      description: The signed-in admin.
     Contacts:
       type: object
       properties:
@@ -681,6 +690,26 @@ components:
         - url
         - width
       additionalProperties: false
+    Pages:
+      type: object
+      properties:
+        home:
+          $ref: "#/components/schemas/Page"
+        gallery:
+          $ref: "#/components/schemas/Page"
+        projects:
+          $ref: "#/components/schemas/Page"
+        about:
+          $ref: "#/components/schemas/Page"
+        contacts:
+          $ref: "#/components/schemas/Page"
+      required:
+        - home
+        - gallery
+        - projects
+        - about
+        - contacts
+      additionalProperties: false
     Page:
       type: object
       properties:
@@ -743,14 +772,14 @@ components:
       additionalProperties: false
       description: An uploaded photo, resized without cropping to the widths 640, 960, 1280 and 1920 (never wider than the original) and encoded as AVIF and WebP.
   responses:
-    BadRequest:
-      description: The request is invalid. For an invalid body, `errors` lists every invalid value.
+    Forbidden:
+      description: The CSRF token is missing or invalid, or the origin is not allowed.
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
-    Forbidden:
-      description: The CSRF token is missing or invalid, or the origin is not allowed.
+    BadRequest:
+      description: The request is invalid. For an invalid body, `errors` lists every invalid value.
       content:
         application/problem+json:
           schema:

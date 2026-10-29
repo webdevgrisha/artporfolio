@@ -20,6 +20,9 @@ export const securitySchemes = {
   },
 } satisfies NonNullable<ZodOpenApiComponentsObject["securitySchemes"]>;
 
+/** Anyone may call the operation: the public site reads it. */
+export const publicSecurity: SecurityRequirements = [];
+
 /** Reading admin data: a session is enough. */
 export const sessionSecurity: SecurityRequirements = [{ session: [] }];
 

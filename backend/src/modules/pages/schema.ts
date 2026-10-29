@@ -2,19 +2,6 @@ import { z } from "zod";
 
 import { imageSchema } from "#shared/images/storage";
 
-/** Pages of the public site that open with a main photo, the hero. */
-export const pageIds = ["home", "gallery", "projects", "about", "contacts"] as const;
-
-const pageIdSchema = z.enum(pageIds).meta({ id: "PageId" });
-
-/** The path parameters of a request about one page. */
-export const pageParamsSchema = z.object({
-  page: pageIdSchema,
-});
-
-/** A hero upload sends only the file: a text field is rejected. */
-export const heroUploadBodySchema = z.object({}).strict();
-
 /** A page as the API returns it. */
 export const pageSchema = z
   .object({
@@ -25,7 +12,30 @@ export const pageSchema = z
   })
   .meta({ id: "Page" });
 
-export const pagesResponseSchema = z.object({ pages: z.record(pageIdSchema, pageSchema) });
+/** Pages of the public site that open with a main photo, the hero. */
+const pagesSchema = z
+  .object({
+    home: pageSchema,
+    gallery: pageSchema,
+    projects: pageSchema,
+    about: pageSchema,
+    contacts: pageSchema,
+  })
+  .meta({ id: "Pages" });
+
+const pageIdSchema = pagesSchema.keyof().meta({ id: "PageId" });
+
+export const pageIds = pageIdSchema.options;
+
+/** The path parameters of a request about one page. */
+export const pageParamsSchema = z.object({
+  page: pageIdSchema,
+});
+
+/** A hero upload sends only the file: a text field is rejected. */
+export const heroUploadBodySchema = z.object({}).strict();
+
+export const pagesResponseSchema = z.object({ pages: pagesSchema });
 
 export const heroResponseSchema = z.object({ hero: imageSchema });
 

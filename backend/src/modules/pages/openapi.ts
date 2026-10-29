@@ -16,7 +16,7 @@ import {
   unauthorizedResponse,
   unsupportedMediaTypeResponse,
 } from "#shared/openapi/responses";
-import { adminSecurity } from "#shared/openapi/security";
+import { adminSecurity, publicSecurity } from "#shared/openapi/security";
 import { imageFileSchema, imageUploadContent } from "#shared/openapi/uploads";
 
 export const pagesPaths = {
@@ -25,9 +25,10 @@ export const pagesPaths = {
       operationId: "listPages",
       tags: ["Pages"],
       summary: "Get every page of the public site",
-      description: "Public.",
+      security: publicSecurity,
       responses: {
         200: jsonResponse("Every page, by id.", pagesResponseSchema),
+        403: forbiddenResponse,
       },
     },
   },

@@ -14,7 +14,7 @@ import {
   unauthorizedResponse,
   unsupportedMediaTypeResponse,
 } from "#shared/openapi/responses";
-import { adminSecurity } from "#shared/openapi/security";
+import { adminSecurity, publicSecurity } from "#shared/openapi/security";
 
 export const contactsPaths = {
   "/api/contacts": {
@@ -22,9 +22,11 @@ export const contactsPaths = {
       operationId: "getContacts",
       tags: ["Contacts"],
       summary: "Get the contact links and the contact photo",
-      description: "Public. Returns empty strings until the links are first saved.",
+      description: "Returns empty strings until the links are first saved.",
+      security: publicSecurity,
       responses: {
         200: jsonResponse("The contacts.", contactsResponseSchema),
+        403: forbiddenResponse,
       },
     },
     put: {

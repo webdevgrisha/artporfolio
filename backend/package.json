@@ -19,8 +19,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "check": "pnpm type-check",
-    "openapi": "node --conditions=development --experimental-transform-types --no-warnings openapi/generate.ts"
+    "check": "pnpm type-check && pnpm openapi:lint",
+    "openapi": "node --conditions=development --experimental-transform-types --no-warnings openapi/generate.ts",
+    "openapi:lint": "REDOCLY_TELEMETRY=off REDOCLY_SUPPRESS_UPDATE_NOTICE=true redocly lint openapi/openapi.yaml --config openapi/redocly.yaml"
   },
   "dependencies": {
     "busboy": "1.6.0",
@@ -35,6 +36,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@redocly/cli": "2.72.0",
     "@types/busboy": "1.5.5",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",

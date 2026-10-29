@@ -14,7 +14,7 @@ import {
   unauthorizedResponse,
   unsupportedMediaTypeResponse,
 } from "#shared/openapi/responses";
-import { csrfSecurity, sessionSecurity } from "#shared/openapi/security";
+import { csrfSecurity, publicSecurity, sessionSecurity } from "#shared/openapi/security";
 
 function setCookieHeader(description: string) {
   return z.object({ "Set-Cookie": z.string().meta({ description }) });
@@ -27,11 +27,13 @@ export const authPaths = {
       tags: ["Auth"],
       summary: "Issue a CSRF token",
       description: "Every request that changes data needs the token in the `X-CSRF-Token` header.",
+      security: publicSecurity,
       responses: {
         200: {
           ...jsonResponse("A new token.", csrfTokenResponseSchema),
           headers: setCookieHeader("Sets the CSRF cookie that matches the token."),
         },
+        403: forbiddenResponse,
       },
     },
   },
@@ -65,6 +67,7 @@ export const authPaths = {
       responses: {
         200: jsonResponse("The signed-in admin.", userResponseSchema),
         401: unauthorizedResponse,
+        403: forbiddenResponse,
       },
     },
   },

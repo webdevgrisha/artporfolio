@@ -79,14 +79,9 @@ function resolveResponse(response: ResponseObject | Reference): ResponseObject {
   return resolved;
 }
 
-/**
- * Any operation may answer these, as the document description says: a request from an origin
- * outside the CORS allowlist gets 403, and an unexpected error 500.
- */
-const anyOperationStatuses = new Set([403, 500]);
-
-const problemResponse: ResponseObject = {
-  description: "Problem Details",
+/** Any operation may answer 500, as the document description says. */
+const internalErrorResponse: ResponseObject = {
+  description: "Internal Server Error",
   content: {
     "application/problem+json": { schema: { $ref: "#/components/schemas/ProblemDetails" } },
   },
@@ -115,8 +110,8 @@ function findViolation(operation: Operation, sent: SentResponse): string | undef
   const documented = operation.responses[String(sent.status)];
   const response =
     documented === undefined
-      ? anyOperationStatuses.has(sent.status)
-        ? problemResponse
+      ? sent.status === 500
+        ? internalErrorResponse
         : undefined
       : resolveResponse(documented);
 

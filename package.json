@@ -21,7 +21,7 @@
     "lint:fix": "biome lint --write .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "check": "biome check . && pnpm -r type-check",
+    "check": "biome check . && pnpm -r type-check && pnpm --filter artportfolio-backend openapi:lint",
     "prepare": "husky"
   },
   "lint-staged": {
