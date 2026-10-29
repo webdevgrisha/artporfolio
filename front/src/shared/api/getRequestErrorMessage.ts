@@ -5,7 +5,10 @@ export const networkErrorMessage =
   "Нет соединения с сервером. Проверьте интернет и попробуйте ещё раз";
 const unavailableErrorMessage = "Сервис временно недоступен. Попробуйте позже";
 
-export const sessionExpiredMessage = "Сессия истекла. Войдите снова, чтобы сохранить изменения";
+// Signing in on this page would lose the unsaved changes. A sign-in in another tab renews the
+// session cookie for this one too, and a save asks for a fresh CSRF token anyway.
+export const sessionExpiredMessage =
+  "Сессия истекла. Войдите снова в новой вкладке и сохраните здесь ещё раз";
 
 /** A change was rejected because the admin session or its CSRF token is no longer valid. */
 export function isSessionExpiredError(error: unknown): boolean {
