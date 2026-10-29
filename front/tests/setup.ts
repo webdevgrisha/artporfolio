@@ -8,6 +8,7 @@ beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
 
 afterEach(() => {
   server.resetHandlers();
+  server.events.removeAllListeners();
   // Testing Library unmounts on its own only where Vitest globals are enabled.
   cleanup();
 });

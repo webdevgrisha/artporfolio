@@ -6,6 +6,7 @@ import { http } from "@/shared/api/http";
 import { HttpError } from "@/shared/api/httpError";
 import { NetworkError } from "@/shared/api/networkError";
 
+import { problem } from "../../support/handlers";
 import { server } from "../../support/server";
 
 const itemSchema = z.object({ name: z.string() });
@@ -100,14 +101,7 @@ describe("http", () => {
   });
 
   it("rejects an error response with its status", async () => {
-    server.use(
-      mswHttp.get("/api/items/1", () =>
-        HttpResponse.json(
-          { status: 404, title: "Not Found", type: "about:blank" },
-          { headers: { "Content-Type": "application/problem+json" }, status: 404 },
-        ),
-      ),
-    );
+    server.use(mswHttp.get("/api/items/1", () => problem(404)));
 
     const request = http.get({ path: "/items/1", schema: itemSchema });
 
