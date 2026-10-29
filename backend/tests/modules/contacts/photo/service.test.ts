@@ -109,8 +109,10 @@ describe("contact photo service", () => {
   });
 
   it("stores the web images and the original in a new version folder", async () => {
-    const photo = await saveContactPhoto(upload, "Portrait");
+    const { created, photo } = await saveContactPhoto(upload, "Portrait");
     const folder = `contacts/photo/${photo.version}`;
+
+    expect(created).toBe(true);
 
     expect(downloadablePaths()).toEqual([
       `${folder}/640.avif`,
@@ -166,8 +168,9 @@ describe("contact photo service", () => {
   it("deletes the previous version after saving the new one", async () => {
     storedAs(storedPhoto);
 
-    await saveContactPhoto(upload, "Portrait");
+    const { created } = await saveContactPhoto(upload, "Portrait");
 
+    expect(created).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/old-version");
     expect(transaction.set.mock.invocationCallOrder[0]).toBeLessThan(
       storage.deleteFolder.mock.invocationCallOrder[0] as number,
@@ -178,7 +181,9 @@ describe("contact photo service", () => {
     storedAs(storedPhoto);
     storage.deleteFolder.mockRejectedValue(new Error("Storage is unavailable"));
 
-    await expect(saveContactPhoto(upload, "Portrait")).resolves.toMatchObject({ alt: "Portrait" });
+    await expect(saveContactPhoto(upload, "Portrait")).resolves.toMatchObject({
+      photo: { alt: "Portrait" },
+    });
   });
 
   it("removes the new files when an image cannot be stored", async () => {

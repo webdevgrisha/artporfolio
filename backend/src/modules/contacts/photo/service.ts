@@ -54,11 +54,17 @@ export async function getContactPhoto(): Promise<Photo | null> {
   return photo && toPhoto(photo);
 }
 
+/** The saved photo, and whether it is the first one rather than a replacement. */
+export interface SavedPhoto {
+  created: boolean;
+  photo: Photo;
+}
+
 /**
  * Stores the new photo before removing the previous one, so the site never links to missing
  * files. If storing fails halfway, the files saved so far are removed.
  */
-export async function saveContactPhoto(file: UploadedFile, alt: string): Promise<Photo> {
+export async function saveContactPhoto(file: UploadedFile, alt: string): Promise<SavedPhoto> {
   const processed = await processImage(file.data);
   const version = randomUUID();
   let photo: StoredPhoto;
@@ -80,7 +86,7 @@ export async function saveContactPhoto(file: UploadedFile, alt: string): Promise
     await deleteImageFilesOrWarn(photoFolder(previous.version));
   }
 
-  return toPhoto(photo);
+  return { created: previous === null, photo: toPhoto(photo) };
 }
 
 export function updateContactPhotoAlt(alt: string): Promise<Photo> {

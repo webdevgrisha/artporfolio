@@ -11,9 +11,9 @@ export const readPages: RequestHandler = async (_request, response) => {
 };
 
 export const uploadHero: RequestHandler<PageParams> = async (request, response) => {
-  const hero = await savePageHero(request.params.page, uploadedFile(request));
+  const { created, hero } = await savePageHero(request.params.page, uploadedFile(request));
 
-  response.status(200).json({ hero });
+  response.status(created ? 201 : 200).json({ hero });
 };
 
 export const deleteHero: RequestHandler<PageParams> = async (request, response) => {

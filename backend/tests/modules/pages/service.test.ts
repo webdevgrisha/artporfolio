@@ -132,8 +132,10 @@ describe("page service", () => {
   });
 
   it("stores the hero in a new version folder of its page", async () => {
-    const hero = await savePageHero("about", upload);
+    const { created, hero } = await savePageHero("about", upload);
     const folder = `pages/about/hero/${hero.version}`;
+
+    expect(created).toBe(true);
 
     expect(downloadablePaths()).toEqual([`${folder}/640.avif`, `${folder}/640.webp`]);
     expect(storage.saveFile).toHaveBeenCalledWith(`${folder}/original.jpeg`, upload.data, {
@@ -169,8 +171,9 @@ describe("page service", () => {
   it("deletes the previous hero after saving the new one", async () => {
     storedHeroes.set("pages/about", storedHero);
 
-    await savePageHero("about", upload);
+    const { created } = await savePageHero("about", upload);
 
+    expect(created).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/old");
     expect(transaction.set.mock.invocationCallOrder[0]).toBeLessThan(
       storage.deleteFolder.mock.invocationCallOrder[0] as number,

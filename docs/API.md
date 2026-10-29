@@ -139,7 +139,8 @@ interface Photo extends Image {
 
 | Status | Result |
 | --- | --- |
-| `200` | `{ "photo": Photo }` |
+| `201` | `{ "photo": Photo }`, the first photo was created |
+| `200` | `{ "photo": Photo }`, the photo was replaced |
 | `400` | Missing file or alt, unsupported or oversized image, file name too long |
 | `413` | File larger than 15 MB |
 
@@ -190,7 +191,8 @@ one field, `file`: an image upload, see [Images](#images).
 
 | Status | Result |
 | --- | --- |
-| `200` | `{ "hero": Image }` |
+| `201` | `{ "hero": Image }`, the page had no hero |
+| `200` | `{ "hero": Image }`, the hero was replaced |
 | `400` | Missing file, another field, unsupported or oversized image, file name too long |
 | `404` | Unknown page |
 | `413` | File larger than 15 MB |

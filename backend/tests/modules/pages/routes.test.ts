@@ -70,7 +70,7 @@ beforeEach(() => {
   auth.verifySession.mockResolvedValue(admin);
   pageService.deletePageHero.mockResolvedValue(undefined);
   pageService.getPages.mockResolvedValue(pages);
-  pageService.savePageHero.mockResolvedValue(hero);
+  pageService.savePageHero.mockResolvedValue({ created: false, hero });
 });
 
 afterAll(() => server.close());
@@ -83,7 +83,21 @@ describe("page routes", () => {
     await expect(response.json()).resolves.toEqual({ pages });
   });
 
-  it("uploads the hero of a page", async () => {
+  it("returns 201 when the upload creates the first hero of a page", async () => {
+    pageService.savePageHero.mockResolvedValue({ created: true, hero });
+
+    const response = await sendHero(
+      "PUT",
+      "about",
+      await adminHeaders(server.baseUrl),
+      heroForm({ file: new Blob(["image"]) }),
+    );
+
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toEqual({ hero });
+  });
+
+  it("replaces the hero of a page", async () => {
     const response = await sendHero(
       "PUT",
       "about",

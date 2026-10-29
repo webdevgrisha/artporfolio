@@ -63,14 +63,27 @@ beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
   photoService.deleteContactPhoto.mockResolvedValue(undefined);
-  photoService.saveContactPhoto.mockResolvedValue(photo);
+  photoService.saveContactPhoto.mockResolvedValue({ created: false, photo });
   photoService.updateContactPhotoAlt.mockResolvedValue(photo);
 });
 
 afterAll(() => server.close());
 
 describe("contact photo routes", () => {
-  it("uploads a photo with its alt text", async () => {
+  it("returns 201 when the upload creates the photo", async () => {
+    photoService.saveContactPhoto.mockResolvedValue({ created: true, photo });
+
+    const response = await sendPhoto(
+      "PUT",
+      await adminHeaders(server.baseUrl),
+      photoForm({ alt: "Portrait", file: new Blob(["image"]) }),
+    );
+
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toEqual({ photo });
+  });
+
+  it("replaces the photo with its alt text", async () => {
     const response = await sendPhoto(
       "PUT",
       await adminHeaders(server.baseUrl),

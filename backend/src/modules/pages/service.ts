@@ -65,11 +65,17 @@ export async function getPages(): Promise<Record<PageId, Page>> {
   return Object.fromEntries(pages) as Record<PageId, Page>;
 }
 
+/** The saved hero, and whether it is the first one of the page rather than a replacement. */
+export interface SavedHero {
+  created: boolean;
+  hero: Image;
+}
+
 /**
  * Stores the new hero before removing the previous one, so the site never links to missing files.
  * If storing fails halfway, the files saved so far are removed.
  */
-export async function savePageHero(page: PageId, file: UploadedFile): Promise<Image> {
+export async function savePageHero(page: PageId, file: UploadedFile): Promise<SavedHero> {
   const processed = await processImage(file.data);
   const version = randomUUID();
   let hero: StoredImage;
@@ -91,7 +97,7 @@ export async function savePageHero(page: PageId, file: UploadedFile): Promise<Im
     await deleteImageFilesOrWarn(heroFolder(page, previous.version));
   }
 
-  return toImage(hero);
+  return { created: previous === null, hero: toImage(hero) };
 }
 
 export async function deletePageHero(page: PageId): Promise<void> {

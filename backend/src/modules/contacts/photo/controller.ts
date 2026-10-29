@@ -12,9 +12,9 @@ export const uploadPhoto: RequestHandler<object, unknown, PhotoAltBody> = async 
   request,
   response,
 ) => {
-  const photo = await saveContactPhoto(uploadedFile(request), request.body.alt);
+  const { created, photo } = await saveContactPhoto(uploadedFile(request), request.body.alt);
 
-  response.status(200).json({ photo });
+  response.status(created ? 201 : 200).json({ photo });
 };
 
 export const updatePhotoAlt: RequestHandler<object, unknown, PhotoAltBody> = async (
