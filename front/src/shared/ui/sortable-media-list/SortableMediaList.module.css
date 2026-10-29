@@ -1,0 +1,188 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+/* Matches the label of Field; a fieldset is labelled by a legend instead. */
+.label {
+  padding: 0;
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-md);
+  line-height: 1.375;
+}
+
+.label::after {
+  content: ":";
+}
+
+/* The same frame and states as MediaPicker. */
+.frame {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-block-size: 10rem;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  transition: background-color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.frameModified {
+  border-color: var(--color-border-modified);
+  box-shadow: inset 0 0 0 1px var(--color-border-modified);
+}
+
+.frameInvalid {
+  border-color: var(--color-danger);
+  box-shadow: inset 0 0 0 1px var(--color-danger);
+}
+
+.frameDragOver {
+  background: var(--color-surface-hover);
+}
+
+.frameDisabled {
+  color: var(--color-text-muted);
+  background: var(--color-surface-disabled);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-surface);
+  border-block-end: 1px solid var(--color-border-disabled);
+}
+
+.row:last-child {
+  border-block-end: 0;
+}
+
+/* A modified row is marked by a bar at its start, so the rows keep their size. */
+.rowModified::before {
+  position: absolute;
+  inset-block: var(--space-3);
+  inset-inline-start: 0;
+  inline-size: 2px;
+  content: "";
+  background: var(--color-border-modified);
+}
+
+/* Lifted above the rows it passes over. */
+.rowDragging {
+  z-index: 1;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 15%);
+}
+
+.rowHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.controlTooltip {
+  flex: none;
+}
+
+/* Touch scrolling would take the gesture instead of the drag. */
+.dragHandle {
+  touch-action: none;
+  cursor: grab;
+}
+
+.rowDragging .dragHandle {
+  cursor: grabbing;
+}
+
+.dragIcon {
+  inline-size: 0.75rem;
+  block-size: 1.25rem;
+}
+
+/* A square thumbnail, as in MediaPicker; the whole image is in the preview dialog. */
+.thumbnailButton {
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.thumbnail {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+@media (hover: hover) {
+  .thumbnailButton:hover:not(:disabled) .thumbnail {
+    opacity: 0.8;
+  }
+}
+
+/* A long file name takes the rest of the row and wraps; the buttons keep their size. */
+.fileName {
+  flex: 1 1 10rem;
+  min-inline-size: 0;
+  font-size: var(--font-size-md);
+  overflow-wrap: anywhere;
+}
+
+/* Kept on one line: "(21,6 КБ)" must not break between the number and the unit. */
+.fileSize {
+  white-space: nowrap;
+}
+
+.rowActions {
+  display: flex;
+  margin-inline-start: auto;
+}
+
+.arrowIcon {
+  inline-size: auto;
+  block-size: 1.125rem;
+}
+
+.replaceIcon {
+  inline-size: auto;
+  block-size: 1.375rem;
+  rotate: 36deg;
+}
+
+.removeIcon {
+  inline-size: 1rem;
+  block-size: 1.125rem;
+}
+
+/* Under the file, aligned with the thumbnail. */
+.rowFields {
+  padding-inline-start: calc(var(--min-tap-target-size) + var(--space-2));
+}
+
+.placeholder {
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+}
+
+.addButton {
+  align-self: flex-start;
+  margin-block-start: auto;
+}
+
+.fileInput {
+  display: none;
+}

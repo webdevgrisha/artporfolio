@@ -1,7 +1,10 @@
+export { ArrowDownIcon } from "./ArrowDownIcon";
 export { ArrowLeftIcon } from "./ArrowLeftIcon";
+export { ArrowUpIcon } from "./ArrowUpIcon";
 export { AttachmentIcon } from "./AttachmentIcon";
 export { CheckIcon } from "./CheckIcon";
 export { CloseIcon } from "./CloseIcon";
+export { DragHandleIcon } from "./DragHandleIcon";
 export { EditIcon } from "./EditIcon";
 export { ErrorIcon } from "./ErrorIcon";
 export { EyeIcon } from "./EyeIcon";

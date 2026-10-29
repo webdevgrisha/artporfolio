@@ -1,0 +1,350 @@
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  type Modifier,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import clsx from "clsx";
+import React, { type ChangeEvent, type ReactNode } from "react";
+
+import { formatFileSize } from "@/shared/lib/formatFileSize";
+import { getFileRejection } from "@/shared/lib/getFileRejection";
+import { useFileDrop } from "@/shared/lib/useFileDrop";
+import { Button } from "@/shared/ui/button";
+import { FieldError, FieldHint } from "@/shared/ui/field";
+import { type MediaItem, MediaPreviewDialog } from "@/shared/ui/media-preview";
+import { VisuallyHidden } from "@/shared/ui/visually-hidden";
+
+import styles from "./SortableMediaList.module.css";
+import { type RowControl, SortableMediaRow } from "./SortableMediaRow";
+import {
+  formatPosition,
+  getAnnouncements,
+  screenReaderInstructions,
+} from "./sortableAnnouncements";
+
+export interface SortableMediaItem extends MediaItem {
+  /** Highlights an item that differs from the saved one. */
+  isModified?: boolean;
+}
+
+interface SortableMediaListProps {
+  /**
+   * Accepted MIME types and, for files whose type the browser does not know, extensions, as in
+   * the `accept` attribute: `["image/jpeg", ".jpg"]`.
+   */
+  accept: readonly string[];
+  /** The accepted types for people, e.g. `JPEG или PNG`. */
+  acceptLabel: string;
+  className?: string;
+  disabled?: boolean;
+  error?: string;
+  /** Highlights the list when items were added, removed or moved. An error takes precedence. */
+  isModified?: boolean;
+  /** The current items, in order. */
+  items: readonly SortableMediaItem[];
+  label: string;
+  /** In bytes. */
+  maxFileSize: number;
+  maxItems: number;
+  /** Receives the picked files that pass the checks and fit under `maxItems`. */
+  onAdd: (files: File[]) => void;
+  /** Moves the item at index `from` to index `to`. */
+  onMove: (from: number, to: number) => void;
+  onRemove: (id: string) => void;
+  onReplace: (id: string, file: File) => void;
+  /** The fields of an item, such as its description, shown under its file. */
+  renderItemFields?: (item: SortableMediaItem, index: number) => ReactNode;
+}
+
+/** Where the focus goes once the items are updated: a control of a row, or the add button. */
+type PendingFocus = { control: RowControl; itemId: string } | "add";
+
+// Rows only move up and down.
+const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
+
+/**
+ * An ordered list of files: adds them with the button or by dropping them onto the list, and
+ * moves them by dragging the handle or with the arrow buttons, which also work without a
+ * pointer (WCAG 2.5.7). Each item opens in full and can be replaced or removed. It only reports
+ * the changes: the owner keeps the files and uploads them on save.
+ */
+export function SortableMediaList({
+  accept,
+  acceptLabel,
+  className,
+  disabled = false,
+  error,
+  isModified = false,
+  items,
+  label,
+  maxFileSize,
+  maxItems,
+  onAdd,
+  onMove,
+  onRemove,
+  onReplace,
+  renderItemFields,
+}: SortableMediaListProps) {
+  const id = React.useId();
+  const hintId = `${id}-hint`;
+  const errorId = `${id}-error`;
+  const listRef = React.useRef<HTMLUListElement>(null);
+  const addInputRef = React.useRef<HTMLInputElement>(null);
+  const replaceInputRef = React.useRef<HTMLInputElement>(null);
+  const addButtonRef = React.useRef<HTMLButtonElement>(null);
+  const replacedItemIdRef = React.useRef<string>(undefined);
+  const pendingFocusRef = React.useRef<PendingFocus>(undefined);
+  const [viewedItemId, setViewedItemId] = React.useState<string>();
+  // A rejected file never reaches the owner, so the list explains it itself, until the next
+  // change made in the list.
+  const [rejection, setRejection] = React.useState<string>();
+  // Announces a move made with the arrow buttons; dnd-kit announces the dragged ones.
+  const [moveAnnouncement, setMoveAnnouncement] = React.useState("");
+  const shownError = rejection ?? error;
+  const isFull = items.length >= maxItems;
+  const { dropTargetProps, isDragOver } = useFileDrop({
+    disabled: disabled || isFull,
+    onDrop: addFiles,
+  });
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  // The focused button can move or disappear with its item, so it is restored once the owner has
+  // updated the items. It runs after every render: the owner's update is the next one.
+  React.useLayoutEffect(() => {
+    const pendingFocus = pendingFocusRef.current;
+    if (!pendingFocus) return;
+
+    pendingFocusRef.current = undefined;
+    if (pendingFocus === "add") {
+      addButtonRef.current?.focus();
+      return;
+    }
+
+    const row = listRef.current?.querySelector(
+      `[data-item-id="${CSS.escape(pendingFocus.itemId)}"]`,
+    );
+    const button = row?.querySelector<HTMLButtonElement>(
+      `[data-control="${pendingFocus.control}"]:not(:disabled)`,
+    );
+    // An arrow is disabled at the end of the list: the other one takes the focus.
+    const fallback = row?.querySelector<HTMLButtonElement>('[data-control^="move"]:not(:disabled)');
+    (button ?? fallback)?.focus();
+  });
+
+  function getItemIndex(itemId: string): number {
+    return items.findIndex((item) => item.id === itemId);
+  }
+
+  function getItemName(itemId: string): string {
+    return items[getItemIndex(itemId)]?.name ?? "";
+  }
+
+  function addFiles(fileList: FileList) {
+    const files = Array.from(fileList);
+    if (files.length === 0) return;
+
+    const rejections = new Set<string>();
+    const accepted: File[] = [];
+
+    for (const file of files) {
+      const fileRejection = getFileRejection(file, { accept, acceptLabel, maxFileSize });
+      if (fileRejection) {
+        rejections.add(fileRejection);
+      } else {
+        accepted.push(file);
+      }
+    }
+
+    const room = maxItems - items.length;
+    if (accepted.length > room) {
+      rejections.add(`Можно добавить не больше ${String(maxItems)} фото`);
+      accepted.splice(room);
+    }
+
+    setRejection(rejections.size > 0 ? [...rejections].join(". ") : undefined);
+    if (accepted.length > 0) onAdd(accepted);
+  }
+
+  function replaceFile(fileList: FileList) {
+    const [file] = Array.from(fileList);
+    const itemId = replacedItemIdRef.current;
+    replacedItemIdRef.current = undefined;
+    if (!file || !itemId) return;
+
+    const fileRejection = getFileRejection(file, { accept, acceptLabel, maxFileSize });
+    setRejection(fileRejection);
+    if (!fileRejection) onReplace(itemId, file);
+  }
+
+  function handleAddInputChange(event: ChangeEvent<HTMLInputElement>) {
+    if (event.currentTarget.files) addFiles(event.currentTarget.files);
+    // Lets the same file be picked again, e.g. after it was removed.
+    event.currentTarget.value = "";
+  }
+
+  function handleReplaceInputChange(event: ChangeEvent<HTMLInputElement>) {
+    if (event.currentTarget.files) replaceFile(event.currentTarget.files);
+    event.currentTarget.value = "";
+  }
+
+  function openReplacePicker(itemId: string) {
+    replacedItemIdRef.current = itemId;
+    replaceInputRef.current?.click();
+  }
+
+  function moveItem(from: number, to: number, control?: RowControl) {
+    const item = items[from];
+    if (!item || to < 0 || to >= items.length) return;
+
+    setRejection(undefined);
+    if (control) {
+      pendingFocusRef.current = { control, itemId: item.id };
+      setMoveAnnouncement(
+        `Фото «${item.name}» перемещено на место ${formatPosition(to, items.length)}`,
+      );
+    }
+    onMove(from, to);
+  }
+
+  function removeItem(index: number) {
+    const item = items[index];
+    if (!item) return;
+
+    // The focus goes to the next item, or the previous one at the end of the list.
+    const nextItem = items[index + 1] ?? items[index - 1];
+    pendingFocusRef.current = nextItem ? { control: "remove", itemId: nextItem.id } : "add";
+    setRejection(undefined);
+    onRemove(item.id);
+  }
+
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    if (!over || active.id === over.id) return;
+
+    moveItem(getItemIndex(String(active.id)), getItemIndex(String(over.id)));
+  }
+
+  return (
+    <>
+      {/* A disabled fieldset also disables every control inside it. */}
+      <fieldset
+        className={clsx(styles.root, className)}
+        disabled={disabled}
+        aria-describedby={[hintId, shownError ? errorId : undefined].filter(Boolean).join(" ")}
+        // Dropping files is a shortcut for the pointer; the add button is the accessible way.
+        {...dropTargetProps}
+      >
+        <legend className={styles.label}>{label}</legend>
+
+        <div
+          className={clsx(styles.frame, {
+            [styles.frameModified]: isModified,
+            [styles.frameInvalid]: Boolean(shownError),
+            [styles.frameDragOver]: isDragOver,
+            [styles.frameDisabled]: disabled,
+          })}
+        >
+          {items.length > 0 ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              modifiers={[restrictToVerticalAxis]}
+              accessibility={{
+                announcements: getAnnouncements(getItemName, (itemId) =>
+                  formatPosition(getItemIndex(itemId), items.length),
+                ),
+                screenReaderInstructions,
+              }}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={items.map((item) => item.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <ul ref={listRef} className={styles.rows}>
+                  {items.map((item, index) => (
+                    <SortableMediaRow
+                      key={item.id}
+                      item={item}
+                      disabled={disabled}
+                      isFirst={index === 0}
+                      isLast={index === items.length - 1}
+                      onMoveUp={() => moveItem(index, index - 1, "moveUp")}
+                      onMoveDown={() => moveItem(index, index + 1, "moveDown")}
+                      onOpen={() => setViewedItemId(item.id)}
+                      onRemove={() => removeItem(index)}
+                      onReplace={() => openReplacePicker(item.id)}
+                    >
+                      {renderItemFields?.(item, index)}
+                    </SortableMediaRow>
+                  ))}
+                </ul>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <p className={styles.placeholder}>Перетащите фото сюда или нажмите «Добавить фото»</p>
+          )}
+
+          <Button
+            ref={addButtonRef}
+            className={styles.addButton}
+            disabled={isFull}
+            onClick={() => addInputRef.current?.click()}
+          >
+            Добавить фото
+          </Button>
+
+          {/* Opened by the add and replace buttons, which are the accessible controls. */}
+          <input
+            ref={addInputRef}
+            className={styles.fileInput}
+            type="file"
+            accept={accept.join(",")}
+            multiple
+            tabIndex={-1}
+            aria-hidden="true"
+            onChange={handleAddInputChange}
+          />
+          <input
+            ref={replaceInputRef}
+            className={styles.fileInput}
+            type="file"
+            accept={accept.join(",")}
+            tabIndex={-1}
+            aria-hidden="true"
+            onChange={handleReplaceInputChange}
+          />
+        </div>
+
+        <FieldHint id={hintId}>
+          {acceptLabel}, до {formatFileSize(maxFileSize)}. Фото: {items.length} из {maxItems}
+        </FieldHint>
+        {/* Announces a rejected file: the focus stays on the button that picked it. */}
+        <div aria-live="polite">
+          {shownError ? <FieldError id={errorId}>{shownError}</FieldError> : null}
+        </div>
+        <div aria-live="polite">
+          <VisuallyHidden>{moveAnnouncement}</VisuallyHidden>
+        </div>
+      </fieldset>
+
+      {/* Outside the fieldset: a file dropped onto the open dialog is not a pick. */}
+      <MediaPreviewDialog
+        item={items.find((item) => item.id === viewedItemId)}
+        onClose={() => setViewedItemId(undefined)}
+      />
+    </>
+  );
+}
