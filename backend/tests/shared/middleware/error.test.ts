@@ -14,8 +14,10 @@ describe("errorHandler", () => {
     const response = {
       json: vi.fn(),
       status: vi.fn(),
+      type: vi.fn(),
     } as unknown as Response;
     vi.mocked(response.status).mockReturnValue(response);
+    vi.mocked(response.type).mockReturnValue(response);
 
     errorHandler(
       new Error("Sensitive provider details"),
@@ -26,11 +28,11 @@ describe("errorHandler", () => {
 
     expect(logger.error).toHaveBeenCalledWith("Unhandled request error", expect.any(Error));
     expect(response.status).toHaveBeenCalledWith(500);
+    expect(response.type).toHaveBeenCalledWith("application/problem+json");
     expect(response.json).toHaveBeenCalledWith({
-      error: {
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Internal Server Error",
-      },
+      type: "about:blank",
+      title: "Internal Server Error",
+      status: 500,
     });
   });
 });

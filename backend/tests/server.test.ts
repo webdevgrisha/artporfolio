@@ -43,11 +43,12 @@ describe("CORS", () => {
     });
 
     expect(response.status).toBe(403);
+    expect(response.headers.get("content-type")).toMatch(/^application\/problem\+json/);
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "FORBIDDEN",
-        message: "Origin is not allowed",
-      },
+      type: "about:blank",
+      title: "Forbidden",
+      status: 403,
+      detail: "Origin is not allowed",
     });
   });
 });
@@ -62,24 +63,38 @@ describe("request body", () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "BAD_REQUEST",
-        message: "Invalid JSON body",
-      },
+      type: "about:blank",
+      title: "Bad Request",
+      status: 400,
+      detail: "Unexpected end of JSON input",
+    });
+  });
+
+  it("returns a payload too large response for an oversized JSON body", async () => {
+    const response = await fetch(`${server.baseUrl}/api/auth/login`, {
+      body: JSON.stringify({ idToken: "x".repeat(200_000) }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toMatchObject({
+      title: "Payload Too Large",
+      status: 413,
     });
   });
 });
 
 describe("unknown routes", () => {
-  it("returns a JSON not found response", async () => {
+  it("returns a not found problem", async () => {
     const response = await fetch(`${server.baseUrl}/api/unknown`);
 
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "NOT_FOUND",
-        message: "Route not found",
-      },
+      type: "about:blank",
+      title: "Not Found",
+      status: 404,
+      detail: "Route not found",
     });
   });
 });

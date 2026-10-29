@@ -8,13 +8,23 @@
 - **Сессия.** `POST /api/auth/login` ставит httpOnly-cookie `admin_session`. Эндпоинты с пометкой *Сессия* без действующей сессии администратора возвращают `401`.
 - **CSRF.** Эндпоинтам с пометкой *CSRF* нужен заголовок `X-CSRF-Token` с токеном из `GET /api/auth/csrf`, иначе они возвращают `403`. Токен привязан к сессии, поэтому после входа запросите новый.
 - **Проверка.** Некорректное тело возвращает `400`. Неизвестные поля отклоняются. Параметр пути, который ничего не называет, например неизвестная страница, возвращает `404`.
-- **Ошибки** имеют один формат:
+- **Ошибки** приходят в формате Problem Details ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)),
+  с типом `application/problem+json`:
 
   ```json
-  { "error": { "code": "UNAUTHORIZED", "message": "Authentication required" } }
+  {
+    "type": "about:blank",
+    "title": "Bad Request",
+    "status": 400,
+    "detail": "Invalid request body",
+    "errors": [{ "detail": "Too big: expected string to have <=250 characters", "pointer": "#/alt" }]
+  }
   ```
 
-  Непредвиденные ошибки логируются и возвращаются как `500 INTERNAL_SERVER_ERROR`.
+  `type` всегда `about:blank`, поэтому `title` — стандартная фраза кода `status`. `detail` объясняет
+  этот конкретный случай. `errors` перечисляет все некорректные значения тела с JSON Pointer
+  ([RFC 6901](https://www.rfc-editor.org/rfc/rfc6901)) на каждое; поле есть только у `400` из-за
+  некорректного тела. Непредвиденные ошибки логируются и возвращаются как `500` без `detail`.
 
 ## Health
 

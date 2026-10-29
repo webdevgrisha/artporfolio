@@ -125,7 +125,7 @@ backend/src/
 - Code imports through subpath imports (`#modules/auth/service`, `#shared/http/errors`). There are no barrel files.
 - Express 5 forwards rejected promises to the error middleware, so handlers do not wrap code in `try/catch` only to call `next(error)`.
 - Environment variables are read through `getEnv()` in `shared/config/env.ts`, validated once on first use. `CSRF_SECRET` is a Secret Manager value read by the CSRF config.
-- Errors meant for the client are thrown as `HttpError` subclasses. Anything else is logged and returned as a generic 500.
+- Errors meant for the client are thrown as `HttpError` subclasses; the error middleware sends every error as RFC 9457 Problem Details. Anything else is logged and returned as a generic 500.
 - Endpoints are documented in [API.md](API.md), updated in the same commit as the endpoint.
 
 ## Tests

@@ -136,10 +136,11 @@ describe("auth routes", () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "BAD_REQUEST",
-        message: "Invalid request body",
-      },
+      type: "about:blank",
+      title: "Bad Request",
+      status: 400,
+      detail: "Invalid request body",
+      errors: [{ detail: "Invalid input: expected string, received number", pointer: "#/idToken" }],
     });
     expect(auth.createSession).not.toHaveBeenCalled();
   });
@@ -153,6 +154,9 @@ describe("auth routes", () => {
     });
 
     expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      errors: [{ detail: "Unknown field", pointer: "#/role" }],
+    });
     expect(auth.createSession).not.toHaveBeenCalled();
   });
 

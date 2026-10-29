@@ -8,13 +8,23 @@ Endpoints of the `api` Cloud Function. Update this file in the same commit as th
 - **Session.** `POST /api/auth/login` sets the httpOnly `admin_session` cookie. Endpoints marked *Session* return `401` without a valid admin session.
 - **CSRF.** Endpoints marked *CSRF* need the `X-CSRF-Token` header with a token from `GET /api/auth/csrf`, otherwise they return `403`. The token is bound to the session, so request a new one after login.
 - **Validation.** An invalid body returns `400`. Unknown fields are rejected. A path parameter that names nothing, such as an unknown page, returns `404`.
-- **Errors** have one shape:
+- **Errors** are Problem Details ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)), sent as
+  `application/problem+json`:
 
   ```json
-  { "error": { "code": "UNAUTHORIZED", "message": "Authentication required" } }
+  {
+    "type": "about:blank",
+    "title": "Bad Request",
+    "status": 400,
+    "detail": "Invalid request body",
+    "errors": [{ "detail": "Too big: expected string to have <=250 characters", "pointer": "#/alt" }]
+  }
   ```
 
-  Unexpected errors are logged and returned as `500 INTERNAL_SERVER_ERROR`.
+  `type` is always `about:blank`, so `title` is the reason phrase of `status`. `detail` explains
+  this occurrence. `errors` lists every invalid value of the body, with a JSON Pointer
+  ([RFC 6901](https://www.rfc-editor.org/rfc/rfc6901)) to it; it is present only on `400` for an
+  invalid body. Unexpected errors are logged and returned as `500` without `detail`.
 
 ## Health
 
