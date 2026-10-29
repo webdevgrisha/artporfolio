@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import clsx from "clsx";
 import React from "react";
 import { flushSync } from "react-dom";
 import { type FieldErrors, FormProvider, useForm } from "react-hook-form";
@@ -7,11 +6,10 @@ import { useRevalidator } from "react-router";
 
 import type { ContactsWithPhoto } from "@/entities/contacts";
 import { toSavedPhotoValues } from "@/shared/lib/photoForm";
-import { FormActions } from "@/shared/ui/form-actions";
+import { EditForm } from "@/shared/ui/edit-form";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 import { Tab, TabList, TabPanel, Tabs } from "@/shared/ui/tabs";
-import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
-import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
+import { showSaveResultToast } from "@/shared/ui/toast";
 
 import { contactFields } from "../model/contactFields";
 import { getContactsChanges } from "../model/contactsChanges";
@@ -19,7 +17,6 @@ import { type ContactsFormValues, contactsFormSchema } from "../model/contactsFo
 import { toContactsFormValues } from "../model/contactsFormValues";
 import { saveContacts } from "../model/saveContacts";
 import { ContactLinksFields } from "./ContactLinksFields";
-import styles from "./EditContactsForm.module.css";
 
 // One toast for the result of saving: a new result replaces the previous one.
 const saveToastId = "contacts-save";
@@ -78,11 +75,7 @@ export function EditContactsForm({ className, contacts }: EditContactsFormProps)
       resetField("photoAlt", { defaultValue: photoValues.photoAlt });
     }
 
-    if (error) {
-      showErrorToast(error, { id: saveToastId });
-    } else {
-      showSuccessToast("Изменения сохранены", { id: saveToastId });
-    }
+    showSaveResultToast(error, { id: saveToastId });
   }
 
   function handleInvalid(fieldErrors: FieldErrors<ContactsFormValues>) {
@@ -98,9 +91,11 @@ export function EditContactsForm({ className, contacts }: EditContactsFormProps)
   return (
     // The fields of both tabs read the form from the context.
     <FormProvider {...form}>
-      <form
-        className={clsx(styles.root, className)}
-        noValidate
+      <EditForm
+        className={className}
+        hasUnsavedChanges={isDirty}
+        isSaving={isSubmitting}
+        onRevert={() => reset()}
         onSubmit={handleSubmit(saveChanges, handleInvalid)}
       >
         <Tabs value={tab} onValueChange={setTab}>
@@ -116,15 +111,7 @@ export function EditContactsForm({ className, contacts }: EditContactsFormProps)
             <PhotoFields label="Фото" isSaving={isSubmitting} serverPhoto={contacts.photo} />
           </TabPanel>
         </Tabs>
-
-        <FormActions
-          className={styles.actions}
-          hasUnsavedChanges={isDirty}
-          isSaving={isSubmitting}
-          onRevert={() => reset()}
-        />
-        <UnsavedChangesDialog hasUnsavedChanges={isDirty} />
-      </form>
+      </EditForm>
     </FormProvider>
   );
 }

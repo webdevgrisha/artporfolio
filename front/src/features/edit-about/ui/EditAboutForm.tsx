@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import clsx from "clsx";
 import React from "react";
 import { flushSync } from "react-dom";
 import { type FieldErrors, type FieldPath, FormProvider, useForm } from "react-hook-form";
@@ -7,11 +6,10 @@ import { useRevalidator } from "react-router";
 
 import type { About } from "@/entities/about";
 import { toSavedPhotoValues } from "@/shared/lib/photoForm";
-import { FormActions } from "@/shared/ui/form-actions";
+import { EditForm } from "@/shared/ui/edit-form";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 import { Tab, TabList, TabPanel, Tabs } from "@/shared/ui/tabs";
-import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
-import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
+import { showSaveResultToast } from "@/shared/ui/toast";
 
 import { getAboutChanges } from "../model/aboutChanges";
 import { type AboutFormValues, aboutFormSchema } from "../model/aboutFormSchema";
@@ -19,7 +17,6 @@ import { toAboutFormValues, toProcessPhotoRows } from "../model/aboutFormValues"
 import { aboutTextFields } from "../model/aboutTextFields";
 import { saveAbout } from "../model/saveAbout";
 import { AboutTextFields } from "./AboutTextFields";
-import styles from "./EditAboutForm.module.css";
 import { ProcessPhotoFields } from "./ProcessPhotoFields";
 
 // One toast for the result of saving: a new result replaces the previous one.
@@ -91,11 +88,7 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
       setValue("processPhotos", processPhotos.rows, { shouldDirty: true });
     }
 
-    if (error) {
-      showErrorToast(error, { id: saveToastId });
-    } else {
-      showSuccessToast("Изменения сохранены", { id: saveToastId });
-    }
+    showSaveResultToast(error, { id: saveToastId });
   }
 
   function focusField(name: FieldPath<AboutFormValues>, fieldTab: AboutTab) {
@@ -121,9 +114,11 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
   return (
     // The fields of every tab read the form from the context.
     <FormProvider {...form}>
-      <form
-        className={clsx(styles.root, className)}
-        noValidate
+      <EditForm
+        className={className}
+        hasUnsavedChanges={isDirty}
+        isSaving={isSubmitting}
+        onRevert={() => reset()}
         onSubmit={handleSubmit(saveChanges, handleInvalid)}
       >
         <Tabs value={tab} onValueChange={setTab}>
@@ -143,15 +138,7 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
             <ProcessPhotoFields isSaving={isSubmitting} serverPhotos={about.processPhotos} />
           </TabPanel>
         </Tabs>
-
-        <FormActions
-          className={styles.actions}
-          hasUnsavedChanges={isDirty}
-          isSaving={isSubmitting}
-          onRevert={() => reset()}
-        />
-        <UnsavedChangesDialog hasUnsavedChanges={isDirty} />
-      </form>
+      </EditForm>
     </FormProvider>
   );
 }

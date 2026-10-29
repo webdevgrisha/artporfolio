@@ -18,3 +18,12 @@ export function showSuccessToast(message: string, { id }: ToastOptions = {}): vo
 export function showErrorToast(message: string, { id }: ToastOptions = {}): void {
   toast.error(message, { duration: Number.POSITIVE_INFINITY, id });
 }
+
+/** The result of saving a form: why something was not saved, or that everything was. */
+export function showSaveResultToast(error: string | undefined, options: ToastOptions = {}): void {
+  if (error) {
+    showErrorToast(error, options);
+  } else {
+    showSuccessToast("Изменения сохранены", options);
+  }
+}

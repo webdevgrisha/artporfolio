@@ -1,12 +1,10 @@
-import clsx from "clsx";
 import { useForm } from "react-hook-form";
 import { useRevalidator } from "react-router";
 
 import type { SitePages } from "@/entities/site-page";
 import { toSavedImageFieldValue } from "@/shared/lib/imageFieldValue";
-import { FormActions } from "@/shared/ui/form-actions";
-import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
-import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
+import { EditForm } from "@/shared/ui/edit-form";
+import { showSaveResultToast } from "@/shared/ui/toast";
 
 import { heroFields } from "../model/heroFields";
 import { getPageHeroesChanges } from "../model/pageHeroesChanges";
@@ -49,15 +47,17 @@ export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps
       resetField(page, { defaultValue: toSavedImageFieldValue(values[page]) });
     }
 
-    if (error) {
-      showErrorToast(error, { id: saveToastId });
-    } else {
-      showSuccessToast("Изменения сохранены", { id: saveToastId });
-    }
+    showSaveResultToast(error, { id: saveToastId });
   }
 
   return (
-    <form className={clsx(styles.root, className)} onSubmit={handleSubmit(saveChanges)}>
+    <EditForm
+      className={className}
+      hasUnsavedChanges={isDirty}
+      isSaving={isSubmitting}
+      onRevert={() => reset()}
+      onSubmit={handleSubmit(saveChanges)}
+    >
       <div className={styles.fields}>
         {heroFields.map(({ label, page }) => (
           <PageHeroField
@@ -70,14 +70,6 @@ export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps
           />
         ))}
       </div>
-
-      <FormActions
-        className={styles.actions}
-        hasUnsavedChanges={isDirty}
-        isSaving={isSubmitting}
-        onRevert={() => reset()}
-      />
-      <UnsavedChangesDialog hasUnsavedChanges={isDirty} />
-    </form>
+    </EditForm>
   );
 }

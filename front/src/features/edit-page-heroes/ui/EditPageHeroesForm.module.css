@@ -1,17 +1,6 @@
-.root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--layout-space-8);
-}
-
 /* As many columns as fit, each as wide as a field on the contacts page. */
 .fields {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(0, 24rem));
   gap: var(--layout-space-6) var(--layout-space-8);
-}
-
-/* Pushed to the bottom when the form is taller than its fields. */
-.actions {
-  margin-block-start: auto;
 }
