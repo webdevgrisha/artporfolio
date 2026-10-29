@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { photoSchema } from "#modules/contacts/photo/schema";
+import { photoSchema } from "#shared/images/photo";
 
 const maxLength = 2_048;
 

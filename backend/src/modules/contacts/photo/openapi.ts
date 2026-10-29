@@ -1,6 +1,6 @@
 import type { ZodOpenApiPathsObject } from "zod-openapi";
 
-import { photoAltBodySchema, photoResponseSchema } from "#modules/contacts/photo/schema";
+import { photoAltBodySchema, photoResponseSchema } from "#shared/images/photo";
 import {
   badRequestResponse,
   forbiddenResponse,

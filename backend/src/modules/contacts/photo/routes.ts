@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import { requireAuth } from "#modules/auth/middleware";
 import { deletePhoto, updatePhotoAlt, uploadPhoto } from "#modules/contacts/photo/controller";
-import { photoAltBodySchema } from "#modules/contacts/photo/schema";
+import { photoAltBodySchema } from "#shared/images/photo";
 import { maxSourceFileSize } from "#shared/images/processing";
 import { requireContentType } from "#shared/middleware/content-type";
 import { requireCsrfToken } from "#shared/middleware/csrf";
