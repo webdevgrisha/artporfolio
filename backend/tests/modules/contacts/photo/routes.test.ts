@@ -1,8 +1,7 @@
-import cookieParser from "cookie-parser";
-import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { adminHeaders, adminSessionCookie } from "../../../support/adminSession.js";
 import { apiImage } from "../../../support/images.js";
+import { routeApp } from "../../../support/routeApp.js";
 import { startTestServer, type TestServer } from "../../../support/testServer.js";
 
 const auth = vi.hoisted(() => ({
@@ -20,10 +19,8 @@ const photoService = vi.hoisted(() => ({
 vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/contacts/photo/service", () => photoService);
 
-import { authRouter } from "#modules/auth/routes";
 import { photoRouter } from "#modules/contacts/photo/routes";
 import { NotFoundError, UnauthorizedError } from "#shared/http/errors";
-import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const photo = { ...apiImage("photo.png"), alt: "Portrait" };
@@ -49,15 +46,7 @@ function sendPhoto(method: string, headers: Record<string, string>, body?: FormD
 }
 
 beforeAll(async () => {
-  const testApp = express();
-
-  testApp.use(cookieParser());
-  testApp.use(express.json());
-  testApp.use("/api/auth", authRouter);
-  testApp.use("/api/contacts/photo", photoRouter);
-  testApp.use(errorHandler);
-
-  server = await startTestServer(testApp);
+  server = await startTestServer(routeApp("/api/contacts/photo", photoRouter));
 });
 
 beforeEach(() => {

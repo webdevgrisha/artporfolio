@@ -1,7 +1,6 @@
-import cookieParser from "cookie-parser";
-import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { adminHeaders, adminSessionCookie } from "../../support/adminSession.js";
+import { routeApp } from "../../support/routeApp.js";
 import { startTestServer, type TestServer } from "../../support/testServer.js";
 
 const auth = vi.hoisted(() => ({
@@ -23,10 +22,8 @@ vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/contacts/service", () => contactsService);
 vi.mock("#modules/contacts/photo/service", () => photoService);
 
-import { authRouter } from "#modules/auth/routes";
 import { contactsRouter } from "#modules/contacts/routes";
 import { UnauthorizedError } from "#shared/http/errors";
-import { errorHandler } from "#shared/middleware/error";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 
@@ -48,15 +45,7 @@ function putContacts(body: unknown, headers: Record<string, string>) {
 }
 
 beforeAll(async () => {
-  const testApp = express();
-
-  testApp.use(cookieParser());
-  testApp.use(express.json());
-  testApp.use("/api/auth", authRouter);
-  testApp.use("/api/contacts", contactsRouter);
-  testApp.use(errorHandler);
-
-  server = await startTestServer(testApp);
+  server = await startTestServer(routeApp("/api/contacts", contactsRouter));
 });
 
 beforeEach(() => {

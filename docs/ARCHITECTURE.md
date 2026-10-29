@@ -145,7 +145,7 @@ backend/openapi/
 ## Tests
 
 - Backend tests live in `backend/tests`, mirroring `src` (`tests/modules/contacts/photo/service.test.ts` tests `src/modules/contacts/photo/service.ts`), and run with Vitest. Their environment is set in `backend/vitest.config.ts`.
-- `tests/support` holds shared helpers: `startTestServer` runs an Express app on a free port, `adminHeaders` returns the cookies and CSRF header of a signed-in admin, `apiImage` returns a complete image for mocked services. Import them with a relative path ending in `.js`.
+- `tests/support` holds shared helpers: `startTestServer` runs an Express app on a free port, `adminHeaders` returns the cookies and CSRF header of a signed-in admin, `apiImage` returns a complete image for mocked services, `routeApp` builds the app for a route test: the global middleware, the auth routes and the router under test. Import them with a relative path ending in `.js`.
 - `startTestServer` checks every response to an operation in `openapi.yaml`: the status must be documented, the Content-Type must match and the body must pass the schema. A violation fails the test that caused it, so route test fixtures must be complete.
 - The frontend currently has no automated tests.
 
