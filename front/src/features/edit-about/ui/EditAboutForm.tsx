@@ -13,7 +13,11 @@ import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
 
 import { getAboutChanges } from "../model/aboutChanges";
 import { type AboutFormValues, aboutFormSchema } from "../model/aboutFormSchema";
-import { toAboutFormValues, toSavedPhotoValues } from "../model/aboutFormValues";
+import {
+  toAboutFormValues,
+  toProcessPhotoRows,
+  toSavedPhotoValues,
+} from "../model/aboutFormValues";
 import { aboutTextFields } from "../model/aboutTextFields";
 import { saveAbout } from "../model/saveAbout";
 import { AboutPhotoFields } from "./AboutPhotoFields";
@@ -50,16 +54,18 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
     reset,
     resetField,
     setFocus,
+    setValue,
   } = form;
   const [tab, setTab] = React.useState<AboutTab>("text");
   const { revalidate } = useRevalidator();
 
   async function saveChanges(values: AboutFormValues) {
-    const { error, photoSaved, textSaved } = await saveAbout(
+    const { error, photoSaved, processPhotos, textSaved } = await saveAbout(
       getAboutChanges(values, dirtyFields, about),
+      about.processPhotos,
     );
 
-    if (textSaved || photoSaved) {
+    if (textSaved || photoSaved || processPhotos?.isChanged) {
       // A saved photo gets new URLs, so the route loads the page again.
       await revalidate();
     }
@@ -75,6 +81,12 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
       const photoValues = toSavedPhotoValues(values);
       resetField("photo", { defaultValue: photoValues.photo });
       resetField("photoAlt", { defaultValue: photoValues.photoAlt });
+    }
+
+    if (processPhotos) {
+      // The list on the server is the saved value now; rows whose change failed stay modified.
+      resetField("processPhotos", { defaultValue: toProcessPhotoRows(processPhotos.photos) });
+      setValue("processPhotos", processPhotos.rows, { shouldDirty: true });
     }
 
     if (error) {
