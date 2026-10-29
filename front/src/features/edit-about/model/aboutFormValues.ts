@@ -1,6 +1,6 @@
-import type { About, AboutPhoto } from "@/entities/about";
+import type { About, AboutPhoto, ProcessPhoto } from "@/entities/about";
 
-import { type AboutFormValues, savedPhoto } from "./aboutFormSchema";
+import { type AboutFormValues, type ProcessPhotoRow, savedPhoto } from "./aboutFormSchema";
 
 type PhotoFormValues = Pick<AboutFormValues, "photo" | "photoAlt">;
 
@@ -11,11 +11,27 @@ function toPhotoFormValues(photo: AboutPhoto | null): PhotoFormValues {
   };
 }
 
-export function toAboutFormValues({ photo, text }: About): AboutFormValues {
+/** The rows of process photos as stored on the server. */
+export function toProcessPhotoRows(processPhotos: readonly ProcessPhoto[]): ProcessPhotoRow[] {
+  return processPhotos.map((photo) => ({
+    alt: photo.alt,
+    file: null,
+    photoId: photo.id,
+    status: "saved",
+  }));
+}
+
+export function toAboutFormValues({ photo, processPhotos, text }: About): AboutFormValues {
   // The texts are empty until they are first saved.
   const { about = "", biography = "", creation = "" } = text ?? {};
 
-  return { about, biography, creation, ...toPhotoFormValues(photo) };
+  return {
+    about,
+    biography,
+    creation,
+    ...toPhotoFormValues(photo),
+    processPhotos: toProcessPhotoRows(processPhotos),
+  };
 }
 
 /** The photo fields once their change is saved: a picked file becomes the saved photo. */

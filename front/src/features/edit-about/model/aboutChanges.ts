@@ -4,6 +4,7 @@ import type { About, AboutText } from "@/entities/about";
 
 import type { AboutFormValues } from "./aboutFormSchema";
 import { aboutTextFields } from "./aboutTextFields";
+import { getProcessPhotosChanges, type ProcessPhotosChanges } from "./processPhotosChanges";
 
 export type PhotoChange =
   | { alt: string; file: File; type: "upload" }
@@ -13,6 +14,7 @@ export type PhotoChange =
 /** What a save sends to the server: only the parts that were changed. */
 export interface AboutChanges {
   photo?: PhotoChange;
+  processPhotos?: ProcessPhotosChanges;
   text?: AboutText;
 }
 
@@ -38,6 +40,9 @@ export function getAboutChanges(
   } else if (dirtyFields.photoAlt) {
     changes.photo = { alt: values.photoAlt, type: "updateAlt" };
   }
+
+  const processPhotos = getProcessPhotosChanges(values.processPhotos, saved.processPhotos);
+  if (processPhotos) changes.processPhotos = processPhotos;
 
   return changes;
 }
