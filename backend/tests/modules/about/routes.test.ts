@@ -84,7 +84,7 @@ describe("about routes", () => {
 
   it("reports every invalid text", async () => {
     const response = await putText(
-      { about: "", biography: "a".repeat(2_001), creation: "Пишет маслом." },
+      { about: "a".repeat(501), biography: "a".repeat(2_001), creation: "Пишет маслом." },
       await adminHeaders(server.baseUrl),
     );
 

@@ -3,9 +3,12 @@ import { z } from "zod";
 import { processPhotoSchema } from "#modules/about/process-photos/schema";
 import { photoSchema } from "#shared/images/photo";
 
-/** Plain text: no HTML or Markdown. Paragraphs are separated by a blank line. */
+/**
+ * Plain text: no HTML or Markdown. Paragraphs are separated by a blank line. An empty string
+ * means the site does not show the section.
+ */
 function aboutText(maxLength: number) {
-  return z.string().trim().min(1).max(maxLength);
+  return z.string().trim().max(maxLength);
 }
 
 const aboutTextFields = {
@@ -17,7 +20,7 @@ const aboutTextFields = {
   creation: aboutText(2_000),
 };
 
-/** The texts of the About page. Every text is required. */
+/** The texts of the About page. Every text is sent, empty when its section is hidden. */
 export const aboutTextSchema = z.object(aboutTextFields);
 
 export const aboutTextBodySchema = z.strictObject(aboutTextFields);
