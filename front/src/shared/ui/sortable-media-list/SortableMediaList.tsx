@@ -17,6 +17,7 @@ import React, { type ReactNode } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
+import { joinMessages } from "@/shared/lib/joinMessages";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { Button } from "@/shared/ui/button";
 import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
@@ -126,7 +127,7 @@ export function SortableMediaList({
       accepted.splice(room);
     }
 
-    setRejection(rejections.size > 0 ? [...rejections].join(". ") : undefined);
+    setRejection(joinMessages(rejections));
     if (accepted.length > 0) onAdd(accepted);
   }
 

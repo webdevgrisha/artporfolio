@@ -7,6 +7,7 @@ import {
 } from "@/entities/about";
 import { getCsrfToken } from "@/shared/api/csrf";
 import { getSavePhotoErrorMessage } from "@/shared/api/photo";
+import { joinMessages } from "@/shared/lib/joinMessages";
 import type { PhotoChange } from "@/shared/lib/photoForm";
 
 import { getSaveAboutErrorMessage, getSaveTextErrorMessage } from "../lib/saveErrorMessages";
@@ -79,7 +80,7 @@ export async function saveAbout(
 
   return {
     // The parts usually fail for the same reason, such as no connection: it is said once.
-    error: errors.size > 0 ? [...errors].join(". ") : undefined,
+    error: joinMessages(errors),
     photoSaved: photo !== undefined && photoResult.status === "fulfilled",
     processPhotos:
       processPhotosResult.status === "fulfilled" ? processPhotosResult.value : undefined,

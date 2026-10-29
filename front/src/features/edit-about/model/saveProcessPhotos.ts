@@ -7,12 +7,14 @@ import {
   updateProcessPhotoAlt,
 } from "@/entities/about";
 import { isSessionExpiredError } from "@/shared/api/getRequestErrorMessage";
+import { joinMessages } from "@/shared/lib/joinMessages";
 
 import {
   getSaveProcessPhotoErrorMessage,
   getSaveProcessPhotoOrderErrorMessage,
 } from "../lib/saveErrorMessages";
 import type { ProcessPhotoRow } from "./aboutFormSchema";
+import { toProcessPhotoRow } from "./aboutFormValues";
 import type { ProcessPhotoStep, ProcessPhotosChanges } from "./processPhotosChanges";
 
 type EditStep = Exclude<ProcessPhotoStep, { type: "keep" }>;
@@ -26,10 +28,6 @@ export interface SaveProcessPhotosResult {
   photos: ProcessPhoto[];
   /** The rows after the save, in the form's order. A row whose change failed keeps it. */
   rows: ProcessPhotoRow[];
-}
-
-function toSavedRow(photo: ProcessPhoto): ProcessPhotoRow {
-  return { alt: photo.alt, file: null, photoId: photo.id, status: "saved" };
 }
 
 /** The row a step was made from: a step that was not saved keeps its change this way. */
@@ -96,7 +94,7 @@ export async function saveProcessPhotos(
   for (const step of steps) {
     if (step.type === "keep") {
       const photo = savedById.get(step.id);
-      if (photo) rows.push(toSavedRow(photo));
+      if (photo) rows.push(toProcessPhotoRow(photo));
       continue;
     }
 
@@ -111,7 +109,7 @@ export async function saveProcessPhotos(
         step.type === "add"
           ? [...serverPhotos, photo]
           : serverPhotos.map((serverPhoto) => (serverPhoto.id === photo.id ? photo : serverPhoto));
-      rows.push(toSavedRow(photo));
+      rows.push(toProcessPhotoRow(photo));
       isChanged = true;
     } catch (error) {
       const fileName = "file" in step ? step.file.name : (savedById.get(step.id)?.fileName ?? "");
@@ -139,7 +137,7 @@ export async function saveProcessPhotos(
 
   return {
     // Photos usually fail for the same reason, such as no connection: it is said once.
-    error: errors.size > 0 ? [...errors].join(". ") : undefined,
+    error: joinMessages(errors),
     isChanged,
     photos: serverPhotos,
     rows,

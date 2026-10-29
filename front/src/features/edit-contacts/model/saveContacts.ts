@@ -6,6 +6,7 @@ import {
 } from "@/entities/contacts";
 import { getCsrfToken } from "@/shared/api/csrf";
 import { getSavePhotoErrorMessage } from "@/shared/api/photo";
+import { joinMessages } from "@/shared/lib/joinMessages";
 import type { PhotoChange } from "@/shared/lib/photoForm";
 
 import { getSaveContactsErrorMessage } from "../lib/saveErrorMessages";
@@ -66,7 +67,7 @@ export async function saveContacts({
 
   return {
     // Both parts usually fail for the same reason, such as no connection: it is said once.
-    error: errors.size > 0 ? [...errors].join(". ") : undefined,
+    error: joinMessages(errors),
     linksSaved: contacts !== undefined && linksResult.status === "fulfilled",
     photoSaved: photo !== undefined && photoResult.status === "fulfilled",
   };

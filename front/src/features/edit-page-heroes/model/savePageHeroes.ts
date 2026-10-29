@@ -1,6 +1,7 @@
 import { deletePageHero, type SitePageId, uploadPageHero } from "@/entities/site-page";
 import { getCsrfToken } from "@/shared/api/csrf";
 import { isSessionExpiredError } from "@/shared/api/getRequestErrorMessage";
+import { joinMessages } from "@/shared/lib/joinMessages";
 
 import { getSaveHeroErrorMessage, getSavePageHeroesErrorMessage } from "../lib/saveErrorMessages";
 import { heroFields } from "./heroFields";
@@ -53,5 +54,5 @@ export async function savePageHeroes(changes: PageHeroesChanges): Promise<SavePa
   }
 
   // Pages usually fail for the same reason, such as no connection: it is said once.
-  return { error: errors.size > 0 ? [...errors].join(". ") : undefined, savedPages };
+  return { error: joinMessages(errors), savedPages };
 }
