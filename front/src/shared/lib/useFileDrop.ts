@@ -12,11 +12,18 @@ interface UseFileDropParams {
   onDrop: (files: FileList) => void;
 }
 
+/** Whether files are dragged, not text or a link, which the browser keeps handling itself. */
+function hasFiles(event: DragEvent): boolean {
+  return event.dataTransfer.types.includes("Files");
+}
+
 /** Accepts files dropped onto an element and tells whether files are being dragged over it. */
 export function useFileDrop({ disabled, onDrop }: UseFileDropParams) {
   const [isDragOver, setIsDragOver] = React.useState(false);
 
   function handleDragOver(event: DragEvent) {
+    if (!hasFiles(event)) return;
+
     // Takes the drag over from the browser, which would otherwise open the file and leave the
     // page; a disabled target refuses the drop instead.
     event.preventDefault();
@@ -39,6 +46,9 @@ export function useFileDrop({ disabled, onDrop }: UseFileDropParams) {
   }
 
   function handleDrop(event: DragEvent) {
+    // Text dropped into a field inside the target, such as a description, goes into the field.
+    if (!hasFiles(event)) return;
+
     event.preventDefault();
     setIsDragOver(false);
     if (!disabled) onDrop(event.dataTransfer.files);
