@@ -3,29 +3,25 @@ import clsx from "clsx";
 import React from "react";
 import { flushSync } from "react-dom";
 import { type FieldErrors, FormProvider, useForm } from "react-hook-form";
+import { useRevalidator } from "react-router";
 
 import type { ContactsWithPhoto } from "@/entities/contacts";
-import { useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
-import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { ArrowLeftIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
-import { Spinner } from "@/shared/ui/spinner";
+import { FormActions } from "@/shared/ui/form-actions";
 import { Tab, TabList, TabPanel, Tabs } from "@/shared/ui/tabs";
-import { Tooltip } from "@/shared/ui/tooltip";
-import { VisuallyHidden } from "@/shared/ui/visually-hidden";
+import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
+import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
 
 import { contactFields } from "../model/contactFields";
-import type { ContactsChanges } from "../model/contactsChanges";
+import { getContactsChanges } from "../model/contactsChanges";
 import { type ContactsFormValues, contactsFormSchema } from "../model/contactsFormSchema";
-import { toContactsFormValues, toPhotoFormValues } from "../model/contactsFormValues";
-import { getContactsChanges } from "../model/getContactsChanges";
-import type { SaveContactsResult } from "../model/saveContacts";
+import { toContactsFormValues, toSavedPhotoValues } from "../model/contactsFormValues";
+import { saveContacts } from "../model/saveContacts";
 import { ContactLinksFields } from "./ContactLinksFields";
 import { ContactPhotoFields } from "./ContactPhotoFields";
 import styles from "./EditContactsForm.module.css";
 
-const revertLabel = "Отменить изменения";
+// One toast for the result of saving: a new result replaces the previous one.
+const saveToastId = "contacts-save";
 
 type ContactsTab = "links" | "photo";
 
@@ -37,66 +33,55 @@ const validatedFields: readonly (readonly [keyof ContactsFormValues, ContactsTab
 
 interface EditContactsFormProps {
   className?: string;
-  isSaving: boolean;
-  onSubmit: (changes: ContactsChanges) => void;
-  /** The result of the last save. The parts it returns become the baseline of their fields. */
-  saveResult: SaveContactsResult | undefined;
-  /** The last saved values, including the parts saved by `saveResult`. */
-  savedContacts: ContactsWithPhoto;
+  /** The contacts as stored on the server, from the route loader. */
+  contacts: ContactsWithPhoto;
 }
 
-export function EditContactsForm({
-  className,
-  isSaving,
-  onSubmit,
-  saveResult,
-  savedContacts,
-}: EditContactsFormProps) {
+export function EditContactsForm({ className, contacts }: EditContactsFormProps) {
   const form = useForm<ContactsFormValues>({
-    defaultValues: toContactsFormValues(savedContacts),
+    defaultValues: toContactsFormValues(contacts),
     resolver: zodResolver(contactsFormSchema),
     // A field on a hidden tab cannot take the focus: handleInvalid shows its tab first.
     shouldFocusError: false,
   });
   const {
-    formState: { dirtyFields, isDirty },
+    formState: { dirtyFields, isDirty, isSubmitting },
     handleSubmit,
     reset,
     resetField,
     setFocus,
   } = form;
   const [tab, setTab] = React.useState<ContactsTab>("links");
-  const saveButtonRef = React.useRef<HTMLButtonElement>(null);
-  const unsavedChangesGuard = useUnsavedChangesGuard(isDirty);
+  const { revalidate } = useRevalidator();
 
-  // What was saved is no longer modified. A part that failed is not in the result, so its fields
-  // keep the unsaved changes.
-  React.useEffect(() => {
-    if (!saveResult) return;
+  async function saveChanges(values: ContactsFormValues) {
+    const { error, linksSaved, photoSaved } = await saveContacts(
+      getContactsChanges(values, dirtyFields, contacts),
+    );
 
-    const { contacts: savedLinks, photo: savedPhotoValue } = saveResult;
+    if (linksSaved || photoSaved) {
+      // A saved photo gets new URLs, so the route loads the contacts again.
+      await revalidate();
+    }
 
-    if (savedLinks) {
+    // What was saved is no longer modified; a part that failed keeps its unsaved changes.
+    if (linksSaved) {
       for (const field of contactFields) {
-        resetField(field.name, { defaultValue: savedLinks[field.name] });
+        resetField(field.name, { defaultValue: values[field.name] });
       }
     }
 
-    if (savedPhotoValue !== undefined) {
-      const photoValues = toPhotoFormValues(savedPhotoValue);
+    if (photoSaved) {
+      const photoValues = toSavedPhotoValues(values);
       resetField("photo", { defaultValue: photoValues.photo });
       resetField("photoAlt", { defaultValue: photoValues.photoAlt });
     }
-  }, [resetField, saveResult]);
 
-  function revertChanges() {
-    reset();
-    // The revert button disappears together with the changes, so the focus moves to its neighbour.
-    saveButtonRef.current?.focus();
-  }
-
-  function submitChanges(submittedValues: ContactsFormValues) {
-    onSubmit(getContactsChanges(submittedValues, dirtyFields, savedContacts));
+    if (error) {
+      showErrorToast(error, { id: saveToastId });
+    } else {
+      showSuccessToast("Изменения сохранены", { id: saveToastId });
+    }
   }
 
   function handleInvalid(fieldErrors: FieldErrors<ContactsFormValues>) {
@@ -115,7 +100,7 @@ export function EditContactsForm({
       <form
         className={clsx(styles.root, className)}
         noValidate
-        onSubmit={handleSubmit(submitChanges, handleInvalid)}
+        onSubmit={handleSubmit(saveChanges, handleInvalid)}
       >
         <Tabs value={tab} onValueChange={setTab}>
           <TabList label="Разделы контактов">
@@ -124,48 +109,20 @@ export function EditContactsForm({
           </TabList>
 
           <TabPanel value="links">
-            <ContactLinksFields isSaving={isSaving} />
+            <ContactLinksFields isSaving={isSubmitting} />
           </TabPanel>
           <TabPanel value="photo">
-            <ContactPhotoFields isSaving={isSaving} serverPhoto={savedContacts.photo} />
+            <ContactPhotoFields isSaving={isSubmitting} serverPhoto={contacts.photo} />
           </TabPanel>
         </Tabs>
 
-        <div className={styles.actions}>
-          {isDirty ? (
-            <Tooltip content={revertLabel}>
-              <IconButton label={revertLabel} disabled={isSaving} onClick={revertChanges}>
-                <ArrowLeftIcon />
-              </IconButton>
-            </Tooltip>
-          ) : null}
-          <Button
-            ref={saveButtonRef}
-            className={styles.saveButton}
-            type="submit"
-            disabled={isSaving}
-            aria-busy={isSaving}
-          >
-            {isSaving ? (
-              <>
-                <Spinner />
-                <VisuallyHidden>Сохранение</VisuallyHidden>
-              </>
-            ) : (
-              "Сохранить"
-            )}
-          </Button>
-        </div>
-
-        <ConfirmDialog
-          isOpen={unsavedChangesGuard.isBlocked}
-          title="Уйти без сохранения?"
-          description="Несохранённые изменения будут потеряны."
-          cancelLabel="Остаться"
-          confirmLabel="Уйти"
-          onCancel={unsavedChangesGuard.stay}
-          onConfirm={unsavedChangesGuard.leave}
+        <FormActions
+          className={styles.actions}
+          hasUnsavedChanges={isDirty}
+          isSaving={isSubmitting}
+          onRevert={() => reset()}
         />
+        <UnsavedChangesDialog hasUnsavedChanges={isDirty} />
       </form>
     </FormProvider>
   );

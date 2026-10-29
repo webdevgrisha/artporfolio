@@ -3,11 +3,11 @@ import React from "react";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import type { ContactPhoto } from "@/entities/contacts";
+import { imageUploadRules } from "@/shared/api/image";
 import { ClearableInput } from "@/shared/ui/clearable-input";
-import { type MediaItem, MediaPicker } from "@/shared/ui/media-picker";
+import { imageToMediaItem, type MediaItem, MediaPicker } from "@/shared/ui/media-picker";
 
 import { type ContactsFormValues, savedPhoto } from "../model/contactsFormSchema";
-import { photoRules } from "../model/photoRules";
 import styles from "./ContactPhotoFields.module.css";
 
 interface ContactPhotoFieldsProps {
@@ -38,29 +38,16 @@ export function ContactPhotoFields({ className, isSaving, serverPhoto }: Contact
       return [{ id: "picked", name: photo.name, size: photo.size, source: photo }];
     }
 
-    // Ordered by width: the smallest one for the thumbnail, the largest for the preview dialog.
-    const images = serverPhoto?.sources.webp ?? [];
-    const thumbnail = images.at(0);
-    if (photo !== savedPhoto || !serverPhoto || !thumbnail) return [];
-
-    return [
-      {
-        fullSizeSource: images.at(-1)?.url,
-        id: serverPhoto.version,
-        name: serverPhoto.fileName,
-        size: serverPhoto.fileSize,
-        source: thumbnail.url,
-      },
-    ];
+    return photo === savedPhoto && serverPhoto ? [imageToMediaItem(serverPhoto)] : [];
   }, [photo, serverPhoto]);
 
   return (
     <div className={clsx(styles.root, className)}>
       <MediaPicker
         label="Фото"
-        accept={photoRules.accept}
-        acceptLabel={photoRules.acceptLabel}
-        maxFileSize={photoRules.maxFileSize}
+        accept={imageUploadRules.accept}
+        acceptLabel={imageUploadRules.acceptLabel}
+        maxFileSize={imageUploadRules.maxFileSize}
         items={photoItems}
         disabled={isSaving}
         isModified={photo !== (serverPhoto ? savedPhoto : null)}

@@ -6,6 +6,7 @@ export const routes = {
   logout: "/admin/logout",
   personalization: "/admin/personalization",
   projects: "/admin/projects",
+  sitePages: "/admin/pages",
 } as const;
 
 export const adminHomePath = routes.projects;
@@ -20,4 +21,5 @@ export const adminNavigation = [
   { title: "О сайте", to: routes.about },
   { title: "Контакты", to: routes.contacts },
   { title: "Персонализация", to: routes.personalization },
+  { title: "Страницы", to: routes.sitePages },
 ] as const;

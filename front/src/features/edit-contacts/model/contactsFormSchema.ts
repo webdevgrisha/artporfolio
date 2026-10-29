@@ -15,14 +15,14 @@ function optionalContact(format: z.ZodType<string, string>) {
 
 const webLink = optionalContact(z.httpUrl("Введите ссылку вида https://…"));
 
-export const contactLinksSchema = z.object({
+const contactLinksSchema = z.object({
   email: optionalContact(z.email("Введите корректный email")),
   instagram: webLink,
   linkedin: webLink,
   youtube: webLink,
 });
 
-export const photoAltSchema = z
+const photoAltSchema = z
   .string()
   .trim()
   .min(1, "Опишите, что на фото")

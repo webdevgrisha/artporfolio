@@ -1,8 +1,9 @@
-import { z } from "zod";
+import type { FieldNamesMarkedBoolean } from "react-hook-form";
 
-import type { Contacts } from "@/entities/contacts";
+import type { Contacts, ContactsWithPhoto } from "@/entities/contacts";
 
-import { contactLinksSchema, photoAltSchema } from "./contactsFormSchema";
+import { contactFields } from "./contactFields";
+import type { ContactsFormValues } from "./contactsFormSchema";
 
 export type PhotoChange =
   | { alt: string; file: File; type: "upload" }
@@ -15,58 +16,28 @@ export interface ContactsChanges {
   photo?: PhotoChange;
 }
 
-// The changes travel from the form to the route action as FormData, the only body that can
-// carry a file. Each link is a field named after it.
-const linkNames = contactLinksSchema.keyof().options;
-const photoFieldNames = {
-  alt: "photoAlt",
-  file: "photoFile",
-  type: "photoType",
-} as const;
+/** Picks the parts of the submitted values that differ from the saved ones. */
+export function getContactsChanges(
+  values: ContactsFormValues,
+  dirtyFields: Partial<Readonly<FieldNamesMarkedBoolean<ContactsFormValues>>>,
+  saved: ContactsWithPhoto,
+): ContactsChanges {
+  const changes: ContactsChanges = {};
 
-export function contactsChangesToFormData({ contacts, photo }: ContactsChanges): FormData {
-  const formData = new FormData();
-
-  if (contacts) {
-    for (const name of linkNames) formData.set(name, contacts[name]);
+  // The server replaces all links at once.
+  if (contactFields.some((field) => dirtyFields[field.name])) {
+    const { email, instagram, linkedin, youtube } = values;
+    changes.contacts = { email, instagram, linkedin, youtube };
   }
 
-  if (photo) {
-    formData.set(photoFieldNames.type, photo.type);
-    if (photo.type !== "delete") formData.set(photoFieldNames.alt, photo.alt);
-    if (photo.type === "upload") formData.set(photoFieldNames.file, photo.file);
+  // The photo is compared by value: react-hook-form does not track changes inside a File.
+  if (values.photo instanceof File) {
+    changes.photo = { alt: values.photoAlt, file: values.photo, type: "upload" };
+  } else if (values.photo === null) {
+    if (saved.photo) changes.photo = { type: "delete" };
+  } else if (dirtyFields.photoAlt) {
+    changes.photo = { alt: values.photoAlt, type: "updateAlt" };
   }
 
-  return formData;
-}
-
-const photoChangeSchema = z.discriminatedUnion("type", [
-  z.object({ alt: photoAltSchema, file: z.instanceof(File), type: z.literal("upload") }),
-  z.object({ alt: photoAltSchema, type: z.literal("updateAlt") }),
-  z.object({ type: z.literal("delete") }),
-]);
-
-const contactsChangesSchema = z.object({
-  contacts: contactLinksSchema.optional(),
-  photo: photoChangeSchema.optional(),
-});
-
-/** Reads and validates the changes sent by `contactsChangesToFormData`. */
-export function parseContactsChanges(formData: FormData) {
-  const hasContacts = linkNames.some((name) => formData.has(name));
-  const hasPhoto = formData.has(photoFieldNames.type);
-
-  // A missing field is `null` and fails the schema.
-  return contactsChangesSchema.safeParse({
-    contacts: hasContacts
-      ? Object.fromEntries(linkNames.map((name) => [name, formData.get(name)]))
-      : undefined,
-    photo: hasPhoto
-      ? {
-          alt: formData.get(photoFieldNames.alt),
-          file: formData.get(photoFieldNames.file),
-          type: formData.get(photoFieldNames.type),
-        }
-      : undefined,
-  });
+  return changes;
 }

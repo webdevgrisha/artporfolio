@@ -1,2 +1,2 @@
 export { MediaPicker } from "./MediaPicker";
-export type { MediaItem } from "./mediaItem";
+export { imageToMediaItem, type MediaItem } from "./mediaItem";

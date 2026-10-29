@@ -6,6 +6,7 @@ import helmet from "helmet";
 import { authRouter } from "#modules/auth/routes";
 import { contactsRouter } from "#modules/contacts/routes";
 import { healthRouter } from "#modules/health/routes";
+import { pagesRouter } from "#modules/pages/routes";
 import { corsOptions } from "#shared/config/cors";
 import { NotFoundError } from "#shared/http/errors";
 import { errorHandler } from "#shared/middleware/error";
@@ -20,6 +21,7 @@ server.use(express.json());
 server.use("/api/health", healthRouter);
 server.use("/api/auth", authRouter);
 server.use("/api/contacts", contactsRouter);
+server.use("/api/pages", pagesRouter);
 
 server.use((_request, _response, next) => {
   next(new NotFoundError());

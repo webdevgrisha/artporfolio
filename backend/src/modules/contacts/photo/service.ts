@@ -6,46 +6,14 @@ import {
   FieldValue,
   type Transaction,
 } from "firebase-admin/firestore";
-import { warn as logWarning } from "firebase-functions/logger";
 
 import { contactsDocument } from "#modules/contacts/document";
-import {
-  type ImageSource,
-  type Photo,
-  type StoredImage,
-  type StoredPhoto,
-  storedPhotoSchema,
-} from "#modules/contacts/photo/schema";
+import { type Photo, type StoredPhoto, storedPhotoSchema } from "#modules/contacts/photo/schema";
 import { firestore } from "#shared/firebase/firestore";
-import {
-  deleteFolder,
-  downloadUrl,
-  saveDownloadableFile,
-  saveFile,
-} from "#shared/firebase/storage";
 import { NotFoundError } from "#shared/http/errors";
-import {
-  type EncodedImage,
-  type OutputFormat,
-  type ProcessedImage,
-  processImage,
-} from "#shared/images/processing";
+import { processImage } from "#shared/images/processing";
+import { deleteImageFilesOrWarn, saveImageFiles, toImage } from "#shared/images/storage";
 import type { UploadedFile } from "#shared/middleware/upload";
-
-// Every upload gets its own folder and therefore new URLs, so the files can be cached forever.
-const immutableCacheControl = "public, max-age=31536000, immutable";
-
-interface SavedImage {
-  format: OutputFormat;
-  image: StoredImage;
-}
-
-interface NewPhoto {
-  alt: string;
-  file: UploadedFile;
-  processed: ProcessedImage;
-  version: string;
-}
 
 type PhotoChange<T> = (
   photo: StoredPhoto | null,
@@ -63,19 +31,9 @@ function readPhoto(snapshot: DocumentSnapshot): StoredPhoto | null {
   return photo === undefined ? null : storedPhotoSchema.parse(photo);
 }
 
-function toImageSource({ path, token, width }: StoredImage): ImageSource {
-  return { url: downloadUrl({ path, token }), width };
-}
-
 /** The stored photo as the API returns it, with download URLs. */
 function toPhoto(photo: StoredPhoto): Photo {
-  return {
-    ...photo,
-    sources: {
-      avif: photo.sources.avif.map(toImageSource),
-      webp: photo.sources.webp.map(toImageSource),
-    },
-  };
+  return { ...toImage(photo), alt: photo.alt };
 }
 
 /**
@@ -87,59 +45,6 @@ function changePhoto<T>(change: PhotoChange<T>): Promise<T> {
     const document = contactsDocument();
 
     return change(readPhoto(await transaction.get(document)), transaction, document);
-  });
-}
-
-async function saveImage(folder: string, image: EncodedImage): Promise<SavedImage> {
-  const path = `${folder}/${String(image.width)}.${image.format}`;
-  const file = await saveDownloadableFile(path, image.data, {
-    cacheControl: immutableCacheControl,
-    contentType: `image/${image.format}`,
-  });
-
-  return { format: image.format, image: { ...file, width: image.width } };
-}
-
-function imagesIn(format: OutputFormat, saved: SavedImage[]): StoredImage[] {
-  return saved.filter((entry) => entry.format === format).map((entry) => entry.image);
-}
-
-/**
- * Saves the web images and the original, which is kept to rebuild the images later, and returns
- * the photo that describes them.
- */
-async function savePhotoFiles({ alt, file, processed, version }: NewPhoto): Promise<StoredPhoto> {
-  const { images, sourceFormat } = processed;
-  const largest = images.reduce((widest, current) =>
-    current.width > widest.width ? current : widest,
-  );
-  const folder = photoFolder(version);
-
-  const [savedImages] = await Promise.all([
-    Promise.all(images.map((image) => saveImage(folder, image))),
-    saveFile(`${folder}/original.${sourceFormat}`, file.data, {
-      contentType: `image/${sourceFormat}`,
-    }),
-  ]);
-
-  return {
-    alt,
-    fileName: file.name,
-    fileSize: file.size,
-    height: largest.height,
-    sources: {
-      avif: imagesIn("avif", savedImages),
-      webp: imagesIn("webp", savedImages),
-    },
-    version,
-    width: largest.width,
-  };
-}
-
-/** Leftover files only take space, so a failed cleanup must not fail the request. */
-async function deletePhotoFilesOrWarn(version: string): Promise<void> {
-  await deleteFolder(photoFolder(version)).catch((error: unknown) => {
-    logWarning("Could not delete contact photo files", { error, version });
   });
 }
 
@@ -160,18 +65,19 @@ export async function saveContactPhoto(file: UploadedFile, alt: string): Promise
   let previous: StoredPhoto | null;
 
   try {
-    photo = await savePhotoFiles({ alt, file, processed, version });
+    const image = await saveImageFiles({ file, folder: photoFolder(version), processed, version });
+    photo = { ...image, alt };
     previous = await changePhoto((current, transaction, document) => {
       transaction.set(document, { photo }, { merge: true });
       return current;
     });
   } catch (error) {
-    await deletePhotoFilesOrWarn(version);
+    await deleteImageFilesOrWarn(photoFolder(version));
     throw error;
   }
 
   if (previous) {
-    await deletePhotoFilesOrWarn(previous.version);
+    await deleteImageFilesOrWarn(photoFolder(previous.version));
   }
 
   return toPhoto(photo);
@@ -198,6 +104,6 @@ export async function deleteContactPhoto(): Promise<void> {
   });
 
   if (deleted) {
-    await deletePhotoFilesOrWarn(deleted.version);
+    await deleteImageFilesOrWarn(photoFolder(deleted.version));
   }
 }

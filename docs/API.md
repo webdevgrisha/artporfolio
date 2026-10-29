@@ -7,7 +7,7 @@ Endpoints of the `api` Cloud Function. Update this file in the same commit as th
 - All paths start with `/api`; bodies are JSON unless stated otherwise.
 - **Session.** `POST /api/auth/login` sets the httpOnly `admin_session` cookie. Endpoints marked *Session* return `401` without a valid admin session.
 - **CSRF.** Endpoints marked *CSRF* need the `X-CSRF-Token` header with a token from `GET /api/auth/csrf`, otherwise they return `403`. The token is bound to the session, so request a new one after login.
-- **Validation.** An invalid body returns `400`. Unknown fields are rejected.
+- **Validation.** An invalid body returns `400`. Unknown fields are rejected. A path parameter that names nothing, such as an unknown page, returns `404`.
 - **Errors** have one shape:
 
   ```json
@@ -53,6 +53,33 @@ Issues a CSRF token and sets the matching cookie.
 
 `204`, no body.
 
+## Images
+
+Uploaded photos are returned as an `Image`:
+
+```ts
+interface ImageSource {
+  url: string; // Firebase download URL, cached for a year
+  width: number;
+}
+
+interface Image {
+  fileName: string; // name of the uploaded file
+  fileSize: number; // size of the uploaded file, in bytes
+  width: number; // size of the largest image
+  height: number;
+  sources: { avif: ImageSource[]; webp: ImageSource[] }; // ordered by width
+  version: string;
+}
+```
+
+An upload is a JPEG or PNG file of up to 15 MB and 50 megapixels, with a file name of up to 255
+characters. WebP and AVIF are rejected: they are already compressed for the web.
+
+The upload is resized without cropping to the widths 640, 960, 1280 and 1920 (never wider than the
+original) and encoded as AVIF and WebP. The EXIF orientation is applied and all metadata, including
+the location, is removed. The original is kept privately to rebuild the images later.
+
 ## Contacts
 
 ```ts
@@ -86,25 +113,10 @@ uploaded.
 ## Contact photo
 
 ```ts
-interface ImageSource {
-  url: string; // Firebase download URL, cached for a year
-  width: number;
-}
-
-interface Photo {
+interface Photo extends Image {
   alt: string;
-  fileName: string; // name of the uploaded file
-  fileSize: number; // size of the uploaded file, in bytes
-  width: number; // size of the largest image
-  height: number;
-  sources: { avif: ImageSource[]; webp: ImageSource[] }; // ordered by width
-  version: string;
 }
 ```
-
-The upload is resized without cropping to the widths 640, 960, 1280 and 1920 (never wider than the
-original) and encoded as AVIF and WebP. The EXIF orientation is applied and all metadata, including
-the location, is removed. The original is kept privately to rebuild the images later.
 
 ### `PUT /api/contacts/photo`
 
@@ -112,7 +124,7 @@ the location, is removed. The original is kept privately to rebuild the images l
 
 | Field | Value |
 | --- | --- |
-| `file` | JPEG or PNG, up to 15 MB and 50 megapixels, file name up to 255 characters. WebP and AVIF are rejected: they are already compressed for the web |
+| `file` | An image upload, see [Images](#images) |
 | `alt` | Required, 1–250 characters after trimming |
 
 | Status | Result |
@@ -141,3 +153,45 @@ The previous photo is deleted after the new one is saved.
 *Session, CSRF.* Deletes the photo and its files. Succeeds when there is no photo.
 
 `204`, no body.
+
+## Pages
+
+The pages of the public site that open with a main photo, the hero: `home`, `gallery`, `projects`,
+`about`, `contacts`. Any other `:page` returns `404`.
+
+```ts
+interface Page {
+  hero: Image | null; // null until a hero is uploaded
+}
+```
+
+The hero is a background under the page title, so it has no alt text.
+
+### `GET /api/pages`
+
+Public. Returns every page.
+
+`200 { "pages": { "home": Page, "gallery": Page, "projects": Page, "about": Page, "contacts": Page } }`
+
+### `PUT /api/pages/:page/hero`
+
+*Session, CSRF.* Uploads or replaces the hero of the page. The body is `multipart/form-data` with
+one field, `file`: an image upload, see [Images](#images).
+
+| Status | Result |
+| --- | --- |
+| `200` | `{ "hero": Image }` |
+| `400` | Missing file, another field, unsupported or oversized image, file name too long |
+| `404` | Unknown page |
+| `413` | File larger than 15 MB |
+
+The previous hero is deleted after the new one is saved.
+
+### `DELETE /api/pages/:page/hero`
+
+*Session, CSRF.* Deletes the hero and its files. Succeeds when the page has no hero.
+
+| Status | Result |
+| --- | --- |
+| `204` | No body |
+| `404` | Unknown page |
