@@ -1,14 +1,14 @@
 import { Router } from "express";
 
 import {
-  createProcessPhoto,
-  readProcessPhoto,
-  readProcessPhotoOrder,
-  readProcessPhotos,
-  removeProcessPhoto,
-  replaceProcessPhotoFile,
-  updateProcessPhoto,
-  updateProcessPhotoOrder,
+  deletePhoto,
+  listPhotos,
+  readOrder,
+  readPhoto,
+  replaceOrder,
+  replacePhoto,
+  updatePhotoAlt,
+  uploadPhoto,
 } from "#modules/about/process-photos/controller";
 import {
   processPhotoOrderBodySchema,
@@ -24,40 +24,40 @@ import { validateBody, validateParams } from "#shared/middleware/validation";
 
 export const processPhotosRouter = Router();
 
-const uploadPhoto = parseUpload({ fileField: "file", maxFileSize: maxSourceFileSize });
+const parsePhotoUpload = parseUpload({ fileField: "file", maxFileSize: maxSourceFileSize });
 
 // Reading is public: the site shows the photos to every visitor. Changes check authentication
 // first and the id next, so a rejected request never has its file read.
-processPhotosRouter.get("/", readProcessPhotos);
+processPhotosRouter.get("/", listPhotos);
 processPhotosRouter.post(
   "/",
   requireAuth,
   requireCsrfToken,
-  uploadPhoto,
+  parsePhotoUpload,
   validateBody(photoAltBodySchema),
-  createProcessPhoto,
+  uploadPhoto,
 );
 
 // Before /:id, so "order" is not taken for a photo id.
-processPhotosRouter.get("/order", readProcessPhotoOrder);
+processPhotosRouter.get("/order", readOrder);
 processPhotosRouter.put(
   "/order",
   requireAuth,
   requireCsrfToken,
   requireContentType("application/json"),
   validateBody(processPhotoOrderBodySchema),
-  updateProcessPhotoOrder,
+  replaceOrder,
 );
 
-processPhotosRouter.get("/:id", validateParams(processPhotoParamsSchema), readProcessPhoto);
+processPhotosRouter.get("/:id", validateParams(processPhotoParamsSchema), readPhoto);
 processPhotosRouter.put(
   "/:id",
   requireAuth,
   requireCsrfToken,
   validateParams(processPhotoParamsSchema),
-  uploadPhoto,
+  parsePhotoUpload,
   validateBody(photoAltBodySchema),
-  replaceProcessPhotoFile,
+  replacePhoto,
 );
 processPhotosRouter.patch(
   "/:id",
@@ -66,12 +66,12 @@ processPhotosRouter.patch(
   validateParams(processPhotoParamsSchema),
   requireContentType("application/json"),
   validateBody(photoAltBodySchema),
-  updateProcessPhoto,
+  updatePhotoAlt,
 );
 processPhotosRouter.delete(
   "/:id",
   requireAuth,
   requireCsrfToken,
   validateParams(processPhotoParamsSchema),
-  removeProcessPhoto,
+  deletePhoto,
 );

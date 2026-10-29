@@ -19,32 +19,31 @@ import {
 import type { PhotoAltBody } from "#shared/images/photo";
 import { uploadedFile } from "#shared/middleware/upload";
 
-export const readProcessPhotos: RequestHandler<object, ProcessPhotosResponse> = async (
+export const listPhotos: RequestHandler<object, ProcessPhotosResponse> = async (
   _request,
   response,
 ) => {
   response.status(200).json({ processPhotos: await listProcessPhotos() });
 };
 
-export const createProcessPhoto: RequestHandler<
-  object,
-  ProcessPhotoResponse,
-  PhotoAltBody
-> = async (request, response) => {
+export const uploadPhoto: RequestHandler<object, ProcessPhotoResponse, PhotoAltBody> = async (
+  request,
+  response,
+) => {
   const processPhoto = await addProcessPhoto(uploadedFile(request), request.body.alt);
 
   // baseUrl is where the router is mounted: /api/about/process-photos.
   response.status(201).location(`${request.baseUrl}/${processPhoto.id}`).json({ processPhoto });
 };
 
-export const readProcessPhoto: RequestHandler<ProcessPhotoParams, ProcessPhotoResponse> = async (
+export const readPhoto: RequestHandler<ProcessPhotoParams, ProcessPhotoResponse> = async (
   request,
   response,
 ) => {
   response.status(200).json({ processPhoto: await getProcessPhoto(request.params.id) });
 };
 
-export const replaceProcessPhotoFile: RequestHandler<
+export const replacePhoto: RequestHandler<
   ProcessPhotoParams,
   ProcessPhotoResponse,
   PhotoAltBody
@@ -58,7 +57,7 @@ export const replaceProcessPhotoFile: RequestHandler<
   response.status(200).json({ processPhoto });
 };
 
-export const updateProcessPhoto: RequestHandler<
+export const updatePhotoAlt: RequestHandler<
   ProcessPhotoParams,
   ProcessPhotoResponse,
   PhotoAltBody
@@ -68,23 +67,19 @@ export const updateProcessPhoto: RequestHandler<
   response.status(200).json({ processPhoto });
 };
 
-export const removeProcessPhoto: RequestHandler<ProcessPhotoParams> = async (request, response) => {
+export const deletePhoto: RequestHandler<ProcessPhotoParams> = async (request, response) => {
   await deleteProcessPhoto(request.params.id);
 
   response.status(204).end();
 };
 
-export const readProcessPhotoOrder: RequestHandler<object, ProcessPhotoOrder> = async (
-  _request,
-  response,
-) => {
+export const readOrder: RequestHandler<object, ProcessPhotoOrder> = async (_request, response) => {
   response.status(200).json({ ids: await getProcessPhotoOrder() });
 };
 
-export const updateProcessPhotoOrder: RequestHandler<
-  object,
-  ProcessPhotoOrder,
-  ProcessPhotoOrder
-> = async (request, response) => {
+export const replaceOrder: RequestHandler<object, ProcessPhotoOrder, ProcessPhotoOrder> = async (
+  request,
+  response,
+) => {
   response.status(200).json({ ids: await reorderProcessPhotos(request.body.ids) });
 };
