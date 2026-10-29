@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { flushSync } from "react-dom";
 import { type FieldErrors, FormProvider, useForm } from "react-hook-form";
-import { useRevalidator } from "react-router";
 
 import type { ContactsWithPhoto } from "@/entities/contacts";
 import { toSavedPhotoValues } from "@/shared/lib/photoForm";
@@ -15,7 +14,7 @@ import { contactFields } from "../model/contactFields";
 import { getContactsChanges } from "../model/contactsChanges";
 import { type ContactsFormValues, contactsFormSchema } from "../model/contactsFormSchema";
 import { toContactsFormValues } from "../model/contactsFormValues";
-import { saveContacts } from "../model/saveContacts";
+import { useSaveContacts } from "../model/useSaveContacts";
 import { ContactLinksFields } from "./ContactLinksFields";
 
 // One toast for the result of saving: a new result replaces the previous one.
@@ -50,17 +49,12 @@ export function EditContactsForm({ className, contacts }: EditContactsFormProps)
     setFocus,
   } = form;
   const [tab, setTab] = React.useState<ContactsTab>("links");
-  const { revalidate } = useRevalidator();
+  const saveContacts = useSaveContacts();
 
   async function saveChanges(values: ContactsFormValues) {
-    const { error, linksSaved, photoSaved } = await saveContacts(
+    const { error, linksSaved, photoSaved } = await saveContacts.mutateAsync(
       getContactsChanges(values, dirtyFields, contacts),
     );
-
-    if (linksSaved || photoSaved) {
-      // A saved photo gets new URLs, so the route loads the contacts again.
-      await revalidate();
-    }
 
     // What was saved is no longer modified; a part that failed keeps its unsaved changes.
     if (linksSaved) {

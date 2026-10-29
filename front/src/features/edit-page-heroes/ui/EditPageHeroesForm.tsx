@@ -1,5 +1,4 @@
 import { useForm } from "react-hook-form";
-import { useRevalidator } from "react-router";
 
 import type { SitePageId, SitePages } from "@/entities/site-page";
 import { toSavedImageFieldValue } from "@/shared/lib/imageFieldValue";
@@ -9,7 +8,7 @@ import { showSaveResultToast } from "@/shared/ui/toast";
 import { heroFields } from "../model/heroFields";
 import { getPageHeroesChanges } from "../model/pageHeroesChanges";
 import { type PageHeroesFormValues, toPageHeroesFormValues } from "../model/pageHeroesFormValues";
-import { savePageHeroes } from "../model/savePageHeroes";
+import { useSavePageHeroes } from "../model/useSavePageHeroes";
 import styles from "./EditPageHeroesForm.module.css";
 import { PageHeroField } from "./PageHeroField";
 
@@ -34,15 +33,12 @@ export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps
   } = useForm<PageHeroesFormValues>({
     defaultValues: toPageHeroesFormValues(pages),
   });
-  const { revalidate } = useRevalidator();
+  const savePageHeroes = useSavePageHeroes();
 
   async function saveChanges(values: PageHeroesFormValues) {
-    const { error, savedPages } = await savePageHeroes(getPageHeroesChanges(values, pages));
-
-    if (savedPages.length > 0) {
-      // A saved photo gets new URLs, so the route loads the pages again.
-      await revalidate();
-    }
+    const { error, savedPages } = await savePageHeroes.mutateAsync(
+      getPageHeroesChanges(values, pages),
+    );
 
     // What was saved is no longer modified; a page that failed keeps its unsaved change.
     for (const page of savedPages) {

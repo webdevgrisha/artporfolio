@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { flushSync } from "react-dom";
 import { type FieldErrors, type FieldPath, FormProvider, useForm } from "react-hook-form";
-import { useRevalidator } from "react-router";
 
 import type { About } from "@/entities/about";
 import { toSavedPhotoValues } from "@/shared/lib/photoForm";
@@ -15,7 +14,7 @@ import { getAboutChanges } from "../model/aboutChanges";
 import { type AboutFormValues, aboutFormSchema } from "../model/aboutFormSchema";
 import { toAboutFormValues, toProcessPhotoRows } from "../model/aboutFormValues";
 import { aboutTextFields } from "../model/aboutTextFields";
-import { saveAbout } from "../model/saveAbout";
+import { useSaveAbout } from "../model/useSaveAbout";
 import { AboutTextFields } from "./AboutTextFields";
 import { ProcessPhotoFields } from "./ProcessPhotoFields";
 
@@ -56,18 +55,13 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
     setValue,
   } = form;
   const [tab, setTab] = React.useState<AboutTab>("text");
-  const { revalidate } = useRevalidator();
+  const saveAbout = useSaveAbout();
 
   async function saveChanges(values: AboutFormValues) {
-    const { error, photoSaved, processPhotos, textSaved } = await saveAbout(
-      getAboutChanges(values, dirtyFields, about),
-      about.processPhotos,
-    );
-
-    if (textSaved || photoSaved || processPhotos?.isChanged) {
-      // A saved photo gets new URLs, so the route loads the page again.
-      await revalidate();
-    }
+    const { error, photoSaved, processPhotos, textSaved } = await saveAbout.mutateAsync({
+      changes: getAboutChanges(values, dirtyFields, about),
+      savedProcessPhotos: about.processPhotos,
+    });
 
     // What was saved is no longer modified; a part that failed keeps its unsaved changes.
     if (textSaved) {

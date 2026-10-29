@@ -22,8 +22,6 @@ type EditStep = Exclude<ProcessPhotoStep, { type: "keep" }>;
 export interface SaveProcessPhotosResult {
   /** Why some change was not saved. */
   error?: string;
-  /** Whether any change reached the server. */
-  isChanged: boolean;
   /** The photos on the server after the save, in their order there. */
   photos: ProcessPhoto[];
   /** The rows after the save, in the form's order. A row whose change failed keeps it. */
@@ -68,7 +66,6 @@ export async function saveProcessPhotos(
   // Follows every saved change, so it is the list on the server at the end.
   let serverPhotos = [...saved];
   const errors = new Set<string>();
-  let isChanged = false;
   let isStopped = false;
 
   function addError(error: unknown, message: string) {
@@ -83,7 +80,6 @@ export async function saveProcessPhotos(
     try {
       await deleteProcessPhoto({ csrfToken, id });
       serverPhotos = serverPhotos.filter((photo) => photo.id !== id);
-      isChanged = true;
     } catch (error) {
       addError(error, getSaveProcessPhotoErrorMessage(error, savedById.get(id)?.fileName ?? ""));
     }
@@ -110,7 +106,6 @@ export async function saveProcessPhotos(
           ? [...serverPhotos, photo]
           : serverPhotos.map((serverPhoto) => (serverPhoto.id === photo.id ? photo : serverPhoto));
       rows.push(toProcessPhotoRow(photo));
-      isChanged = true;
     } catch (error) {
       const fileName = "file" in step ? step.file.name : (savedById.get(step.id)?.fileName ?? "");
       addError(error, getSaveProcessPhotoErrorMessage(error, fileName));
@@ -129,7 +124,6 @@ export async function saveProcessPhotos(
       const order = await reorderProcessPhotos({ csrfToken, ids });
       const serverPhotosById = new Map(serverPhotos.map((photo) => [photo.id, photo]));
       serverPhotos = order.flatMap((id) => serverPhotosById.get(id) ?? []);
-      isChanged = true;
     } catch (error) {
       addError(error, getSaveProcessPhotoOrderErrorMessage(error));
     }
@@ -138,7 +132,6 @@ export async function saveProcessPhotos(
   return {
     // Photos usually fail for the same reason, such as no connection: it is said once.
     error: joinMessages(errors),
-    isChanged,
     photos: serverPhotos,
     rows,
   };
