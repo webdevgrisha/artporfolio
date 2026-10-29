@@ -21,3 +21,8 @@ export function showSaveResultToast(error: string | undefined, { id }: ToastOpti
     toast.success("Изменения сохранены", { duration: successDuration, id });
   }
 }
+
+/** An action other than saving a form failed. It stays until it is closed, like a save error. */
+export function showErrorToast(message: string, { id }: ToastOptions): void {
+  toast.error(message, { duration: Number.POSITIVE_INFINITY, id });
+}
