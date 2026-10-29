@@ -6,7 +6,7 @@ const imageSourceSchema = z.object({
   width: z.number(),
 });
 
-/** An uploaded photo as the API returns it, resized to several widths (docs/API.md → Images). */
+/** An uploaded photo as the API returns it, resized to several widths (backend/openapi/openapi.yaml → Image). */
 export const imageSchema = z.object({
   /** Name of the uploaded file. */
   fileName: z.string(),
@@ -25,7 +25,7 @@ export const imageSchema = z.object({
 
 export type Image = z.infer<typeof imageSchema>;
 
-/** Mirrors the rules of every photo upload in docs/API.md → Images. */
+/** Mirrors the rules of every photo upload in backend/openapi/openapi.yaml → image upload `file`. */
 export const imageUploadRules = {
   accept: ["image/jpeg", "image/png", ".jpg", ".jpeg", ".png"],
   acceptLabel: "JPEG или PNG",
