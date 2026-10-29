@@ -1,13 +1,8 @@
 import type { DecodedIdToken } from "firebase-admin/auth";
-
+import type { AuthUser } from "#modules/auth/schema";
 import { getEnv } from "#shared/config/env";
 import { firebaseAuth, isClientAuthError } from "#shared/firebase/auth";
 import { UnauthorizedError } from "#shared/http/errors";
-
-export interface AuthUser {
-  email: string | null;
-  uid: string;
-}
 
 export interface CreatedSession {
   sessionCookie: string;

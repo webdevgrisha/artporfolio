@@ -3,17 +3,8 @@ import { STATUS_CODES } from "node:http";
 import type { ErrorRequestHandler, Response } from "express";
 import { error as logError } from "firebase-functions/logger";
 
-import { BadRequestError, HttpError, type InvalidField } from "#shared/http/errors";
-
-/** An error response body as defined by RFC 9457, Problem Details for HTTP APIs. */
-interface ProblemDetails {
-  detail?: string;
-  errors?: InvalidField[];
-  status: number;
-  title: string;
-  /** "about:blank" means the status code says all there is: the title is its reason phrase. */
-  type: "about:blank";
-}
+import { BadRequestError, HttpError } from "#shared/http/errors";
+import type { InvalidField, ProblemDetails } from "#shared/http/problem";
 
 interface Problem {
   detail?: string;

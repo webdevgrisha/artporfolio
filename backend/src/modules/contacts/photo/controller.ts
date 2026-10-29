@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 
-import type { PhotoAltBody } from "#modules/contacts/photo/schema";
+import type { PhotoAltBody, PhotoResponse } from "#modules/contacts/photo/schema";
 import {
   deleteContactPhoto,
   saveContactPhoto,
@@ -8,7 +8,7 @@ import {
 } from "#modules/contacts/photo/service";
 import { uploadedFile } from "#shared/middleware/upload";
 
-export const uploadPhoto: RequestHandler<object, unknown, PhotoAltBody> = async (
+export const uploadPhoto: RequestHandler<object, PhotoResponse, PhotoAltBody> = async (
   request,
   response,
 ) => {
@@ -17,7 +17,7 @@ export const uploadPhoto: RequestHandler<object, unknown, PhotoAltBody> = async 
   response.status(created ? 201 : 200).json({ photo });
 };
 
-export const updatePhotoAlt: RequestHandler<object, unknown, PhotoAltBody> = async (
+export const updatePhotoAlt: RequestHandler<object, PhotoResponse, PhotoAltBody> = async (
   request,
   response,
 ) => {

@@ -1,16 +1,16 @@
 import type { RequestHandler } from "express";
 
-import type { PageParams } from "#modules/pages/schema";
+import type { HeroResponse, PageParams, PagesResponse } from "#modules/pages/schema";
 import { deletePageHero, getPages, savePageHero } from "#modules/pages/service";
 import { uploadedFile } from "#shared/middleware/upload";
 
-export const readPages: RequestHandler = async (_request, response) => {
+export const readPages: RequestHandler<object, PagesResponse> = async (_request, response) => {
   const pages = await getPages();
 
   response.status(200).json({ pages });
 };
 
-export const uploadHero: RequestHandler<PageParams> = async (request, response) => {
+export const uploadHero: RequestHandler<PageParams, HeroResponse> = async (request, response) => {
   const { created, hero } = await savePageHero(request.params.page, uploadedFile(request));
 
   response.status(created ? 201 : 200).json({ hero });

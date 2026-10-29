@@ -1,7 +1,8 @@
 import type { RequestHandler } from "express";
 import type { core, ZodType } from "zod";
 
-import { BadRequestError, type InvalidField, NotFoundError } from "#shared/http/errors";
+import { BadRequestError, NotFoundError } from "#shared/http/errors";
+import type { InvalidField } from "#shared/http/problem";
 
 /** A JSON Pointer (RFC 6901) in URI fragment form, such as "#/contacts/0/url". */
 function toPointer(path: readonly PropertyKey[]): string {

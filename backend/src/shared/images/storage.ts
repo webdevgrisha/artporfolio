@@ -33,19 +33,42 @@ export const storedImageSchema = z.object({
   width: z.number().int().positive(),
 });
 
-export type StoredImageFile = z.infer<typeof storedImageFileSchema>;
-export type StoredImage = z.infer<typeof storedImageSchema>;
-
 /** An image file as the API returns it, ready for a srcset. */
-export interface ImageSource {
-  url: string;
-  width: number;
-}
+const imageSourceSchema = z
+  .object({
+    url: z
+      .url()
+      .meta({ description: "Download URL; the file never changes, so it is cached for a year." }),
+    width: z.number().int().positive(),
+  })
+  .meta({ id: "ImageSource" });
+
+const imageSourcesSchema = z.array(imageSourceSchema).meta({ description: "Ordered by width." });
 
 /** The image as the API returns it, with download URLs in place of the stored paths. */
-export interface Image extends Omit<StoredImage, "sources"> {
-  sources: { avif: ImageSource[]; webp: ImageSource[] };
-}
+export const imageSchema = z
+  .object({
+    fileName: z.string().meta({ description: "Name of the uploaded file." }),
+    fileSize: z
+      .number()
+      .int()
+      .positive()
+      .meta({ description: "Size of the uploaded file, in bytes." }),
+    width: z.number().int().positive().meta({ description: "Width of the largest image." }),
+    height: z.number().int().positive().meta({ description: "Height of the largest image." }),
+    sources: z.object({ avif: imageSourcesSchema, webp: imageSourcesSchema }),
+    version: z.string().meta({ description: "Changes with every upload." }),
+  })
+  .meta({
+    id: "Image",
+    description:
+      "An uploaded photo, resized without cropping to the widths 640, 960, 1280 and 1920 (never wider than the original) and encoded as AVIF and WebP.",
+  });
+
+export type StoredImageFile = z.infer<typeof storedImageFileSchema>;
+export type StoredImage = z.infer<typeof storedImageSchema>;
+export type ImageSource = z.infer<typeof imageSourceSchema>;
+export type Image = z.infer<typeof imageSchema>;
 
 /** A processed upload and the folder to store it in; the version identifies the image. */
 interface NewImage {

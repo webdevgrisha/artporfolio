@@ -1,8 +1,4 @@
-/** One invalid value of a request body; the pointer is a JSON Pointer to it, such as "#/alt". */
-export interface InvalidField {
-  detail: string;
-  pointer: string;
-}
+import type { InvalidField } from "#shared/http/problem";
 
 export class HttpError extends Error {
   constructor(

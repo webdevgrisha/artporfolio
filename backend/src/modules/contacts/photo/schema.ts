@@ -1,8 +1,13 @@
 import { z } from "zod";
 
-import { type Image, storedImageSchema } from "#shared/images/storage";
+import { imageSchema, storedImageSchema } from "#shared/images/storage";
 
-const altSchema = z.string().trim().min(1).max(250);
+const altSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(250)
+  .meta({ description: "Text alternative for the photo." });
 
 /** Text fields sent with the photo file, and the body of an alt text update. */
 export const photoAltBodySchema = z
@@ -16,10 +21,12 @@ export const storedPhotoSchema = storedImageSchema.extend({
   alt: altSchema,
 });
 
+/** The photo as the API returns it, with download URLs in place of the stored paths. */
+export const photoSchema = imageSchema.extend({ alt: altSchema }).meta({ id: "Photo" });
+
+export const photoResponseSchema = z.object({ photo: photoSchema });
+
 export type PhotoAltBody = z.infer<typeof photoAltBodySchema>;
 export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
-
-/** The photo as the API returns it, with download URLs in place of the stored paths. */
-export interface Photo extends Image {
-  alt: string;
-}
+export type Photo = z.infer<typeof photoSchema>;
+export type PhotoResponse = z.infer<typeof photoResponseSchema>;
