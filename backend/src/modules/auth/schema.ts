@@ -6,12 +6,11 @@ export const loginBodySchema = z
   })
   .strict();
 
-export const userSchema = z
-  .object({
-    email: z.email().nullable(),
-    uid: z.string(),
-  })
-  .meta({ id: "User", description: "The signed-in admin." });
+/** The signed-in admin. */
+export const userSchema = z.object({
+  email: z.email().nullable(),
+  uid: z.string(),
+});
 
 export const userResponseSchema = z.object({ user: userSchema });
 

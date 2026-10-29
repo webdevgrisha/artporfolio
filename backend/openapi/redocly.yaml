@@ -1,7 +1,0 @@
-# Rules for `pnpm openapi:lint`.
-extends:
-  - recommended-strict
-
-rules:
-  # A private API of one site: there is no license to state.
-  info-license: off

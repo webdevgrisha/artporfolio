@@ -34,36 +34,28 @@ export const storedImageSchema = z.object({
 });
 
 /** An image file as the API returns it, ready for a srcset. */
-const imageSourceSchema = z
-  .object({
-    url: z
-      .url()
-      .meta({ description: "Download URL; the file never changes, so it is cached for a year." }),
-    width: z.number().int().positive(),
-  })
-  .meta({ id: "ImageSource" });
+const imageSourceSchema = z.object({
+  /** The file never changes, so the download URL is cached for a year. */
+  url: z.url(),
+  width: z.number().int().positive(),
+});
 
-const imageSourcesSchema = z.array(imageSourceSchema).meta({ description: "Ordered by width." });
-
-/** The image as the API returns it, with download URLs in place of the stored paths. */
-export const imageSchema = z
-  .object({
-    fileName: z.string().meta({ description: "Name of the uploaded file." }),
-    fileSize: z
-      .number()
-      .int()
-      .positive()
-      .meta({ description: "Size of the uploaded file, in bytes." }),
-    width: z.number().int().positive().meta({ description: "Width of the largest image." }),
-    height: z.number().int().positive().meta({ description: "Height of the largest image." }),
-    sources: z.object({ avif: imageSourcesSchema, webp: imageSourcesSchema }),
-    version: z.string().meta({ description: "Changes with every upload." }),
-  })
-  .meta({
-    id: "Image",
-    description:
-      "An uploaded photo, resized without cropping to the widths 640, 960, 1280 and 1920 (never wider than the original) and encoded as AVIF and WebP.",
-  });
+/**
+ * The image as the API returns it, with download URLs in place of the stored paths: resized
+ * without cropping to the widths 640, 960, 1280 and 1920 (never wider than the original) and
+ * encoded as AVIF and WebP, each ordered by width.
+ */
+export const imageSchema = z.object({
+  fileName: z.string(),
+  /** Size of the uploaded file, in bytes. */
+  fileSize: z.number().int().positive(),
+  /** Size of the largest image. */
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  sources: z.object({ avif: z.array(imageSourceSchema), webp: z.array(imageSourceSchema) }),
+  /** Changes with every upload. */
+  version: z.string(),
+});
 
 export type StoredImageFile = z.infer<typeof storedImageFileSchema>;
 export type StoredImage = z.infer<typeof storedImageSchema>;

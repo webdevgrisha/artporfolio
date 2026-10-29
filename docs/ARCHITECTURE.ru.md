@@ -118,17 +118,10 @@ backend/src/
     ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
     ├── http/           HttpError, работа с cookies, типы запроса Express
     ├── images/         обработка изображений через sharp, файлы изображений в Cloud Storage, места для фото
-    ├── middleware/     csrf, content-type, validation, upload, error
-    └── openapi/        общие части описания API: ответы с ошибками, безопасность, загрузки
-
-backend/openapi/
-├── document.ts         собирает документ OpenAPI из путей модулей
-├── generate.ts         `pnpm openapi`: записывает openapi.yaml
-├── openapi.yaml        сгенерированное описание API, хранится в репозитории
-└── redocly.yaml        правила линтера для `pnpm openapi:lint`
+    └── middleware/     csrf, content-type, validation, upload, error
 ```
 
-- В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`, `openapi.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.
+- В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.
 - `shared/` никогда не импортирует `modules/`, это проверяет Biome. Модуль может использовать другой модуль, как `contacts` использует `requireAuth` из `auth`.
 - `server.ts` подключает только модули верхнего уровня. Вложенный модуль подключает роутер родителя, как `contacts` подключает `photo`.
 - Одиночное фото с alt (фото контактов, «Моё фото») — это `PhotoSlot` из `shared/images/photo.ts`: документ Firestore, поле и папка в Storage. Сервис модуля только называет своё место; сохранение, замена, alt и удаление общие.
@@ -139,14 +132,12 @@ backend/openapi/
 - Express 5 сам передаёт отклонённые промисы в middleware ошибок, поэтому обработчики не оборачивают код в `try/catch` только ради `next(error)`.
 - Переменные окружения читаются через `getEnv()` из `shared/config/env.ts` и проверяются один раз при первом обращении. `CSRF_SECRET` хранится в Secret Manager и читается конфигом CSRF.
 - Ошибки для клиента выбрасываются как подклассы `HttpError`; middleware ошибок отправляет любую ошибку в формате Problem Details из RFC 9457. Всё остальное логируется и возвращается как общий ответ 500.
-- API описан в OpenAPI 3.1 в [backend/openapi/openapi.yaml](../backend/openapi/openapi.yaml) (на английском) и генерируется из кода (code-first). Схемы Zod в `schema.ts` проверяют запросы и описывают ответы; контроллеры типизированы схемами ответов (`RequestHandler<Params, Response, Body>`). `openapi.ts` модуля перечисляет его пути с этими схемами, всеми кодами ответов и требованиями безопасности; схема, которая становится переиспользуемым компонентом, получает `.meta({ id })`.
-- После изменения API запустите `pnpm openapi` и закоммитьте `openapi.yaml` в том же коммите. Тест падает, если файл устарел, а `pnpm check` проверяет его линтером Redocly. `pnpm openapi:docs` собирает страницу для чтения `openapi/docs.html`; она не хранится в репозитории и не раздаётся сервером.
+- API описан самим кодом: `routes.ts` модуля перечисляет его эндпоинты, а `schema.ts` хранит схемы Zod, которые проверяют запросы и описывают ответы. Контроллеры типизированы схемами ответов (`RequestHandler<Params, Response, Body>`), поэтому обработчик не может отправить ответ другой формы.
 
 ## Тесты
 
 - Тесты бэкенда лежат в `backend/tests`, повторяя структуру `src` (`tests/modules/contacts/photo/service.test.ts` тестирует `src/modules/contacts/photo/service.ts`), и запускаются Vitest. Их окружение задано в `backend/vitest.config.ts`.
 - В `tests/support` лежат общие помощники: `startTestServer` запускает приложение Express на свободном порту, `adminHeaders` возвращает cookies и CSRF-заголовок вошедшего администратора, `apiImage` возвращает полное изображение для замоканных сервисов, `routeApp` собирает приложение для теста маршрутов: общие middleware, маршруты авторизации и тестируемый роутер. Импортируйте их относительным путём с окончанием `.js`.
-- `startTestServer` сверяет каждый ответ операции из `openapi.yaml` со спецификацией: код ответа должен быть описан, `Content-Type` должен совпадать, а тело должно проходить схему. Нарушение роняет тест, который его вызвал, поэтому фикстуры тестов маршрутов должны быть полными.
 - У фронтенда пока нет автоматических тестов.
 
 ## Как добавить страницу админки

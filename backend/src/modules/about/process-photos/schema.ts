@@ -5,9 +5,8 @@ import { photoSchema, storedPhotoSchema } from "#shared/images/photo";
 /** The most process photos the page may have; raise it when the artist needs more. */
 export const maxProcessPhotos = 30;
 
-const processPhotoIdSchema = z.uuid().meta({
-  description: "Stays the same when the file is replaced.",
-});
+/** Stays the same when the file is replaced. */
+const processPhotoIdSchema = z.uuid();
 
 /** The path parameters of a request about one process photo. */
 export const processPhotoParamsSchema = z.object({
@@ -20,32 +19,24 @@ export const storedProcessPhotoSchema = storedPhotoSchema.extend({
 });
 
 /** A photo of the work in progress, as the API returns it. */
-export const processPhotoSchema = photoSchema
-  .extend({ id: processPhotoIdSchema })
-  .meta({ id: "ProcessPhoto" });
+export const processPhotoSchema = photoSchema.extend({ id: processPhotoIdSchema });
 
 const processPhotoOrderFields = {
+  /** Every process photo id, once, in the order the site shows them. */
   ids: z
     .array(processPhotoIdSchema)
     .max(maxProcessPhotos)
-    .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once")
-    .meta({
-      description: "Every process photo id, once, in the order the site shows them.",
-      uniqueItems: true,
-    }),
+    .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once"),
 };
 
 /** The order of the process photos. */
-export const processPhotoOrderSchema = z
-  .object(processPhotoOrderFields)
-  .meta({ id: "ProcessPhotoOrder" });
+export const processPhotoOrderSchema = z.object(processPhotoOrderFields);
 
 export const processPhotoOrderBodySchema = z.strictObject(processPhotoOrderFields);
 
 export const processPhotosResponseSchema = z.object({
-  processPhotos: z
-    .array(processPhotoSchema)
-    .meta({ description: "In the order the site shows them." }),
+  /** In the order the site shows them. */
+  processPhotos: z.array(processPhotoSchema),
 });
 
 export const processPhotoResponseSchema = z.object({ processPhoto: processPhotoSchema });

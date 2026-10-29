@@ -4,8 +4,9 @@ import { z } from "zod";
 import { doubleCsrfProtection, generateCsrfToken } from "#shared/config/csrf";
 import { ForbiddenError } from "#shared/http/errors";
 
+/** The client sends the token back in the X-CSRF-Token header of every change. */
 export const csrfTokenResponseSchema = z.object({
-  csrfToken: z.string().meta({ description: "Send it back in the `X-CSRF-Token` header." }),
+  csrfToken: z.string(),
 });
 
 export type CsrfTokenResponse = z.infer<typeof csrfTokenResponseSchema>;

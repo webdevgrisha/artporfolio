@@ -20,12 +20,8 @@ import {
 } from "#shared/images/storage";
 import type { UploadedFile } from "#shared/middleware/upload";
 
-export const altSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(250)
-  .meta({ description: "Text alternative for the photo." });
+/** The text alternative of a photo. */
+export const altSchema = z.string().trim().min(1).max(250);
 
 /** Text fields sent with a photo file, and the body of an alt text update. */
 export const photoAltBodySchema = z
@@ -43,7 +39,7 @@ export const storedPhotoSchema = storedImageSchema.extend({
 });
 
 /** A photo as the API returns it, with download URLs in place of the stored paths. */
-export const photoSchema = imageSchema.extend({ alt: altSchema }).meta({ id: "Photo" });
+export const photoSchema = imageSchema.extend({ alt: altSchema });
 
 export const photoResponseSchema = z.object({ photo: photoSchema });
 

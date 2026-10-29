@@ -118,17 +118,10 @@ backend/src/
     ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
     ├── http/           HttpError, cookie helpers, Express request typing
     ├── images/         image processing with sharp, image files in Cloud Storage, photo slots
-    ├── middleware/     csrf, content-type, validation, upload, error
-    └── openapi/        shared parts of the API description: error responses, security, uploads
-
-backend/openapi/
-├── document.ts         assembles the OpenAPI document from the modules' paths
-├── generate.ts         `pnpm openapi`: writes openapi.yaml
-├── openapi.yaml        the generated API description, committed
-└── redocly.yaml        lint rules for `pnpm openapi:lint`
+    └── middleware/     csrf, content-type, validation, upload, error
 ```
 
-- A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`, `openapi.ts`. The request flow is route → middleware → controller → service.
+- A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. The request flow is route → middleware → controller → service.
 - `shared/` never imports `modules/`; Biome enforces it. A module may use another module, as `contacts` uses `requireAuth` from `auth`.
 - `server.ts` mounts only top-level modules. A submodule is mounted by its parent's router, as `contacts` mounts `photo`.
 - A single photo with alt text (the contact photo, «My photo») is a `PhotoSlot` from `shared/images/photo.ts`: a Firestore document, a field and a Storage folder. The module's service only names its slot; saving, replacing, the alt text and deleting are shared.
@@ -139,14 +132,12 @@ backend/openapi/
 - Express 5 forwards rejected promises to the error middleware, so handlers do not wrap code in `try/catch` only to call `next(error)`.
 - Environment variables are read through `getEnv()` in `shared/config/env.ts`, validated once on first use. `CSRF_SECRET` is a Secret Manager value read by the CSRF config.
 - Errors meant for the client are thrown as `HttpError` subclasses; the error middleware sends every error as RFC 9457 Problem Details. Anything else is logged and returned as a generic 500.
-- The API is described by OpenAPI 3.1 in [backend/openapi/openapi.yaml](../backend/openapi/openapi.yaml), generated from code (code-first). Zod schemas in `schema.ts` validate requests and describe responses; controllers are typed with the response schemas (`RequestHandler<Params, Response, Body>`). Each module's `openapi.ts` lists its paths with those schemas, every status code and its security; a schema that becomes a reusable component has `.meta({ id })`.
-- After changing the API, run `pnpm openapi` and commit `openapi.yaml` in the same commit. A test fails when the file is out of date, and `pnpm check` lints it with Redocly. `pnpm openapi:docs` builds a browsable page, `openapi/docs.html`, which is not committed and not served.
+- The API is described by its code: each module's `routes.ts` lists its endpoints, and `schema.ts` holds the Zod schemas that validate requests and describe responses. Controllers are typed with the response schemas (`RequestHandler<Params, Response, Body>`), so a handler cannot send another shape.
 
 ## Tests
 
 - Backend tests live in `backend/tests`, mirroring `src` (`tests/modules/contacts/photo/service.test.ts` tests `src/modules/contacts/photo/service.ts`), and run with Vitest. Their environment is set in `backend/vitest.config.ts`.
 - `tests/support` holds shared helpers: `startTestServer` runs an Express app on a free port, `adminHeaders` returns the cookies and CSRF header of a signed-in admin, `apiImage` returns a complete image for mocked services, `routeApp` builds the app for a route test: the global middleware, the auth routes and the router under test. Import them with a relative path ending in `.js`.
-- `startTestServer` checks every response to an operation in `openapi.yaml`: the status must be documented, the Content-Type must match and the body must pass the schema. A violation fails the test that caused it, so route test fixtures must be complete.
 - The frontend currently has no automated tests.
 
 ## Adding an admin page

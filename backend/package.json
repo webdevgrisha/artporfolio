@@ -19,10 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "check": "pnpm type-check && pnpm openapi:lint",
-    "openapi": "node --conditions=development --experimental-transform-types --no-warnings openapi/generate.ts",
-    "openapi:lint": "REDOCLY_TELEMETRY=off REDOCLY_SUPPRESS_UPDATE_NOTICE=true redocly lint openapi/openapi.yaml --config openapi/redocly.yaml",
-    "openapi:docs": "REDOCLY_TELEMETRY=off REDOCLY_SUPPRESS_UPDATE_NOTICE=true redocly build-docs openapi/openapi.yaml --output openapi/docs.html"
+    "check": "pnpm type-check"
   },
   "dependencies": {
     "busboy": "1.6.0",
@@ -37,16 +34,11 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@redocly/cli": "2.72.0",
     "@types/busboy": "1.5.5",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.20.5",
-    "ajv": "8.20.0",
-    "ajv-formats": "3.0.1",
-    "typescript": "~5.9.3",
-    "yaml": "2.9.1",
-    "zod-openapi": "6.0.2"
+    "typescript": "~5.9.3"
   }
 }

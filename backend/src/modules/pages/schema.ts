@@ -3,27 +3,21 @@ import { z } from "zod";
 import { imageSchema } from "#shared/images/storage";
 
 /** A page as the API returns it. */
-export const pageSchema = z
-  .object({
-    hero: imageSchema.nullable().meta({
-      description:
-        "Background under the page title, so it has no alt text. `null` until a hero is uploaded.",
-    }),
-  })
-  .meta({ id: "Page" });
+export const pageSchema = z.object({
+  /** A background under the page title, so it has no alt text; null until one is uploaded. */
+  hero: imageSchema.nullable(),
+});
 
 /** Pages of the public site that open with a main photo, the hero. */
-const pagesSchema = z
-  .object({
-    home: pageSchema,
-    gallery: pageSchema,
-    projects: pageSchema,
-    about: pageSchema,
-    contacts: pageSchema,
-  })
-  .meta({ id: "Pages" });
+const pagesSchema = z.object({
+  home: pageSchema,
+  gallery: pageSchema,
+  projects: pageSchema,
+  about: pageSchema,
+  contacts: pageSchema,
+});
 
-const pageIdSchema = pagesSchema.keyof().meta({ id: "PageId" });
+const pageIdSchema = pagesSchema.keyof();
 
 export const pageIds = pageIdSchema.options;
 

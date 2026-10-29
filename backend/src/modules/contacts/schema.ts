@@ -17,16 +17,13 @@ function optionalContact(format: z.ZodType<string, string>) {
 const webLink = optionalContact(z.httpUrl());
 
 const contactFields = {
-  email: optionalContact(z.email()).meta({ description: "Empty, or an email address." }),
-  instagram: webLink.meta({ description: "Empty, or an `http(s)` URL with a domain." }),
-  linkedin: webLink.meta({ description: "Empty, or an `http(s)` URL with a domain." }),
-  youtube: webLink.meta({ description: "Empty, or an `http(s)` URL with a domain." }),
+  email: optionalContact(z.email()),
+  instagram: webLink,
+  linkedin: webLink,
+  youtube: webLink,
 };
 
-export const contactsSchema = z.object(contactFields).meta({
-  id: "Contacts",
-  description: "Contact links. An empty string means the contact is not shown on the site.",
-});
+export const contactsSchema = z.object(contactFields);
 
 export const contactsBodySchema = z.strictObject(contactFields);
 
@@ -43,7 +40,8 @@ export const storedContactsSchema = z.object({
 
 export const contactsResponseSchema = z.object({
   contacts: contactsSchema,
-  photo: photoSchema.nullable().meta({ description: "`null` until a photo is uploaded." }),
+  /** null until a photo is uploaded. */
+  photo: photoSchema.nullable(),
 });
 
 export const savedContactsResponseSchema = z.object({ contacts: contactsSchema });

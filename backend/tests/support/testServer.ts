@@ -1,22 +1,16 @@
 import type { Server } from "node:http";
 
-import express, { type Express } from "express";
-
-import { checkContract } from "./contract.ts";
+import type { Express } from "express";
 
 export interface TestServer {
   baseUrl: string;
   close: () => Promise<void>;
 }
 
-/**
- * Starts the app on a free local port for requests made with fetch. Every response to a
- * documented operation is checked against the OpenAPI document.
- */
+/** Starts the app on a free local port for requests made with fetch. */
 export async function startTestServer(app: Express): Promise<TestServer> {
-  const checkedApp = express().use(checkContract, app);
   const server = await new Promise<Server>((resolve, reject) => {
-    const listening = checkedApp.listen(0, "127.0.0.1");
+    const listening = app.listen(0, "127.0.0.1");
 
     listening.once("listening", () => resolve(listening));
     listening.once("error", reject);
