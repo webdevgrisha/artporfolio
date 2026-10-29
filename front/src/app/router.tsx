@@ -46,7 +46,13 @@ export const router = createBrowserRouter([
                 import("@/entities/user"),
               ]);
 
-              return { Component: AdminLayout, loader: requireSession };
+              return {
+                Component: AdminLayout,
+                loader: requireSession,
+                // The session is checked on every navigation, not only on the first one: when it
+                // has expired, its redirect to the login page wins over the failed page loader.
+                shouldRevalidate: () => true,
+              };
             },
             children: [
               {
