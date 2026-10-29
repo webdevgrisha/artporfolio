@@ -25,6 +25,8 @@ tags:
     description: Contact links and the contact photo.
   - name: Pages
     description: Pages of the public site and their main photos (heroes).
+  - name: About
+    description: Texts, «My photo» and the process photos of the About page.
 paths:
   /api/health:
     get:
@@ -512,6 +514,581 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /api/about:
+    get:
+      operationId: getAbout
+      tags:
+        - About
+      summary: Get the About page
+      description: The texts, «My photo» and the process photos in one response.
+      security: []
+      responses:
+        "200":
+          description: The About page.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    anyOf:
+                      - $ref: "#/components/schemas/AboutText"
+                      - type: "null"
+                    description: "`null` until the texts are first saved."
+                  photo:
+                    anyOf:
+                      - $ref: "#/components/schemas/Photo"
+                      - type: "null"
+                    description: «My photo»; `null` until one is uploaded.
+                  processPhotos:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ProcessPhoto"
+                    description: In the order the site shows them.
+                required:
+                  - text
+                  - photo
+                  - processPhotos
+                additionalProperties: false
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: replaceAboutText
+      tags:
+        - About
+      summary: Replace the texts of the About page
+      description: Every text is required; values are trimmed. The photos are not changed.
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                about:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                  description: Short introduction next to the photo. Plain text; paragraphs are separated by a blank line.
+                biography:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                  description: The «Biography» section. Plain text; paragraphs are separated by a blank line.
+                creation:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                  description: The «Artistic creation» section. Plain text; paragraphs are separated by a blank line.
+              required:
+                - about
+                - biography
+                - creation
+              additionalProperties: false
+      responses:
+        "200":
+          description: The saved texts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    $ref: "#/components/schemas/AboutText"
+                required:
+                  - text
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+  /api/about/photo:
+    put:
+      operationId: uploadAboutPhoto
+      tags:
+        - About
+      summary: Upload or replace «My photo»
+      description: The previous photo is deleted after the new one is saved.
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                alt:
+                  type: string
+                  minLength: 1
+                  maxLength: 250
+                  description: Text alternative for the photo.
+                file:
+                  type: string
+                  format: binary
+                  contentEncoding: binary
+                  maxLength: 15728640
+                  description: "A JPEG or PNG photo of up to 15 MB and 50 megapixels, with a file name of up to 255 characters. WebP and AVIF are rejected: they are already compressed for the web. The EXIF orientation is applied and all metadata, including the location, is removed. The original is kept privately to rebuild the images later."
+              required:
+                - alt
+                - file
+              additionalProperties: false
+            encoding:
+              file:
+                contentType: image/jpeg, image/png
+      responses:
+        "200":
+          description: The photo was replaced.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photo:
+                    $ref: "#/components/schemas/Photo"
+                required:
+                  - photo
+                additionalProperties: false
+        "201":
+          description: The first photo was uploaded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photo:
+                    $ref: "#/components/schemas/Photo"
+                required:
+                  - photo
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+    patch:
+      operationId: updateAboutPhotoAlt
+      tags:
+        - About
+      summary: Change the alt text of «My photo»
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alt:
+                  type: string
+                  minLength: 1
+                  maxLength: 250
+                  description: Text alternative for the photo.
+              required:
+                - alt
+              additionalProperties: false
+      responses:
+        "200":
+          description: The photo with the new alt text.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photo:
+                    $ref: "#/components/schemas/Photo"
+                required:
+                  - photo
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+    delete:
+      operationId: deleteAboutPhoto
+      tags:
+        - About
+      summary: Delete «My photo»
+      description: Deletes the photo and its files. Succeeds when there is no photo.
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "204":
+          description: Done, no body.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/about/process-photos:
+    get:
+      operationId: listProcessPhotos
+      tags:
+        - About
+      summary: List the process photos
+      security: []
+      responses:
+        "200":
+          description: The photos in the order the site shows them.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processPhotos:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ProcessPhoto"
+                    description: In the order the site shows them.
+                required:
+                  - processPhotos
+                additionalProperties: false
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: addProcessPhoto
+      tags:
+        - About
+      summary: Add a process photo
+      description: Adds the photo after the others. The page holds up to 30 process photos.
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                alt:
+                  type: string
+                  minLength: 1
+                  maxLength: 250
+                  description: Text alternative for the photo.
+                file:
+                  type: string
+                  format: binary
+                  contentEncoding: binary
+                  maxLength: 15728640
+                  description: "A JPEG or PNG photo of up to 15 MB and 50 megapixels, with a file name of up to 255 characters. WebP and AVIF are rejected: they are already compressed for the web. The EXIF orientation is applied and all metadata, including the location, is removed. The original is kept privately to rebuild the images later."
+              required:
+                - alt
+                - file
+              additionalProperties: false
+            encoding:
+              file:
+                contentType: image/jpeg, image/png
+      responses:
+        "201":
+          description: The photo was added.
+          headers:
+            Location:
+              required: true
+              description: The URL of the new photo.
+              schema:
+                type: string
+                description: The URL of the new photo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processPhoto:
+                    $ref: "#/components/schemas/ProcessPhoto"
+                required:
+                  - processPhoto
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: The page already has 30 process photos.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+  /api/about/process-photos/order:
+    get:
+      operationId: getProcessPhotoOrder
+      tags:
+        - About
+      summary: Get the order of the process photos
+      security: []
+      responses:
+        "200":
+          description: The ids in the order the site shows the photos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessPhotoOrder"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: replaceProcessPhotoOrder
+      tags:
+        - About
+      summary: Reorder the process photos
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  maxItems: 30
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                    pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                    description: Stays the same when the file is replaced.
+                  description: Every process photo id, once, in the order the site shows them.
+                  uniqueItems: true
+              required:
+                - ids
+              additionalProperties: false
+      responses:
+        "200":
+          description: The saved order.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessPhotoOrder"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: "The ids do not name every process photo: one was added or deleted since the order was read."
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+  /api/about/process-photos/{id}:
+    get:
+      operationId: getProcessPhoto
+      tags:
+        - About
+      summary: Get a process photo
+      security: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            description: Stays the same when the file is replaced.
+          required: true
+          description: Stays the same when the file is replaced.
+      responses:
+        "200":
+          description: The photo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processPhoto:
+                    $ref: "#/components/schemas/ProcessPhoto"
+                required:
+                  - processPhoto
+                additionalProperties: false
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: replaceProcessPhoto
+      tags:
+        - About
+      summary: Replace the file of a process photo
+      description: Replaces the file and the alt text; the id and the position stay. The previous file is deleted after the new one is saved.
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            description: Stays the same when the file is replaced.
+          required: true
+          description: Stays the same when the file is replaced.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                alt:
+                  type: string
+                  minLength: 1
+                  maxLength: 250
+                  description: Text alternative for the photo.
+                file:
+                  type: string
+                  format: binary
+                  contentEncoding: binary
+                  maxLength: 15728640
+                  description: "A JPEG or PNG photo of up to 15 MB and 50 megapixels, with a file name of up to 255 characters. WebP and AVIF are rejected: they are already compressed for the web. The EXIF orientation is applied and all metadata, including the location, is removed. The original is kept privately to rebuild the images later."
+              required:
+                - alt
+                - file
+              additionalProperties: false
+            encoding:
+              file:
+                contentType: image/jpeg, image/png
+      responses:
+        "200":
+          description: The photo with the new file.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processPhoto:
+                    $ref: "#/components/schemas/ProcessPhoto"
+                required:
+                  - processPhoto
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+    patch:
+      operationId: updateProcessPhotoAlt
+      tags:
+        - About
+      summary: Change the alt text of a process photo
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            description: Stays the same when the file is replaced.
+          required: true
+          description: Stays the same when the file is replaced.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alt:
+                  type: string
+                  minLength: 1
+                  maxLength: 250
+                  description: Text alternative for the photo.
+              required:
+                - alt
+              additionalProperties: false
+      responses:
+        "200":
+          description: The photo with the new alt text.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processPhoto:
+                    $ref: "#/components/schemas/ProcessPhoto"
+                required:
+                  - processPhoto
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+    delete:
+      operationId: deleteProcessPhoto
+      tags:
+        - About
+      summary: Delete a process photo
+      description: Deletes the photo and every version of its files.
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            description: Stays the same when the file is replaced.
+          required: true
+          description: Stays the same when the file is replaced.
+      responses:
+        "204":
+          description: Done, no body.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
   schemas:
     PageId:
@@ -771,6 +1348,106 @@ components:
         - version
       additionalProperties: false
       description: An uploaded photo, resized without cropping to the widths 640, 960, 1280 and 1920 (never wider than the original) and encoded as AVIF and WebP.
+    AboutText:
+      type: object
+      properties:
+        about:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Short introduction next to the photo. Plain text; paragraphs are separated by a blank line.
+        biography:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: The «Biography» section. Plain text; paragraphs are separated by a blank line.
+        creation:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: The «Artistic creation» section. Plain text; paragraphs are separated by a blank line.
+      required:
+        - about
+        - biography
+        - creation
+      additionalProperties: false
+    ProcessPhoto:
+      type: object
+      properties:
+        fileName:
+          type: string
+          description: Name of the uploaded file.
+        fileSize:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+          description: Size of the uploaded file, in bytes.
+        width:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+          description: Width of the largest image.
+        height:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+          description: Height of the largest image.
+        sources:
+          type: object
+          properties:
+            avif:
+              type: array
+              items:
+                $ref: "#/components/schemas/ImageSource"
+              description: Ordered by width.
+            webp:
+              type: array
+              items:
+                $ref: "#/components/schemas/ImageSource"
+              description: Ordered by width.
+          required:
+            - avif
+            - webp
+          additionalProperties: false
+        version:
+          type: string
+          description: Changes with every upload.
+        alt:
+          type: string
+          minLength: 1
+          maxLength: 250
+          description: Text alternative for the photo.
+        id:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          description: Stays the same when the file is replaced.
+      required:
+        - fileName
+        - fileSize
+        - width
+        - height
+        - sources
+        - version
+        - alt
+        - id
+      additionalProperties: false
+    ProcessPhotoOrder:
+      type: object
+      properties:
+        ids:
+          maxItems: 30
+          type: array
+          items:
+            type: string
+            format: uuid
+            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            description: Stays the same when the file is replaced.
+          description: Every process photo id, once, in the order the site shows them.
+          uniqueItems: true
+      required:
+        - ids
+      additionalProperties: false
   responses:
     Forbidden:
       description: The CSRF token is missing or invalid, or the origin is not allowed.

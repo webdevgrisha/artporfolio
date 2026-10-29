@@ -1,6 +1,7 @@
 import { stringify } from "yaml";
 import { createDocument } from "zod-openapi";
 
+import { aboutPaths } from "#modules/about/openapi";
 import { authPaths } from "#modules/auth/openapi";
 import { contactsPaths } from "#modules/contacts/openapi";
 import { healthPaths } from "#modules/health/openapi";
@@ -31,8 +32,9 @@ export function createOpenApiDocument() {
       { name: "Auth", description: "The admin session and CSRF protection." },
       { name: "Contacts", description: "Contact links and the contact photo." },
       { name: "Pages", description: "Pages of the public site and their main photos (heroes)." },
+      { name: "About", description: "Texts, «My photo» and the process photos of the About page." },
     ],
-    paths: { ...healthPaths, ...authPaths, ...contactsPaths, ...pagesPaths },
+    paths: { ...healthPaths, ...authPaths, ...contactsPaths, ...pagesPaths, ...aboutPaths },
     components: { securitySchemes },
   });
 }

@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 
+import { aboutRouter } from "#modules/about/routes";
 import { authRouter } from "#modules/auth/routes";
 import { contactsRouter } from "#modules/contacts/routes";
 import { healthRouter } from "#modules/health/routes";
@@ -22,6 +23,7 @@ server.use("/api/health", healthRouter);
 server.use("/api/auth", authRouter);
 server.use("/api/contacts", contactsRouter);
 server.use("/api/pages", pagesRouter);
+server.use("/api/about", aboutRouter);
 
 server.use((_request, _response, next) => {
   next(new NotFoundError());
