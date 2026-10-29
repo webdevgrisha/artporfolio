@@ -5,7 +5,8 @@ import { useController, useFormContext, useFormState, useWatch } from "react-hoo
 import type { ContactPhoto } from "@/entities/contacts";
 import { imageUploadRules } from "@/shared/api/image";
 import { ClearableInput } from "@/shared/ui/clearable-input";
-import { imageToMediaItem, type MediaItem, MediaPicker } from "@/shared/ui/media-picker";
+import { MediaPicker } from "@/shared/ui/media-picker";
+import { imageToMediaItem, type MediaItem } from "@/shared/ui/media-preview";
 
 import { type ContactsFormValues, savedPhoto } from "../model/contactsFormSchema";
 import styles from "./ContactPhotoFields.module.css";

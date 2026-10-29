@@ -2,17 +2,15 @@ import clsx from "clsx";
 import React, { type ChangeEvent } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
+import { getFileRejection } from "@/shared/lib/getFileRejection";
+import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { FieldError, FieldHint } from "@/shared/ui/field";
 import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
+import { MediaImage, type MediaItem, MediaPreviewDialog } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
-import { getFileRejection } from "./getFileRejection";
-import { MediaImage } from "./MediaImage";
 import styles from "./MediaPicker.module.css";
-import { MediaPreviewDialog } from "./MediaPreviewDialog";
-import type { MediaItem } from "./mediaItem";
-import { useFileDrop } from "./useFileDrop";
 
 interface MediaPickerProps {
   /**

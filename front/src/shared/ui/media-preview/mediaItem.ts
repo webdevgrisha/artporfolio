@@ -1,10 +1,10 @@
 import type { Image } from "@/shared/api/image";
 
-/** A file shown in `MediaPicker`: either picked on this device or already on the server. */
+/** A file shown in a picker: either picked on this device or already on the server. */
 export interface MediaItem {
   /** A larger image for the preview dialog; `source` is shown there when it is absent. */
   fullSizeSource?: string;
-  /** Stable key of the item; `onRemove` receives it. */
+  /** Stable key of the item; the picker reports changes of the item with it. */
   id: string;
   name: string;
   /** In bytes. */
@@ -13,7 +13,7 @@ export interface MediaItem {
   source: File | string;
 }
 
-/** An image stored on the server, as an item of `MediaPicker`. */
+/** An image stored on the server, as an item of a picker. */
 export function imageToMediaItem({ fileName, fileSize, sources, version }: Image): MediaItem {
   // Ordered by width: the smallest one for the thumbnail, the largest for the preview dialog.
   const [thumbnail] = sources.webp;

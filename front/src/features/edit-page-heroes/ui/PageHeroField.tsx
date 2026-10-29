@@ -3,7 +3,8 @@ import { type Control, useController } from "react-hook-form";
 
 import type { SitePageId } from "@/entities/site-page";
 import { type Image, imageUploadRules } from "@/shared/api/image";
-import { imageToMediaItem, type MediaItem, MediaPicker } from "@/shared/ui/media-picker";
+import { MediaPicker } from "@/shared/ui/media-picker";
+import { imageToMediaItem, type MediaItem } from "@/shared/ui/media-preview";
 
 import { type PageHeroesFormValues, savedHero } from "../model/pageHeroesFormValues";
 

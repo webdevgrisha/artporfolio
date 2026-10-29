@@ -5,7 +5,8 @@ import { useController, useFormContext, useFormState, useWatch } from "react-hoo
 import type { AboutPhoto } from "@/entities/about";
 import { imageUploadRules } from "@/shared/api/image";
 import { ClearableInput } from "@/shared/ui/clearable-input";
-import { imageToMediaItem, type MediaItem, MediaPicker } from "@/shared/ui/media-picker";
+import { MediaPicker } from "@/shared/ui/media-picker";
+import { imageToMediaItem, type MediaItem } from "@/shared/ui/media-preview";
 
 import { type AboutFormValues, savedPhoto } from "../model/aboutFormSchema";
 import styles from "./AboutPhotoFields.module.css";
