@@ -105,7 +105,7 @@ export function EditAboutForm({ about, className }: EditAboutFormProps) {
         <Tabs value={tab} onValueChange={setTab}>
           <TabList label="Разделы страницы «О сайте»">
             <Tab value="text">Тексты</Tab>
-            <Tab value="photo">Фото</Tab>
+            <Tab value="photo">Моё фото</Tab>
           </TabList>
 
           <TabPanel value="text">
