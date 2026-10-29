@@ -17,10 +17,14 @@ export function useFileDrop({ disabled, onDrop }: UseFileDropParams) {
   const [isDragOver, setIsDragOver] = React.useState(false);
 
   function handleDragOver(event: DragEvent) {
-    if (disabled) return;
-
-    // Allows the drop; without it the browser would open the file instead.
+    // Takes the drag over from the browser, which would otherwise open the file and leave the
+    // page; a disabled target refuses the drop instead.
     event.preventDefault();
+    if (disabled) {
+      event.dataTransfer.dropEffect = "none";
+      return;
+    }
+
     event.dataTransfer.dropEffect = "copy";
     setIsDragOver(true);
   }
