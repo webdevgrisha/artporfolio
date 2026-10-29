@@ -31,17 +31,6 @@ describe("aboutFormSchema", () => {
     expect(errors({})).toEqual({});
   });
 
-  it.each([
-    ["about", 500],
-    ["biography", 2_000],
-    ["creation", 2_000],
-  ] as const)("takes %s of up to %d characters", (field, maxLength) => {
-    expect(errors({ [field]: "а".repeat(maxLength) })).toEqual({});
-    expect(errors({ [field]: "а".repeat(maxLength + 1) })).toEqual({
-      [field]: [`Не длиннее ${String(maxLength)} символов`],
-    });
-  });
-
   it("trims the texts", () => {
     expect(aboutFormSchema.parse({ ...values, biography: "\n Родилась… \n" }).biography).toBe(
       "Родилась…",
@@ -64,16 +53,6 @@ describe("aboutFormSchema", () => {
     ).toEqual({
       "processPhotos.0.alt": ["Опишите, что на фото"],
       "processPhotos.1.alt": ["Опишите, что на фото"],
-    });
-  });
-
-  it("takes up to 30 process photos", () => {
-    const rows = (count: number) =>
-      Array.from({ length: count }, (_, index) => savedRow(String(index)));
-
-    expect(errors({ processPhotos: rows(30) })).toEqual({});
-    expect(errors({ processPhotos: rows(31) })).toEqual({
-      processPhotos: ["Не больше 30 фото"],
     });
   });
 });

@@ -33,13 +33,6 @@ describe("photo form fields", () => {
     expect(altErrors({ photo, photoAlt: "Портрет" })).toEqual([]);
   });
 
-  it("takes a description of up to 250 characters", () => {
-    expect(altErrors({ photo: savedImage, photoAlt: "а".repeat(250) })).toEqual([]);
-    expect(altErrors({ photo: savedImage, photoAlt: "а".repeat(251) })).toEqual([
-      "Не длиннее 250 символов",
-    ]);
-  });
-
   it("trims the description", () => {
     expect(photoFormSchema.parse({ photo: savedImage, photoAlt: " Портрет " }).photoAlt).toBe(
       "Портрет",

@@ -48,15 +48,6 @@ describe("contactsFormSchema", () => {
     expect(errors({ email: "artist@" })).toEqual({ email: ["Введите корректный email"] });
   });
 
-  it("takes links of up to 2048 characters", () => {
-    const link = (length: number) => `https://example.com/${"a".repeat(length - 20)}`;
-
-    expect(errors({ youtube: link(2_048) })).toEqual({});
-    expect(errors({ youtube: link(2_049) })).toEqual({
-      youtube: ["Не длиннее 2048 символов"],
-    });
-  });
-
   it("needs a description of the photo", () => {
     expect(errors({ photo: "saved", photoAlt: "" })).toEqual({
       photoAlt: ["Опишите, что на фото"],

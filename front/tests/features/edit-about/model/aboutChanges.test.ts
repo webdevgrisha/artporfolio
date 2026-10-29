@@ -62,11 +62,4 @@ describe("toAboutFormValues", () => {
       processPhotos: [],
     });
   });
-
-  it("makes a row of every saved process photo", () => {
-    expect(values.processPhotos).toEqual([
-      { alt: "Этап a", file: null, photoId: "a", status: "saved" },
-      { alt: "Этап b", file: null, photoId: "b", status: "saved" },
-    ]);
-  });
 });

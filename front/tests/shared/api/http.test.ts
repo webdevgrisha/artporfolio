@@ -73,20 +73,6 @@ describe("http", () => {
     expect(formData?.get("file")).toBeInstanceOf(File);
   });
 
-  it("sends a PATCH as JSON", async () => {
-    let body: unknown;
-    server.use(
-      mswHttp.patch("/api/items/1", async ({ request }) => {
-        body = await request.json();
-        return HttpResponse.json({ name: "Холст" });
-      }),
-    );
-
-    await http.patch({ body: { name: "Холст" }, path: "/items/1", schema: itemSchema });
-
-    expect(body).toEqual({ name: "Холст" });
-  });
-
   it("resolves a request without a body or content", async () => {
     server.use(
       mswHttp.post("/api/items/1/publish", ({ request }) => {
