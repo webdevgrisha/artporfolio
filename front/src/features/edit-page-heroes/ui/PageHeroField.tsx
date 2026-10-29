@@ -9,14 +9,26 @@ import type { PageHeroesFormValues } from "../model/pageHeroesFormValues";
 interface PageHeroFieldProps {
   control: Control<PageHeroesFormValues>;
   disabled: boolean;
+  /** Why a picked file was refused. */
+  error?: string;
   label: string;
+  /** Receives why a file was refused, or `undefined` once the message is outdated. */
+  onRejectionChange: (message: string | undefined) => void;
   page: SitePageId;
   /** The hero on the server, shown while the field keeps it. */
   serverHero: Image | null;
 }
 
 /** The hero of one page in `EditPageHeroesForm`. */
-export function PageHeroField({ control, disabled, label, page, serverHero }: PageHeroFieldProps) {
+export function PageHeroField({
+  control,
+  disabled,
+  error,
+  label,
+  onRejectionChange,
+  page,
+  serverHero,
+}: PageHeroFieldProps) {
   const { field } = useController({ control, name: page });
 
   return (
@@ -25,7 +37,9 @@ export function PageHeroField({ control, disabled, label, page, serverHero }: Pa
       value={field.value}
       serverImage={serverHero}
       disabled={disabled}
+      error={error}
       onChange={field.onChange}
+      onRejectionChange={onRejectionChange}
     />
   );
 }

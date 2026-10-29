@@ -37,6 +37,7 @@ import { useRowFocus } from "./useRowFocus";
 interface SortableMediaListProps {
   className?: string;
   disabled?: boolean;
+  /** The error of the field, including the rejection reported with `onRejectionChange`. */
   error?: string;
   /** Highlights the list when items were added, removed or moved. An error takes precedence. */
   isModified?: boolean;
@@ -48,6 +49,11 @@ interface SortableMediaListProps {
   onAdd: (files: File[]) => void;
   /** Moves the item at index `from` to index `to`. */
   onMove: (from: number, to: number) => void;
+  /**
+   * Receives why files were refused, or `undefined` once the next change made in the list makes
+   * the message outdated. The owner shows it in `error` until the form is saved or reverted.
+   */
+  onRejectionChange: (message: string | undefined) => void;
   onRemove: (id: string) => void;
   onReplace: (id: string, file: File) => void;
   /** The fields of an item, such as its description, shown under its file. */
@@ -62,7 +68,7 @@ const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 
  * An ordered list of files: adds them with the button or by dropping them onto the list, and
  * moves them by dragging the handle or with the arrow buttons, which also work without a
  * pointer (WCAG 2.5.7). Each item opens in full and can be replaced or removed. It only reports
- * the changes: the owner keeps the files and uploads them on save.
+ * the changes and the refusals: the owner keeps the files and uploads them on save.
  */
 export function SortableMediaList({
   className,
@@ -74,6 +80,7 @@ export function SortableMediaList({
   maxItems,
   onAdd,
   onMove,
+  onRejectionChange,
   onRemove,
   onReplace,
   renderItemFields,
@@ -84,12 +91,8 @@ export function SortableMediaList({
   const replacedItemIdRef = React.useRef<string>(undefined);
   const { addButtonRef, focusAfterUpdate, listRef } = useRowFocus();
   const [viewedItemId, setViewedItemId] = React.useState<string>();
-  // A rejected file never reaches the owner, so the list explains it itself, until the next
-  // change made in the list.
-  const [rejection, setRejection] = React.useState<string>();
   // Announces a move made with the arrow buttons; dnd-kit announces the dragged ones.
   const [moveAnnouncement, setMoveAnnouncement] = React.useState("");
-  const shownError = rejection ?? error;
   const isFull = items.length >= maxItems;
   const { dropTargetProps, isDragOver } = useFileDrop({
     disabled: disabled || isFull,
@@ -127,7 +130,7 @@ export function SortableMediaList({
       accepted.splice(room);
     }
 
-    setRejection(joinMessages(rejections));
+    onRejectionChange(joinMessages(rejections));
     if (accepted.length > 0) onAdd(accepted);
   }
 
@@ -137,7 +140,7 @@ export function SortableMediaList({
     if (!file || !itemId) return;
 
     const fileRejection = getFileRejection(file, rules);
-    setRejection(fileRejection);
+    onRejectionChange(fileRejection);
     if (!fileRejection) onReplace(itemId, file);
   }
 
@@ -149,7 +152,7 @@ export function SortableMediaList({
   function moveItem(from: number, to: number, control?: RowControl) {
     const item = items[from];
 
-    setRejection(undefined);
+    onRejectionChange(undefined);
     if (control) {
       focusAfterUpdate({ control, itemId: item.id });
       setMoveAnnouncement(
@@ -163,7 +166,7 @@ export function SortableMediaList({
     // The focus goes to the next item, or the previous one at the end of the list.
     const nextItem = items[index + 1] ?? items[index - 1];
     focusAfterUpdate(nextItem ? { control: "remove", itemId: nextItem.id } : "add");
-    setRejection(undefined);
+    onRejectionChange(undefined);
     onRemove(items[index].id);
   }
 
@@ -180,7 +183,7 @@ export function SortableMediaList({
         frameClassName={styles.frame}
         label={label}
         hint={`${rules.acceptLabel}, до ${formatFileSize(rules.maxFileSize)}. Фото: ${String(items.length)} из ${String(maxItems)}`}
-        error={shownError}
+        error={error}
         disabled={disabled}
         isModified={isModified}
         isDragOver={isDragOver}

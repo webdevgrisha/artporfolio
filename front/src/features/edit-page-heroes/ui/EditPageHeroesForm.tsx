@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useRevalidator } from "react-router";
 
-import type { SitePages } from "@/entities/site-page";
+import type { SitePageId, SitePages } from "@/entities/site-page";
 import { toSavedImageFieldValue } from "@/shared/lib/imageFieldValue";
 import { EditForm } from "@/shared/ui/edit-form";
 import { showSaveResultToast } from "@/shared/ui/toast";
@@ -24,11 +24,13 @@ interface EditPageHeroesFormProps {
 
 export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps) {
   const {
+    clearErrors,
     control,
-    formState: { isDirty, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
     handleSubmit,
     reset,
     resetField,
+    setError,
   } = useForm<PageHeroesFormValues>({
     defaultValues: toPageHeroesFormValues(pages),
   });
@@ -50,6 +52,16 @@ export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps
     showSaveResultToast(error, { id: saveToastId });
   }
 
+  function handleRejectionChange(page: SitePageId, message: string | undefined) {
+    // A root error, unlike a field error, is not replaced by the validation of the field; the
+    // form drops it on a save or a revert.
+    if (message) {
+      setError(`root.${page}Rejection`, { message });
+    } else {
+      clearErrors(`root.${page}Rejection`);
+    }
+  }
+
   return (
     <EditForm
       className={className}
@@ -64,8 +76,10 @@ export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps
             key={page}
             control={control}
             disabled={isSubmitting}
+            error={errors.root?.[`${page}Rejection`]?.message}
             label={label}
             page={page}
+            onRejectionChange={(message) => handleRejectionChange(page, message)}
             serverHero={pages[page].hero}
           />
         ))}

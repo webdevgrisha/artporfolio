@@ -6,9 +6,13 @@ import { imageToMediaItem, type MediaItem } from "@/shared/ui/media-preview";
 interface ImagePickerProps {
   className?: string;
   disabled: boolean;
+  /** The error of the field, including the rejection reported with `onRejectionChange`. */
+  error?: string;
   label: string;
   /** A picked file, or `null` when the image is removed. */
   onChange: (value: File | null) => void;
+  /** Receives why a file was refused, or `undefined` once the message is outdated. */
+  onRejectionChange: (message: string | undefined) => void;
   /** The image on the server, shown while the value keeps it. */
   serverImage: Image | null;
   value: ImageFieldValue;
@@ -29,8 +33,10 @@ function toMediaItem(value: ImageFieldValue, serverImage: Image | null): MediaIt
 export function ImagePicker({
   className,
   disabled,
+  error,
   label,
   onChange,
+  onRejectionChange,
   serverImage,
   value,
 }: ImagePickerProps) {
@@ -41,8 +47,10 @@ export function ImagePicker({
       rules={imageUploadRules}
       item={toMediaItem(value, serverImage)}
       disabled={disabled}
+      error={error}
       isModified={value !== toImageFieldValue(serverImage)}
       onPick={onChange}
+      onRejectionChange={onRejectionChange}
       onRemove={() => onChange(null)}
     />
   );

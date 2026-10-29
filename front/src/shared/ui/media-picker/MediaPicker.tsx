@@ -19,6 +19,7 @@ import styles from "./MediaPicker.module.css";
 interface MediaPickerProps {
   className?: string;
   disabled?: boolean;
+  /** The error of the field, including the rejection reported with `onRejectionChange`. */
   error?: string;
   /** Highlights a file that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
@@ -27,14 +28,19 @@ interface MediaPickerProps {
   label: string;
   /** Receives the picked file once it passes the type and size checks. */
   onPick: (file: File) => void;
+  /**
+   * Receives why a file was refused, or `undefined` once the next pick or removal makes the
+   * message outdated. The owner shows it in `error` until the form is saved or reverted.
+   */
+  onRejectionChange: (message: string | undefined) => void;
   onRemove: () => void;
   rules: FileRules;
 }
 
 /**
  * Picks one file with the attachment button or by dropping it onto the frame, and shows it as a
- * thumbnail that opens it in full. It only reports the choice: the owner keeps the file and
- * uploads it on save.
+ * thumbnail that opens it in full. It only reports the choice and the refusals: the owner keeps
+ * the file and uploads it on save.
  */
 export function MediaPicker({
   className,
@@ -44,17 +50,13 @@ export function MediaPicker({
   item,
   label,
   onPick,
+  onRejectionChange,
   onRemove,
   rules,
 }: MediaPickerProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const selectButtonRef = React.useRef<HTMLButtonElement>(null);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
-  // A rejected file never reaches the owner, so the picker explains it itself. The message belongs
-  // to the file it was given with: once the owner changes it (a pick, a removal, a revert), it is
-  // outdated.
-  const [rejection, setRejection] = React.useState<{ itemId?: string; message: string }>();
-  const shownError = (rejection?.itemId === item?.id ? rejection?.message : undefined) ?? error;
   const selectLabel = item ? "Заменить файл" : "Выбрать файл";
   const { dropTargetProps, isDragOver } = useFileDrop({ disabled, onDrop: pickFile });
 
@@ -65,11 +67,12 @@ export function MediaPicker({
     const fileRejection =
       fileList.length > 1 ? "Можно выбрать только один файл" : getFileRejection(file, rules);
 
-    setRejection(fileRejection ? { itemId: item?.id, message: fileRejection } : undefined);
+    onRejectionChange(fileRejection);
     if (!fileRejection) onPick(file);
   }
 
   function removeItem() {
+    onRejectionChange(undefined);
     onRemove();
     // The remove button disappears together with the file.
     selectButtonRef.current?.focus();
@@ -82,7 +85,7 @@ export function MediaPicker({
         frameClassName={styles.frame}
         label={label}
         hint={`${rules.acceptLabel}, до ${formatFileSize(rules.maxFileSize)}`}
-        error={shownError}
+        error={error}
         disabled={disabled}
         isModified={isModified}
         isDragOver={isDragOver}

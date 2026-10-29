@@ -43,7 +43,8 @@ function toMediaItem(
 
 /** The process photos tab of `EditAboutForm`; it reads the form from its context. */
 export function ProcessPhotoFields({ className, isSaving, serverPhotos }: ProcessPhotoFieldsProps) {
-  const { control, register, setFocus, setValue } = useFormContext<AboutFormValues>();
+  const { clearErrors, control, register, setError, setFocus, setValue } =
+    useFormContext<AboutFormValues>();
   const { errors, isSubmitted } = useFormState({ control });
   // `fields` gives every row a stable key; the values come from `rows`, which also follow typing.
   const { append, fields, move, remove } = useFieldArray({ control, name: "processPhotos" });
@@ -69,6 +70,16 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
     return fields.findIndex((field) => field.id === key);
   }
 
+  function handleRejectionChange(message: string | undefined) {
+    // A root error, unlike an error of the list, is not replaced when an added row revalidates
+    // the list; the form drops it on a save or a revert.
+    if (message) {
+      setError("root.processPhotosRejection", { message });
+    } else {
+      clearErrors("root.processPhotosRejection");
+    }
+  }
+
   function clearAlt(index: number) {
     // After the first submit, fields are revalidated on change; clearing is a change too.
     setValue(`processPhotos.${index}.alt`, "", { shouldDirty: true, shouldValidate: isSubmitted });
@@ -83,11 +94,16 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
         maxItems={maxProcessPhotos}
         items={items}
         disabled={isSaving}
-        error={errors.processPhotos?.message ?? errors.processPhotos?.root?.message}
+        error={
+          errors.root?.processPhotosRejection?.message ??
+          errors.processPhotos?.message ??
+          errors.processPhotos?.root?.message
+        }
         isModified={rowsOrder !== savedOrder}
         // The focus goes to the description of the first added photo.
         onAdd={(files) => append(files.map((file) => ({ alt: "", file, status: "new" })))}
         onMove={move}
+        onRejectionChange={handleRejectionChange}
         onRemove={(key) => remove(getRowIndex(key))}
         onReplace={(key, file) =>
           setValue(`processPhotos.${getRowIndex(key)}.file`, file, { shouldDirty: true })

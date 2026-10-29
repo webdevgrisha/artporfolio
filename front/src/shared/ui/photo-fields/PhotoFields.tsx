@@ -21,12 +21,23 @@ interface PhotoFieldsProps {
  * the form spreads `photoFieldsShape` into its schema.
  */
 export function PhotoFields({ className, isSaving, label, serverPhoto }: PhotoFieldsProps) {
-  const { control, register, setFocus, setValue } = useFormContext<PhotoFormValues>();
+  const { clearErrors, control, register, setError, setFocus, setValue } =
+    useFormContext<PhotoFormValues>();
   const { dirtyFields, errors, isSubmitted } = useFormState({ control });
   // A controller registers the field: react-hook-form resets only registered fields, so without
   // it a save would not update the photo's saved value and a revert would bring back the old one.
   const { field: photoField } = useController({ control, name: "photo" });
   const photoAlt = useWatch({ control, name: "photoAlt" });
+
+  function handleRejectionChange(message: string | undefined) {
+    // A root error, unlike a field error, is not replaced by the validation of the field; the
+    // form drops it on a save or a revert.
+    if (message) {
+      setError("root.photoRejection", { message });
+    } else {
+      clearErrors("root.photoRejection");
+    }
+  }
 
   function clearPhotoAlt() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -41,7 +52,9 @@ export function PhotoFields({ className, isSaving, label, serverPhoto }: PhotoFi
         value={photoField.value}
         serverImage={serverPhoto}
         disabled={isSaving}
+        error={errors.root?.photoRejection?.message}
         onChange={photoField.onChange}
+        onRejectionChange={handleRejectionChange}
       />
       {/* Without a photo there is nothing to describe; the text comes back with the photo. */}
       {photoField.value === null ? null : (
