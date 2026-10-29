@@ -35,6 +35,13 @@ describe("contacts service", () => {
     });
   });
 
+  it("reads saved links that today's rules would reject", async () => {
+    const older = { ...contacts, linkedin: "linkedin.com/in/artist", youtube: "a".repeat(3_000) };
+    document.get.mockResolvedValue({ data: () => older });
+
+    await expect(getContacts()).resolves.toEqual(older);
+  });
+
   it("returns saved contacts without fields the form does not own", async () => {
     document.get.mockResolvedValue({
       data: () => ({ ...contacts, photo: { name: "photo.png" } }),

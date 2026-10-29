@@ -1,5 +1,5 @@
 import { contactsDocument } from "#modules/contacts/document";
-import { type Contacts, contactsSchema } from "#modules/contacts/schema";
+import { type Contacts, storedContactsSchema } from "#modules/contacts/schema";
 
 const emptyContacts: Contacts = {
   email: "",
@@ -12,7 +12,7 @@ export async function getContacts(): Promise<Contacts> {
   const snapshot = await contactsDocument().get();
 
   // The document may not exist yet, or hold only the photo when the links were never saved.
-  return contactsSchema.parse({ ...emptyContacts, ...snapshot.data() });
+  return storedContactsSchema.parse({ ...emptyContacts, ...snapshot.data() });
 }
 
 export async function saveContacts(contacts: Contacts): Promise<void> {

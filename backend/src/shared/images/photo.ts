@@ -34,9 +34,12 @@ export const photoAltBodySchema = z
   })
   .strict();
 
-/** A photo as stored in Firestore: the uploaded image and its alt text. */
+/**
+ * A photo as stored in Firestore: the uploaded image and its alt text. The alt text rules apply
+ * when it is saved, so tightening them later never makes a saved photo unreadable.
+ */
 export const storedPhotoSchema = storedImageSchema.extend({
-  alt: altSchema,
+  alt: z.string(),
 });
 
 /** A photo as the API returns it, with download URLs in place of the stored paths. */

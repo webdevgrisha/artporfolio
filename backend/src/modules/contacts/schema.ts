@@ -30,6 +30,17 @@ export const contactsSchema = z.object(contactFields).meta({
 
 export const contactsBodySchema = z.strictObject(contactFields);
 
+/**
+ * The links as stored in Firestore. Only their shape is checked: the rules above apply when the
+ * links are saved, so tightening a rule later never makes saved links unreadable.
+ */
+export const storedContactsSchema = z.object({
+  email: z.string(),
+  instagram: z.string(),
+  linkedin: z.string(),
+  youtube: z.string(),
+});
+
 export const contactsResponseSchema = z.object({
   contacts: contactsSchema,
   photo: photoSchema.nullable().meta({ description: "`null` until a photo is uploaded." }),

@@ -24,6 +24,16 @@ export const aboutTextSchema = z.object(aboutTextFields).meta({ id: "AboutText" 
 
 export const aboutTextBodySchema = z.strictObject(aboutTextFields);
 
+/**
+ * The texts as stored in Firestore. Only their shape is checked: the limits above apply when the
+ * texts are saved, so tightening a limit later never makes saved texts unreadable.
+ */
+export const storedAboutTextSchema = z.object({
+  about: z.string(),
+  biography: z.string(),
+  creation: z.string(),
+});
+
 export const aboutResponseSchema = z.object({
   text: aboutTextSchema.nullable().meta({ description: "`null` until the texts are first saved." }),
   photo: photoSchema.nullable().meta({ description: "«My photo»; `null` until one is uploaded." }),

@@ -223,6 +223,13 @@ describe("photo", () => {
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
+  it("reads a saved alt text longer than today's limit", async () => {
+    const longer = { ...storedPhoto, alt: "a".repeat(500) };
+    storedAs(longer);
+
+    await expect(getPhoto(slot)).resolves.toMatchObject({ alt: longer.alt });
+  });
+
   it("updates only the alt text", async () => {
     storedAs(storedPhoto);
 

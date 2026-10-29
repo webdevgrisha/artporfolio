@@ -63,6 +63,13 @@ describe("about service", () => {
     expect(document.get).toHaveBeenCalledTimes(1);
   });
 
+  it("reads saved texts longer than today's limits", async () => {
+    const longer = { ...text, about: "a".repeat(1_000) };
+    storedAs({ text: longer });
+
+    await expect(getAbout()).resolves.toMatchObject({ text: longer });
+  });
+
   it("saves the texts without touching the photos", async () => {
     await saveAboutText(text);
 
