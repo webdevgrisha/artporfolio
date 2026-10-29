@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { imageFieldValueSchema } from "@/shared/lib/imageFieldValue";
+
 // Mirror the server rules in backend/src/modules/contacts/schema.ts and photo/schema.ts.
 const maxLinkLength = 2_048;
 const maxAltLength = 250;
@@ -28,13 +30,9 @@ const photoAltSchema = z
   .min(1, "Опишите, что на фото")
   .max(maxAltLength, `Не длиннее ${String(maxAltLength)} символов`);
 
-/** The photo field value that keeps the photo already on the server. */
-export const savedPhoto = "saved";
-
 export const contactsFormSchema = contactLinksSchema
   .extend({
-    /** The saved photo, a newly picked file, or `null` for no photo. */
-    photo: z.union([z.literal(savedPhoto), z.instanceof(File), z.null()]),
+    photo: imageFieldValueSchema,
     photoAlt: z.string().trim(),
   })
   .superRefine(({ photo, photoAlt }, context) => {

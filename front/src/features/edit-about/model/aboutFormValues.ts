@@ -1,12 +1,13 @@
 import type { About, AboutPhoto, ProcessPhoto } from "@/entities/about";
+import { savedImage, toImageFieldValue } from "@/shared/lib/imageFieldValue";
 
-import { type AboutFormValues, type ProcessPhotoRow, savedPhoto } from "./aboutFormSchema";
+import type { AboutFormValues, ProcessPhotoRow } from "./aboutFormSchema";
 
 type PhotoFormValues = Pick<AboutFormValues, "photo" | "photoAlt">;
 
 function toPhotoFormValues(photo: AboutPhoto | null): PhotoFormValues {
   return {
-    photo: photo ? savedPhoto : null,
+    photo: toImageFieldValue(photo),
     photoAlt: photo?.alt ?? "",
   };
 }
@@ -37,5 +38,5 @@ export function toAboutFormValues({ photo, processPhotos, text }: About): AboutF
 /** The photo fields once their change is saved: a picked file becomes the saved photo. */
 export function toSavedPhotoValues({ photo, photoAlt }: AboutFormValues): PhotoFormValues {
   // A deleted photo takes its description with it.
-  return photo === null ? { photo: null, photoAlt: "" } : { photo: savedPhoto, photoAlt };
+  return photo === null ? { photo: null, photoAlt: "" } : { photo: savedImage, photoAlt };
 }

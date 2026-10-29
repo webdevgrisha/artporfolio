@@ -1,14 +1,11 @@
 import clsx from "clsx";
-import React from "react";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import type { ContactPhoto } from "@/entities/contacts";
-import { imageUploadRules } from "@/shared/api/image";
 import { ClearableInput } from "@/shared/ui/clearable-input";
-import { MediaPicker } from "@/shared/ui/media-picker";
-import { imageToMediaItem, type MediaItem } from "@/shared/ui/media-preview";
+import { ImagePicker } from "@/shared/ui/image-picker";
 
-import { type ContactsFormValues, savedPhoto } from "../model/contactsFormSchema";
+import type { ContactsFormValues } from "../model/contactsFormSchema";
 import styles from "./ContactPhotoFields.module.css";
 
 interface ContactPhotoFieldsProps {
@@ -34,24 +31,14 @@ export function ContactPhotoFields({ className, isSaving, serverPhoto }: Contact
     setFocus("photoAlt");
   }
 
-  const photoItems = React.useMemo((): MediaItem[] => {
-    if (photo instanceof File) {
-      return [{ id: "picked", name: photo.name, size: photo.size, source: photo }];
-    }
-
-    return photo === savedPhoto && serverPhoto ? [imageToMediaItem(serverPhoto)] : [];
-  }, [photo, serverPhoto]);
-
   return (
     <div className={clsx(styles.root, className)}>
-      <MediaPicker
+      <ImagePicker
         label="Фото"
-        rules={imageUploadRules}
-        items={photoItems}
+        value={photo}
+        serverImage={serverPhoto}
         disabled={isSaving}
-        isModified={photo !== (serverPhoto ? savedPhoto : null)}
-        onAdd={([file]) => photoField.onChange(file ?? null)}
-        onRemove={() => photoField.onChange(null)}
+        onChange={photoField.onChange}
       />
       {/* Without a photo there is nothing to describe; the text comes back with the photo. */}
       {photo === null ? null : (

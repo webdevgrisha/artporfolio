@@ -3,17 +3,14 @@ import { useForm } from "react-hook-form";
 import { useRevalidator } from "react-router";
 
 import type { SitePages } from "@/entities/site-page";
+import { toSavedImageFieldValue } from "@/shared/lib/imageFieldValue";
 import { FormActions } from "@/shared/ui/form-actions";
 import { showErrorToast, showSuccessToast } from "@/shared/ui/toast";
 import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
 
 import { heroFields } from "../model/heroFields";
 import { getPageHeroesChanges } from "../model/pageHeroesChanges";
-import {
-  type PageHeroesFormValues,
-  toPageHeroesFormValues,
-  toSavedHeroValue,
-} from "../model/pageHeroesFormValues";
+import { type PageHeroesFormValues, toPageHeroesFormValues } from "../model/pageHeroesFormValues";
 import { savePageHeroes } from "../model/savePageHeroes";
 import styles from "./EditPageHeroesForm.module.css";
 import { PageHeroField } from "./PageHeroField";
@@ -49,7 +46,7 @@ export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps
 
     // What was saved is no longer modified; a page that failed keeps its unsaved change.
     for (const page of savedPages) {
-      resetField(page, { defaultValue: toSavedHeroValue(values[page]) });
+      resetField(page, { defaultValue: toSavedImageFieldValue(values[page]) });
     }
 
     if (error) {

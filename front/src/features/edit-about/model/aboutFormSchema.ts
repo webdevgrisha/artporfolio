@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { type AboutText, maxProcessPhotos } from "@/entities/about";
+import { imageFieldValueSchema } from "@/shared/lib/imageFieldValue";
 
 // Mirror the server rules in backend/src/modules/about/schema.ts and shared/images/photo.ts.
 export const aboutTextMaxLengths: Readonly<Record<keyof AboutText, number>> = {
@@ -23,9 +24,6 @@ const photoAltSchema = z
   .trim()
   .min(1, "Опишите, что на фото")
   .max(maxAltLength, `Не длиннее ${String(maxAltLength)} символов`);
-
-/** The photo field value that keeps the photo already on the server. */
-export const savedPhoto = "saved";
 
 const processPhotoRowSchema = z.discriminatedUnion("status", [
   z.object({
@@ -50,8 +48,7 @@ export const aboutFormSchema = z
     about: aboutText(aboutTextMaxLengths.about),
     biography: aboutText(aboutTextMaxLengths.biography),
     creation: aboutText(aboutTextMaxLengths.creation),
-    /** The saved photo, a newly picked file, or `null` for no photo. */
-    photo: z.union([z.literal(savedPhoto), z.instanceof(File), z.null()]),
+    photo: imageFieldValueSchema,
     photoAlt: z.string().trim(),
     /** In the order the site shows them. */
     processPhotos: z
