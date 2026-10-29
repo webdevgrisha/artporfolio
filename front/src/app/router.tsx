@@ -90,17 +90,9 @@ export const router = createBrowserRouter([
               {
                 path: routes.sitePages,
                 lazy: async () => {
-                  const { SitePagesPage, sitePagesAction, sitePagesLoader } = await import(
-                    "@/pages/site-pages"
-                  );
+                  const { SitePagesPage, sitePagesLoader } = await import("@/pages/site-pages");
 
-                  return {
-                    action: sitePagesAction,
-                    Component: SitePagesPage,
-                    loader: sitePagesLoader,
-                    // A save returns the stored heroes, so the pages are not loaded again.
-                    shouldRevalidate: () => false,
-                  };
+                  return { Component: SitePagesPage, loader: sitePagesLoader };
                 },
               },
             ],

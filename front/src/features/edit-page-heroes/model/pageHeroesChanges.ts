@@ -1,51 +1,30 @@
-import { z } from "zod";
+import type { SitePageId, SitePages } from "@/entities/site-page";
 
-import { type SitePageId, sitePageIds } from "@/entities/site-page";
+import { heroFields } from "./heroFields";
+import type { PageHeroesFormValues } from "./pageHeroesFormValues";
 
-const heroChangeSchema = z.discriminatedUnion("type", [
-  z.object({ file: z.instanceof(File), type: z.literal("upload") }),
-  z.object({ type: z.literal("delete") }),
-]);
-
-const pageHeroesChangesSchema = z.partialRecord(z.enum(sitePageIds), heroChangeSchema);
-
-export type HeroChange = z.infer<typeof heroChangeSchema>;
+export type HeroChange = { file: File; type: "upload" } | { type: "delete" };
 
 /** What a save sends to the server: only the pages whose hero was changed. */
-export type PageHeroesChanges = z.infer<typeof pageHeroesChangesSchema>;
+export type PageHeroesChanges = Partial<Record<SitePageId, HeroChange>>;
 
-// The changes travel from the form to the route action as FormData, the only body that can
-// carry a file. Each changed page has a field for the type of the change and one for the file.
-function heroFieldNames(page: SitePageId) {
-  return { file: `${page}File`, type: `${page}Type` };
-}
+/** Picks the pages whose submitted hero differs from the one on the server. */
+export function getPageHeroesChanges(
+  values: PageHeroesFormValues,
+  pages: SitePages,
+): PageHeroesChanges {
+  const changes: PageHeroesChanges = {};
 
-export function pageHeroesChangesToFormData(changes: PageHeroesChanges): FormData {
-  const formData = new FormData();
+  // Compared by value: react-hook-form does not track changes inside a File.
+  for (const { page } of heroFields) {
+    const hero = values[page];
 
-  for (const page of sitePageIds) {
-    const change = changes[page];
-    if (!change) continue;
-
-    const names = heroFieldNames(page);
-    formData.set(names.type, change.type);
-    if (change.type === "upload") formData.set(names.file, change.file);
+    if (hero instanceof File) {
+      changes[page] = { file: hero, type: "upload" };
+    } else if (hero === null && pages[page].hero) {
+      changes[page] = { type: "delete" };
+    }
   }
 
-  return formData;
-}
-
-/** Reads and validates the changes sent by `pageHeroesChangesToFormData`. */
-export function parsePageHeroesChanges(formData: FormData) {
-  const changedPages = sitePageIds.filter((page) => formData.has(heroFieldNames(page).type));
-
-  // A missing file is `null` and fails the schema.
-  return pageHeroesChangesSchema.safeParse(
-    Object.fromEntries(
-      changedPages.map((page) => {
-        const names = heroFieldNames(page);
-        return [page, { file: formData.get(names.file), type: formData.get(names.type) }];
-      }),
-    ),
-  );
+  return changes;
 }

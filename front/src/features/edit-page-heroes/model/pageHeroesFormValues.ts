@@ -10,7 +10,7 @@ type HeroValue = typeof savedHero | File | null;
 /** One field per page, named after it. */
 export type PageHeroesFormValues = Record<SitePageId, HeroValue>;
 
-export function toHeroValue(hero: Image | null): HeroValue {
+function toHeroValue(hero: Image | null): HeroValue {
   return hero ? savedHero : null;
 }
 
@@ -22,4 +22,9 @@ export function toPageHeroesFormValues(pages: SitePages): PageHeroesFormValues {
     home: toHeroValue(pages.home.hero),
     projects: toHeroValue(pages.projects.hero),
   };
+}
+
+/** The value of a field once its change is saved: an uploaded file becomes the saved hero. */
+export function toSavedHeroValue(value: HeroValue): HeroValue {
+  return value instanceof File ? savedHero : value;
 }
