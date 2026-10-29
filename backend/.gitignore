@@ -5,3 +5,6 @@ coverage
 .env.*
 !.env.example
 .DS_Store
+
+# Built by `pnpm openapi:docs` from openapi/openapi.yaml.
+openapi/docs.html

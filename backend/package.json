@@ -21,7 +21,8 @@
     "coverage": "vitest run --coverage",
     "check": "pnpm type-check && pnpm openapi:lint",
     "openapi": "node --conditions=development --experimental-transform-types --no-warnings openapi/generate.ts",
-    "openapi:lint": "REDOCLY_TELEMETRY=off REDOCLY_SUPPRESS_UPDATE_NOTICE=true redocly lint openapi/openapi.yaml --config openapi/redocly.yaml"
+    "openapi:lint": "REDOCLY_TELEMETRY=off REDOCLY_SUPPRESS_UPDATE_NOTICE=true redocly lint openapi/openapi.yaml --config openapi/redocly.yaml",
+    "openapi:docs": "REDOCLY_TELEMETRY=off REDOCLY_SUPPRESS_UPDATE_NOTICE=true redocly build-docs openapi/openapi.yaml --output openapi/docs.html"
   },
   "dependencies": {
     "busboy": "1.6.0",
