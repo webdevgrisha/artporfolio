@@ -1,4 +1,5 @@
 import { HttpError } from "./httpError";
+import { NetworkError } from "./networkError";
 
 export const networkErrorMessage =
   "Нет соединения с сервером. Проверьте интернет и попробуйте ещё раз";
@@ -20,9 +21,7 @@ export function getRequestErrorMessage(error: unknown, fallbackMessage: string):
     return unavailableErrorMessage;
   }
 
-  // fetch rejects with a TypeError when the request never reaches the server; so does a failed
-  // lazy import of a page chunk.
-  if (error instanceof TypeError) {
+  if (error instanceof NetworkError) {
     return networkErrorMessage;
   }
 

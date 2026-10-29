@@ -1,6 +1,7 @@
 import type { ZodType, z } from "zod";
 
 import { HttpError } from "./httpError";
+import { NetworkError } from "./networkError";
 
 type HttpOptions = Omit<RequestInit, "body" | "credentials" | "method">;
 
@@ -122,12 +123,22 @@ class Http {
       requestHeaders.set("Content-Type", "application/json");
     }
 
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...options,
-      body: requestBody,
-      credentials: "include",
-      headers: requestHeaders,
-    });
+    let response: Response;
+
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        ...options,
+        body: requestBody,
+        credentials: "include",
+        headers: requestHeaders,
+      });
+    } catch (error) {
+      // A cancelled request is not a failure: its caller no longer needs the response.
+      if (options.signal?.aborted) throw error;
+
+      // fetch rejects with a TypeError, which a bug in the code throws as well.
+      throw new NetworkError(error);
+    }
 
     if (!response.ok) {
       throw new HttpError(response.status);
