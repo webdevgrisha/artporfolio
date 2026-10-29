@@ -80,7 +80,7 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 
 ### Forms and feedback
 
-- Forms use react-hook-form with a zod schema that mirrors the server rules. Text controls such as `Input` are built on `Field` (`shared/ui`), which owns the label, the `hint`, the error and the frame; modified fields are highlighted with `isModified`.
+- Forms use react-hook-form with a zod schema that mirrors the server rules. Text controls (`Input`, `Textarea`) are built on `Field` (`shared/ui`), which owns the label, the `hint`, the error and the frame; modified fields are highlighted with `isModified`.
 - A form with several sections uses `Tabs` (`shared/ui`) inside one `<form>` with one save button. Hidden panels stay mounted, so their fields keep their values. The form sets `shouldFocusError: false` and, on an invalid submit, opens the tab of the first invalid field before focusing it.
 - Files are picked with `MediaPicker` (`shared/ui`). It checks the type and size and shows thumbnails that open in `PreviewDialog`, but it uploads nothing: the form keeps the picked `File` and sends it on save, so revert and the unsaved-changes guard cover it too. The upload rules (`imageUploadRules`) and the image the API returns (`imageSchema`) live in `shared/api/image`; `imageToMediaItem` shows a stored image in the picker.
 - A save that calls several endpoints sends only the changed parts and saves them independently (`saveContacts`). The form resets only the fields of the saved parts, so a part that failed keeps its changes. Several photos are uploaded one at a time (`savePageHeroes`), because the server encodes each one.
