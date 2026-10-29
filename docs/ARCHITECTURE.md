@@ -105,6 +105,9 @@ backend/src/
 ├── firebase.ts         Cloud Function entry point
 ├── server.ts           Express app: global middleware and top-level module routers
 ├── modules/            one folder per domain
+│   ├── about/          the About page texts; document.ts is the Firestore document shared below
+│   │   ├── photo/      «My photo», mounted by the about router
+│   │   └── process-photos/  the ordered process photos, mounted by the about router
 │   ├── auth/           routes, controller, service, schema, middleware (requireAuth)
 │   ├── contacts/       contact links; document.ts is the Firestore document shared with photo/
 │   │   └── photo/      the contact photo, mounted by the contacts router
@@ -114,7 +117,7 @@ backend/src/
     ├── config/         env, cookies, cors, csrf
     ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
     ├── http/           HttpError, cookie helpers, Express request typing
-    ├── images/         image processing with sharp, image files in Cloud Storage
+    ├── images/         image processing with sharp, image files in Cloud Storage, photo slots
     ├── middleware/     csrf, content-type, validation, upload, error
     └── openapi/        shared parts of the API description: error responses, security, uploads
 
@@ -128,6 +131,8 @@ backend/openapi/
 - A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`, `openapi.ts`. The request flow is route → middleware → controller → service.
 - `shared/` never imports `modules/`; Biome enforces it. A module may use another module, as `contacts` uses `requireAuth` from `auth`.
 - `server.ts` mounts only top-level modules. A submodule is mounted by its parent's router, as `contacts` mounts `photo`.
+- A single photo with alt text (the contact photo, «My photo») is a `PhotoSlot` from `shared/images/photo.ts`: a Firestore document, a field and a Storage folder. The module's service only names its slot; saving, replacing, the alt text and deleting are shared.
+- Photos are stored before Firestore is written, and replaced files are deleted last, so the site never links to missing files. Every change that reads and writes a document runs in a transaction.
 - Global Express typing lives with its owner: `modules/auth/express.d.ts` declares `Locals.auth`, `shared/http/express.d.ts` declares `Request.file` and `rawBody`.
 - Code imports through subpath imports (`#modules/auth/service`, `#shared/http/errors`). There are no barrel files.
 - Express 5 forwards rejected promises to the error middleware, so handlers do not wrap code in `try/catch` only to call `next(error)`.

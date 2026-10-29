@@ -105,6 +105,9 @@ backend/src/
 ├── firebase.ts         точка входа Cloud Function
 ├── server.ts           приложение Express: общие middleware и роутеры модулей верхнего уровня
 ├── modules/            по папке на сущность
+│   ├── about/          тексты страницы «О себе»; document.ts — документ Firestore, общий с вложенными
+│   │   ├── photo/      «Моё фото», подключается роутером about
+│   │   └── process-photos/  фото процесса в заданном порядке, подключается роутером about
 │   ├── auth/           routes, controller, service, schema, middleware (requireAuth)
 │   ├── contacts/       ссылки для связи; document.ts — документ Firestore, общий с photo/
 │   │   └── photo/      фото для контактов, подключается роутером contacts
@@ -114,7 +117,7 @@ backend/src/
     ├── config/         env, cookies, cors, csrf
     ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
     ├── http/           HttpError, работа с cookies, типы запроса Express
-    ├── images/         обработка изображений через sharp, файлы изображений в Cloud Storage
+    ├── images/         обработка изображений через sharp, файлы изображений в Cloud Storage, места для фото
     ├── middleware/     csrf, content-type, validation, upload, error
     └── openapi/        общие части описания API: ответы с ошибками, безопасность, загрузки
 
@@ -128,6 +131,8 @@ backend/openapi/
 - В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`, `openapi.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.
 - `shared/` никогда не импортирует `modules/`, это проверяет Biome. Модуль может использовать другой модуль, как `contacts` использует `requireAuth` из `auth`.
 - `server.ts` подключает только модули верхнего уровня. Вложенный модуль подключает роутер родителя, как `contacts` подключает `photo`.
+- Одиночное фото с alt (фото контактов, «Моё фото») — это `PhotoSlot` из `shared/images/photo.ts`: документ Firestore, поле и папка в Storage. Сервис модуля только называет своё место; сохранение, замена, alt и удаление общие.
+- Файлы фото сохраняются раньше записи в Firestore, а заменённые файлы удаляются последними, поэтому сайт никогда не ссылается на отсутствующие файлы. Каждое изменение, которое читает и пишет документ, выполняется в транзакции.
 - Глобальные типы Express лежат у своего владельца: `modules/auth/express.d.ts` объявляет `Locals.auth`, `shared/http/express.d.ts` — `Request.file` и `rawBody`.
 - Код импортируется через subpath imports (`#modules/auth/service`, `#shared/http/errors`). Файлов-реэкспортов нет.
 - Express 5 сам передаёт отклонённые промисы в middleware ошибок, поэтому обработчики не оборачивают код в `try/catch` только ради `next(error)`.
