@@ -1,12 +1,13 @@
-import { useLoaderData } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { sitePagesQuery } from "@/entities/site-page";
 import { EditPageHeroesForm } from "@/features/edit-page-heroes";
 
-import type { sitePagesLoader } from "../model/sitePagesRoute";
 import styles from "./SitePagesPage.module.css";
 
 export function SitePagesPage() {
-  const pages = useLoaderData<typeof sitePagesLoader>();
+  // The route loader has fetched the data, so this never suspends.
+  const { data: pages } = useSuspenseQuery(sitePagesQuery);
 
   return (
     <div className={styles.root}>

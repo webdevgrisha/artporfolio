@@ -1,7 +1,8 @@
+export { aboutQuery } from "./api/aboutQuery";
 export { addProcessPhoto } from "./api/addProcessPhoto";
 export { deleteAboutPhoto } from "./api/deleteAboutPhoto";
 export { deleteProcessPhoto } from "./api/deleteProcessPhoto";
-export { type About, getAbout } from "./api/getAbout";
+export type { About } from "./api/getAbout";
 export { reorderProcessPhotos } from "./api/reorderProcessPhotos";
 export { replaceProcessPhoto } from "./api/replaceProcessPhoto";
 export { updateAboutPhotoAlt } from "./api/updateAboutPhotoAlt";

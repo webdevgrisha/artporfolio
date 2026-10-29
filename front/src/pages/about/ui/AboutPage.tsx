@@ -1,12 +1,13 @@
-import { useLoaderData } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { aboutQuery } from "@/entities/about";
 import { EditAboutForm } from "@/features/edit-about";
 
-import type { aboutLoader } from "../model/aboutRoute";
 import styles from "./AboutPage.module.css";
 
 export function AboutPage() {
-  const about = useLoaderData<typeof aboutLoader>();
+  // The route loader has fetched the data, so this never suspends.
+  const { data: about } = useSuspenseQuery(aboutQuery);
 
   return (
     <div className={styles.root}>

@@ -1,7 +1,12 @@
-import type { LoaderFunctionArgs } from "react-router";
+import { contactsQuery } from "@/entities/contacts";
+import { queryClient } from "@/shared/api/queryClient";
 
-import { getContacts } from "@/entities/contacts";
+/**
+ * Loads the data afresh on entering the page, even when it is cached: the form takes its saved
+ * values from it once, so they must not be outdated.
+ */
+export async function contactsLoader() {
+  await queryClient.fetchQuery({ ...contactsQuery, staleTime: 0 });
 
-export async function contactsLoader({ request }: LoaderFunctionArgs) {
-  return getContacts({ signal: request.signal });
+  return null;
 }

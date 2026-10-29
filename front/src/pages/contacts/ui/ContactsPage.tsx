@@ -1,12 +1,13 @@
-import { useLoaderData } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { contactsQuery } from "@/entities/contacts";
 import { EditContactsForm } from "@/features/edit-contacts";
 
-import type { contactsLoader } from "../model/contactsRoute";
 import styles from "./ContactsPage.module.css";
 
 export function ContactsPage() {
-  const contacts = useLoaderData<typeof contactsLoader>();
+  // The route loader has fetched the data, so this never suspends.
+  const { data: contacts } = useSuspenseQuery(contactsQuery);
 
   return (
     <div className={styles.root}>

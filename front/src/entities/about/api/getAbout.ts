@@ -18,7 +18,7 @@ const aboutSchema = z.object({
 export type About = z.infer<typeof aboutSchema>;
 
 interface GetAboutParams {
-  /** Cancels the request, e.g. when the route loader is no longer needed. */
+  /** Cancels the request, e.g. when its query is cancelled. */
   signal: AbortSignal;
 }
 

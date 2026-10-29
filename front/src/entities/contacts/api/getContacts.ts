@@ -14,7 +14,7 @@ const contactsWithPhotoSchema = z.object({
 export type ContactsWithPhoto = z.infer<typeof contactsWithPhotoSchema>;
 
 interface GetContactsParams {
-  /** Cancels the request, e.g. when the route loader is no longer needed. */
+  /** Cancels the request, e.g. when its query is cancelled. */
   signal: AbortSignal;
 }
 

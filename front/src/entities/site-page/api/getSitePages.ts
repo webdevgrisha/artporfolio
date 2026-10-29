@@ -9,7 +9,7 @@ const sitePagesResponseSchema = z.object({
 });
 
 interface GetSitePagesParams {
-  /** Cancels the request, e.g. when the route loader is no longer needed. */
+  /** Cancels the request, e.g. when its query is cancelled. */
   signal: AbortSignal;
 }
 
