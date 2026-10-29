@@ -4,6 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "customConditions": ["development"],
+    "rewriteRelativeImportExtensions": true,
     "lib": ["ES2023"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -13,6 +14,6 @@
     "skipLibCheck": true,
     "sourceMap": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "openapi/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }

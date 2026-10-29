@@ -19,7 +19,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "check": "pnpm type-check"
+    "check": "pnpm type-check",
+    "openapi": "node --conditions=development --experimental-transform-types --no-warnings openapi/generate.ts"
   },
   "dependencies": {
     "busboy": "1.6.0",
@@ -39,6 +40,8 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.20.5",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "yaml": "2.9.1",
+    "zod-openapi": "6.0.2"
   }
 }
