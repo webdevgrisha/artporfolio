@@ -20,7 +20,7 @@ import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection"
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { Button } from "@/shared/ui/button";
 import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
-import { type MediaItem, MediaPreviewDialog } from "@/shared/ui/media-preview";
+import { MediaPreviewDialog } from "@/shared/ui/media-preview";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./SortableMediaList.module.css";
@@ -30,11 +30,8 @@ import {
   getAnnouncements,
   screenReaderInstructions,
 } from "./sortableAnnouncements";
-
-export interface SortableMediaItem extends MediaItem {
-  /** Highlights an item that differs from the saved one. */
-  isModified?: boolean;
-}
+import type { SortableMediaItem } from "./sortableMediaItem";
+import { useRowFocus } from "./useRowFocus";
 
 interface SortableMediaListProps {
   className?: string;
@@ -56,9 +53,6 @@ interface SortableMediaListProps {
   renderItemFields?: (item: SortableMediaItem, index: number) => ReactNode;
   rules: FileRules;
 }
-
-/** Where the focus goes once the items are updated: a control of a row, or the add button. */
-type PendingFocus = { control: RowControl; itemId: string } | "add";
 
 // Rows only move up and down.
 const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
@@ -84,12 +78,10 @@ export function SortableMediaList({
   renderItemFields,
   rules,
 }: SortableMediaListProps) {
-  const listRef = React.useRef<HTMLUListElement>(null);
   const addInputRef = React.useRef<HTMLInputElement>(null);
   const replaceInputRef = React.useRef<HTMLInputElement>(null);
-  const addButtonRef = React.useRef<HTMLButtonElement>(null);
   const replacedItemIdRef = React.useRef<string>(undefined);
-  const pendingFocusRef = React.useRef<PendingFocus>(undefined);
+  const { addButtonRef, focusAfterUpdate, listRef } = useRowFocus();
   const [viewedItemId, setViewedItemId] = React.useState<string>();
   // A rejected file never reaches the owner, so the list explains it itself, until the next
   // change made in the list.
@@ -107,29 +99,6 @@ export function SortableMediaList({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  // The focused button can move or disappear with its item, so it is restored once the owner has
-  // updated the items. It runs after every render: the owner's update is the next one.
-  React.useLayoutEffect(() => {
-    const pendingFocus = pendingFocusRef.current;
-    if (!pendingFocus) return;
-
-    pendingFocusRef.current = undefined;
-    if (pendingFocus === "add") {
-      addButtonRef.current?.focus();
-      return;
-    }
-
-    const row = listRef.current?.querySelector(
-      `[data-item-id="${CSS.escape(pendingFocus.itemId)}"]`,
-    );
-    const button = row?.querySelector<HTMLButtonElement>(
-      `[data-control="${pendingFocus.control}"]:not(:disabled)`,
-    );
-    // An arrow is disabled at the end of the list: the other one takes the focus.
-    const fallback = row?.querySelector<HTMLButtonElement>('[data-control^="move"]:not(:disabled)');
-    (button ?? fallback)?.focus();
-  });
-
   function getItemIndex(itemId: string): number {
     return items.findIndex((item) => item.id === itemId);
   }
@@ -139,12 +108,10 @@ export function SortableMediaList({
   }
 
   function addFiles(fileList: FileList) {
-    const files = Array.from(fileList);
-
     const rejections = new Set<string>();
     const accepted: File[] = [];
 
-    for (const file of files) {
+    for (const file of Array.from(fileList)) {
       const fileRejection = getFileRejection(file, rules);
       if (fileRejection) {
         rejections.add(fileRejection);
@@ -180,11 +147,10 @@ export function SortableMediaList({
 
   function moveItem(from: number, to: number, control?: RowControl) {
     const item = items[from];
-    if (!item || to < 0 || to >= items.length) return;
 
     setRejection(undefined);
     if (control) {
-      pendingFocusRef.current = { control, itemId: item.id };
+      focusAfterUpdate({ control, itemId: item.id });
       setMoveAnnouncement(
         `Фото «${item.name}» перемещено на место ${formatPosition(to, items.length)}`,
       );
@@ -193,14 +159,11 @@ export function SortableMediaList({
   }
 
   function removeItem(index: number) {
-    const item = items[index];
-    if (!item) return;
-
     // The focus goes to the next item, or the previous one at the end of the list.
     const nextItem = items[index + 1] ?? items[index - 1];
-    pendingFocusRef.current = nextItem ? { control: "remove", itemId: nextItem.id } : "add";
+    focusAfterUpdate(nextItem ? { control: "remove", itemId: nextItem.id } : "add");
     setRejection(undefined);
-    onRemove(item.id);
+    onRemove(items[index].id);
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {

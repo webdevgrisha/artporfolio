@@ -14,8 +14,8 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { MediaFileName, MediaThumbnailButton } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
-import type { SortableMediaItem } from "./SortableMediaList";
 import styles from "./SortableMediaList.module.css";
+import type { SortableMediaItem } from "./sortableMediaItem";
 
 /** The buttons of a row the list can move the focus to, named in `data-control`. */
 export type RowControl = "moveDown" | "moveUp" | "remove";

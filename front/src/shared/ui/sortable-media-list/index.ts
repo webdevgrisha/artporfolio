@@ -1,1 +1,2 @@
-export { type SortableMediaItem, SortableMediaList } from "./SortableMediaList";
+export { SortableMediaList } from "./SortableMediaList";
+export type { SortableMediaItem } from "./sortableMediaItem";
