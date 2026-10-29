@@ -68,17 +68,9 @@ export const router = createBrowserRouter([
               {
                 path: routes.contacts,
                 lazy: async () => {
-                  const { ContactsPage, contactsAction, contactsLoader } = await import(
-                    "@/pages/contacts"
-                  );
+                  const { ContactsPage, contactsLoader } = await import("@/pages/contacts");
 
-                  return {
-                    action: contactsAction,
-                    Component: ContactsPage,
-                    loader: contactsLoader,
-                    // A save returns the stored values, so the contacts are not loaded again.
-                    shouldRevalidate: () => false,
-                  };
+                  return { Component: ContactsPage, loader: contactsLoader };
                 },
               },
               {
