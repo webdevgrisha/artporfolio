@@ -1,4 +1,11 @@
-import React, { type DragEvent } from "react";
+import React, { type DragEvent, type DragEventHandler } from "react";
+
+/** The handlers to spread onto the element that files are dropped onto. */
+export interface DropTargetProps {
+  onDragLeave: DragEventHandler;
+  onDragOver: DragEventHandler;
+  onDrop: DragEventHandler;
+}
 
 interface UseFileDropParams {
   disabled: boolean;
@@ -33,12 +40,11 @@ export function useFileDrop({ disabled, onDrop }: UseFileDropParams) {
     if (!disabled) onDrop(event.dataTransfer.files);
   }
 
-  return {
-    dropTargetProps: {
-      onDragLeave: handleDragLeave,
-      onDragOver: handleDragOver,
-      onDrop: handleDrop,
-    },
-    isDragOver,
+  const dropTargetProps: DropTargetProps = {
+    onDragLeave: handleDragLeave,
+    onDragOver: handleDragOver,
+    onDrop: handleDrop,
   };
+
+  return { dropTargetProps, isDragOver };
 }

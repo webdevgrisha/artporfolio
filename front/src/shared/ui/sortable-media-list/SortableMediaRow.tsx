@@ -3,7 +3,6 @@ import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
-import { formatFileSize } from "@/shared/lib/formatFileSize";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -12,7 +11,7 @@ import {
   TrashIcon,
 } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
-import { MediaImage } from "@/shared/ui/media-preview";
+import { MediaFileName, MediaThumbnailButton } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import type { SortableMediaItem } from "./SortableMediaList";
@@ -62,7 +61,6 @@ export function SortableMediaRow({
     id: item.id,
   });
   const dragLabel = `Переместить ${item.name}`;
-  const openLabel = `Открыть ${item.name}`;
   const moveUpLabel = `Поднять ${item.name}`;
   const moveDownLabel = `Опустить ${item.name}`;
   const replaceLabel = `Заменить ${item.name}`;
@@ -92,15 +90,8 @@ export function SortableMediaRow({
           </IconButton>
         </Tooltip>
 
-        <Tooltip className={styles.controlTooltip} content={openLabel}>
-          <IconButton className={styles.thumbnailButton} label={openLabel} onClick={onOpen}>
-            <MediaImage className={styles.thumbnail} source={item.source} />
-          </IconButton>
-        </Tooltip>
-
-        <span className={styles.fileName}>
-          {item.name} <span className={styles.fileSize}>({formatFileSize(item.size)})</span>
-        </span>
+        <MediaThumbnailButton className={styles.controlTooltip} item={item} onOpen={onOpen} />
+        <MediaFileName className={styles.fileName} item={item} />
 
         <div className={styles.rowActions}>
           <Tooltip className={styles.controlTooltip} content={moveUpLabel}>

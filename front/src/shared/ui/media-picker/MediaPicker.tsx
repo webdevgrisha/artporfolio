@@ -1,13 +1,17 @@
-import clsx from "clsx";
-import React, { type ChangeEvent } from "react";
+import React from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
-import { FieldError, FieldHint } from "@/shared/ui/field";
 import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
-import { MediaImage, type MediaItem, MediaPreviewDialog } from "@/shared/ui/media-preview";
+import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
+import {
+  MediaFileName,
+  type MediaItem,
+  MediaPreviewDialog,
+  MediaThumbnailButton,
+} from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./MediaPicker.module.css";
@@ -43,9 +47,6 @@ export function MediaPicker({
   onRemove,
   rules,
 }: MediaPickerProps) {
-  const id = React.useId();
-  const hintId = `${id}-hint`;
-  const errorId = `${id}-error`;
   const inputRef = React.useRef<HTMLInputElement>(null);
   const selectButtonRef = React.useRef<HTMLButtonElement>(null);
   const [viewedItemId, setViewedItemId] = React.useState<string>();
@@ -55,8 +56,7 @@ export function MediaPicker({
   const itemsKey = items.map((item) => item.id).join("\n");
   const [rejection, setRejection] = React.useState<{ itemsKey: string; message: string }>();
   const shownError = (rejection?.itemsKey === itemsKey ? rejection.message : undefined) ?? error;
-  const hasItems = items.length > 0;
-  const selectLabel = hasItems ? "Заменить файл" : "Выбрать файл";
+  const selectLabel = items.length > 0 ? "Заменить файл" : "Выбрать файл";
   const { dropTargetProps, isDragOver } = useFileDrop({ disabled, onDrop: addFiles });
 
   function addFiles(fileList: FileList) {
@@ -71,16 +71,6 @@ export function MediaPicker({
     if (!fileRejection) onAdd(files);
   }
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
-    if (event.currentTarget.files) addFiles(event.currentTarget.files);
-    // Lets the same file be picked again, e.g. after it was removed.
-    event.currentTarget.value = "";
-  }
-
-  function openFilePicker() {
-    inputRef.current?.click();
-  }
-
   function removeItem(itemId: string) {
     onRemove(itemId);
     // The remove button disappears together with the file.
@@ -89,87 +79,57 @@ export function MediaPicker({
 
   return (
     <>
-      {/* A disabled fieldset also disables every control inside it. */}
-      <fieldset
-        className={clsx(styles.root, className)}
+      <MediaFieldset
+        className={className}
+        frameClassName={styles.frame}
+        label={label}
+        hint={`${rules.acceptLabel}, до ${formatFileSize(rules.maxFileSize)}`}
+        error={shownError}
         disabled={disabled}
-        aria-describedby={[hintId, shownError ? errorId : undefined].filter(Boolean).join(" ")}
-        // Dropping is a shortcut for the pointer; the attachment button is the accessible way.
-        {...dropTargetProps}
+        isModified={isModified}
+        isDragOver={isDragOver}
+        dropTargetProps={dropTargetProps}
       >
-        <legend className={styles.label}>{label}</legend>
+        {items.length > 0 ? (
+          <ul className={styles.items}>
+            {items.map((item) => {
+              const removeLabel = `Удалить ${item.name}`;
 
-        <div
-          className={clsx(styles.frame, {
-            [styles.frameModified]: isModified,
-            [styles.frameInvalid]: Boolean(shownError),
-            [styles.frameDragOver]: isDragOver,
-            [styles.frameDisabled]: disabled,
-          })}
-        >
-          {hasItems ? (
-            <ul className={styles.items}>
-              {items.map((item) => {
-                const removeLabel = `Удалить ${item.name}`;
-                const openLabel = `Открыть ${item.name}`;
-
-                return (
-                  <li key={item.id} className={styles.item}>
-                    <div className={styles.itemHeader}>
-                      <span className={styles.fileName}>
-                        {item.name}{" "}
-                        <span className={styles.fileSize}>({formatFileSize(item.size)})</span>
-                      </span>
-                      <Tooltip className={styles.removeTooltip} content={removeLabel}>
-                        <IconButton label={removeLabel} onClick={() => removeItem(item.id)}>
-                          <TrashIcon className={styles.removeIcon} />
-                        </IconButton>
-                      </Tooltip>
-                    </div>
-                    <Tooltip className={styles.thumbnailTooltip} content={openLabel}>
-                      <IconButton
-                        className={styles.thumbnailButton}
-                        label={openLabel}
-                        onClick={() => setViewedItemId(item.id)}
-                      >
-                        <MediaImage className={styles.thumbnail} source={item.source} />
+              return (
+                <li key={item.id} className={styles.item}>
+                  <div className={styles.itemHeader}>
+                    <MediaFileName item={item} />
+                    <Tooltip className={styles.removeTooltip} content={removeLabel}>
+                      <IconButton label={removeLabel} onClick={() => removeItem(item.id)}>
+                        <TrashIcon className={styles.removeIcon} />
                       </IconButton>
                     </Tooltip>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className={styles.placeholder}>Перетащите файл сюда или нажмите на скрепку</p>
-          )}
+                  </div>
+                  <MediaThumbnailButton
+                    className={styles.thumbnail}
+                    item={item}
+                    onOpen={() => setViewedItemId(item.id)}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className={styles.placeholder}>Перетащите файл сюда или нажмите на скрепку</p>
+        )}
 
-          {/* The only control that picks a file: a click elsewhere in the frame does nothing. */}
-          <Tooltip className={styles.selectTooltip} content={selectLabel}>
-            <IconButton ref={selectButtonRef} label={selectLabel} onClick={openFilePicker}>
-              <AttachmentIcon className={styles.selectIcon} />
-            </IconButton>
-          </Tooltip>
-
-          {/* Opened by the attachment button, which is the accessible control. */}
-          <input
-            ref={inputRef}
-            className={styles.fileInput}
-            type="file"
-            accept={rules.accept.join(",")}
-            tabIndex={-1}
-            aria-hidden="true"
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <FieldHint id={hintId}>
-          {rules.acceptLabel}, до {formatFileSize(rules.maxFileSize)}
-        </FieldHint>
-        {/* Announces a rejected file: the focus stays on the attachment button. */}
-        <div aria-live="polite">
-          {shownError ? <FieldError id={errorId}>{shownError}</FieldError> : null}
-        </div>
-      </fieldset>
+        {/* The only control that picks a file: a click elsewhere in the frame does nothing. */}
+        <Tooltip className={styles.selectTooltip} content={selectLabel}>
+          <IconButton
+            ref={selectButtonRef}
+            label={selectLabel}
+            onClick={() => inputRef.current?.click()}
+          >
+            <AttachmentIcon className={styles.selectIcon} />
+          </IconButton>
+        </Tooltip>
+        <FileInput ref={inputRef} accept={rules.accept} onPick={addFiles} />
+      </MediaFieldset>
 
       {/* Outside the fieldset: a file dropped onto the open dialog is not a pick. */}
       <MediaPreviewDialog

@@ -1,0 +1,19 @@
+/* A square thumbnail, as in Figma; the whole image is in the preview dialog. */
+.button {
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.image {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+@media (hover: hover) {
+  .button:hover:not(:disabled) .image {
+    opacity: 0.8;
+  }
+}

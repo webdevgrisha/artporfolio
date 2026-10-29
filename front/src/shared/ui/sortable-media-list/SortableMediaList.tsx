@@ -13,14 +13,13 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import clsx from "clsx";
-import React, { type ChangeEvent, type ReactNode } from "react";
+import React, { type ReactNode } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { Button } from "@/shared/ui/button";
-import { FieldError, FieldHint } from "@/shared/ui/field";
+import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
 import { type MediaItem, MediaPreviewDialog } from "@/shared/ui/media-preview";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
@@ -85,9 +84,6 @@ export function SortableMediaList({
   renderItemFields,
   rules,
 }: SortableMediaListProps) {
-  const id = React.useId();
-  const hintId = `${id}-hint`;
-  const errorId = `${id}-error`;
   const listRef = React.useRef<HTMLUListElement>(null);
   const addInputRef = React.useRef<HTMLInputElement>(null);
   const replaceInputRef = React.useRef<HTMLInputElement>(null);
@@ -144,7 +140,6 @@ export function SortableMediaList({
 
   function addFiles(fileList: FileList) {
     const files = Array.from(fileList);
-    if (files.length === 0) return;
 
     const rejections = new Set<string>();
     const accepted: File[] = [];
@@ -171,23 +166,11 @@ export function SortableMediaList({
   function replaceFile(fileList: FileList) {
     const [file] = Array.from(fileList);
     const itemId = replacedItemIdRef.current;
-    replacedItemIdRef.current = undefined;
     if (!file || !itemId) return;
 
     const fileRejection = getFileRejection(file, rules);
     setRejection(fileRejection);
     if (!fileRejection) onReplace(itemId, file);
-  }
-
-  function handleAddInputChange(event: ChangeEvent<HTMLInputElement>) {
-    if (event.currentTarget.files) addFiles(event.currentTarget.files);
-    // Lets the same file be picked again, e.g. after it was removed.
-    event.currentTarget.value = "";
-  }
-
-  function handleReplaceInputChange(event: ChangeEvent<HTMLInputElement>) {
-    if (event.currentTarget.files) replaceFile(event.currentTarget.files);
-    event.currentTarget.value = "";
   }
 
   function openReplacePicker(itemId: string) {
@@ -228,108 +211,73 @@ export function SortableMediaList({
 
   return (
     <>
-      {/* A disabled fieldset also disables every control inside it. */}
-      <fieldset
-        className={clsx(styles.root, className)}
+      <MediaFieldset
+        className={className}
+        frameClassName={styles.frame}
+        label={label}
+        hint={`${rules.acceptLabel}, до ${formatFileSize(rules.maxFileSize)}. Фото: ${String(items.length)} из ${String(maxItems)}`}
+        error={shownError}
         disabled={disabled}
-        aria-describedby={[hintId, shownError ? errorId : undefined].filter(Boolean).join(" ")}
-        // Dropping files is a shortcut for the pointer; the add button is the accessible way.
-        {...dropTargetProps}
+        isModified={isModified}
+        isDragOver={isDragOver}
+        dropTargetProps={dropTargetProps}
       >
-        <legend className={styles.label}>{label}</legend>
-
-        <div
-          className={clsx(styles.frame, {
-            [styles.frameModified]: isModified,
-            [styles.frameInvalid]: Boolean(shownError),
-            [styles.frameDragOver]: isDragOver,
-            [styles.frameDisabled]: disabled,
-          })}
-        >
-          {items.length > 0 ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              modifiers={[restrictToVerticalAxis]}
-              accessibility={{
-                announcements: getAnnouncements(getItemName, (itemId) =>
-                  formatPosition(getItemIndex(itemId), items.length),
-                ),
-                screenReaderInstructions,
-              }}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={items.map((item) => item.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <ul ref={listRef} className={styles.rows}>
-                  {items.map((item, index) => (
-                    <SortableMediaRow
-                      key={item.id}
-                      item={item}
-                      disabled={disabled}
-                      isFirst={index === 0}
-                      isLast={index === items.length - 1}
-                      onMoveUp={() => moveItem(index, index - 1, "moveUp")}
-                      onMoveDown={() => moveItem(index, index + 1, "moveDown")}
-                      onOpen={() => setViewedItemId(item.id)}
-                      onRemove={() => removeItem(index)}
-                      onReplace={() => openReplacePicker(item.id)}
-                    >
-                      {renderItemFields?.(item, index)}
-                    </SortableMediaRow>
-                  ))}
-                </ul>
-              </SortableContext>
-            </DndContext>
-          ) : (
-            <p className={styles.placeholder}>Перетащите фото сюда или нажмите «Добавить фото»</p>
-          )}
-
-          <Button
-            ref={addButtonRef}
-            className={styles.addButton}
-            disabled={isFull}
-            onClick={() => addInputRef.current?.click()}
+        {items.length > 0 ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            accessibility={{
+              announcements: getAnnouncements(getItemName, (itemId) =>
+                formatPosition(getItemIndex(itemId), items.length),
+              ),
+              screenReaderInstructions,
+            }}
+            onDragEnd={handleDragEnd}
           >
-            Добавить фото
-          </Button>
+            <SortableContext
+              items={items.map((item) => item.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul ref={listRef} className={styles.rows}>
+                {items.map((item, index) => (
+                  <SortableMediaRow
+                    key={item.id}
+                    item={item}
+                    disabled={disabled}
+                    isFirst={index === 0}
+                    isLast={index === items.length - 1}
+                    onMoveUp={() => moveItem(index, index - 1, "moveUp")}
+                    onMoveDown={() => moveItem(index, index + 1, "moveDown")}
+                    onOpen={() => setViewedItemId(item.id)}
+                    onRemove={() => removeItem(index)}
+                    onReplace={() => openReplacePicker(item.id)}
+                  >
+                    {renderItemFields?.(item, index)}
+                  </SortableMediaRow>
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
+        ) : (
+          <p className={styles.placeholder}>Перетащите фото сюда или нажмите «Добавить фото»</p>
+        )}
 
-          {/* Opened by the add and replace buttons, which are the accessible controls. */}
-          <input
-            ref={addInputRef}
-            className={styles.fileInput}
-            type="file"
-            accept={rules.accept.join(",")}
-            multiple
-            tabIndex={-1}
-            aria-hidden="true"
-            onChange={handleAddInputChange}
-          />
-          <input
-            ref={replaceInputRef}
-            className={styles.fileInput}
-            type="file"
-            accept={rules.accept.join(",")}
-            tabIndex={-1}
-            aria-hidden="true"
-            onChange={handleReplaceInputChange}
-          />
-        </div>
+        <Button
+          ref={addButtonRef}
+          className={styles.addButton}
+          disabled={isFull}
+          onClick={() => addInputRef.current?.click()}
+        >
+          Добавить фото
+        </Button>
+        <FileInput ref={addInputRef} accept={rules.accept} multiple onPick={addFiles} />
+        <FileInput ref={replaceInputRef} accept={rules.accept} onPick={replaceFile} />
+      </MediaFieldset>
 
-        <FieldHint id={hintId}>
-          {rules.acceptLabel}, до {formatFileSize(rules.maxFileSize)}. Фото: {items.length} из{" "}
-          {maxItems}
-        </FieldHint>
-        {/* Announces a rejected file: the focus stays on the button that picked it. */}
-        <div aria-live="polite">
-          {shownError ? <FieldError id={errorId}>{shownError}</FieldError> : null}
-        </div>
-        <div aria-live="polite">
-          <VisuallyHidden>{moveAnnouncement}</VisuallyHidden>
-        </div>
-      </fieldset>
+      <div aria-live="polite">
+        <VisuallyHidden>{moveAnnouncement}</VisuallyHidden>
+      </div>
 
       {/* Outside the fieldset: a file dropped onto the open dialog is not a pick. */}
       <MediaPreviewDialog
