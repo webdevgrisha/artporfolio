@@ -47,6 +47,8 @@ export function SortableMediaRow({
   onRemove,
   onReplace,
 }: SortableMediaRowProps) {
+  // A single item has nowhere to go: its handle is disabled like both of its arrows.
+  const isAlone = isFirst && isLast;
   const {
     attributes,
     isDragging,
@@ -57,7 +59,7 @@ export function SortableMediaRow({
     transition,
   } = useSortable({
     attributes: { roleDescription: "перемещаемое фото" },
-    disabled,
+    disabled: disabled || isAlone,
     id: item.id,
   });
   const dragLabel = `Переместить ${item.name}`;
@@ -83,6 +85,7 @@ export function SortableMediaRow({
             ref={setActivatorNodeRef}
             className={styles.dragHandle}
             label={dragLabel}
+            disabled={isAlone}
             {...attributes}
             {...listeners}
           >
