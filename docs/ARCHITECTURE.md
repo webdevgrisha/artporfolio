@@ -70,15 +70,16 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 - Paths and admin navigation titles are defined once in `shared/config/routes.ts`.
 - `app/router.tsx` maps paths to lazily loaded pages.
 - Data is loaded through React Router loaders, not effects. An action is used only for a change that leads to another page:
-  - the admin layout route uses `requireSession` (`entities/user`), which redirects guests to `/admin/login?redirectTo=…`;
+  - the admin layout route uses `requireSession` (`entities/user`) on every navigation; on 401 it redirects to `/admin/login?redirectTo=…`, and that redirect wins over a failed page loader. Any other failure is an error, not a reason to sign in again;
   - inside the admin area, `useSessionUser()` returns the signed-in user;
   - the login page has its own loader and action in `pages/login/model/loginRoute.ts`;
-  - logout is a `<Form method="post">` to the `/admin/logout` action (`features/logout`);
+  - logout is a `<Form method="post">` to the `/admin/logout` action (`features/logout`). When the session may still be there (no connection, a refused request), the action shows an error toast and returns to the page the form was sent from;
   - server data lives in the TanStack Query cache (`queryClient` in `shared/api/queryClient.ts`). An entity exposes each request as query options (`contactsQuery` in `entities/contacts`). Nothing refetches in the background: the admin is the only one who changes the data;
   - an edit page loads its data afresh on entering it: its loader calls `queryClient.fetchQuery` (`pages/contacts/model/contactsRoute.ts`), and the page reads it with `useSuspenseQuery` and passes it to the form;
   - the form stays on the page, so it saves in its react-hook-form submit handler (`EditContactsForm`) through a mutation hook (`useSaveContacts`). The mutation sends the changes and invalidates the page's query after every save, a failed one included, since a failed request may still have changed the server; then the form resets the saved fields and shows the result. `isSubmitting` disables the form meanwhile;
   - logout clears the query cache.
 - `PageLoading` is the `HydrateFallback` shown while the first loaders run.
+- A pathless root route catches every error that no route below handles with `ErrorPage` (`pages/error`), imported eagerly so it works when a chunk fails to load.
 - Admin pages are nested in a pathless route whose `ErrorBoundary` is `AdminPageError` (`widgets/admin-layout`): a page that fails to load or render is replaced inside the layout, and the navigation stays usable.
 
 ### Forms and feedback
