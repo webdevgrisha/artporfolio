@@ -22,9 +22,7 @@ import {
   unsupportedMediaTypeResponse,
 } from "#shared/openapi/responses";
 import { adminSecurity, publicSecurity } from "#shared/openapi/security";
-import { imageFileSchema, imageUploadContent } from "#shared/openapi/uploads";
-
-const photoUpload = imageUploadContent(photoAltBodySchema.extend({ file: imageFileSchema }));
+import { photoUploadContent } from "#shared/openapi/uploads";
 
 export const processPhotoPaths = {
   "/api/about/process-photos": {
@@ -47,7 +45,7 @@ export const processPhotoPaths = {
       summary: "Add a process photo",
       description: `Adds the photo after the others. The page holds up to ${String(maxProcessPhotos)} process photos.`,
       security: adminSecurity,
-      requestBody: { content: photoUpload },
+      requestBody: { content: photoUploadContent },
       responses: {
         201: {
           ...jsonResponse("The photo was added.", processPhotoResponseSchema),
@@ -118,7 +116,7 @@ export const processPhotoPaths = {
         "Replaces the file and the alt text; the id and the position stay. The previous file is deleted after the new one is saved.",
       security: adminSecurity,
       requestParams: { path: processPhotoParamsSchema },
-      requestBody: { content: photoUpload },
+      requestBody: { content: photoUploadContent },
       responses: {
         200: jsonResponse("The photo with the new file.", processPhotoResponseSchema),
         400: badRequestResponse,

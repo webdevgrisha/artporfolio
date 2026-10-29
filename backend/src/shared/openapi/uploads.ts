@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { ZodOpenApiMediaTypeObject } from "zod-openapi";
 
+import { photoAltBodySchema } from "#shared/images/photo";
 import { maxSourceFileSize } from "#shared/images/processing";
 
 /** The file field of an image upload, for the API description only: parseUpload reads it. */
@@ -20,3 +21,8 @@ export function imageUploadContent(
     },
   };
 }
+
+/** The body of a photo upload: the image file and its alt text. */
+export const photoUploadContent = imageUploadContent(
+  photoAltBodySchema.extend({ file: imageFileSchema }),
+);

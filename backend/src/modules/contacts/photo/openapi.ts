@@ -12,7 +12,7 @@ import {
   unsupportedMediaTypeResponse,
 } from "#shared/openapi/responses";
 import { adminSecurity } from "#shared/openapi/security";
-import { imageFileSchema, imageUploadContent } from "#shared/openapi/uploads";
+import { photoUploadContent } from "#shared/openapi/uploads";
 
 export const contactPhotoPaths = {
   "/api/contacts/photo": {
@@ -22,9 +22,7 @@ export const contactPhotoPaths = {
       summary: "Upload or replace the contact photo",
       description: "The previous photo is deleted after the new one is saved.",
       security: adminSecurity,
-      requestBody: {
-        content: imageUploadContent(photoAltBodySchema.extend({ file: imageFileSchema })),
-      },
+      requestBody: { content: photoUploadContent },
       responses: {
         200: jsonResponse("The photo was replaced.", photoResponseSchema),
         201: jsonResponse("The first photo was uploaded.", photoResponseSchema),
