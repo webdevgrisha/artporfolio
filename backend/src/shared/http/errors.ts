@@ -48,3 +48,9 @@ export class UnsupportedMediaTypeError extends HttpError {
     super(415, message);
   }
 }
+
+export class ConflictError extends HttpError {
+  constructor(message = "The request conflicts with the current state") {
+    super(409, message);
+  }
+}
