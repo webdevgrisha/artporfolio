@@ -4,7 +4,7 @@ import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hoo
 
 import { maxProcessPhotos, type ProcessPhoto } from "@/entities/about";
 import { imageUploadRules } from "@/shared/api/image";
-import { ClearableInput } from "@/shared/ui/clearable-input";
+import { Input } from "@/shared/ui/input";
 import { imageToMediaItem } from "@/shared/ui/media-preview";
 import { type SortableMediaItem, SortableMediaList } from "@/shared/ui/sortable-media-list";
 
@@ -43,8 +43,8 @@ function toMediaItem(
 
 /** The process photos tab of `EditAboutForm`; it reads the form from its context. */
 export function ProcessPhotoFields({ className, isSaving, serverPhotos }: ProcessPhotoFieldsProps) {
-  const { control, register, setFocus, setValue } = useFormContext<AboutFormValues>();
-  const { errors, isSubmitted } = useFormState({ control });
+  const { control, register, setValue } = useFormContext<AboutFormValues>();
+  const { errors } = useFormState({ control });
   // `fields` gives every row a stable key; the values come from `rows`, which also follow typing.
   const { append, fields, move, remove } = useFieldArray({ control, name: "processPhotos" });
   const rows = useWatch({ control, name: "processPhotos" });
@@ -67,12 +67,6 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
 
   function getRowIndex(key: string): number {
     return fields.findIndex((field) => field.id === key);
-  }
-
-  function clearAlt(index: number) {
-    // After the first submit, fields are revalidated on change; clearing is a change too.
-    setValue(`processPhotos.${index}.alt`, "", { shouldDirty: true, shouldValidate: isSubmitted });
-    setFocus(`processPhotos.${index}.alt`);
   }
 
   return (
@@ -98,16 +92,13 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
             row?.status === "saved" ? serverPhotosById.get(row.photoId)?.alt : undefined;
 
           return (
-            <ClearableInput
+            <Input
               label="Описание"
               aria-label={`Описание ${item.name}`}
               placeholder="Например: эскиз углём на холсте"
               disabled={isSaving}
               error={errors.processPhotos?.[index]?.alt?.message}
               isModified={savedAlt !== undefined && row?.alt !== savedAlt}
-              hasValue={Boolean(row?.alt)}
-              clearLabel={`Очистить описание ${item.name}`}
-              onClear={() => clearAlt(index)}
               {...register(`processPhotos.${index}.alt`)}
             />
           );
