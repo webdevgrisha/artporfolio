@@ -26,7 +26,15 @@ function getReturnPath(value: FormDataEntryValue | null): string {
  * never reached the server: then the session is still there.
  */
 async function logout(): Promise<void> {
-  const csrfToken = await getCsrfToken();
+  let csrfToken: string;
+
+  try {
+    csrfToken = await getCsrfToken();
+  } catch (error) {
+    // The API gives no token without a session cookie: the user is already signed out.
+    if (error instanceof HttpError && error.status === 401) return;
+    throw error;
+  }
 
   try {
     await endSession({ csrfToken });

@@ -10,9 +10,11 @@ import { validateBody } from "#shared/middleware/validation";
 export const authRouter = Router();
 
 authRouter.get("/csrf", issueCsrfToken);
+// No CSRF token: there is no session yet. A forged login could only sign the browser in to the
+// account of the ID token, and only the admin may sign in. Requiring JSON also keeps out the
+// cross-site forms, which cannot send it.
 authRouter.post(
   "/login",
-  requireCsrfToken,
   requireContentType("application/json"),
   validateBody(loginBodySchema),
   login,

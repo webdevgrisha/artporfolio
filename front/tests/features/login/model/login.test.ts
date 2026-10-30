@@ -6,7 +6,7 @@ import { signInWithFirebase } from "@/features/login/api/signInWithFirebase";
 import { login } from "@/features/login/model/login";
 import { HttpError } from "@/shared/api/httpError";
 
-import { csrfHandler, csrfToken, problem } from "../../../support/handlers";
+import { problem } from "../../../support/handlers";
 import { recordRequests, server } from "../../../support/server";
 
 vi.mock("firebase/auth", () => ({ signOut: vi.fn() }));
@@ -19,22 +19,21 @@ const user = { email: "admin@example.com", uid: "admin-uid" };
 beforeEach(() => {
   vi.mocked(signInWithFirebase).mockReset().mockResolvedValue("id-token");
   vi.mocked(signOut).mockReset().mockResolvedValue();
-  server.use(csrfHandler);
 });
 
 describe("login", () => {
   it("exchanges the Firebase ID token for an API session", async () => {
-    let received: { body: unknown; token: string | null } | undefined;
+    let received: unknown;
     server.use(
       mswHttp.post("/api/auth/login", async ({ request }) => {
-        received = { body: await request.json(), token: request.headers.get("X-CSRF-Token") };
+        received = await request.json();
         return HttpResponse.json({ user });
       }),
     );
 
     await expect(login(credentials)).resolves.toEqual(user);
     expect(signInWithFirebase).toHaveBeenCalledWith(credentials);
-    expect(received).toEqual({ body: { idToken: "id-token" }, token: csrfToken });
+    expect(received).toEqual({ idToken: "id-token" });
   });
 
   it("does not keep the Firebase session after a sign-in", async () => {

@@ -39,7 +39,7 @@ let env: Env | undefined;
 /**
  * Validated on first use and cached. Firebase loads this module during deploy, before the
  * runtime environment exists, so the variables cannot be read at import time.
- * CSRF_SECRET is a Secret Manager value and is read separately in csrfConfig.
+ * CSRF_SECRET is a Secret Manager value and is read separately by the CSRF middleware.
  */
 export function getEnv(): Env {
   if (!env) {

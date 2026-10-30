@@ -41,6 +41,15 @@ describe("logoutAction", () => {
     expect(showErrorToast).not.toHaveBeenCalled();
   });
 
+  it("goes to the login page when the session is already gone", async () => {
+    server.use(mswHttp.get("/api/auth/csrf", () => problem(401)));
+
+    const response = await logout("/admin/about");
+
+    expect(response.headers.get("Location")).toBe("/admin/login");
+    expect(showErrorToast).not.toHaveBeenCalled();
+  });
+
   it.each([
     [
       "the logout was refused",

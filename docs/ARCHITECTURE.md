@@ -54,7 +54,7 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 - A layer imports only from lower layers: `features` may use `entities` and `shared`, never `widgets` or `pages`.
 - Nothing imports `app`.
 - Inside one slice, use relative imports (`../model/login`). Across slices and layers, use the `@/` alias.
-- Slices of the same layer do not import each other. Shared needs move down a layer (`getCsrfToken` is used by login and logout, so it lives in `shared/api`).
+- Slices of the same layer do not import each other. Shared needs move down a layer (`getCsrfToken` is used by logout and by every save, so it lives in `shared/api`).
 
 `shared` has no slices. `shared/ui` exposes one public `index.ts` per component (`@/shared/ui/button`). `shared/api`, `shared/config` and `shared/lib` are imported file by file (`@/shared/api/http`) on purpose: a common index would make every chunk that needs the HTTP client also load Firebase.
 
@@ -120,7 +120,7 @@ backend/src/
 │   ├── health/
 │   └── pages/          the pages of the public site and their main photos (heroes)
 └── shared/             no knowledge of the domain
-    ├── config/         env, cookies, cors, csrf
+    ├── config/         env, cookies, cors
     ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
     ├── http/           HttpError, cookie helpers, Express request typing
     ├── images/         image processing with sharp, image files in Cloud Storage, photo slots
@@ -133,17 +133,18 @@ backend/src/
 - A single photo with alt text (the contact photo, «My photo») is a `PhotoSlot` from `shared/images/photo.ts`: a Firestore document, a field and a Storage folder. The module's service only names its slot; saving, replacing, the alt text and deleting are shared.
 - Data read from Firestore is checked for its shape only (`stored…Schema`): limits and formats are checked once, when the API writes the data. Tightening a rule later then never makes saved data unreadable.
 - Photos are stored before Firestore is written, and replaced files are deleted last, so the site never links to missing files. Every change that reads and writes a document runs in a transaction.
+- The session is the `__session` cookie: Firebase Hosting passes the function no other cookie. The CSRF token is an HMAC of that cookie, issued by `GET /api/auth/csrf` and sent back in `X-CSRF-Token`, so every tab of a session has the same token and a new session gets a new one. Login needs no token: there is no session yet, and only the admin can sign in.
 - Global Express typing lives with its owner: `modules/auth/express.d.ts` declares `Locals.auth`, `shared/http/express.d.ts` declares `Request.file` and `rawBody`.
 - Code imports through subpath imports (`#modules/auth/service`, `#shared/http/errors`). There are no barrel files.
 - Express 5 forwards rejected promises to the error middleware, so handlers do not wrap code in `try/catch` only to call `next(error)`.
-- Environment variables are read through `getEnv()` in `shared/config/env.ts`, validated once on first use. `CSRF_SECRET` is a Secret Manager value read by the CSRF config.
+- Environment variables are read through `getEnv()` in `shared/config/env.ts`, validated once on first use. `CSRF_SECRET` is a Secret Manager value read by the CSRF middleware.
 - Errors meant for the client are thrown as `HttpError` subclasses; the error middleware sends every error as RFC 9457 Problem Details. Anything else is logged and returned as a generic 500.
 - The API is described by its code: each module's `routes.ts` lists its endpoints, and `schema.ts` holds the Zod schemas that validate requests and describe responses. Controllers are typed with the response schemas (`RequestHandler<Params, Response, Body>`), so a handler cannot send another shape.
 
 ## Tests
 
 - Backend tests live in `backend/tests`, mirroring `src` (`tests/modules/contacts/photo/service.test.ts` tests `src/modules/contacts/photo/service.ts`), and run with Vitest. Their environment is set in `backend/vitest.config.ts`.
-- `backend/tests/support` holds shared helpers: `startTestServer` runs an Express app on a free port, `adminHeaders` returns the cookies and CSRF header of a signed-in admin, `apiImage` returns a complete image for mocked services, `routeApp` builds the app for a route test: the global middleware, the auth routes and the router under test. Import them with a relative path ending in `.js`.
+- `backend/tests/support` holds shared helpers: `startTestServer` runs an Express app on a free port, `adminHeaders` returns the session cookie and CSRF header of a signed-in admin, `apiImage` returns a complete image for mocked services, `routeApp` builds the app for a route test: the global middleware, the auth routes and the router under test. Import them with a relative path ending in `.js`.
 - Frontend tests live in `front/tests`, mirroring `src` in the same way, and run with Vitest in happy-dom (`front/vitest.config.ts`). They cover the logic: form schemas, the changes a save sends, the save functions, error messages, route loaders and actions, and hooks. Components are not tested yet.
 - Frontend tests talk to the API through MSW: `tests/support/server.ts` intercepts every request, and a request without a handler fails the test. Each test sets its handlers with `server.use`; `recordRequests` lists the requests sent, in order. Other helpers in `front/tests/support`: `csrfHandler`, `problem` and `noContent` (`handlers.ts`), `apiImage`, `apiPhoto`, `apiProcessPhoto` and `imageFile` (`images.ts`), `fieldErrors` for schemas, `routeArgs`, `formActionArgs` and `thrownResponse` for loaders and actions.
 - Frontend tests import the module under test by its own path (`@/features/edit-about/model/saveProcessPhotos`), not through the slice's `index.ts`. `vi.mock` is kept for what MSW cannot replace: Firebase and the toasts.

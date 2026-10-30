@@ -1,5 +1,5 @@
 /** The session cookie of the signed-in admin; tests mock verifySession to accept it. */
-export const adminSessionCookie = "admin_session=firebase-session";
+export const adminSessionCookie = "__session=firebase-session";
 
 /** Cookie and CSRF headers of a request from the signed-in admin. */
 export async function adminHeaders(baseUrl: string): Promise<Record<string, string>> {
@@ -7,7 +7,6 @@ export async function adminHeaders(baseUrl: string): Promise<Record<string, stri
     headers: { Cookie: adminSessionCookie },
   });
   const { csrfToken } = (await response.json()) as { csrfToken: string };
-  const csrfCookie = response.headers.get("set-cookie")?.split(";", 1)[0];
 
-  return { Cookie: `${adminSessionCookie}; ${String(csrfCookie)}`, "X-CSRF-Token": csrfToken };
+  return { Cookie: adminSessionCookie, "X-CSRF-Token": csrfToken };
 }
