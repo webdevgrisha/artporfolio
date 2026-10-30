@@ -94,16 +94,6 @@
   block-size: 0.875rem;
 }
 
-/* The title and the link read as text; the underline shows that they open something. */
-.textLink {
-  color: inherit;
-  text-decoration: none;
-}
-
-.textLink:hover {
-  text-decoration: underline;
-}
-
 /* A long domain is cut short; the tooltip shows the whole link. */
 .externalLink {
   display: inline-flex;

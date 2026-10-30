@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-table";
 import clsx from "clsx";
 import React from "react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 import type { Project } from "@/entities/project";
 import { projectPath } from "@/shared/config/routes";
@@ -72,8 +72,8 @@ function SortState({ direction }: { direction: SortDirection | false }) {
 /**
  * Every project; until it is sorted, in the order the site shows them, which «№» keeps showing
  * after a sort. The search and the sorting are kept in the address. A project opens for editing
- * by its cover, its title or the pencil and is deleted after a confirmation; its place on the site
- * is changed in «Порядок на сайте».
+ * by the pencil and is deleted after a confirmation; its place on the site is changed in
+ * «Порядок на сайте».
  */
 export function ProjectsTable({ className, projects }: ProjectsTableProps) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -105,18 +105,11 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         enableSorting: false,
         cell: ({ row: { original } }) => {
           const [cover] = original.project.photos;
-          const image = cover ? (
+
+          return cover ? (
             <MediaImage className={styles.cover} source={imageToMediaItem(cover).source} />
           ) : (
             <span className={styles.cover} />
-          );
-
-          // A larger target than the title; the title link names the project for assistive
-          // technology, so this one is skipped by it and by the keyboard.
-          return (
-            <Link to={projectPath(original.project.id)} tabIndex={-1} aria-hidden="true">
-              {image}
-            </Link>
           );
         },
       },
@@ -126,11 +119,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         meta: { className: styles.titleColumn },
         accessorFn: (row) => row.project.title,
         sortingFn: (a, b) => collator.compare(a.original.project.title, b.original.project.title),
-        cell: ({ row: { original } }) => (
-          <Link className={styles.textLink} to={projectPath(original.project.id)}>
-            {original.project.title}
-          </Link>
-        ),
+        cell: ({ row: { original } }) => original.project.title,
       },
       {
         id: "link",
