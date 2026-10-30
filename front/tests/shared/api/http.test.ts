@@ -187,6 +187,20 @@ describe("http entity tags", () => {
     expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
   });
 
+  it("deletes a resource with If-Match, expecting no ETag back", async () => {
+    let request: Request | undefined;
+    server.use(
+      mswHttp.delete("/api/items/1", ({ request: received }) => {
+        request = received;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await expect(http.deleteResourceIfMatch({ etag, path: "/items/1" })).resolves.toBeUndefined();
+    expect(request?.headers.get("If-Match")).toBe(etag);
+    expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
+  });
+
   it("rejects a response without the ETag it was asked for", async () => {
     server.use(mswHttp.get("/api/untagged", () => HttpResponse.json({ name: "Холст" })));
 
