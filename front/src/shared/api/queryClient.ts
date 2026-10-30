@@ -12,9 +12,10 @@ export const queryClient = new QueryClient({
       // or a server error may pass.
       retry: (failureCount, error) =>
         !(error instanceof HttpError && error.status < 500) && failureCount < maxRetries,
-      // The admin is the only one who changes the data, and every save invalidates what it
-      // changed. A page loads its data afresh when it is entered, so nothing is refetched in the
-      // background under an open form, whose saved values come from that data.
+      // The admin is the only one who changes the data, and every save reloads what it changed.
+      // A page loads its data afresh when it is entered. A reload under an open form changes its
+      // props, so a form finds its changes against the values it was opened with, not against
+      // the data.
       staleTime: Number.POSITIVE_INFINITY,
     },
   },
