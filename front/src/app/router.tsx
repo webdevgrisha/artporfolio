@@ -76,6 +76,47 @@ export const router = createBrowserRouter([
                     lazy: async () => ({
                       Component: (await import("@/pages/projects")).ProjectsPage,
                     }),
+                    // The text and the list are saved independently; the page opens the list.
+                    children: [
+                      {
+                        index: true,
+                        element: <Navigate to={routes.projectsAll} replace />,
+                      },
+                      {
+                        path: routes.projectsIntro,
+                        lazy: async () => {
+                          const { ProjectsIntroSection, projectsIntroLoader } = await import(
+                            "@/pages/projects"
+                          );
+
+                          return { Component: ProjectsIntroSection, loader: projectsIntroLoader };
+                        },
+                      },
+                      {
+                        path: routes.projectsAll,
+                        lazy: async () => {
+                          const { ProjectsTableSection, projectsTableLoader } = await import(
+                            "@/pages/projects"
+                          );
+
+                          return { Component: ProjectsTableSection, loader: projectsTableLoader };
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    path: routes.projectNew,
+                    lazy: async () => ({
+                      Component: (await import("@/pages/projects")).NewProjectPage,
+                    }),
+                  },
+                  {
+                    path: `${routes.projects}/:id`,
+                    lazy: async () => {
+                      const { EditProjectPage, projectLoader } = await import("@/pages/projects");
+
+                      return { Component: EditProjectPage, loader: projectLoader };
+                    },
                   },
                   {
                     path: routes.about,

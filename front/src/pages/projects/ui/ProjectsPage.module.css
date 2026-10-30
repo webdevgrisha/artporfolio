@@ -1,0 +1,37 @@
+.root {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--layout-space-8);
+  padding: var(--layout-space-8);
+}
+
+/* Fills the frame so the form actions sit at its bottom. */
+.form {
+  flex: 1;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.back {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-block-size: var(--min-tap-target-size);
+}
+
+.backIcon {
+  inline-size: auto;
+  block-size: 0.875rem;
+}
+
+.heading {
+  font-size: var(--font-size-xl);
+  font-weight: normal;
+  overflow-wrap: anywhere;
+}
