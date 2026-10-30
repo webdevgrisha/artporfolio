@@ -1,5 +1,5 @@
 import { deletePageHero, type SitePageId, uploadPageHero } from "@/entities/site-page";
-import { isSessionExpiredError } from "@/shared/api/getRequestErrorMessage";
+import { isSessionExpiredError } from "@/shared/api/requestErrorMessages";
 import { joinMessages } from "@/shared/lib/joinMessages";
 
 import { getSaveHeroErrorMessage } from "../lib/saveErrorMessages";

@@ -6,7 +6,7 @@ import {
   replaceProcessPhoto,
   updateProcessPhotoAlt,
 } from "@/entities/about";
-import { isSessionExpiredError } from "@/shared/api/getRequestErrorMessage";
+import { isSessionExpiredError } from "@/shared/api/requestErrorMessages";
 import { joinMessages } from "@/shared/lib/joinMessages";
 
 import {

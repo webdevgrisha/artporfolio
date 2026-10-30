@@ -1,52 +1,41 @@
-import {
-  getRequestErrorMessage,
-  isSessionExpiredError,
-  sessionExpiredMessage,
-} from "@/shared/api/getRequestErrorMessage";
-import { HttpError } from "@/shared/api/httpError";
 import { imageUploadRules } from "@/shared/api/image";
+import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
 /** For a save of the process photos that failed as a whole, not photo by photo. */
 export function getSaveProcessPhotosErrorMessage(error: unknown): string {
-  if (isSessionExpiredError(error)) return sessionExpiredMessage;
-
-  return getRequestErrorMessage(error, "Не удалось сохранить изменения. Попробуйте ещё раз");
+  return getSaveErrorMessage(error, {
+    fallback: "Не удалось сохранить изменения. Попробуйте ещё раз",
+  });
 }
 
 export function getSaveTextErrorMessage(error: unknown): string {
-  if (isSessionExpiredError(error)) return sessionExpiredMessage;
-  if (error instanceof HttpError && error.status === 400) {
-    return "Сервер не принял тексты. Проверьте их и попробуйте ещё раз";
-  }
-
-  return getRequestErrorMessage(error, "Не удалось сохранить тексты. Попробуйте ещё раз");
+  return getSaveErrorMessage(error, {
+    byStatus: { 400: "Сервер не принял тексты. Проверьте их и попробуйте ещё раз" },
+    fallback: "Не удалось сохранить тексты. Попробуйте ещё раз",
+  });
 }
 
 export function getSaveProcessPhotoErrorMessage(error: unknown, fileName: string): string {
-  if (isSessionExpiredError(error)) return sessionExpiredMessage;
-  if (error instanceof HttpError) {
-    if (error.status === 400) return `Сервер не принял фото «${fileName}». Попробуйте другой файл`;
-    if (error.status === 404) return `Фото «${fileName}» уже удалено. Обновите страницу`;
-    // Only an upload of a new photo is rejected for a full list.
-    if (error.status === 409) return `Фото «${fileName}» не добавлено: фото уже максимум`;
-    if (error.status === 413) {
-      return `Фото «${fileName}» больше ${formatFileSize(imageUploadRules.maxFileSize)}`;
-    }
-  }
-
-  return getRequestErrorMessage(
-    error,
-    `Не удалось сохранить фото «${fileName}». Попробуйте ещё раз`,
-  );
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      400: `Сервер не принял фото «${fileName}». Попробуйте другой файл`,
+      404: `Фото «${fileName}» уже удалено. Обновите страницу`,
+      // Only an upload of a new photo is rejected for a full list.
+      409: `Фото «${fileName}» не добавлено: фото уже максимум`,
+      413: `Фото «${fileName}» больше ${formatFileSize(imageUploadRules.maxFileSize)}`,
+    },
+    fallback: `Не удалось сохранить фото «${fileName}». Попробуйте ещё раз`,
+  });
 }
 
 export function getSaveProcessPhotoOrderErrorMessage(error: unknown): string {
-  if (isSessionExpiredError(error)) return sessionExpiredMessage;
-  // The photos on the server differ from the ones on the page, e.g. after a save in another tab.
-  if (error instanceof HttpError && error.status === 409) {
-    return "Порядок фото не сохранён: фото на сервере изменились. Обновите страницу";
-  }
-
-  return getRequestErrorMessage(error, "Не удалось сохранить порядок фото. Попробуйте ещё раз");
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      // The photos on the server differ from the ones on the page, e.g. after a save in another
+      // tab.
+      409: "Порядок фото не сохранён: фото на сервере изменились. Обновите страницу",
+    },
+    fallback: "Не удалось сохранить порядок фото. Попробуйте ещё раз",
+  });
 }

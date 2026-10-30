@@ -1,15 +1,8 @@
-import {
-  getRequestErrorMessage,
-  isSessionExpiredError,
-  sessionExpiredMessage,
-} from "@/shared/api/getRequestErrorMessage";
-import { HttpError } from "@/shared/api/httpError";
+import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 
 export function getSaveContactLinksErrorMessage(error: unknown): string {
-  if (isSessionExpiredError(error)) return sessionExpiredMessage;
-  if (error instanceof HttpError && error.status === 400) {
-    return "Сервер не принял ссылки. Проверьте их и попробуйте ещё раз";
-  }
-
-  return getRequestErrorMessage(error, "Не удалось сохранить ссылки. Попробуйте ещё раз");
+  return getSaveErrorMessage(error, {
+    byStatus: { 400: "Сервер не принял ссылки. Проверьте их и попробуйте ещё раз" },
+    fallback: "Не удалось сохранить ссылки. Попробуйте ещё раз",
+  });
 }

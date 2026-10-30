@@ -2,7 +2,7 @@ import { HttpResponse, http as mswHttp } from "msw/http";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { savePageHeroes } from "@/features/edit-page-heroes/model/savePageHeroes";
-import { sessionExpiredMessage } from "@/shared/api/getRequestErrorMessage";
+import { sessionExpiredMessage } from "@/shared/api/requestErrorMessages";
 
 import { csrfHandler, noContent, problem } from "../../../support/handlers";
 import { apiImage, imageFile } from "../../../support/images";

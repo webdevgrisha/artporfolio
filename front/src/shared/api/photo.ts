@@ -2,13 +2,8 @@ import { z } from "zod";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
-import {
-  getRequestErrorMessage,
-  isSessionExpiredError,
-  sessionExpiredMessage,
-} from "./getRequestErrorMessage";
-import { HttpError } from "./httpError";
 import { imageSchema, imageUploadRules } from "./image";
+import { getSaveErrorMessage } from "./requestErrorMessages";
 
 /**
  * A single photo with its description, such as «Моё фото» or the contacts photo
@@ -27,13 +22,13 @@ export const photoResponseSchema = z.object({
 
 /** For a failed upload, alt text update or deletion of a photo. */
 export function getSavePhotoErrorMessage(error: unknown): string {
-  if (isSessionExpiredError(error)) return sessionExpiredMessage;
-  if (error instanceof HttpError) {
-    if (error.status === 400) return "Сервер не принял фото. Попробуйте другой файл";
-    // Only an update of the alt text expects an existing photo.
-    if (error.status === 404) return "Фото уже удалено. Обновите страницу";
-    if (error.status === 413) return `Фото больше ${formatFileSize(imageUploadRules.maxFileSize)}`;
-  }
-
-  return getRequestErrorMessage(error, "Не удалось сохранить фото. Попробуйте ещё раз");
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      400: "Сервер не принял фото. Попробуйте другой файл",
+      // Only an update of the alt text expects an existing photo.
+      404: "Фото уже удалено. Обновите страницу",
+      413: `Фото больше ${formatFileSize(imageUploadRules.maxFileSize)}`,
+    },
+    fallback: "Не удалось сохранить фото. Попробуйте ещё раз",
+  });
 }

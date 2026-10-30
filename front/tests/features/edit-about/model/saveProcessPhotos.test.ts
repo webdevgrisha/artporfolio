@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import type { ProcessPhotosChanges } from "@/features/edit-about/model/processPhotosChanges";
 import { saveProcessPhotos } from "@/features/edit-about/model/saveProcessPhotos";
-import { sessionExpiredMessage } from "@/shared/api/getRequestErrorMessage";
+import { sessionExpiredMessage } from "@/shared/api/requestErrorMessages";
 
 import { csrfHandler, noContent, problem } from "../../../support/handlers";
 import { apiProcessPhoto, imageFile } from "../../../support/images";

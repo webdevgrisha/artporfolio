@@ -1,6 +1,6 @@
 import { useRouteError } from "react-router";
 
-import { getRequestErrorMessage } from "@/shared/api/getRequestErrorMessage";
+import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import { documentTitle } from "@/shared/lib/documentTitle";
 import { Button } from "@/shared/ui/button";
 

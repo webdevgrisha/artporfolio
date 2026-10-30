@@ -2,9 +2,9 @@ import { FirebaseError } from "firebase/app";
 import { describe, expect, it } from "vitest";
 
 import { getLoginErrorMessage } from "@/features/login/lib/getLoginErrorMessage";
-import { networkErrorMessage } from "@/shared/api/getRequestErrorMessage";
 import { HttpError } from "@/shared/api/httpError";
 import { NetworkError } from "@/shared/api/networkError";
+import { networkErrorMessage } from "@/shared/api/requestErrorMessages";
 
 const invalidCredentialsMessage = "Неверный логин или пароль";
 const fallbackMessage = "Не удалось выполнить вход. Попробуйте ещё раз";

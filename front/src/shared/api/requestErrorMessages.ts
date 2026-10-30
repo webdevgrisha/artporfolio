@@ -30,3 +30,22 @@ export function getRequestErrorMessage(error: unknown, fallbackMessage: string):
 
   return fallbackMessage;
 }
+
+export interface SaveErrorMessages {
+  /** For a rejection the API answers with this status, such as 400 for an invalid body. */
+  byStatus?: Readonly<Partial<Record<number, string>>>;
+  /** For any other failure; it names what was not saved. */
+  fallback: string;
+}
+
+/**
+ * The message for a failed change, such as a save or a deletion: an expired session first, then
+ * the messages of the change for its statuses, then no connection or a server error.
+ */
+export function getSaveErrorMessage(error: unknown, messages: SaveErrorMessages): string {
+  if (isSessionExpiredError(error)) return sessionExpiredMessage;
+
+  const statusMessage = error instanceof HttpError ? messages.byStatus?.[error.status] : undefined;
+
+  return statusMessage ?? getRequestErrorMessage(error, messages.fallback);
+}

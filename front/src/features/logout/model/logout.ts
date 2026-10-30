@@ -1,10 +1,10 @@
 import { type ActionFunctionArgs, redirect, replace } from "react-router";
 
 import { getCurrentUser } from "@/entities/user";
-import { getRequestErrorMessage } from "@/shared/api/getRequestErrorMessage";
 import { http } from "@/shared/api/http";
 import { HttpError } from "@/shared/api/httpError";
 import { queryClient } from "@/shared/api/queryClient";
+import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import { adminHomePath, routes } from "@/shared/config/routes";
 import { showErrorToast } from "@/shared/ui/toast";
 
