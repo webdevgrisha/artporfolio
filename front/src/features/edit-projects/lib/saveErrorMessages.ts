@@ -12,10 +12,20 @@ export function getSaveIntroErrorMessage(error: unknown): string {
   });
 }
 
-export function getReorderErrorMessage(error: unknown): string {
+export function getSaveOrderErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
     byStatus: {
       // The projects were added, deleted or moved since this page loaded them.
+      412: "Проекты уже изменили в другой вкладке",
+      422: "Проекты уже изменили в другой вкладке. Обновите страницу",
+    },
+    fallback: "Не удалось сохранить порядок. Попробуйте ещё раз",
+  });
+}
+
+export function getReorderErrorMessage(error: unknown): string {
+  return getSaveErrorMessage(error, {
+    byStatus: {
       412: "Проекты уже изменили в другой вкладке. Порядок обновлён, попробуйте ещё раз",
       422: "Проекты уже изменили в другой вкладке. Порядок обновлён, попробуйте ещё раз",
     },

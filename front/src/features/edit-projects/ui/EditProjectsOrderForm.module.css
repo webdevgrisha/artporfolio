@@ -1,0 +1,76 @@
+.rows {
+  display: flex;
+  flex-direction: column;
+  max-inline-size: 48rem;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2);
+  background: var(--color-surface);
+  border-block-end: 1px solid var(--color-border-disabled);
+}
+
+/* A moved row is marked by a bar at its start, so the rows keep their size. */
+.rowModified::before {
+  position: absolute;
+  inset-block: var(--space-2);
+  inset-inline-start: 0;
+  inline-size: 2px;
+  content: "";
+  background: var(--color-border-modified);
+}
+
+/* Lifted above the rows it passes over. */
+.rowDragging {
+  z-index: 1;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 15%);
+}
+
+.dragHandle {
+  touch-action: none;
+  cursor: grab;
+}
+
+.rowDragging .dragHandle {
+  cursor: grabbing;
+}
+
+/* The icon sizes of SortableMediaList. */
+.dragIcon {
+  inline-size: 0.75rem;
+  block-size: 1.25rem;
+}
+
+.arrowIcon {
+  inline-size: auto;
+  block-size: 1.125rem;
+}
+
+.cover {
+  display: block;
+  flex: none;
+  inline-size: 3rem;
+  block-size: 3rem;
+  object-fit: cover;
+  background: var(--color-surface-disabled);
+}
+
+.title {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.arrows {
+  display: flex;
+}
+
+.empty {
+  color: var(--color-text-muted);
+}
