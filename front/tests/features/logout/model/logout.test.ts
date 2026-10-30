@@ -33,12 +33,44 @@ describe("logoutAction", () => {
   });
 
   it("signs out when the server fails after it has cleared the session cookie", async () => {
-    server.use(mswHttp.post("/api/auth/logout", () => problem(500)));
+    server.use(
+      mswHttp.post("/api/auth/logout", () => problem(500)),
+      mswHttp.get("/api/auth/me", () => problem(401)),
+    );
 
     const response = await logout("/admin/about");
 
     expect(response.headers.get("Location")).toBe("/admin/login");
     expect(showErrorToast).not.toHaveBeenCalled();
+  });
+
+  it("keeps the user on their page when a server error left the session", async () => {
+    server.use(
+      mswHttp.post("/api/auth/logout", () => problem(502)),
+      mswHttp.get("/api/auth/me", () =>
+        HttpResponse.json({ user: { email: "admin@example.com", uid: "admin" } }),
+      ),
+    );
+
+    const response = await logout("/admin/about");
+
+    expect(response.headers.get("Location")).toBe("/admin/about");
+    expect(queryClient.getQueryData(["about"])).toEqual({ text: null });
+    expect(showErrorToast).toHaveBeenCalledWith("Сервис временно недоступен. Попробуйте позже", {
+      id: "logout",
+    });
+  });
+
+  it("keeps the user on their page when the session cannot be checked after a server error", async () => {
+    server.use(
+      mswHttp.post("/api/auth/logout", () => problem(502)),
+      mswHttp.get("/api/auth/me", () => HttpResponse.error()),
+    );
+
+    const response = await logout("/admin/about");
+
+    expect(response.headers.get("Location")).toBe("/admin/about");
+    expect(showErrorToast).toHaveBeenCalledOnce();
   });
 
   it("goes to the login page when the session is already gone", async () => {

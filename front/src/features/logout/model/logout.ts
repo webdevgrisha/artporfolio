@@ -1,5 +1,6 @@
 import { type ActionFunctionArgs, redirect, replace } from "react-router";
 
+import { getCurrentUser } from "@/entities/user";
 import { getRequestErrorMessage } from "@/shared/api/getRequestErrorMessage";
 import { http } from "@/shared/api/http";
 import { HttpError } from "@/shared/api/httpError";
@@ -20,12 +21,22 @@ function getReturnPath(value: FormDataEntryValue | null): string {
   return typeof value === "string" && value.startsWith("/admin/") ? value : adminHomePath;
 }
 
+/** Whether the browser still has a session: the API answers 401 without one. */
+async function hasSession(signal: AbortSignal): Promise<boolean> {
+  try {
+    await getCurrentUser({ signal });
+    return true;
+  } catch (error) {
+    if (error instanceof HttpError && error.status === 401) return false;
+    throw error;
+  }
+}
+
 /**
- * Ends the session. The server clears the session cookie before it revokes the session, so a
- * server error while revoking still signs the user out. Rejects when the request was refused or
- * never reached the server: then the session is still there.
+ * Ends the session. Rejects while the session may still be there: the request was refused, never
+ * reached the server, or the session could not be checked after a server error.
  */
-async function logout(): Promise<void> {
+async function logout(signal: AbortSignal): Promise<void> {
   try {
     await endSession();
   } catch (error) {
@@ -33,6 +44,10 @@ async function logout(): Promise<void> {
     // The API gives no CSRF token without a session cookie: the user is already signed out.
     if (error.status === 401) return;
     if (error.status < 500) throw error;
+    // The server clears the session cookie before it revokes the session, so an error while
+    // revoking still signs this browser out. A proxy may answer with an error before the server
+    // is reached, though, and then the session stays: only the session itself tells which.
+    if (await hasSession(signal)) throw error;
   }
 }
 
@@ -41,7 +56,7 @@ export async function logoutAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   try {
-    await logout();
+    await logout(request.signal);
   } catch (error) {
     showErrorToast(getRequestErrorMessage(error, "Не удалось выйти. Попробуйте ещё раз"), {
       id: logoutToastId,
