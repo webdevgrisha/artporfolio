@@ -3,7 +3,7 @@ import { signOut } from "firebase/auth";
 import type { AuthUser } from "@/entities/user";
 import { firebaseAuth } from "@/shared/api/firebase";
 
-import { createSession } from "../api/sessionApi";
+import { createSession } from "../api/createSession";
 import { signInWithFirebase } from "../api/signInWithFirebase";
 
 export interface LoginCredentials {

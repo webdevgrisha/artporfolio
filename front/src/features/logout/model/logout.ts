@@ -8,7 +8,7 @@ import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import { routes, toAdminPath } from "@/shared/config/routes";
 import { showErrorToast } from "@/shared/ui/toast";
 
-import { endSession } from "../api/sessionApi";
+import { endSession } from "../api/endSession";
 
 /** The form field with the page the logout was sent from. */
 export const returnToField = "returnTo";
