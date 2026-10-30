@@ -14,9 +14,11 @@ interface MediaPreviewDialogProps {
 
 /** Shows an item in full, with its size in pixels measured once the image loads. */
 export function MediaPreviewDialog({ item, onClose }: MediaPreviewDialogProps) {
-  // Kept with its item, so the size of the previous item is never shown for the next one.
-  const [loadedSize, setLoadedSize] = React.useState<{ id: string; text: string }>();
-  const size = item && loadedSize?.id === item.id ? loadedSize.text : undefined;
+  const source = item ? (item.fullSizeSource ?? item.source) : undefined;
+  // Kept with its image, not its item: a replaced file keeps the item but is another image, and
+  // the size of the previous one must not be shown for it.
+  const [loadedSize, setLoadedSize] = React.useState<{ source: File | string; text: string }>();
+  const size = source !== undefined && loadedSize?.source === source ? loadedSize.text : undefined;
 
   return (
     <PreviewDialog
@@ -25,13 +27,13 @@ export function MediaPreviewDialog({ item, onClose }: MediaPreviewDialogProps) {
       description={size}
       onClose={onClose}
     >
-      {item ? (
+      {source !== undefined ? (
         <MediaImage
           className={styles.image}
-          source={item.fullSizeSource ?? item.source}
+          source={source}
           onLoad={({ currentTarget: { naturalHeight, naturalWidth } }) =>
             setLoadedSize({
-              id: item.id,
+              source,
               text: `${String(naturalWidth)} × ${String(naturalHeight)} px`,
             })
           }
