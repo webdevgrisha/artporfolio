@@ -20,6 +20,15 @@
   flex: none;
 }
 
+/* Takes the place of the remove button, so the row keeps its height. */
+.spinner {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--min-tap-target-size);
+  block-size: var(--min-tap-target-size);
+}
+
 .removeIcon {
   inline-size: 1rem;
   block-size: 1.125rem;

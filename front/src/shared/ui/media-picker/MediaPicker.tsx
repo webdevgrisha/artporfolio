@@ -12,6 +12,7 @@ import {
   MediaPreviewDialog,
   MediaThumbnailButton,
 } from "@/shared/ui/media-preview";
+import { Spinner } from "@/shared/ui/spinner";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./MediaPicker.module.css";
@@ -21,6 +22,11 @@ interface MediaPickerProps {
   disabled?: boolean;
   /** The error of the field, including the rejection reported with `onRejectionChange`. */
   error?: string;
+  /**
+   * The owner is sending the file or its removal: the field is disabled, and a spinner stands in
+   * for the remove button.
+   */
+  isBusy?: boolean;
   /** Highlights a file that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
   /** The current file; picking another one replaces it. */
@@ -40,12 +46,13 @@ interface MediaPickerProps {
 /**
  * Picks one file with the attachment button or by dropping it onto the frame, and shows it as a
  * thumbnail that opens it in full. It only reports the choice and the refusals: the owner keeps
- * the file and uploads it on save.
+ * the file and uploads it, on save or at once.
  */
 export function MediaPicker({
   className,
   disabled = false,
   error,
+  isBusy = false,
   isModified = false,
   item,
   label,
@@ -58,7 +65,8 @@ export function MediaPicker({
   const selectButtonRef = React.useRef<HTMLButtonElement>(null);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
   const selectLabel = item ? "Заменить файл" : "Выбрать файл";
-  const { dropTargetProps, isDragOver } = useFileDrop({ disabled, onDrop: pickFile });
+  const isDisabled = disabled || isBusy;
+  const { dropTargetProps, isDragOver } = useFileDrop({ disabled: isDisabled, onDrop: pickFile });
 
   function pickFile(fileList: FileList) {
     const [file] = Array.from(fileList);
@@ -86,20 +94,26 @@ export function MediaPicker({
         label={label}
         hint={`${rules.acceptLabel}, до ${formatFileSize(rules.maxFileSize)}`}
         error={error}
-        disabled={disabled}
+        disabled={isDisabled}
         isModified={isModified}
         isDragOver={isDragOver}
         dropTargetProps={dropTargetProps}
       >
         {item ? (
-          <div className={styles.item}>
+          <div className={styles.item} aria-busy={isBusy}>
             <div className={styles.itemHeader}>
               <MediaFileName item={item} />
-              <Tooltip className={styles.removeTooltip} content={`Удалить ${item.name}`}>
-                <IconButton label={`Удалить ${item.name}`} onClick={removeItem}>
-                  <TrashIcon className={styles.removeIcon} />
-                </IconButton>
-              </Tooltip>
+              {isBusy ? (
+                <span className={styles.spinner}>
+                  <Spinner label="Сохранение" />
+                </span>
+              ) : (
+                <Tooltip className={styles.removeTooltip} content={`Удалить ${item.name}`}>
+                  <IconButton label={`Удалить ${item.name}`} onClick={removeItem}>
+                    <TrashIcon className={styles.removeIcon} />
+                  </IconButton>
+                </Tooltip>
+              )}
             </div>
             <MediaThumbnailButton
               className={styles.thumbnail}
