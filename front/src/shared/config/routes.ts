@@ -14,6 +14,7 @@ export const routes = {
   projects: "/admin/projects",
   projectsAll: "/admin/projects/all",
   projectsIntro: "/admin/projects/intro",
+  projectsOrder: "/admin/projects/order",
   sitePages: "/admin/pages",
 } as const;
 

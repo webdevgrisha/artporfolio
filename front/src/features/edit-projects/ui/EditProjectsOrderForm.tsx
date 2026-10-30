@@ -39,8 +39,8 @@ function toFormValues(ids: string[]): ProjectsOrderFormValues {
 
 /**
  * The order of the projects on the site. Projects are moved by dragging their handle or with the
- * arrow buttons, which also work without a pointer (WCAG 2.5.7), and the order is saved at once
- * with «Сохранить».
+ * arrow buttons, which also work without a pointer (WCAG 2.5.7); the new order is sent with
+ * «Сохранить», all at once.
  */
 export function EditProjectsOrderForm({ className, order, projects }: EditProjectsOrderFormProps) {
   const form = useForm<ProjectsOrderFormValues>({ defaultValues: toFormValues(order.data) });

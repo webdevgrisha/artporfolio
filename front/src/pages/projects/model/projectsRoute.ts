@@ -18,6 +18,12 @@ export async function projectsIntroLoader() {
 }
 
 export async function projectsTableLoader() {
+  await queryClient.fetchQuery({ ...projectsQuery, staleTime: 0 });
+
+  return null;
+}
+
+export async function projectsOrderLoader() {
   await Promise.all([
     queryClient.fetchQuery({ ...projectsQuery, staleTime: 0 }),
     queryClient.fetchQuery({ ...projectsOrderQuery, staleTime: 0 }),

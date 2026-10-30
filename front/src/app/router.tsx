@@ -1,9 +1,17 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter, Navigate, type ShouldRevalidateFunctionArgs } from "react-router";
 
 import { ErrorPage } from "@/pages/error";
 import { NotFoundPage } from "@/pages/not-found";
 import { adminHomePath, adminRouteId, routes } from "@/shared/config/routes";
 import { PageLoading } from "@/shared/ui/page-loading";
+
+/**
+ * A change of the search parameters alone, such as the search of a table, is a view of the same
+ * page: it loads nothing again.
+ */
+function changesOnlySearch({ currentUrl, nextUrl }: ShouldRevalidateFunctionArgs): boolean {
+  return currentUrl.pathname === nextUrl.pathname && currentUrl.search !== nextUrl.search;
+}
 
 export const router = createBrowserRouter([
   {
@@ -49,9 +57,10 @@ export const router = createBrowserRouter([
               return {
                 Component: AdminLayout,
                 loader: requireSession,
-                // The session is checked on every navigation, not only on the first one: when it
-                // has expired, its redirect to the login page wins over the failed page loader.
-                shouldRevalidate: () => true,
+                // The session is checked on every navigation to a page, not only on the first one:
+                // when it has expired, its redirect to the login page wins over the failed page
+                // loader.
+                shouldRevalidate: (args) => !changesOnlySearch(args),
               };
             },
             children: [
@@ -99,7 +108,22 @@ export const router = createBrowserRouter([
                             "@/pages/projects"
                           );
 
-                          return { Component: ProjectsTableSection, loader: projectsTableLoader };
+                          return {
+                            Component: ProjectsTableSection,
+                            loader: projectsTableLoader,
+                            shouldRevalidate: (args) =>
+                              !changesOnlySearch(args) && args.defaultShouldRevalidate,
+                          };
+                        },
+                      },
+                      {
+                        path: routes.projectsOrder,
+                        lazy: async () => {
+                          const { ProjectsOrderSection, projectsOrderLoader } = await import(
+                            "@/pages/projects"
+                          );
+
+                          return { Component: ProjectsOrderSection, loader: projectsOrderLoader };
                         },
                       },
                     ],

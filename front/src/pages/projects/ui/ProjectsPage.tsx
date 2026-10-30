@@ -8,9 +8,10 @@ import styles from "./ProjectsPage.module.css";
 const sections = [
   { label: "Основной текст", to: routes.projectsIntro },
   { label: "Все проекты", to: routes.projectsAll },
+  { label: "Порядок на сайте", to: routes.projectsOrder },
 ] as const;
 
-/** The text above the projects and the list of projects are saved independently. */
+/** The text above the projects, the projects and their order on the site are saved independently. */
 export function ProjectsPage() {
   return (
     <div className={styles.root}>
