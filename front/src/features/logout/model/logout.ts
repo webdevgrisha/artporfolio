@@ -5,7 +5,7 @@ import { http } from "@/shared/api/http";
 import { HttpError } from "@/shared/api/httpError";
 import { queryClient } from "@/shared/api/queryClient";
 import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
-import { adminHomePath, routes } from "@/shared/config/routes";
+import { routes, toAdminPath } from "@/shared/config/routes";
 import { showErrorToast } from "@/shared/ui/toast";
 
 import { endSession } from "../api/sessionApi";
@@ -15,11 +15,6 @@ export const returnToField = "returnTo";
 
 // One toast for a failed logout: a repeated failure replaces the previous one.
 const logoutToastId = "logout";
-
-function getReturnPath(value: FormDataEntryValue | null): string {
-  // Only back to an admin page, never to an arbitrary URL from the form.
-  return typeof value === "string" && value.startsWith("/admin/") ? value : adminHomePath;
-}
 
 /** Whether the browser still has a session: the API answers 401 without one. */
 async function hasSession(signal: AbortSignal): Promise<boolean> {
@@ -63,7 +58,7 @@ export async function logoutAction({ request }: ActionFunctionArgs) {
     });
 
     // The user is still signed in, so they stay on their page; the page keeps its state.
-    return replace(getReturnPath(formData.get(returnToField)));
+    return replace(toAdminPath(formData.get(returnToField)));
   }
 
   // The data of the session stays in the tab no longer than the session.
