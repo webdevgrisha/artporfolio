@@ -10,6 +10,17 @@ vi.mock("firebase-functions/logger", () => logger);
 import { errorHandler } from "#shared/middleware/error";
 
 describe("errorHandler", () => {
+  it("leaves a response that has already started to Express", () => {
+    const response = { headersSent: true, status: vi.fn() } as unknown as Response;
+    const next = vi.fn();
+    const error = new Error("Failed while streaming");
+
+    errorHandler(error, {} as Request, response, next as NextFunction);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(response.status).not.toHaveBeenCalled();
+  });
+
   it("does not expose unexpected error details", () => {
     const response = {
       json: vi.fn(),

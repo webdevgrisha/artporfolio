@@ -49,7 +49,14 @@ function sendProblem(response: Response, { detail, errors = [], status }: Proble
   response.status(status).type("application/problem+json").json(body);
 }
 
-export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
+export const errorHandler: ErrorRequestHandler = (error, _request, response, next) => {
+  // The response has started, so it can no longer become an error; Express's own handler closes
+  // the connection.
+  if (response.headersSent) {
+    next(error);
+    return;
+  }
+
   if (error instanceof HttpError) {
     const errors = error instanceof BadRequestError ? error.errors : [];
 
