@@ -70,6 +70,21 @@ function encode(image: Sharp, format: OutputFormat): Sharp {
 }
 
 /**
+ * The pixels are decoded only here: reading the metadata checks the header alone. sharp checks the
+ * options when they are set, so a failure here comes from the data of the upload, such as a file
+ * cut off in the middle.
+ */
+async function toEncodedImage(image: Sharp, format: OutputFormat): Promise<EncodedImage> {
+  const { data, info } = await encode(image, format)
+    .toBuffer({ resolveWithObject: true })
+    .catch(() => {
+      throw new BadRequestError("The image is damaged");
+    });
+
+  return { data, format, height: info.height, width: info.width };
+}
+
+/**
  * Turns an upload into web images: every target width in every format. The image is rotated
  * according to its EXIF orientation and resized without cropping. sharp converts the output to
  * sRGB and drops all metadata, including the location.
@@ -84,9 +99,7 @@ export async function processImage(input: Buffer): Promise<ProcessedImage> {
       const resized = sharp(input, { limitInputPixels: maxInputPixels })
         .autoOrient()
         .resize({ width });
-      const { data, info } = await encode(resized, format).toBuffer({ resolveWithObject: true });
-
-      images.push({ data, format, height: info.height, width: info.width });
+      images.push(await toEncodedImage(resized, format));
     }
   }
 
