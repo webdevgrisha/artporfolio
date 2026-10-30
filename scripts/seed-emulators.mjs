@@ -1,6 +1,6 @@
 // Fills the running emulators with demo content through the API, as the admin would: page heroes,
-// the About page, the contacts, and the projects with their photos. Every run replaces what the
-// previous one left, so the admin always starts from the same content. The images are drawn here,
+// the About page, the contacts, and the projects with their photos. Every run first empties the
+// Firestore emulator, so the admin always starts from the same content. The images are drawn here,
 // so the result is the same on every machine and needs no network.
 //
 //   pnpm emulators:seed [email] [password]
@@ -20,6 +20,7 @@ const { emulators } = JSON.parse(readFileSync("firebase.json", "utf8"));
 const projectId = firebaseProjects.default;
 const apiUrl = `http://127.0.0.1:${emulators.functions.port}/${projectId}/europe-west1/api/api`;
 const authUrl = `http://127.0.0.1:${emulators.auth.port}/identitytoolkit.googleapis.com/v1`;
+const firestoreDocumentsUrl = `http://127.0.0.1:${emulators.firestore.port}/emulator/v1/projects/${projectId}/databases/(default)/documents`;
 
 // ---------------------------------------------------------------------------------------------
 // Images
@@ -324,10 +325,6 @@ class Api {
     this.#csrfToken = csrfToken;
   }
 
-  async get(path) {
-    return (await this.#send("GET", path)).json();
-  }
-
   /** A change that replaces whatever is saved: the seed does not edit, it starts over. */
   async put(path, json) {
     return this.#send("PUT", path, { ifMatch: "*", json });
@@ -335,10 +332,6 @@ class Api {
 
   async post(path, json) {
     return (await this.#send("POST", path, { json })).json();
-  }
-
-  async delete(path) {
-    return this.#send("DELETE", path, { ifMatch: "*" });
   }
 
   /** Uploads a JPEG and returns the id that the content refers to it by. */
@@ -446,11 +439,6 @@ async function seedContacts(api) {
 async function seedProjects(api) {
   await api.put("/projects-intro", { text: projectsIntro });
 
-  const { projects: saved } = await api.get("/projects");
-  for (const project of saved) {
-    await api.delete(`/projects/${project.id}`);
-  }
-
   // A new project goes to the top of the list, so the last one is created first.
   for (const [index, project] of projects.map((project, index) => [index, project]).reverse()) {
     const photos = [];
@@ -476,8 +464,25 @@ async function seedProjects(api) {
   }
 }
 
+/**
+ * Empties the Firestore emulator, so content saved in an older shape never stops the API, and
+ * nothing of the previous run is left. The files of that run stay in the Storage emulator, which
+ * forgets them when it stops.
+ */
+async function clearFirestore() {
+  const response = await fetch(firestoreDocumentsUrl, { method: "DELETE" }).catch(() => {
+    throw new Error("The Firestore emulator is not running: start it with pnpm dev:backend");
+  });
+
+  if (!response.ok) {
+    throw new Error(`Cannot clear the Firestore emulator: ${String(response.status)}`);
+  }
+}
+
 const startedAt = Date.now();
 const api = new Api();
+
+await clearFirestore();
 
 await api.signIn();
 console.log(`Seeding ${apiUrl} as ${email}`);

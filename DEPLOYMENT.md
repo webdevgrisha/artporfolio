@@ -97,5 +97,5 @@ pnpm emulators:seed            # admin@example.com / admin123
 pnpm emulators:admin [email] [password]   # only the admin
 ```
 
-Every run of `emulators:seed` replaces what the previous one left. Its images are drawn by the script
+Every run of `emulators:seed` first empties the Firestore emulator, then fills it again. Its images are drawn by the script
 (`scripts/seed-emulators.mjs`), so the content is the same on every machine and needs no network.
