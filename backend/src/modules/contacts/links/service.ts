@@ -1,7 +1,7 @@
 import type { DocumentSnapshot } from "firebase-admin/firestore";
 
 import { contactsDocument } from "#modules/contacts/document";
-import { type ContactLinks, storedContactLinksSchema } from "#modules/contacts/links/schema";
+import { type ContactLinks, contactLinksSchema } from "#modules/contacts/links/schema";
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 
@@ -17,7 +17,7 @@ const emptyLinks: ContactLinks = {
  * document may not exist yet, or hold only the photo when the links were never saved.
  */
 export function readContactLinks(snapshot: DocumentSnapshot): ContactLinks {
-  return storedContactLinksSchema.parse({ ...emptyLinks, ...snapshot.data() });
+  return contactLinksSchema.parse({ ...emptyLinks, ...snapshot.data() });
 }
 
 /** The links with the entity tag for If-Match; the tag follows the stored links. */

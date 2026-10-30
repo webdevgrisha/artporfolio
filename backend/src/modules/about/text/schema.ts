@@ -19,19 +19,10 @@ export const aboutTextBodySchema = z.strictObject({
 });
 
 /**
- * The texts as stored in Firestore. Only their shape is checked: the limits above apply when the
- * texts are saved, so tightening a limit later never makes saved texts unreadable.
- */
-export const storedAboutTextSchema = z.object({
-  about: z.string(),
-  biography: z.string(),
-  creation: z.string(),
-});
-
-/**
- * The texts as the API returns them: as they were saved, so only their shape is described. A text
- * saved before a limit was lowered is returned unchanged. Every text is empty until the texts are
- * first saved.
+ * The texts as stored in Firestore and as the API returns them. Only their shape is checked: the
+ * limits above apply when the texts are saved, so tightening a limit later never makes saved texts
+ * unreadable, and a text saved before is returned unchanged. Every text is empty until the texts
+ * are first saved.
  */
 export const aboutTextSchema = z.object({
   about: z.string(),

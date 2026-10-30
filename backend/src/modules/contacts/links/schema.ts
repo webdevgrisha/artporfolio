@@ -23,20 +23,10 @@ export const contactLinksBodySchema = z.strictObject({
 });
 
 /**
- * The links as stored in Firestore. Only their shape is checked: the rules above apply when the
- * links are saved, so tightening a rule later never makes saved links unreadable.
- */
-export const storedContactLinksSchema = z.object({
-  email: z.string(),
-  instagram: z.string(),
-  linkedin: z.string(),
-  youtube: z.string(),
-});
-
-/**
- * The links as the API returns them: as they were saved, so only their shape is described. A
- * link saved before a rule was tightened is returned unchanged. Every link is empty until the
- * links are first saved.
+ * The links as stored in Firestore and as the API returns them. Only their shape is checked: the
+ * rules above apply when the links are saved, so tightening a rule later never makes saved links
+ * unreadable, and a link saved before is returned unchanged. Every link is empty until the links
+ * are first saved.
  */
 export const contactLinksSchema = z.object({
   email: z.string(),

@@ -1,7 +1,7 @@
 import type { DocumentSnapshot } from "firebase-admin/firestore";
 
 import { aboutDocument } from "#modules/about/document";
-import { type AboutText, storedAboutTextSchema } from "#modules/about/text/schema";
+import { type AboutText, aboutTextSchema } from "#modules/about/text/schema";
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 
@@ -14,7 +14,7 @@ const emptyText: AboutText = { about: "", biography: "", creation: "" };
 export function readAboutText(snapshot: DocumentSnapshot): AboutText {
   const text: unknown = snapshot.get(field);
 
-  return text === undefined ? emptyText : storedAboutTextSchema.parse(text);
+  return text === undefined ? emptyText : aboutTextSchema.parse(text);
 }
 
 /** The texts with the entity tag for If-Match; the tag follows the stored texts. */
