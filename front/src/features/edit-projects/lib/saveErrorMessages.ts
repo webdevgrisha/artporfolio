@@ -23,16 +23,6 @@ export function getSaveOrderErrorMessage(error: unknown): string {
   });
 }
 
-export function getReorderErrorMessage(error: unknown): string {
-  return getSaveErrorMessage(error, {
-    byStatus: {
-      412: "Проекты уже изменили в другой вкладке. Порядок обновлён, попробуйте ещё раз",
-      422: "Проекты уже изменили в другой вкладке. Порядок обновлён, попробуйте ещё раз",
-    },
-    fallback: "Не удалось изменить порядок. Попробуйте ещё раз",
-  });
-}
-
 export function getDeleteProjectErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
     byStatus: {

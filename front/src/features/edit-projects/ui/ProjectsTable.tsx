@@ -1,198 +1,232 @@
 import {
-  type Announcements,
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  type Modifier,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type SortDirection,
+  type SortingState,
+  type Updater,
+  useReactTable,
+} from "@tanstack/react-table";
 import clsx from "clsx";
 import React from "react";
+import { Link, useSearchParams } from "react-router";
 
 import type { Project } from "@/entities/project";
-import type { Tagged } from "@/shared/api/http";
-import { routes } from "@/shared/config/routes";
-import { ButtonLink } from "@/shared/ui/button";
+import { projectPath, routes } from "@/shared/config/routes";
+import { Button, ButtonLink } from "@/shared/ui/button";
+import { ClearableInput } from "@/shared/ui/clearable-input";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from "@/shared/ui/icon";
+import { IconButton } from "@/shared/ui/icon-button";
+import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
+import { Tooltip } from "@/shared/ui/tooltip";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
-import { useDeleteProject, useReorderProjects } from "../model/projectsListMutations";
-import { ProjectRow, type ProjectRowControl } from "./ProjectRow";
+import { linkHost, matchesQuery, readTableView, writeTableView } from "../model/projectsTableView";
+import { useDeleteProject } from "../model/useDeleteProject";
 import styles from "./ProjectsTable.module.css";
 
 interface ProjectsTableProps {
   className?: string;
-  /** The ids in the order the site shows them, with the ETag that a new order sends back. */
-  order: Tagged<string[]>;
   /** In the order the site shows them. */
   projects: readonly Project[];
 }
 
-// Rows only move up and down.
-const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
+const collator = new Intl.Collator("ru", { sensitivity: "base" });
 
-const screenReaderInstructions = {
-  draggable:
-    "Чтобы взять проект, нажмите пробел или Enter. Стрелками вверх и вниз выберите новое место, " +
-    "затем нажмите пробел или Enter. Escape отменяет перемещение",
-};
+const ariaSort = {
+  asc: "ascending",
+  desc: "descending",
+} as const satisfies Record<SortDirection, string>;
 
 /**
- * Every project in the order the site shows them. A project is moved by dragging its handle or
- * with the arrow buttons, which also work without a pointer (WCAG 2.5.7); the new order is saved
- * at once. A project opens for editing by its title and is deleted after a confirmation.
+ * Every project; until it is sorted, in the order the site shows them. The search and the sorting
+ * are kept in the address. A project opens for editing by its title and is deleted after a
+ * confirmation; its place on the site is changed in «Порядок на сайте».
  */
-export function ProjectsTable({ className, order, projects }: ProjectsTableProps) {
-  const reorder = useReorderProjects();
+export function ProjectsTable({ className, projects }: ProjectsTableProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = readTableView(searchParams);
   const deletion = useDeleteProject();
   const [deleted, setDeleted] = React.useState<Project>();
-  // Announces a move made with the arrow buttons; dnd-kit announces the dragged ones.
-  const [moveAnnouncement, setMoveAnnouncement] = React.useState("");
-  // The arrow button that moved its row; its row is moved in the DOM, which drops the focus.
-  const focusedControlRef = React.useRef<{ control: ProjectRowControl; id: string }>(undefined);
-  const bodyRef = React.useRef<HTMLTableSectionElement>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  const shownProjects = React.useMemo(
+    () => projects.filter((project) => matchesQuery(project, view.query)),
+    [projects, view.query],
   );
-  const isBusy = reorder.isPending || deletion.isPending;
 
-  React.useLayoutEffect(() => {
-    const target = focusedControlRef.current;
-    if (!target) return;
+  const columns = React.useMemo<ColumnDef<Project>[]>(
+    () => [
+      {
+        id: "photos",
+        header: "Фото",
+        accessorFn: (project) => project.photos.length,
+        cell: ({ row: { original: project } }) => {
+          const [cover] = project.photos;
 
-    focusedControlRef.current = undefined;
-    const row = bodyRef.current?.querySelector(`[data-project-id="${CSS.escape(target.id)}"]`);
-    // An arrow is disabled at the end of the list: the other one takes the focus.
-    const button =
-      row?.querySelector<HTMLButtonElement>(`[data-control="${target.control}"]:not(:disabled)`) ??
-      row?.querySelector<HTMLButtonElement>('[data-control^="move"]:not(:disabled)');
-    button?.focus();
+          return (
+            <div className={styles.photos}>
+              {cover ? (
+                <MediaImage className={styles.cover} source={imageToMediaItem(cover).source} />
+              ) : (
+                <span className={styles.cover} />
+              )}
+              <span className={styles.muted}>{project.photos.length} фото</span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "title",
+        header: "Название",
+        accessorFn: (project) => project.title,
+        sortingFn: (a, b) => collator.compare(a.original.title, b.original.title),
+        cell: ({ row: { original: project } }) => (
+          <Link to={projectPath(project.id)}>{project.title}</Link>
+        ),
+      },
+      {
+        id: "link",
+        header: "Ссылка",
+        accessorFn: (project) => linkHost(project.link),
+        sortingFn: (a, b) => collator.compare(linkHost(a.original.link), linkHost(b.original.link)),
+        cell: ({ row: { original: project } }) =>
+          project.link ? (
+            <a href={project.link} target="_blank" rel="noreferrer">
+              {linkHost(project.link)}
+            </a>
+          ) : (
+            <span className={styles.muted}>Нет ссылки</span>
+          ),
+      },
+      {
+        id: "actions",
+        header: () => <VisuallyHidden>Действия</VisuallyHidden>,
+        enableSorting: false,
+        cell: ({ row: { original: project } }) => {
+          const deleteLabel = `Удалить ${project.title}`;
+
+          return (
+            <div className={styles.actions}>
+              <Tooltip content={deleteLabel}>
+                <IconButton label={deleteLabel} onClick={() => setDeleted(project)}>
+                  <TrashIcon className={styles.removeIcon} />
+                </IconButton>
+              </Tooltip>
+            </div>
+          );
+        },
+      },
+    ],
+    [],
+  );
+
+  function changeView(changes: Partial<typeof view>) {
+    // Replaces the entry: the back button leaves the table instead of undoing each letter.
+    setSearchParams(writeTableView(searchParams, { ...view, ...changes }), { replace: true });
+  }
+
+  function changeSorting(updater: Updater<SortingState>) {
+    changeView({ sorting: typeof updater === "function" ? updater(view.sorting) : updater });
+  }
+
+  const table = useReactTable({
+    columns,
+    data: shownProjects,
+    enableMultiSort: false,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: (project) => project.id,
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: changeSorting,
+    state: { sorting: view.sorting },
   });
-
-  function getIndex(id: string): number {
-    return projects.findIndex((project) => project.id === id);
-  }
-
-  function getTitle(id: string): string {
-    return projects[getIndex(id)]?.title ?? "";
-  }
-
-  function getPosition(id: string): string {
-    return `${String(getIndex(id) + 1)} из ${String(projects.length)}`;
-  }
-
-  function moveProject(from: number, to: number, control?: ProjectRowControl) {
-    const project = projects[from];
-    if (!project) return;
-
-    if (control) {
-      focusedControlRef.current = { control, id: project.id };
-      setMoveAnnouncement(
-        `Проект «${project.title}» перемещён на место ${String(to + 1)} из ${String(projects.length)}`,
-      );
-    }
-    reorder.mutate({
-      etag: order.etag,
-      ids: arrayMove(
-        projects.map(({ id }) => id),
-        from,
-        to,
-      ),
-    });
-  }
-
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    if (!over || active.id === over.id) return;
-
-    moveProject(getIndex(String(active.id)), getIndex(String(over.id)));
-  }
-
-  const announcements: Announcements = {
-    onDragStart: ({ active }) =>
-      `Проект «${getTitle(String(active.id))}» взят. Место ${getPosition(String(active.id))}`,
-    onDragOver: ({ active, over }) =>
-      over
-        ? `Проект «${getTitle(String(active.id))}» над местом ${getPosition(String(over.id))}`
-        : `Проект «${getTitle(String(active.id))}» вне списка`,
-    onDragEnd: ({ active, over }) =>
-      over
-        ? `Проект «${getTitle(String(active.id))}» перемещён на место ${getPosition(String(over.id))}`
-        : `Проект «${getTitle(String(active.id))}» остался на месте`,
-    onDragCancel: ({ active }) =>
-      `Перемещение отменено. Проект «${getTitle(String(active.id))}» остался на месте ${getPosition(String(active.id))}`,
-  };
 
   return (
     <div className={clsx(styles.root, className)}>
-      <ButtonLink className={styles.addLink} to={routes.projectNew}>
-        Добавить проект
-      </ButtonLink>
-
-      {projects.length > 0 ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis]}
-          accessibility={{ announcements, screenReaderInstructions }}
-          onDragEnd={handleDragEnd}
-        >
-          <div className={styles.scroller}>
-            <table className={styles.table}>
-              <caption>
-                <VisuallyHidden>Все проекты в порядке на сайте</VisuallyHidden>
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">
-                    <VisuallyHidden>Порядок</VisuallyHidden>
-                  </th>
-                  <th scope="col">Фото</th>
-                  <th scope="col">Название</th>
-                  <th scope="col">Ссылка</th>
-                  <th scope="col">
-                    <VisuallyHidden>Действия</VisuallyHidden>
-                  </th>
-                </tr>
-              </thead>
-              <SortableContext
-                items={projects.map(({ id }) => id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <tbody ref={bodyRef}>
-                  {projects.map((project, index) => (
-                    <ProjectRow
-                      key={project.id}
-                      project={project}
-                      disabled={isBusy}
-                      isFirst={index === 0}
-                      isLast={index === projects.length - 1}
-                      onMoveUp={() => moveProject(index, index - 1, "moveUp")}
-                      onMoveDown={() => moveProject(index, index + 1, "moveDown")}
-                      onDelete={() => setDeleted(project)}
-                    />
-                  ))}
-                </tbody>
-              </SortableContext>
-            </table>
-          </div>
-        </DndContext>
-      ) : (
-        <p className={styles.empty}>Проектов пока нет</p>
-      )}
-
-      <div aria-live="polite">
-        <VisuallyHidden>{moveAnnouncement}</VisuallyHidden>
+      <div className={styles.toolbar}>
+        <ClearableInput
+          className={styles.search}
+          label="Поиск"
+          type="search"
+          placeholder="Название или ссылка"
+          value={view.query}
+          hasValue={Boolean(view.query)}
+          clearLabel="Очистить поиск"
+          onClear={() => changeView({ query: "" })}
+          onChange={(event) => changeView({ query: event.target.value })}
+        />
+        <ButtonLink to={routes.projectNew}>Добавить проект</ButtonLink>
       </div>
+
+      {projects.length === 0 ? (
+        <p className={styles.empty}>Проектов пока нет</p>
+      ) : shownProjects.length === 0 ? (
+        <div className={styles.empty}>
+          <p>Ничего не найдено по запросу «{view.query}»</p>
+          <Button variant="text" onClick={() => changeView({ query: "" })}>
+            Сбросить поиск
+          </Button>
+        </div>
+      ) : (
+        <div className={styles.scroller}>
+          <table className={styles.table}>
+            <caption>
+              <VisuallyHidden>Все проекты</VisuallyHidden>
+            </caption>
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    const sorted = header.column.getIsSorted();
+                    const label = flexRender(header.column.columnDef.header, header.getContext());
+
+                    return (
+                      <th
+                        key={header.id}
+                        scope="col"
+                        aria-sort={
+                          header.column.getCanSort()
+                            ? sorted
+                              ? ariaSort[sorted]
+                              : "none"
+                            : undefined
+                        }
+                      >
+                        {header.column.getCanSort() ? (
+                          <button
+                            type="button"
+                            className={styles.sortButton}
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            {label}
+                            {sorted === "asc" ? <ArrowUpIcon className={styles.sortIcon} /> : null}
+                            {sorted === "desc" ? (
+                              <ArrowDownIcon className={styles.sortIcon} />
+                            ) : null}
+                          </button>
+                        ) : (
+                          label
+                        )}
+                      </th>
+                    );
+                  })}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className={styles.row}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={deleted !== undefined}

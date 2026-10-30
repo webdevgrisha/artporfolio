@@ -4,8 +4,17 @@
   gap: var(--layout-space-6);
 }
 
-.addLink {
-  align-self: flex-start;
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.search {
+  flex: 1 1 20rem;
+  max-inline-size: 32rem;
 }
 
 /* A narrow screen scrolls the table instead of squeezing its columns. */
@@ -33,44 +42,25 @@
 }
 
 .row {
-  position: relative;
-  background: var(--color-surface);
   border-block-end: 1px solid var(--color-border-disabled);
 }
 
-/* Lifted above the rows it passes over. */
-.rowDragging {
-  z-index: 1;
-  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 15%);
+.sortButton {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
+  min-block-size: var(--min-tap-target-size);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
 }
 
-.handleCell {
-  inline-size: var(--min-tap-target-size);
-}
-
-.dragHandle {
-  touch-action: none;
-  cursor: grab;
-}
-
-.rowDragging .dragHandle {
-  cursor: grabbing;
-}
-
-/* The icon sizes of SortableMediaList. */
-.dragIcon {
-  inline-size: 0.75rem;
-  block-size: 1.25rem;
-}
-
-.arrowIcon {
+.sortIcon {
   inline-size: auto;
-  block-size: 1.125rem;
-}
-
-.removeIcon {
-  inline-size: 1rem;
-  block-size: 1.125rem;
+  block-size: 0.75rem;
 }
 
 .photos {
@@ -89,10 +79,6 @@
   background: var(--color-surface-disabled);
 }
 
-.title {
-  font-weight: normal;
-}
-
 .muted {
   color: var(--color-text-muted);
 }
@@ -102,6 +88,16 @@
   justify-content: flex-end;
 }
 
+/* The icon size of SortableMediaList. */
+.removeIcon {
+  inline-size: 1rem;
+  block-size: 1.125rem;
+}
+
 .empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
   color: var(--color-text-muted);
 }
