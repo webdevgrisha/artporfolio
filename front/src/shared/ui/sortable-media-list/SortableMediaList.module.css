@@ -105,7 +105,8 @@
   color: var(--color-text-muted);
 }
 
+/* At the end, like the other actions of the admin and the button of MediaPicker. */
 .addButton {
-  align-self: flex-start;
+  align-self: flex-end;
   margin-block-start: auto;
 }
