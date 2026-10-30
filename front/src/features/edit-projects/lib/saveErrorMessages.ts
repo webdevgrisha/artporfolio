@@ -10,3 +10,23 @@ export function getSaveIntroErrorMessage(error: unknown): string {
     fallback: "Не удалось сохранить текст. Попробуйте ещё раз",
   });
 }
+
+export function getReorderErrorMessage(error: unknown): string {
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      // The projects were added, deleted or moved since this page loaded them.
+      412: "Проекты уже изменили в другой вкладке. Порядок обновлён, попробуйте ещё раз",
+      422: "Проекты уже изменили в другой вкладке. Порядок обновлён, попробуйте ещё раз",
+    },
+    fallback: "Не удалось изменить порядок. Попробуйте ещё раз",
+  });
+}
+
+export function getDeleteProjectErrorMessage(error: unknown): string {
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      404: "Проект уже удалён",
+    },
+    fallback: "Не удалось удалить проект. Попробуйте ещё раз",
+  });
+}

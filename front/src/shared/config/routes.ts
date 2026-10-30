@@ -10,11 +10,19 @@ export const routes = {
   login: "/admin/login",
   logout: "/admin/logout",
   personalization: "/admin/personalization",
+  projectNew: "/admin/projects/new",
   projects: "/admin/projects",
+  projectsAll: "/admin/projects/all",
+  projectsIntro: "/admin/projects/intro",
   sitePages: "/admin/pages",
 } as const;
 
 export const adminHomePath = routes.projects;
+
+/** The edit page of one project. */
+export function projectPath(id: string): string {
+  return `${routes.projects}/${encodeURIComponent(id)}`;
+}
 
 /**
  * The path to go to after signing in or a failed logout: a page of the admin, or the admin home.

@@ -22,7 +22,7 @@ interface ReplaceProjectParams {
 }
 
 interface DeleteProjectParams {
-  /** The ETag of the project as the admin saw it. */
+  /** The ETag of the project as the admin saw it, or `*` for whatever version is saved. */
   etag: string;
   id: string;
 }
