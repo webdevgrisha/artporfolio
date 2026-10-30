@@ -16,7 +16,7 @@
 @layer base {
   :root {
     --color-text: #000;
-    --color-text-muted: #777;
+    --color-text-muted: #767676;
     --color-text-inverse: #fff;
     --color-surface: #fff;
     --color-surface-hover: #e0e0e0;

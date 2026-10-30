@@ -1,7 +1,11 @@
 import busboy from "busboy";
 import type { Request, RequestHandler } from "express";
 
-import { BadRequestError, PayloadTooLargeError } from "#shared/http/errors";
+import {
+  BadRequestError,
+  PayloadTooLargeError,
+  UnsupportedMediaTypeError,
+} from "#shared/http/errors";
 
 /** The longest file name most file systems allow. */
 const maxFileNameLength = 255;
@@ -32,8 +36,9 @@ function createParser(request: Request, { maxFileSize }: UploadOptions) {
       limits: { fields: 10, fileSize: maxFileSize, files: 1 },
     });
   } catch {
-    // busboy throws when the Content-Type is not multipart/form-data.
-    throw new BadRequestError("Expected a multipart/form-data body");
+    // The Content-Type is multipart/form-data, so busboy throws only on a malformed one, such as
+    // a missing boundary.
+    throw new BadRequestError("Invalid multipart/form-data body");
   }
 }
 
@@ -62,6 +67,10 @@ function readMultipart(request: Request, options: UploadOptions): Promise<Multip
     });
 
     parser.on("file", (field, stream, { filename = "" }) => {
+      // busboy destroys the file stream with an error when the body ends inside the file. Without
+      // a listener that error would crash the process.
+      stream.on("error", () => reject(new BadRequestError("Invalid multipart/form-data body")));
+
       const error = fileError(field, filename, options);
 
       if (error) {
@@ -89,6 +98,12 @@ function readMultipart(request: Request, options: UploadOptions): Promise<Multip
     if (request.rawBody) {
       parser.end(request.rawBody);
     } else {
+      // pipe does not pass on the errors of the request, such as a client that disconnected, so
+      // the parser would wait for the rest of the body forever.
+      request.on("error", () => {
+        reject(new BadRequestError("The upload was interrupted"));
+        parser.destroy();
+      });
       request.pipe(parser);
     }
   });
@@ -100,6 +115,10 @@ function readMultipart(request: Request, options: UploadOptions): Promise<Multip
  */
 export function parseUpload(options: UploadOptions): RequestHandler {
   return async (request, _response, next) => {
+    if (!request.is("multipart/form-data")) {
+      throw new UnsupportedMediaTypeError("Expected a multipart/form-data body");
+    }
+
     const { fields, file } = await readMultipart(request, options);
 
     if (!file) {

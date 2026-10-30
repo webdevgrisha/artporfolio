@@ -1,23 +1,46 @@
 import type { RequestHandler } from "express";
 
-import type { PageParams } from "#modules/pages/schema";
-import { deletePageHero, getPages, savePageHero } from "#modules/pages/service";
-import { uploadedFile } from "#shared/middleware/upload";
+import type {
+  HeroBody,
+  HeroResponse,
+  PageHeroResponse,
+  PageParams,
+  PagesResponse,
+} from "#modules/pages/schema";
+import { deletePageHero, getPageHero, getPages, savePageHero } from "#modules/pages/service";
+import { ifMatchHeader } from "#shared/middleware/preconditions";
 
-export const readPages: RequestHandler = async (_request, response) => {
+export const readPages: RequestHandler<object, PagesResponse> = async (_request, response) => {
   const pages = await getPages();
 
   response.status(200).json({ pages });
 };
 
-export const uploadHero: RequestHandler<PageParams> = async (request, response) => {
-  const hero = await savePageHero(request.params.page, uploadedFile(request));
+export const readHero: RequestHandler<PageParams, PageHeroResponse> = async (request, response) => {
+  const { data, etag } = await getPageHero(request.params.page);
 
-  response.status(200).json({ hero });
+  response.status(200).set("ETag", etag).json({ hero: data });
+};
+
+export const putHero: RequestHandler<PageParams, HeroResponse, HeroBody> = async (
+  request,
+  response,
+) => {
+  const { created, data, etag } = await savePageHero(
+    request.params.page,
+    request.body.uploadId,
+    ifMatchHeader(request),
+  );
+
+  response
+    .status(created ? 201 : 200)
+    .set("ETag", etag)
+    .json({ hero: data });
 };
 
 export const deleteHero: RequestHandler<PageParams> = async (request, response) => {
-  await deletePageHero(request.params.page);
+  const etag = await deletePageHero(request.params.page, ifMatchHeader(request));
 
-  response.status(204).end();
+  // No content, but the tag of the empty hero: the next change sends it in If-Match.
+  response.status(204).set("ETag", etag).end();
 };

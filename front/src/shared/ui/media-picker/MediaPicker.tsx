@@ -1,194 +1,147 @@
-import clsx from "clsx";
-import React, { type ChangeEvent } from "react";
+import React from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
-import { FieldError, FieldHint } from "@/shared/ui/field";
+import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
+import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
+import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
+import {
+  MediaFileName,
+  type MediaItem,
+  MediaPreviewDialog,
+  MediaThumbnailButton,
+} from "@/shared/ui/media-preview";
+import { Spinner } from "@/shared/ui/spinner";
 import { Tooltip } from "@/shared/ui/tooltip";
 
-import { getFileRejection } from "./getFileRejection";
-import { MediaImage } from "./MediaImage";
 import styles from "./MediaPicker.module.css";
-import { MediaPreviewDialog } from "./MediaPreviewDialog";
-import type { MediaItem } from "./mediaItem";
-import { useFileDrop } from "./useFileDrop";
 
 interface MediaPickerProps {
-  /**
-   * Accepted MIME types and, for files whose type the browser does not know, extensions, as in
-   * the `accept` attribute: `["image/jpeg", ".jpg"]`.
-   */
-  accept: readonly string[];
-  /** The accepted types for people, e.g. `JPEG или PNG`. */
-  acceptLabel: string;
   className?: string;
   disabled?: boolean;
+  /** The error of the field, including the rejection reported with `onRejectionChange`. */
   error?: string;
-  /** Highlights files that differ from the saved ones. An error takes precedence. */
+  /**
+   * The owner is sending the file or its removal: the field is disabled, and a spinner stands in
+   * for the remove button.
+   */
+  isBusy?: boolean;
+  /** Highlights a file that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
-  /** The current files. A single file for now: picking another one is a replacement. */
-  items: readonly MediaItem[];
+  /** The current file; picking another one replaces it. */
+  item: MediaItem | undefined;
   label: string;
-  /** In bytes. */
-  maxFileSize: number;
-  /** Receives the picked files once they pass the type and size checks. */
-  onAdd: (files: File[]) => void;
-  onRemove: (id: string) => void;
+  /** Receives the picked file once it passes the type and size checks. */
+  onPick: (file: File) => void;
+  /**
+   * Receives why a file was refused, or `undefined` once the next pick or removal makes the
+   * message outdated. The owner shows it in `error` until the form is saved or reverted.
+   */
+  onRejectionChange: (message: string | undefined) => void;
+  onRemove: () => void;
+  rules: FileRules;
 }
 
 /**
- * Picks files with the attachment button or by dropping them onto the frame, and shows each one
- * as a thumbnail that opens it in full. It only reports the choice: the owner keeps the files and
- * uploads them on save.
+ * Picks one file with the attachment button or by dropping it onto the frame, and shows it as a
+ * thumbnail that opens it in full. It only reports the choice and the refusals: the owner keeps
+ * the file and uploads it, on save or at once.
  */
 export function MediaPicker({
-  accept,
-  acceptLabel,
   className,
   disabled = false,
   error,
+  isBusy = false,
   isModified = false,
-  items,
+  item,
   label,
-  maxFileSize,
-  onAdd,
+  onPick,
+  onRejectionChange,
   onRemove,
+  rules,
 }: MediaPickerProps) {
-  const id = React.useId();
-  const hintId = `${id}-hint`;
-  const errorId = `${id}-error`;
   const inputRef = React.useRef<HTMLInputElement>(null);
   const selectButtonRef = React.useRef<HTMLButtonElement>(null);
-  const [viewedItemId, setViewedItemId] = React.useState<string>();
-  // A rejected file never reaches the owner, so the picker explains it itself. The message belongs
-  // to the files it was given with: once the owner changes them (a pick, a removal, a revert),
-  // it is outdated.
-  const itemsKey = items.map((item) => item.id).join("\n");
-  const [rejection, setRejection] = React.useState<{ itemsKey: string; message: string }>();
-  const shownError = (rejection?.itemsKey === itemsKey ? rejection.message : undefined) ?? error;
-  const hasItems = items.length > 0;
-  const selectLabel = hasItems ? "Заменить файл" : "Выбрать файл";
-  const { dropTargetProps, isDragOver } = useFileDrop({ disabled, onDrop: addFiles });
+  const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+  const selectLabel = item ? "Заменить файл" : "Выбрать файл";
+  const isDisabled = disabled || isBusy;
+  const { dropTargetProps, isDragOver } = useFileDrop({ disabled: isDisabled, onDrop: pickFile });
 
-  function addFiles(fileList: FileList) {
-    const files = Array.from(fileList);
-    const [file] = files;
+  function pickFile(fileList: FileList) {
+    const [file] = Array.from(fileList);
     if (!file) return;
 
     const fileRejection =
-      files.length > 1
-        ? "Можно выбрать только один файл"
-        : getFileRejection(file, { accept, acceptLabel, maxFileSize });
+      fileList.length > 1 ? "Можно выбрать только один файл" : getFileRejection(file, rules);
 
-    setRejection(fileRejection ? { itemsKey, message: fileRejection } : undefined);
-    if (!fileRejection) onAdd(files);
+    onRejectionChange(fileRejection);
+    if (!fileRejection) onPick(file);
   }
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
-    if (event.currentTarget.files) addFiles(event.currentTarget.files);
-    // Lets the same file be picked again, e.g. after it was removed.
-    event.currentTarget.value = "";
-  }
-
-  function openFilePicker() {
-    inputRef.current?.click();
-  }
-
-  function removeItem(itemId: string) {
-    onRemove(itemId);
+  function removeItem() {
+    onRejectionChange(undefined);
+    onRemove();
     // The remove button disappears together with the file.
     selectButtonRef.current?.focus();
   }
 
   return (
     <>
-      {/* A disabled fieldset also disables every control inside it. */}
-      <fieldset
-        className={clsx(styles.root, className)}
-        disabled={disabled}
-        aria-describedby={[hintId, shownError ? errorId : undefined].filter(Boolean).join(" ")}
-        // Dropping is a shortcut for the pointer; the attachment button is the accessible way.
-        {...dropTargetProps}
+      <MediaFieldset
+        className={className}
+        frameClassName={styles.frame}
+        label={label}
+        hint={`${rules.acceptLabel}, до ${formatFileSize(rules.maxFileSize)}`}
+        error={error}
+        disabled={isDisabled}
+        isModified={isModified}
+        isDragOver={isDragOver}
+        dropTargetProps={dropTargetProps}
       >
-        <legend className={styles.label}>{label}</legend>
+        {item ? (
+          <div className={styles.item} aria-busy={isBusy}>
+            <div className={styles.itemHeader}>
+              <MediaFileName item={item} />
+              {isBusy ? (
+                <span className={styles.spinner}>
+                  <Spinner label="Сохранение" />
+                </span>
+              ) : (
+                <Tooltip className={styles.removeTooltip} content={`Удалить ${item.name}`}>
+                  <IconButton label={`Удалить ${item.name}`} onClick={removeItem}>
+                    <TrashIcon className={styles.removeIcon} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </div>
+            <MediaThumbnailButton
+              className={styles.thumbnail}
+              item={item}
+              onOpen={() => setIsPreviewOpen(true)}
+            />
+          </div>
+        ) : (
+          <p className={styles.placeholder}>Перетащите файл сюда или нажмите на скрепку</p>
+        )}
 
-        <div
-          className={clsx(styles.frame, {
-            [styles.frameModified]: isModified,
-            [styles.frameInvalid]: Boolean(shownError),
-            [styles.frameDragOver]: isDragOver,
-            [styles.frameDisabled]: disabled,
-          })}
-        >
-          {hasItems ? (
-            <ul className={styles.items}>
-              {items.map((item) => {
-                const removeLabel = `Удалить ${item.name}`;
-                const openLabel = `Открыть ${item.name}`;
-
-                return (
-                  <li key={item.id} className={styles.item}>
-                    <div className={styles.itemHeader}>
-                      <span className={styles.fileName}>
-                        {item.name}{" "}
-                        <span className={styles.fileSize}>({formatFileSize(item.size)})</span>
-                      </span>
-                      <Tooltip className={styles.removeTooltip} content={removeLabel}>
-                        <IconButton label={removeLabel} onClick={() => removeItem(item.id)}>
-                          <TrashIcon className={styles.removeIcon} />
-                        </IconButton>
-                      </Tooltip>
-                    </div>
-                    <Tooltip className={styles.thumbnailTooltip} content={openLabel}>
-                      <IconButton
-                        className={styles.thumbnailButton}
-                        label={openLabel}
-                        onClick={() => setViewedItemId(item.id)}
-                      >
-                        <MediaImage className={styles.thumbnail} source={item.source} />
-                      </IconButton>
-                    </Tooltip>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className={styles.placeholder}>Перетащите файл сюда или нажмите на скрепку</p>
-          )}
-
-          {/* The only control that picks a file: a click elsewhere in the frame does nothing. */}
-          <Tooltip className={styles.selectTooltip} content={selectLabel}>
-            <IconButton ref={selectButtonRef} label={selectLabel} onClick={openFilePicker}>
-              <AttachmentIcon className={styles.selectIcon} />
-            </IconButton>
-          </Tooltip>
-
-          {/* Opened by the attachment button, which is the accessible control. */}
-          <input
-            ref={inputRef}
-            className={styles.fileInput}
-            type="file"
-            accept={accept.join(",")}
-            tabIndex={-1}
-            aria-hidden="true"
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <FieldHint id={hintId}>
-          {acceptLabel}, до {formatFileSize(maxFileSize)}
-        </FieldHint>
-        {/* Announces a rejected file: the focus stays on the attachment button. */}
-        <div aria-live="polite">
-          {shownError ? <FieldError id={errorId}>{shownError}</FieldError> : null}
-        </div>
-      </fieldset>
+        {/* The only control that picks a file: a click elsewhere in the frame does nothing. */}
+        <Tooltip className={styles.selectTooltip} content={selectLabel}>
+          <IconButton
+            ref={selectButtonRef}
+            label={selectLabel}
+            onClick={() => inputRef.current?.click()}
+          >
+            <AttachmentIcon className={styles.selectIcon} />
+          </IconButton>
+        </Tooltip>
+        <FileInput ref={inputRef} accept={rules.accept} onPick={pickFile} />
+      </MediaFieldset>
 
       {/* Outside the fieldset: a file dropped onto the open dialog is not a pick. */}
       <MediaPreviewDialog
-        item={items.find((item) => item.id === viewedItemId)}
-        onClose={() => setViewedItemId(undefined)}
+        item={isPreviewOpen ? item : undefined}
+        onClose={() => setIsPreviewOpen(false)}
       />
     </>
   );

@@ -1,62 +1,6 @@
-.root {
-  display: flex;
-  flex-direction: column;
-  inline-size: 100%;
-  min-inline-size: 0;
-  padding: 0;
-  margin: 0;
-  border: 0;
-}
-
-/* Matches the label of Field; a fieldset is labelled by a legend instead. */
-.label {
-  padding: 0;
-  margin-block-end: var(--space-2);
-  font-size: var(--font-size-md);
-  line-height: 1.375;
-}
-
-.label::after {
-  content: ":";
-}
-
 .frame {
-  display: flex;
-  flex-direction: column;
   gap: var(--space-2);
-  min-block-size: 10rem;
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  transition: background-color var(--motion-duration-fast) var(--motion-easing-standard);
-}
-
-/* The same 2px frames as Field controls; an error takes precedence by coming later. */
-.frameModified {
-  border-color: var(--color-border-modified);
-  box-shadow: inset 0 0 0 1px var(--color-border-modified);
-}
-
-.frameInvalid {
-  border-color: var(--color-danger);
-  box-shadow: inset 0 0 0 1px var(--color-danger);
-}
-
-.frameDragOver {
-  background: var(--color-surface-hover);
-}
-
-.frameDisabled {
-  color: var(--color-text-muted);
-  background: var(--color-surface-disabled);
-}
-
-.items {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: 0;
-  list-style: none;
 }
 
 .item {
@@ -71,21 +15,18 @@
   align-items: center;
 }
 
-/* The size of the text in Field controls. */
-.fileName {
-  min-inline-size: 0;
-  font-size: var(--font-size-md);
-  overflow-wrap: anywhere;
-}
-
-/* Kept on one line: "(21,6 КБ)" must not break between the number and the unit. */
-.fileSize {
-  white-space: nowrap;
-}
-
 /* A long file name takes the rest of the row; the button keeps its size. */
 .removeTooltip {
   flex: none;
+}
+
+/* Takes the place of the remove button, so the row keeps its height. */
+.spinner {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--min-tap-target-size);
+  block-size: var(--min-tap-target-size);
 }
 
 .removeIcon {
@@ -93,28 +34,8 @@
   block-size: 1.125rem;
 }
 
-.thumbnailTooltip {
-  align-self: flex-start;
-}
-
-/* A square thumbnail, as in Figma; the whole image is in the preview dialog. */
-.thumbnailButton {
-  inline-size: 3.5rem;
-  block-size: 3.5rem;
-  border: 1px solid var(--color-border);
-}
-
 .thumbnail {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  object-fit: cover;
-}
-
-@media (hover: hover) {
-  .thumbnailButton:hover:not(:disabled) .thumbnail {
-    opacity: 0.8;
-  }
+  align-self: flex-start;
 }
 
 .placeholder {
@@ -133,8 +54,4 @@
   inline-size: auto;
   block-size: 1.875rem;
   rotate: 36deg;
-}
-
-.fileInput {
-  display: none;
 }

@@ -42,6 +42,29 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ci-placeholder
         run: pnpm build
 
+  # Separate from quality, which the deploy needs: a new advisory shows as a failed check, but
+  # does not block an urgent deploy. Ignored advisories are listed in package.json, pnpm.auditConfig:
+  # both are in @grpc/grpc-js, which only the Node build of Firestore uses; the front bundles the
+  # browser build of Firebase Auth, and Firestore pins grpc-js to ~1.9 even in its latest version.
+  audit:
+    name: Audit production dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Check for known vulnerabilities
+        run: pnpm audit --prod
+
   deploy:
     name: Deploy to Firebase
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

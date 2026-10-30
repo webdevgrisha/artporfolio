@@ -1,21 +1,16 @@
 import { contactsDocument } from "#modules/contacts/document";
-import { type Contacts, contactsSchema } from "#modules/contacts/schema";
+import { readContactLinks } from "#modules/contacts/links/service";
+import { contactPhoto } from "#modules/contacts/photo";
+import type { ContactsResponse } from "#modules/contacts/schema";
+import { readPhoto, toPhoto } from "#shared/images/photo";
 
-const emptyContacts: Contacts = {
-  email: "",
-  instagram: "",
-  linkedin: "",
-  youtube: "",
-};
-
-export async function getContacts(): Promise<Contacts> {
+/** One read for the whole page: the links and the contact photo. */
+export async function getContacts(): Promise<ContactsResponse> {
   const snapshot = await contactsDocument().get();
+  const photo = readPhoto(contactPhoto, snapshot);
 
-  // The document may not exist yet, or hold only the photo when the links were never saved.
-  return contactsSchema.parse({ ...emptyContacts, ...snapshot.data() });
-}
-
-export async function saveContacts(contacts: Contacts): Promise<void> {
-  // Merging keeps fields this form does not own, such as the future contact photo.
-  await contactsDocument().set(contacts, { merge: true });
+  return {
+    links: readContactLinks(snapshot),
+    photo: photo && toPhoto(photo),
+  };
 }

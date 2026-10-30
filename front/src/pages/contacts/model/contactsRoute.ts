@@ -1,7 +1,17 @@
-import type { LoaderFunctionArgs } from "react-router";
+import { contactLinksQuery, contactPhoto } from "@/entities/contacts";
+import { queryClient } from "@/shared/api/queryClient";
 
-import { getContacts } from "@/entities/contacts";
+// Each section loads its own resource afresh on entering it, even when it is cached: the form
+// takes its saved values and their ETag from it once, so they must not be outdated.
 
-export async function contactsLoader({ request }: LoaderFunctionArgs) {
-  return getContacts({ signal: request.signal });
+export async function contactLinksLoader() {
+  await queryClient.fetchQuery({ ...contactLinksQuery, staleTime: 0 });
+
+  return null;
+}
+
+export async function contactPhotoLoader() {
+  await queryClient.fetchQuery({ ...contactPhoto.query, staleTime: 0 });
+
+  return null;
 }

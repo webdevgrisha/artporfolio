@@ -2,21 +2,12 @@ import type { CookieOptions } from "express";
 
 import { isLocalRuntime } from "#shared/config/env";
 
-// Local runs use plain HTTP, where browsers reject Secure and __Host- cookies.
+// Local runs use plain HTTP, where browsers reject Secure cookies.
 const secure = !isLocalRuntime;
 
-const baseCookieOptions = {
-  httpOnly: true,
-  sameSite: "strict",
-  secure,
-} satisfies CookieOptions;
-
+// Firebase Hosting passes the function no cookie but __session, so the session has this name.
+// https://firebase.google.com/docs/hosting/manage-cache#using_cookies
 export const sessionCookie = {
-  name: "admin_session",
-  options: { ...baseCookieOptions, path: "/api" },
-} as const;
-
-export const csrfCookie = {
-  name: secure ? "__Host-admin_csrf" : "admin_csrf",
-  options: { ...baseCookieOptions, path: "/" },
-} as const;
+  name: "__session",
+  options: { httpOnly: true, path: "/api", sameSite: "strict", secure },
+} as const satisfies { name: string; options: CookieOptions };

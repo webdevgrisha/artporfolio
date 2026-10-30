@@ -1,0 +1,12 @@
+.root {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--layout-space-8);
+  padding: var(--layout-space-8);
+}
+
+/* Fills the frame so the form actions sit at its bottom. */
+.form {
+  flex: 1;
+}

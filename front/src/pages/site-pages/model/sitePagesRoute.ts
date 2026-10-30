@@ -1,7 +1,14 @@
-import type { LoaderFunctionArgs } from "react-router";
+import { pageHeroQuery, sitePageIds } from "@/entities/site-page";
+import { queryClient } from "@/shared/api/queryClient";
 
-import { getSitePages } from "@/entities/site-page";
+/**
+ * Loads every hero afresh on entering the page, even when it is cached: the heroes may have been
+ * changed in another tab, and each change sends back the ETag of the hero it was made from.
+ */
+export async function sitePagesLoader() {
+  await Promise.all(
+    sitePageIds.map((page) => queryClient.fetchQuery({ ...pageHeroQuery(page), staleTime: 0 })),
+  );
 
-export async function sitePagesLoader({ request }: LoaderFunctionArgs) {
-  return getSitePages({ signal: request.signal });
+  return null;
 }

@@ -1,0 +1,11 @@
+/* The size of the text in Field controls. */
+.root {
+  min-inline-size: 0;
+  font-size: var(--font-size-md);
+  overflow-wrap: anywhere;
+}
+
+/* Kept on one line: "(21,6 КБ)" must not break between the number and the unit. */
+.size {
+  white-space: nowrap;
+}

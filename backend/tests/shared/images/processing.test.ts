@@ -87,6 +87,13 @@ describe("image processing", () => {
     await expect(processImage(Buffer.from("not an image"))).rejects.toBeInstanceOf(BadRequestError);
   });
 
+  it("rejects an image whose header is whole but whose pixels are cut off", async () => {
+    const image = await solidImage(800, 600).jpeg().toBuffer();
+    const cutOff = image.subarray(0, image.length / 2);
+
+    await expect(processImage(cutOff)).rejects.toThrow(new BadRequestError("The image is damaged"));
+  });
+
   it.each(["webp", "avif"] as const)("rejects an already compressed %s source", async (format) => {
     const image = await solidImage(100, 100).toFormat(format).toBuffer();
 

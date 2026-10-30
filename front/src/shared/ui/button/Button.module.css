@@ -29,6 +29,25 @@
   background: var(--color-surface-inverse);
 }
 
+.text {
+  min-inline-size: auto;
+  padding-inline: var(--space-2);
+  border-color: transparent;
+}
+
+.danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.text.danger {
+  border-color: transparent;
+}
+
+.danger:active:not(:disabled) {
+  background: var(--color-danger);
+}
+
 .root:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 2px;
@@ -38,4 +57,8 @@
   color: var(--color-text-muted);
   cursor: not-allowed;
   border-color: var(--color-border-disabled);
+}
+
+.text:disabled {
+  border-color: transparent;
 }

@@ -1,0 +1,76 @@
+import { z } from "zod";
+
+import { formatFileSize } from "@/shared/lib/formatFileSize";
+
+import { http } from "./http";
+import { imageUploadRules } from "./image";
+import { getSaveErrorMessage } from "./requestErrorMessages";
+
+const uploadResponseSchema = z.object({
+  upload: z.object({ id: z.string() }),
+});
+
+/**
+ * How long an upload is reused for its file. The server keeps an upload for a day
+ * (backend/src/shared/images/uploads.ts); an hour stays well within it.
+ */
+const uploadReuseMs = 60 * 60 * 1000;
+
+/**
+ * The uploads made in this tab, by file: a save repeated after a failure refers to the photos
+ * already uploaded instead of sending them again, as the server encodes every one.
+ */
+const uploads = new WeakMap<File, { id: string; uploadedAt: number }>();
+
+/** A photo that was not uploaded; `cause` is the request error. */
+export class UploadError extends Error {
+  readonly fileName: string;
+
+  constructor(fileName: string, cause: unknown) {
+    super(`Could not upload ${fileName}`, { cause });
+    this.name = "UploadError";
+    this.fileName = fileName;
+  }
+}
+
+/**
+ * Uploads a photo for a later change to refer to, and returns the id of the upload. A file
+ * uploaded within the last hour is not sent again. Rejects with `UploadError`.
+ */
+export async function uploadImage(file: File): Promise<string> {
+  const upload = uploads.get(file);
+
+  if (upload && Date.now() - upload.uploadedAt < uploadReuseMs) {
+    return upload.id;
+  }
+
+  const body = new FormData();
+  body.set("file", file);
+
+  let id: string;
+
+  try {
+    const response = await http.post({ path: "/uploads", body, schema: uploadResponseSchema });
+    id = response.upload.id;
+  } catch (error) {
+    throw new UploadError(file.name, error);
+  }
+
+  uploads.set(file, { id, uploadedAt: Date.now() });
+  return id;
+}
+
+/** The request error behind a failed upload, or the error itself, for the messages by status. */
+export function requestErrorOf(error: unknown): unknown {
+  return error instanceof UploadError ? error.cause : error;
+}
+
+export function getUploadErrorMessage({ cause, fileName }: UploadError): string {
+  return getSaveErrorMessage(cause, {
+    byStatus: {
+      400: `Сервер не принял фото «${fileName}». Попробуйте другой файл`,
+      413: `Фото «${fileName}» больше ${formatFileSize(imageUploadRules.maxFileSize)}`,
+    },
+    fallback: `Не удалось загрузить фото «${fileName}». Попробуйте ещё раз`,
+  });
+}

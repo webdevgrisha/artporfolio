@@ -43,22 +43,48 @@ export async function saveFile(path: string, data: Buffer, metadata: FileMetadat
   await storageBucket().file(path).save(data, { metadata, resumable: false });
 }
 
-/** Saves a file that anyone can read through its download URL; see downloadUrl. */
-export async function saveDownloadableFile(
-  path: string,
-  data: Buffer,
+/**
+ * Copies a file within the bucket into one that anyone can read through its download URL; see
+ * downloadUrl. The copy gets its own token and the given metadata.
+ */
+export async function copyToDownloadableFile(
+  from: string,
+  to: string,
   metadata: FileMetadata,
 ): Promise<DownloadableFile> {
   const token = randomUUID();
 
   await storageBucket()
-    .file(path)
-    .save(data, {
-      metadata: { ...metadata, metadata: { firebaseStorageDownloadTokens: token } },
-      resumable: false,
+    .file(from)
+    .copy(storageBucket().file(to), {
+      ...metadata,
+      metadata: { firebaseStorageDownloadTokens: token },
     });
 
-  return { path, token };
+  return { path: to, token };
+}
+
+/** Copies a file within the bucket into one that only the backend can read. */
+export async function copyFile(from: string, to: string, metadata: FileMetadata): Promise<void> {
+  await storageBucket().file(from).copy(storageBucket().file(to), metadata);
+}
+
+function isNotFoundError(error: unknown): boolean {
+  return error instanceof Error && "code" in error && error.code === 404;
+}
+
+/** The contents of a file, or `undefined` when there is no such file. */
+export async function readFile(path: string): Promise<Buffer | undefined> {
+  try {
+    const [data] = await storageBucket().file(path).download();
+    return data;
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return undefined;
+    }
+
+    throw error;
+  }
 }
 
 export async function deleteFolder(path: string): Promise<void> {

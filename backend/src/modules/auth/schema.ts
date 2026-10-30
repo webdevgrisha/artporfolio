@@ -6,4 +6,14 @@ export const loginBodySchema = z
   })
   .strict();
 
+/** The signed-in admin. */
+export const userSchema = z.object({
+  email: z.email().nullable(),
+  uid: z.string(),
+});
+
+export const userResponseSchema = z.object({ user: userSchema });
+
 export type LoginBody = z.infer<typeof loginBodySchema>;
+export type AuthUser = z.infer<typeof userSchema>;
+export type UserResponse = z.infer<typeof userResponseSchema>;

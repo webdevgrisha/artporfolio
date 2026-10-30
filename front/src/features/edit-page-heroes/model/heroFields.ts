@@ -1,12 +1,12 @@
 import type { SitePageId } from "@/entities/site-page";
 
-interface HeroField {
+export interface HeroField {
   /** The name of the page in the admin. */
   label: string;
   page: SitePageId;
 }
 
-/** The form fields in display order: the hero of each page. */
+/** The heroes in display order, one per page. */
 export const heroFields: readonly HeroField[] = [
   { label: "Главная", page: "home" },
   { label: "Проекты", page: "projects" },

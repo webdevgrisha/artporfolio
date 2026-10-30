@@ -4,7 +4,7 @@ import styles from "./VisuallyHidden.module.css";
 
 interface VisuallyHiddenProps {
   /** The element to render, so hidden text can keep its semantics, e.g. a page heading. */
-  as?: "h1" | "h2" | "p" | "span";
+  as?: "h1" | "span";
   children: ReactNode;
 }
 

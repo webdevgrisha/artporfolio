@@ -19,37 +19,19 @@ const admin = { email: "admin@example.com", uid: "admin-uid" };
 
 let server: TestServer;
 
-function csrfHeaders(
-  csrfToken: string,
-  csrfCookie: string,
-  sessionCookie?: string,
-): Record<string, string> {
-  const cookies = [csrfCookie];
+const jsonHeaders = { "Content-Type": "application/json" };
 
-  if (sessionCookie) {
-    cookies.push(`admin_session=${sessionCookie}`);
-  }
+async function getCsrfToken(sessionCookie: string) {
+  const response = await fetch(`${server.baseUrl}/api/auth/csrf`, {
+    headers: { Cookie: `__session=${sessionCookie}` },
+  });
+  const { csrfToken } = (await response.json()) as { csrfToken: string };
 
-  return {
-    "Content-Type": "application/json",
-    Cookie: cookies.join("; "),
-    "X-CSRF-Token": csrfToken,
-  };
+  return csrfToken;
 }
 
-async function getCsrf(sessionCookie?: string) {
-  const options: RequestInit = sessionCookie
-    ? { headers: { Cookie: `admin_session=${sessionCookie}` } }
-    : {};
-  const response = await fetch(`${server.baseUrl}/api/auth/csrf`, options);
-  const body = (await response.json()) as { csrfToken: string };
-  const csrfCookie = response.headers.get("set-cookie")?.split(";", 1)[0];
-
-  if (!csrfCookie) {
-    throw new Error("CSRF endpoint did not set a cookie");
-  }
-
-  return { csrfCookie, csrfToken: body.csrfToken, response };
+function logout(headers: Record<string, string>) {
+  return fetch(`${server.baseUrl}/api/auth/logout`, { headers, method: "POST" });
 }
 
 beforeAll(async () => {
@@ -73,23 +55,37 @@ beforeEach(() => {
 afterAll(() => server.close());
 
 describe("auth routes", () => {
-  it("issues a CSRF token and matching cookie", async () => {
-    const { csrfToken, response } = await getCsrf();
-    const setCookie = response.headers.get("set-cookie");
+  it("issues a CSRF token of the session that is not cached", async () => {
+    const response = await fetch(`${server.baseUrl}/api/auth/csrf`, {
+      headers: { Cookie: "__session=firebase-session" },
+    });
+    const { csrfToken } = (await response.json()) as { csrfToken: string };
 
     expect(response.status).toBe(200);
     expect(csrfToken.length).toBeGreaterThan(32);
-    expect(setCookie).toContain("admin_csrf=");
-    expect(setCookie).toContain("Path=/");
-    expect(setCookie).toContain("SameSite=Strict");
-    expect(setCookie).toContain("HttpOnly");
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("set-cookie")).toBeNull();
+  });
+
+  it("issues the same CSRF token to every tab of a session and another to a new session", async () => {
+    const firstTab = await getCsrfToken("firebase-session");
+    const secondTab = await getCsrfToken("firebase-session");
+    const newSession = await getCsrfToken("new-firebase-session");
+
+    expect(secondTab).toBe(firstTab);
+    expect(newSession).not.toBe(firstTab);
+  });
+
+  it("issues no CSRF token without a session", async () => {
+    const response = await fetch(`${server.baseUrl}/api/auth/csrf`);
+
+    expect(response.status).toBe(401);
   });
 
   it("exchanges an ID token for an httpOnly session cookie", async () => {
-    const { csrfCookie, csrfToken } = await getCsrf();
     const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({ idToken: "firebase-id-token" }),
-      headers: csrfHeaders(csrfToken, csrfCookie),
+      headers: jsonHeaders,
       method: "POST",
     });
     const setCookie = response.headers.get("set-cookie");
@@ -97,28 +93,26 @@ describe("auth routes", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ user: admin });
     expect(auth.createSession).toHaveBeenCalledWith("firebase-id-token");
-    expect(setCookie).toContain("admin_session=firebase-session");
+    expect(setCookie).toContain("__session=firebase-session");
     expect(setCookie).toContain("HttpOnly");
     expect(setCookie).toContain("Path=/api");
     expect(setCookie).toContain("SameSite=Strict");
   });
 
-  it("rejects login without a matching CSRF token", async () => {
+  it("rejects a login that is not JSON, as a cross-site form sends", async () => {
     const response = await fetch(`${server.baseUrl}/api/auth/login`, {
-      body: JSON.stringify({ idToken: "firebase-id-token" }),
-      headers: { "Content-Type": "application/json" },
+      body: new URLSearchParams({ idToken: "firebase-id-token" }),
       method: "POST",
     });
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(415);
     expect(auth.createSession).not.toHaveBeenCalled();
   });
 
   it("rejects login without an ID token", async () => {
-    const { csrfCookie, csrfToken } = await getCsrf();
     const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({}),
-      headers: csrfHeaders(csrfToken, csrfCookie),
+      headers: jsonHeaders,
       method: "POST",
     });
 
@@ -127,41 +121,44 @@ describe("auth routes", () => {
   });
 
   it("rejects login with an invalid request body", async () => {
-    const { csrfCookie, csrfToken } = await getCsrf();
     const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({ idToken: 42 }),
-      headers: csrfHeaders(csrfToken, csrfCookie),
+      headers: jsonHeaders,
       method: "POST",
     });
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "BAD_REQUEST",
-        message: "Invalid request body",
-      },
+      type: "about:blank",
+      title: "Bad Request",
+      status: 400,
+      detail: "Invalid request body",
+      errors: [{ detail: "Invalid input: expected string, received number", pointer: "#/idToken" }],
     });
     expect(auth.createSession).not.toHaveBeenCalled();
   });
 
   it("rejects unknown login fields", async () => {
-    const { csrfCookie, csrfToken } = await getCsrf();
     const response = await fetch(`${server.baseUrl}/api/auth/login`, {
       body: JSON.stringify({ idToken: "firebase-id-token", role: "admin" }),
-      headers: csrfHeaders(csrfToken, csrfCookie),
+      headers: jsonHeaders,
       method: "POST",
     });
 
     expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      errors: [{ detail: "Unknown field", pointer: "#/role" }],
+    });
     expect(auth.createSession).not.toHaveBeenCalled();
   });
 
   it("returns the authenticated admin", async () => {
     const response = await fetch(`${server.baseUrl}/api/auth/me`, {
-      headers: { Cookie: "admin_session=firebase-session" },
+      headers: { Cookie: "__session=firebase-session" },
     });
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual({ user: admin });
     expect(auth.verifySession).toHaveBeenCalledWith("firebase-session");
   });
@@ -172,20 +169,39 @@ describe("auth routes", () => {
     const response = await fetch(`${server.baseUrl}/api/auth/me`);
 
     expect(response.status).toBe(401);
+    expect(response.headers.get("cache-control")).toBe("no-store");
     expect(auth.verifySession).toHaveBeenCalledWith(undefined);
   });
 
-  it("revokes the session and clears auth cookies", async () => {
-    const { csrfCookie, csrfToken } = await getCsrf("firebase-session");
-    const response = await fetch(`${server.baseUrl}/api/auth/logout`, {
-      headers: csrfHeaders(csrfToken, csrfCookie, "firebase-session"),
-      method: "POST",
+  it("revokes the session and clears its cookie", async () => {
+    const response = await logout({
+      Cookie: "__session=firebase-session",
+      "X-CSRF-Token": await getCsrfToken("firebase-session"),
     });
-    const setCookie = response.headers.get("set-cookie");
 
     expect(response.status).toBe(204);
     expect(auth.revokeSession).toHaveBeenCalledWith("firebase-session");
-    expect(setCookie).toContain("admin_session=");
-    expect(setCookie).toContain("admin_csrf=");
+    expect(response.headers.get("set-cookie")).toContain("__session=;");
+  });
+
+  it.each([
+    ["no CSRF token", async () => undefined],
+    ["the CSRF token of another session", () => getCsrfToken("old-firebase-session")],
+  ])("rejects a logout with %s", async (_case, csrfToken) => {
+    const token = await csrfToken();
+    const response = await logout({
+      Cookie: "__session=firebase-session",
+      ...(token ? { "X-CSRF-Token": token } : {}),
+    });
+
+    expect(response.status).toBe(403);
+    expect(auth.revokeSession).not.toHaveBeenCalled();
+  });
+
+  it("accepts a logout without a session", async () => {
+    const response = await logout({});
+
+    expect(response.status).toBe(204);
+    expect(auth.revokeSession).toHaveBeenCalledWith(undefined);
   });
 });

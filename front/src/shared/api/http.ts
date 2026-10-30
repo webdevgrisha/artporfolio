@@ -1,8 +1,19 @@
-import type { ZodType, z } from "zod";
+import { type ZodType, z } from "zod";
 
 import { HttpError } from "./httpError";
+import { NetworkError } from "./networkError";
 
-type HttpOptions = Omit<RequestInit, "body" | "credentials" | "method">;
+const csrfTokenResponseSchema = z.object({
+  csrfToken: z.string().min(1),
+});
+
+type HttpOptions = Omit<RequestInit, "body" | "credentials" | "method"> & {
+  /**
+   * Whether a change carries the CSRF token of the session in its X-CSRF-Token header; on by
+   * default. Only a request made without a session, such as signing in, goes without it.
+   */
+  withCsrfToken?: boolean;
+};
 
 interface GetOptions<TSchema extends ZodType> extends HttpOptions {
   path: string;
@@ -15,12 +26,25 @@ interface BodyOptions<TBody extends object, TSchema extends ZodType> extends Htt
   schema: TSchema;
 }
 
-interface PostVoidOptions<TBody extends object> extends HttpOptions {
-  body?: TBody;
+interface ConditionalBodyOptions<TBody extends object, TSchema extends ZodType>
+  extends BodyOptions<TBody, TSchema> {
+  /** The tag of the representation the change was made against, sent in If-Match. */
+  etag: string;
+}
+
+interface ConditionalOptions extends HttpOptions {
+  /** The tag of the representation the change was made against, sent in If-Match. */
+  etag: string;
   path: string;
 }
 
-interface DeleteOptions extends HttpOptions {
+/** A representation with its entity tag, which a later change sends back in If-Match. */
+export interface Tagged<T> {
+  data: T;
+  etag: string;
+}
+
+interface PostVoidOptions extends HttpOptions {
   path: string;
 }
 
@@ -30,8 +54,27 @@ interface RequestOptions extends HttpOptions {
   method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 }
 
+function withIfMatch(headers: HeadersInit | undefined, etag: string): Headers {
+  const requestHeaders = new Headers(headers);
+  requestHeaders.set("If-Match", etag);
+
+  return requestHeaders;
+}
+
+function readETag(response: Response): string {
+  const etag = response.headers.get("ETag");
+
+  if (!etag) {
+    throw new Error(`The response of ${response.url} has no ETag`);
+  }
+
+  return etag;
+}
+
 class Http {
   private readonly baseUrl: string;
+  /** The CSRF token of the current session, asked for by the first change and then reused. */
+  private csrfToken: Promise<string> | undefined;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -50,6 +93,20 @@ class Http {
     return schema.parse(await response.json());
   }
 
+  /** A GET that also returns the ETag of the representation, for a later conditional change. */
+  async getWithETag<TSchema extends ZodType>({
+    path,
+    schema,
+    ...options
+  }: GetOptions<TSchema>): Promise<Tagged<z.output<TSchema>>> {
+    const response = await this.request(path, {
+      ...options,
+      method: "GET",
+    });
+
+    return { data: schema.parse(await response.json()), etag: readETag(response) };
+  }
+
   async post<TBody extends object, TSchema extends ZodType>({
     body,
     path,
@@ -65,80 +122,158 @@ class Http {
     return schema.parse(await response.json());
   }
 
-  async put<TBody extends object, TSchema extends ZodType>({
+  /**
+   * A PUT that replaces the representation only while it still has the tag `etag`; the server
+   * rejects it with 412 otherwise. Returns the new representation and its tag.
+   */
+  async putIfMatch<TBody extends object, TSchema extends ZodType>({
     body,
+    etag,
+    headers,
     path,
     schema,
     ...options
-  }: BodyOptions<TBody, TSchema>): Promise<z.output<TSchema>> {
+  }: ConditionalBodyOptions<TBody, TSchema>): Promise<Tagged<z.output<TSchema>>> {
     const response = await this.request(path, {
       ...options,
       body,
+      headers: withIfMatch(headers, etag),
       method: "PUT",
     });
 
-    return schema.parse(await response.json());
+    return { data: schema.parse(await response.json()), etag: readETag(response) };
   }
 
-  async patch<TBody extends object, TSchema extends ZodType>({
+  /**
+   * A PATCH that changes the representation only while it still has the tag `etag`; the server
+   * rejects it with 412 otherwise. The body is a JSON Merge Patch (RFC 7396): the fields it sends
+   * replace those of the representation. Returns the new representation and its tag.
+   */
+  async patchIfMatch<TBody extends object, TSchema extends ZodType>({
     body,
+    etag,
+    headers,
     path,
     schema,
     ...options
-  }: BodyOptions<TBody, TSchema>): Promise<z.output<TSchema>> {
+  }: ConditionalBodyOptions<TBody, TSchema>): Promise<Tagged<z.output<TSchema>>> {
+    const requestHeaders = withIfMatch(headers, etag);
+    requestHeaders.set("Content-Type", "application/merge-patch+json");
+
     const response = await this.request(path, {
       ...options,
       body,
+      headers: requestHeaders,
       method: "PATCH",
     });
 
-    return schema.parse(await response.json());
+    return { data: schema.parse(await response.json()), etag: readETag(response) };
   }
 
-  async postVoid<TBody extends object = never>({
-    body,
-    path,
-    ...options
-  }: PostVoidOptions<TBody>): Promise<void> {
+  /** A POST without a body whose response has no content, such as an action endpoint. */
+  async postVoid({ path, ...options }: PostVoidOptions): Promise<void> {
     await this.request(path, {
       ...options,
-      body,
       method: "POST",
     });
   }
 
-  async delete({ path, ...options }: DeleteOptions): Promise<void> {
-    await this.request(path, {
+  /**
+   * A DELETE that applies only while the representation still has the tag `etag`; the server
+   * rejects it with 412 otherwise. The response has no content; returns the tag of the resource
+   * after the deletion, for the next change.
+   */
+  async deleteIfMatch({ etag, headers, path, ...options }: ConditionalOptions): Promise<string> {
+    const response = await this.request(path, {
       ...options,
+      headers: withIfMatch(headers, etag),
       method: "DELETE",
     });
+
+    return readETag(response);
+  }
+
+  /** Forgets the CSRF token, e.g. once its session has ended. */
+  forgetCsrfToken(): void {
+    this.csrfToken = undefined;
+  }
+
+  private getCsrfToken(): Promise<string> {
+    if (!this.csrfToken) {
+      const token = this.get({ path: "/auth/csrf", schema: csrfTokenResponseSchema }).then(
+        (response) => response.csrfToken,
+      );
+      this.csrfToken = token;
+      // A failed request is not kept: the next change asks again.
+      token.catch(() => {
+        if (this.csrfToken === token) this.forgetCsrfToken();
+      });
+    }
+
+    return this.csrfToken;
   }
 
   private async request(
     path: string,
-    { body, headers, ...options }: RequestOptions,
+    { withCsrfToken = true, ...options }: RequestOptions,
   ): Promise<Response> {
-    const isFormData = body instanceof FormData;
-    const requestBody = isFormData ? body : body ? JSON.stringify(body) : undefined;
-    const requestHeaders = new Headers(headers);
+    let response: Response;
 
-    // The browser sets the multipart Content-Type itself, with the boundary.
-    if (body && !isFormData) {
-      requestHeaders.set("Content-Type", "application/json");
+    if (options.method === "GET" || !withCsrfToken) {
+      response = await this.send(path, options);
+    } else {
+      const token = this.getCsrfToken();
+      response = await this.send(path, options, await token);
+
+      if (response.status === 403) {
+        // The session changed since the token was received, e.g. after signing in again in
+        // another tab. The server rejects a wrong token before it handles the change, so the
+        // change is sent once more with the token of the new session.
+        if (this.csrfToken === token) this.forgetCsrfToken();
+        response = await this.send(path, options, await this.getCsrfToken());
+      }
     }
-
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...options,
-      body: requestBody,
-      credentials: "include",
-      headers: requestHeaders,
-    });
 
     if (!response.ok) {
       throw new HttpError(response.status);
     }
 
     return response;
+  }
+
+  private async send(
+    path: string,
+    { body, headers, ...options }: Omit<RequestOptions, "withCsrfToken">,
+    csrfToken?: string,
+  ): Promise<Response> {
+    const isFormData = body instanceof FormData;
+    const requestBody = isFormData ? body : body ? JSON.stringify(body) : undefined;
+    const requestHeaders = new Headers(headers);
+
+    // The browser sets the multipart Content-Type itself, with the boundary. A JSON body is sent as
+    // application/json unless its method named another JSON type, such as a merge patch.
+    if (body && !isFormData && !requestHeaders.has("Content-Type")) {
+      requestHeaders.set("Content-Type", "application/json");
+    }
+
+    if (csrfToken) {
+      requestHeaders.set("X-CSRF-Token", csrfToken);
+    }
+
+    try {
+      return await fetch(`${this.baseUrl}${path}`, {
+        ...options,
+        body: requestBody,
+        credentials: "include",
+        headers: requestHeaders,
+      });
+    } catch (error) {
+      // A cancelled request is not a failure: its caller no longer needs the response.
+      if (options.signal?.aborted) throw error;
+
+      // fetch rejects with a TypeError, which a bug in the code throws as well.
+      throw new NetworkError(error);
+    }
   }
 }
 

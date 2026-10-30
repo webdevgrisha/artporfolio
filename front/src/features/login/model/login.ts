@@ -1,10 +1,9 @@
 import { signOut } from "firebase/auth";
 
 import type { AuthUser } from "@/entities/user";
-import { getCsrfToken } from "@/shared/api/csrf";
 import { firebaseAuth } from "@/shared/api/firebase";
 
-import { createSession } from "../api/sessionApi";
+import { createSession } from "../api/createSession";
 import { signInWithFirebase } from "../api/signInWithFirebase";
 
 export interface LoginCredentials {
@@ -16,9 +15,8 @@ export interface LoginCredentials {
 export async function login(credentials: LoginCredentials): Promise<AuthUser> {
   try {
     const idToken = await signInWithFirebase(credentials);
-    const csrfToken = await getCsrfToken();
 
-    return await createSession({ csrfToken, idToken });
+    return await createSession({ idToken });
   } finally {
     // The API session cookie is the only session; the Firebase client session is not kept.
     await signOut(firebaseAuth).catch(() => undefined);

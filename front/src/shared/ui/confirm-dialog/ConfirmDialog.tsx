@@ -18,7 +18,8 @@ interface ConfirmDialogProps {
 
 /**
  * A modal confirmation on the native `<dialog>`, which provides the focus trap, the backdrop and
- * Escape handling. The cancel button gets the initial focus as the safe choice.
+ * Escape handling. The cancel button gets the initial focus as the safe choice; the confirm button
+ * is styled as dangerous, since every confirmation so far discards data.
  */
 export function ConfirmDialog({
   cancelLabel,
@@ -49,8 +50,12 @@ export function ConfirmDialog({
       </p>
       <div className={styles.actions}>
         {/* showModal() focuses the first focusable element, so the cancel button comes first. */}
-        <Button onClick={onCancel}>{cancelLabel}</Button>
-        <Button onClick={onConfirm}>{confirmLabel}</Button>
+        <Button className={styles.action} variant="text" onClick={onCancel}>
+          {cancelLabel}
+        </Button>
+        <Button className={styles.action} variant="text" tone="danger" onClick={onConfirm}>
+          {confirmLabel}
+        </Button>
       </div>
     </dialog>
   );

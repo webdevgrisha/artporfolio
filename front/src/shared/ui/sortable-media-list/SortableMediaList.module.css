@@ -1,0 +1,111 @@
+.frame {
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-surface);
+  border-block-end: 1px solid var(--color-border-disabled);
+}
+
+.row:last-child {
+  border-block-end: 0;
+}
+
+/* A modified row is marked by a bar at its start, so the rows keep their size. */
+.rowModified::before {
+  position: absolute;
+  inset-block: var(--space-3);
+  inset-inline-start: 0;
+  inline-size: 2px;
+  content: "";
+  background: var(--color-border-modified);
+}
+
+/* Lifted above the rows it passes over. */
+.rowDragging {
+  z-index: 1;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 15%);
+}
+
+.rowHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.controlTooltip {
+  flex: none;
+}
+
+/* Touch scrolling would take the gesture instead of the drag. */
+.dragHandle {
+  touch-action: none;
+  cursor: grab;
+}
+
+.rowDragging .dragHandle {
+  cursor: grabbing;
+}
+
+.dragIcon {
+  inline-size: 0.75rem;
+  block-size: 1.25rem;
+}
+
+/* A long file name takes the rest of the row and wraps; the buttons keep their size. */
+.fileName {
+  flex: 1 1 10rem;
+}
+
+.rowActions {
+  display: flex;
+  margin-inline-start: auto;
+}
+
+.arrowIcon {
+  inline-size: auto;
+  block-size: 1.125rem;
+}
+
+.replaceIcon {
+  inline-size: auto;
+  block-size: 1.375rem;
+  rotate: 36deg;
+}
+
+.removeIcon {
+  inline-size: 1rem;
+  block-size: 1.125rem;
+}
+
+/* Under the file: full width on a phone, where the description field would be too narrow,
+   aligned with the thumbnail from tablets on. */
+@media (width >= 40rem) {
+  .rowFields {
+    padding-inline-start: calc(var(--min-tap-target-size) + var(--space-2));
+  }
+}
+
+.placeholder {
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+}
+
+.addButton {
+  align-self: flex-start;
+  margin-block-start: auto;
+}

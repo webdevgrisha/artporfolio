@@ -1,16 +1,21 @@
-import { useLoaderData } from "react-router";
+import { Outlet } from "react-router";
 
-import { EditContactsForm } from "@/features/edit-contacts";
+import { routes } from "@/shared/config/routes";
+import { TabNav } from "@/shared/ui/tab-nav";
 
-import type { contactsLoader } from "../model/contactsRoute";
 import styles from "./ContactsPage.module.css";
 
-export function ContactsPage() {
-  const contacts = useLoaderData<typeof contactsLoader>();
+const sections = [
+  { label: "Соц. сети", to: routes.contactLinks },
+  { label: "Фото", to: routes.contactPhoto },
+] as const;
 
+/** The links and the photo are saved independently, so each is a section with its own URL. */
+export function ContactsPage() {
   return (
     <div className={styles.root}>
-      <EditContactsForm className={styles.form} contacts={contacts} />
+      <TabNav label="Разделы контактов" items={sections} />
+      <Outlet />
     </div>
   );
 }

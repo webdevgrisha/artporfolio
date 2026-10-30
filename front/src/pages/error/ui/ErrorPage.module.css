@@ -1,0 +1,17 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  align-items: center;
+  justify-content: center;
+  min-block-size: 100dvh;
+  padding: var(--layout-space-8);
+  text-align: center;
+}
+
+.message {
+  max-inline-size: 32rem;
+  font-size: var(--font-size-lg);
+  font-weight: 400;
+  line-height: 1.4;
+}
