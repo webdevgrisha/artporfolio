@@ -146,7 +146,8 @@ class Http {
 
   /**
    * A PATCH that changes the representation only while it still has the tag `etag`; the server
-   * rejects it with 412 otherwise. Returns the new representation and its tag.
+   * rejects it with 412 otherwise. The body is a JSON Merge Patch (RFC 7396): the fields it sends
+   * replace those of the representation. Returns the new representation and its tag.
    */
   async patchIfMatch<TBody extends object, TSchema extends ZodType>({
     body,
@@ -156,10 +157,13 @@ class Http {
     schema,
     ...options
   }: ConditionalBodyOptions<TBody, TSchema>): Promise<Tagged<z.output<TSchema>>> {
+    const requestHeaders = withIfMatch(headers, etag);
+    requestHeaders.set("Content-Type", "application/merge-patch+json");
+
     const response = await this.request(path, {
       ...options,
       body,
-      headers: withIfMatch(headers, etag),
+      headers: requestHeaders,
       method: "PATCH",
     });
 
@@ -243,8 +247,9 @@ class Http {
     const requestBody = isFormData ? body : body ? JSON.stringify(body) : undefined;
     const requestHeaders = new Headers(headers);
 
-    // The browser sets the multipart Content-Type itself, with the boundary.
-    if (body && !isFormData) {
+    // The browser sets the multipart Content-Type itself, with the boundary. A JSON body is sent as
+    // application/json unless its method named another JSON type, such as a merge patch.
+    if (body && !isFormData && !requestHeaders.has("Content-Type")) {
       requestHeaders.set("Content-Type", "application/json");
     }
 

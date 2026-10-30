@@ -11,6 +11,7 @@ import { pagesRouter } from "#modules/pages/routes";
 import { uploadsRouter } from "#modules/uploads/routes";
 import { corsOptions } from "#shared/config/cors";
 import { NotFoundError } from "#shared/http/errors";
+import { parseJsonBody } from "#shared/middleware/content-type";
 import { errorHandler } from "#shared/middleware/error";
 
 export const server = express();
@@ -18,7 +19,7 @@ export const server = express();
 server.use(helmet());
 server.use(cors(corsOptions));
 server.use(cookieParser());
-server.use(express.json());
+server.use(parseJsonBody);
 
 server.use("/api/health", healthRouter);
 server.use("/api/auth", authRouter);

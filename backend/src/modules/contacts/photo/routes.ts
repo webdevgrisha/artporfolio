@@ -8,7 +8,7 @@ import {
   updatePhotoAlt,
 } from "#modules/contacts/photo/controller";
 import { photoAltBodySchema, photoBodySchema } from "#shared/images/photo";
-import { requireContentType } from "#shared/middleware/content-type";
+import { mergePatchType, requireContentType } from "#shared/middleware/content-type";
 import { requireCsrfToken } from "#shared/middleware/csrf";
 import { requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody } from "#shared/middleware/validation";
@@ -31,7 +31,7 @@ photoRouter.patch(
   "/",
   requireAuth,
   requireCsrfToken,
-  requireContentType("application/json"),
+  requireContentType(mergePatchType),
   requireIfMatch,
   validateBody(photoAltBodySchema),
   updatePhotoAlt,

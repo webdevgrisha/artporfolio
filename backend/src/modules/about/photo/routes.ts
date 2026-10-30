@@ -2,7 +2,7 @@ import { Router } from "express";
 import { deletePhoto, putPhoto, readPhoto, updatePhotoAlt } from "#modules/about/photo/controller";
 import { requireAuth } from "#modules/auth/middleware";
 import { photoAltBodySchema, photoBodySchema } from "#shared/images/photo";
-import { requireContentType } from "#shared/middleware/content-type";
+import { mergePatchType, requireContentType } from "#shared/middleware/content-type";
 import { requireCsrfToken } from "#shared/middleware/csrf";
 import { requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody } from "#shared/middleware/validation";
@@ -25,7 +25,7 @@ aboutPhotoRouter.patch(
   "/",
   requireAuth,
   requireCsrfToken,
-  requireContentType("application/json"),
+  requireContentType(mergePatchType),
   requireIfMatch,
   validateBody(photoAltBodySchema),
   updatePhotoAlt,

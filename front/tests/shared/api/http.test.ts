@@ -164,6 +164,9 @@ describe("http entity tags", () => {
       });
 
       expect(request?.method).toBe(method);
+      expect(request?.headers.get("Content-Type")).toBe(
+        method === "PATCH" ? "application/merge-patch+json" : "application/json",
+      );
       expect(request?.headers.get("If-Match")).toBe(etag);
       expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
       expect(result).toEqual({ data: { name: "Холст" }, etag: '"new-tag"' });

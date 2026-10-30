@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import express, { type Router } from "express";
 
 import { authRouter } from "#modules/auth/routes";
+import { parseJsonBody } from "#shared/middleware/content-type";
 import { errorHandler } from "#shared/middleware/error";
 
 /**
@@ -12,7 +13,7 @@ export function routeApp(path: string, router: Router): express.Express {
   const app = express();
 
   app.use(cookieParser());
-  app.use(express.json());
+  app.use(parseJsonBody);
   app.use("/api/auth", authRouter);
   app.use(path, router);
   app.use(errorHandler);

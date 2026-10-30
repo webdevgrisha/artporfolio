@@ -43,6 +43,10 @@ async function jsonHeaders(): Promise<Record<string, string>> {
   return { ...(await ifMatchHeaders()), "Content-Type": "application/json" };
 }
 
+async function mergePatchHeaders(): Promise<Record<string, string>> {
+  return { ...(await ifMatchHeaders()), "Content-Type": "application/merge-patch+json" };
+}
+
 /** The headers of a signed-in admin with the ETag of the photo they read. */
 async function ifMatchHeaders(): Promise<Record<string, string>> {
   return { ...(await adminHeaders(server.baseUrl)), "If-Match": etag };
@@ -105,7 +109,10 @@ describe("about photo routes", () => {
   it.each(["PUT", "PATCH", "DELETE"])("requires the ETag of the photo for %s", async (method) => {
     const response = await sendPhoto(
       method,
-      { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
+      {
+        ...(await adminHeaders(server.baseUrl)),
+        "Content-Type": method === "PATCH" ? "application/merge-patch+json" : "application/json",
+      },
       method === "DELETE" ? undefined : { alt: "Portrait", uploadId },
     );
 
@@ -165,7 +172,7 @@ describe("about photo routes", () => {
   });
 
   it("updates the alt text", async () => {
-    const response = await sendPhoto("PATCH", await jsonHeaders(), { alt: "New alt" });
+    const response = await sendPhoto("PATCH", await mergePatchHeaders(), { alt: "New alt" });
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
@@ -173,10 +180,16 @@ describe("about photo routes", () => {
     expect(photoService.updateAboutPhotoAlt).toHaveBeenCalledWith("New alt", etag);
   });
 
+  it("takes the alt text as a merge patch, not as plain JSON", async () => {
+    const response = await sendPhoto("PATCH", await jsonHeaders(), { alt: "New alt" });
+
+    expect(response.status).toBe(415);
+  });
+
   it("returns 404 when updating the alt text without a photo", async () => {
     photoService.updateAboutPhotoAlt.mockRejectedValue(new NotFoundError("There is no photo"));
 
-    const response = await sendPhoto("PATCH", await jsonHeaders(), { alt: "New alt" });
+    const response = await sendPhoto("PATCH", await mergePatchHeaders(), { alt: "New alt" });
 
     expect(response.status).toBe(404);
   });
