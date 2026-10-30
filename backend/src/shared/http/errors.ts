@@ -54,3 +54,10 @@ export class ConflictError extends HttpError {
     super(409, message);
   }
 }
+
+/** The body is well-formed, but refers to something that does not exist, such as an expired upload. */
+export class UnprocessableContentError extends HttpError {
+  constructor(message = "The request cannot be processed") {
+    super(422, message);
+  }
+}

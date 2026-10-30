@@ -51,8 +51,7 @@ pnpm deploy:firestore-rules --project artportfolio-b2ef4
 
 ## Cloud Storage
 
-The API stores the contact photo and the main photos of the pages in the default Cloud Storage
-bucket. Enable it once in the Firebase console: **Storage → Get started**, Production mode,
+The API stores the photos of the site in the default Cloud Storage bucket. Enable it once in the Firebase console: **Storage → Get started**, Production mode,
 location `europe-west1`. Storage requires the Blaze plan.
 
 Browsers read the photos only through Firebase download URLs, which bypass the rules, so
@@ -62,6 +61,19 @@ changing them:
 ```sh
 pnpm deploy:storage-rules --project artportfolio-b2ef4
 ```
+
+A photo is first uploaded to `uploads/`, and a later request copies it into the content. The
+uploads that were never used are deleted by the bucket's lifecycle rule in
+[`storage.lifecycle.json`](storage.lifecycle.json): every file under `uploads/` older than a day.
+The Firebase CLI does not deploy it; apply it once, and again after changing it, with the bucket
+name shown in **Storage** of the Firebase console:
+
+```sh
+gcloud storage buckets update gs://BUCKET_NAME --lifecycle-file=storage.lifecycle.json
+```
+
+The Storage Emulator ignores lifecycle rules, so local uploads stay until the emulator data is
+cleared.
 
 ## Local development
 

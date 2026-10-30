@@ -5,11 +5,11 @@ import { BadRequestError } from "#shared/http/errors";
 /** Widths for the srcset: phones, tablets and 1x desktops, up to 2x desktops. */
 const targetWidths = [640, 960, 1_280, 1_920];
 
-const outputFormats = ["avif", "webp"] as const;
+export const outputFormats = ["avif", "webp"] as const;
 
 // Source photos only: WebP and AVIF are already compressed for the web, and compressing them
 // again would visibly lower the quality.
-const sourceFormats = ["jpeg", "png"] as const;
+export const sourceFormats = ["jpeg", "png"] as const;
 
 // Rejects decompression bombs: small files that decode into huge images.
 const maxInputPixels = 50_000_000;

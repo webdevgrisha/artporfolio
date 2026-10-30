@@ -11,7 +11,7 @@ import type { EncodedImage, OutputFormat, ProcessedImage } from "#shared/images/
 import type { UploadedFile } from "#shared/middleware/upload";
 
 // Every upload gets its own folder and therefore new URLs, so the files can be cached forever.
-const immutableCacheControl = "public, max-age=31536000, immutable";
+export const immutableCacheControl = "public, max-age=31536000, immutable";
 
 /** One encoded file in Cloud Storage; its download URL is built from the path and token. */
 const storedImageFileSchema = z.object({
