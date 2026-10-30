@@ -1,20 +1,26 @@
 .root {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--layout-space-12);
+}
+
+.tab {
   /* The same bar as the active item of the admin navigation, turned horizontally. */
   --tab-indicator-size: 6px;
 
   position: relative;
+  display: inline-flex;
+  align-items: center;
   min-block-size: var(--min-tap-target-size);
   padding: 0 0 calc(var(--space-4) + var(--tab-indicator-size));
   font-size: var(--font-size-lg);
   line-height: normal;
   color: var(--color-text-muted);
-  cursor: pointer;
-  background: none;
-  border: 0;
+  text-decoration: none;
   transition: color var(--motion-duration-standard) var(--motion-easing-standard);
 }
 
-.root::after {
+.tab::after {
   position: absolute;
   inset-block-end: 0;
   inset-inline-start: 50%;
@@ -27,21 +33,21 @@
   transition: scale var(--motion-duration-standard) var(--motion-easing-standard);
 }
 
-.root[aria-selected="true"] {
+.tab[aria-current="page"] {
   color: var(--color-text);
 }
 
-.root[aria-selected="true"]::after {
+.tab[aria-current="page"]::after {
   scale: 1;
 }
 
 @media (hover: hover) {
-  .root:hover {
+  .tab:hover {
     color: var(--color-text);
   }
 }
 
-.root:focus-visible {
+.tab:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 2px;
 }

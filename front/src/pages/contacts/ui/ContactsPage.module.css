@@ -6,13 +6,7 @@
   padding: var(--layout-space-8);
 }
 
-/* Fills the frame so the form actions sit at its bottom; a hidden panel stays hidden. */
-.panel:not([hidden]) {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
+/* Fills the frame so the form actions sit at its bottom. */
 .form {
   flex: 1;
 }

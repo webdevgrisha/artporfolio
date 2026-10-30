@@ -1,44 +1,25 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import React from "react";
+import { Outlet } from "react-router";
 
-import { aboutQuery } from "@/entities/about";
-import {
-  EditAboutPhotoForm,
-  EditAboutTextForm,
-  EditProcessPhotosForm,
-} from "@/features/edit-about";
-import { Tab, TabList, TabPanel, Tabs } from "@/shared/ui/tabs";
+import { routes } from "@/shared/config/routes";
+import { TabNav } from "@/shared/ui/tab-nav";
 
 import styles from "./AboutPage.module.css";
 
-type AboutTab = "photo" | "process" | "text";
+const sections = [
+  { label: "Тексты", to: routes.aboutText },
+  { label: "Моё фото", to: routes.aboutPhoto },
+  { label: "Процесс", to: routes.aboutProcess },
+] as const;
 
+/**
+ * The texts, «Моё фото» and the process photos are saved independently, so each is a section of
+ * its own with its own form and URL.
+ */
 export function AboutPage() {
-  // The route loader has fetched the data, so this never suspends.
-  const { data: about } = useSuspenseQuery(aboutQuery);
-  const [tab, setTab] = React.useState<AboutTab>("text");
-
-  // Each tab is a form of its own: the texts, «Моё фото» and the process photos are saved
-  // independently.
   return (
     <div className={styles.root}>
-      <Tabs value={tab} onValueChange={setTab}>
-        <TabList label="Разделы страницы «О сайте»">
-          <Tab value="text">Тексты</Tab>
-          <Tab value="photo">Моё фото</Tab>
-          <Tab value="process">Процесс</Tab>
-        </TabList>
-
-        <TabPanel className={styles.panel} value="text">
-          <EditAboutTextForm className={styles.form} text={about.text} />
-        </TabPanel>
-        <TabPanel className={styles.panel} value="photo">
-          <EditAboutPhotoForm className={styles.form} photo={about.photo} />
-        </TabPanel>
-        <TabPanel className={styles.panel} value="process">
-          <EditProcessPhotosForm className={styles.form} processPhotos={about.processPhotos} />
-        </TabPanel>
-      </Tabs>
+      <TabNav label="Разделы страницы «О сайте»" items={sections} />
+      <Outlet />
     </div>
   );
 }

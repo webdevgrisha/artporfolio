@@ -1,5 +1,10 @@
 export const routes = {
   about: "/admin/about",
+  aboutPhoto: "/admin/about/photo",
+  aboutProcess: "/admin/about/process",
+  aboutText: "/admin/about/text",
+  contactLinks: "/admin/contacts/links",
+  contactPhoto: "/admin/contacts/photo",
   contacts: "/admin/contacts",
   gallery: "/admin/gallery",
   login: "/admin/login",

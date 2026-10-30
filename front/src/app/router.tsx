@@ -84,6 +84,31 @@ export const router = createBrowserRouter([
 
                       return { Component: AboutPage, loader: aboutLoader };
                     },
+                    // Each section has its own form and URL; the page opens its first one.
+                    children: [
+                      {
+                        index: true,
+                        element: <Navigate to={routes.aboutText} replace />,
+                      },
+                      {
+                        path: routes.aboutText,
+                        lazy: async () => ({
+                          Component: (await import("@/pages/about")).AboutTextSection,
+                        }),
+                      },
+                      {
+                        path: routes.aboutPhoto,
+                        lazy: async () => ({
+                          Component: (await import("@/pages/about")).AboutPhotoSection,
+                        }),
+                      },
+                      {
+                        path: routes.aboutProcess,
+                        lazy: async () => ({
+                          Component: (await import("@/pages/about")).AboutProcessSection,
+                        }),
+                      },
+                    ],
                   },
                   {
                     path: routes.contacts,
@@ -92,6 +117,24 @@ export const router = createBrowserRouter([
 
                       return { Component: ContactsPage, loader: contactsLoader };
                     },
+                    children: [
+                      {
+                        index: true,
+                        element: <Navigate to={routes.contactLinks} replace />,
+                      },
+                      {
+                        path: routes.contactLinks,
+                        lazy: async () => ({
+                          Component: (await import("@/pages/contacts")).ContactLinksSection,
+                        }),
+                      },
+                      {
+                        path: routes.contactPhoto,
+                        lazy: async () => ({
+                          Component: (await import("@/pages/contacts")).ContactPhotoSection,
+                        }),
+                      },
+                    ],
                   },
                   {
                     path: routes.personalization,
