@@ -7,6 +7,7 @@
     "dev:front": "pnpm --filter front dev",
     "dev:backend": "pnpm --filter artportfolio-backend build && firebase emulators:start --only auth,firestore,functions,storage",
     "emulators": "pnpm build && firebase emulators:start --only auth,firestore,functions,hosting,storage",
+    "emulators:admin": "node scripts/create-emulator-admin.mjs",
     "deploy": "firebase deploy --only functions,hosting",
     "deploy:functions": "firebase deploy --only functions",
     "deploy:hosting": "firebase deploy --only hosting",
