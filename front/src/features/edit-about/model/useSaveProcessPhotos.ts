@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { aboutQuery, type ProcessPhoto } from "@/entities/about";
 
 import type { ProcessPhotosChanges } from "./processPhotosChanges";
-import { saveProcessPhotos } from "./saveProcessPhotos";
+import { type SaveProcessPhotosResult, saveProcessPhotos } from "./saveProcessPhotos";
 
 interface SaveProcessPhotosVariables {
   changes: ProcessPhotosChanges;
@@ -19,9 +19,21 @@ export function useSaveProcessPhotos() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ changes, savedProcessPhotos }: SaveProcessPhotosVariables) =>
-      saveProcessPhotos(changes, savedProcessPhotos),
-    // Awaited before the save resolves, so the form resets its rows to the loaded page.
-    onSettled: () => queryClient.invalidateQueries({ queryKey: aboutQuery.queryKey }),
+    mutationFn: async ({
+      changes,
+      savedProcessPhotos,
+    }: SaveProcessPhotosVariables): Promise<SaveProcessPhotosResult> => {
+      const result = await saveProcessPhotos(changes, savedProcessPhotos);
+
+      // The result follows the requests that succeeded, but a request whose response was lost may
+      // have changed the server too: the photos the server now has are the saved ones.
+      try {
+        const about = await queryClient.fetchQuery({ ...aboutQuery, staleTime: 0 });
+        return { ...result, photos: about.processPhotos };
+      } catch {
+        return result;
+      }
+    },
+    onError: () => queryClient.invalidateQueries({ queryKey: aboutQuery.queryKey }),
   });
 }

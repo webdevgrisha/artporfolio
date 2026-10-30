@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 import type { ProcessPhoto } from "@/entities/about";
@@ -21,7 +22,7 @@ const saveToastId = "process-photos-save";
 
 interface EditProcessPhotosFormProps {
   className?: string;
-  /** The process photos as stored on the server. */
+  /** The process photos as stored on the server when the form opens. */
   processPhotos: readonly ProcessPhoto[];
 }
 
@@ -37,10 +38,14 @@ export function EditProcessPhotosForm({ className, processPhotos }: EditProcessP
     resetField,
     setValue,
   } = form;
+  // The photos the rows were made from. The changes are found against them, not against the page
+  // data: once reloaded, that may hold a photo added in another tab, which the rows do not show
+  // and must not delete.
+  const [savedPhotos, setSavedPhotos] = React.useState(processPhotos);
   const saveProcessPhotos = useSaveProcessPhotos();
 
   async function saveChanges(values: ProcessPhotosFormValues) {
-    const changes = getProcessPhotosChanges(values.processPhotos, processPhotos);
+    const changes = getProcessPhotosChanges(values.processPhotos, savedPhotos);
 
     if (!changes) {
       showSaveResultToast(undefined, { id: saveToastId });
@@ -50,13 +55,14 @@ export function EditProcessPhotosForm({ className, processPhotos }: EditProcessP
     let result: SaveProcessPhotosResult;
 
     try {
-      result = await saveProcessPhotos.mutateAsync({ changes, savedProcessPhotos: processPhotos });
+      result = await saveProcessPhotos.mutateAsync({ changes, savedProcessPhotos: savedPhotos });
     } catch (error) {
       showSaveResultToast(getSaveProcessPhotosErrorMessage(error), { id: saveToastId });
       return;
     }
 
     // The list on the server is the saved value now; rows whose change failed stay modified.
+    setSavedPhotos(result.photos);
     resetField("processPhotos", { defaultValue: toProcessPhotoRows(result.photos) });
     setValue("processPhotos", result.rows, { shouldDirty: true });
     showSaveResultToast(result.error, { id: saveToastId });
@@ -72,7 +78,7 @@ export function EditProcessPhotosForm({ className, processPhotos }: EditProcessP
         onRevert={() => reset()}
         onSubmit={handleSubmit(saveChanges)}
       >
-        <ProcessPhotoFields isSaving={isSubmitting} serverPhotos={processPhotos} />
+        <ProcessPhotoFields isSaving={isSubmitting} serverPhotos={savedPhotos} />
       </EditForm>
     </FormProvider>
   );
