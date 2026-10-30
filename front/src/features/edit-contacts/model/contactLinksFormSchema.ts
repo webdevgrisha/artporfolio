@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { photoFieldsShape, refinePhotoAlt } from "@/shared/lib/photoForm";
-
 // Mirrors the server rule in backend/src/modules/contacts/schema.ts.
 const maxLinkLength = 2_048;
 
@@ -16,15 +14,11 @@ function optionalContact(format: z.ZodType<string, string>) {
 
 const webLink = optionalContact(z.httpUrl("Введите ссылку вида https://…"));
 
-const contactLinksSchema = z.object({
+export const contactLinksFormSchema = z.object({
   email: optionalContact(z.email("Введите корректный email")),
   instagram: webLink,
   linkedin: webLink,
   youtube: webLink,
 });
 
-export const contactsFormSchema = contactLinksSchema
-  .extend(photoFieldsShape)
-  .superRefine(refinePhotoAlt);
-
-export type ContactsFormValues = z.infer<typeof contactsFormSchema>;
+export type ContactLinksFormValues = z.infer<typeof contactLinksFormSchema>;

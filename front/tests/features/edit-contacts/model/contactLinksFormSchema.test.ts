@@ -1,33 +1,31 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  type ContactsFormValues,
-  contactsFormSchema,
-} from "@/features/edit-contacts/model/contactsFormSchema";
+  type ContactLinksFormValues,
+  contactLinksFormSchema,
+} from "@/features/edit-contacts/model/contactLinksFormSchema";
 
 import { fieldErrors } from "../../../support/schema";
 
-const values: ContactsFormValues = {
+const values: ContactLinksFormValues = {
   email: "",
   instagram: "",
   linkedin: "",
-  photo: null,
-  photoAlt: "",
   youtube: "",
 };
 
-function errors(changed: Partial<ContactsFormValues>): Record<string, string[]> {
-  return fieldErrors(contactsFormSchema, { ...values, ...changed });
+function errors(changed: Partial<ContactLinksFormValues>): Record<string, string[]> {
+  return fieldErrors(contactLinksFormSchema, { ...values, ...changed });
 }
 
-describe("contactsFormSchema", () => {
+describe("contactLinksFormSchema", () => {
   it("takes empty contacts: they are hidden on the site", () => {
     expect(errors({})).toEqual({});
   });
 
   it("trims the links", () => {
     expect(
-      contactsFormSchema.parse({ ...values, instagram: "  https://instagram.com/artist  " })
+      contactLinksFormSchema.parse({ ...values, instagram: "  https://instagram.com/artist  " })
         .instagram,
     ).toBe("https://instagram.com/artist");
   });
@@ -46,11 +44,5 @@ describe("contactsFormSchema", () => {
   it("takes only a valid email", () => {
     expect(errors({ email: "artist@example.com" })).toEqual({});
     expect(errors({ email: "artist@" })).toEqual({ email: ["Введите корректный email"] });
-  });
-
-  it("needs a description of the photo", () => {
-    expect(errors({ photo: "saved", photoAlt: "" })).toEqual({
-      photoAlt: ["Опишите, что на фото"],
-    });
   });
 });
