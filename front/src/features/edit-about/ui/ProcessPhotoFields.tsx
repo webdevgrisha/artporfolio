@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import { maxProcessPhotos, type ProcessPhoto } from "@/entities/about";
+import { maxProcessPhotos } from "@/entities/about";
 import { imageUploadRules } from "@/shared/api/image";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { imageToMediaItem } from "@/shared/ui/media-preview";
@@ -12,9 +12,9 @@ import styles from "./ProcessPhotoFields.module.css";
 
 interface ProcessPhotoFieldsProps {
   className?: string;
+  /** Saved photos were removed or moved; added ones are highlighted by themselves. */
+  isListModified: boolean;
   isSaving: boolean;
-  /** The process photos on the server, to show that saved ones were removed or moved. */
-  serverPhotos: readonly ProcessPhoto[];
 }
 
 /** A picked file: a new photo, or one that replaces a saved file. */
@@ -29,7 +29,11 @@ function toMediaItem(key: string, row: ProcessPhotoRow): SortableMediaItem {
 }
 
 /** The fields of `EditProcessPhotosForm`; they read the form from its context. */
-export function ProcessPhotoFields({ className, isSaving, serverPhotos }: ProcessPhotoFieldsProps) {
+export function ProcessPhotoFields({
+  className,
+  isListModified,
+  isSaving,
+}: ProcessPhotoFieldsProps) {
   const { clearErrors, control, register, setError, setFocus, setValue } =
     useFormContext<ProcessPhotosFormValues>();
   const { errors, isSubmitted } = useFormState({ control });
@@ -37,13 +41,6 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
   const { append, fields, move, remove } = useFieldArray({ control, name: "processPhotos" });
   const rows = useWatch({ control, name: "processPhotos" });
   const items = fields.map((field, index) => toMediaItem(field.id, rows[index] ?? field));
-
-  // Added rows are highlighted by themselves; the list shows that saved photos were removed or
-  // moved.
-  const savedOrder = serverPhotos.map((photo) => photo.id).join("\n");
-  const rowsOrder = rows
-    .flatMap((row) => (row.status === "saved" ? [row.photo.id] : []))
-    .join("\n");
 
   function getRowIndex(key: string): number {
     return fields.findIndex((field) => field.id === key);
@@ -78,7 +75,7 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
           errors.processPhotos?.message ??
           errors.processPhotos?.root?.message
         }
-        isModified={rowsOrder !== savedOrder}
+        isModified={isListModified}
         // The focus goes to the description of the first added photo.
         onAdd={(files) => append(files.map((file) => ({ alt: "", file, status: "new" })))}
         onMove={move}

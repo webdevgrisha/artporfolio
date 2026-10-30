@@ -1,15 +1,19 @@
 import { HttpResponse, http as mswHttp } from "msw/http";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ProcessPhotosChanges } from "@/features/edit-about/model/processPhotosChanges";
-import { saveProcessPhotos } from "@/features/edit-about/model/saveProcessPhotos";
-import { sessionExpiredMessage } from "@/shared/api/requestErrorMessages";
+import {
+  SaveProcessPhotoError,
+  saveProcessPhotos,
+} from "@/features/edit-about/model/saveProcessPhotos";
+import { HttpError } from "@/shared/api/httpError";
 
 import { csrfHandler, noContent, problem } from "../../../support/handlers";
 import { apiProcessPhoto, imageFile } from "../../../support/images";
 import { recordRequests, server } from "../../../support/server";
 
 const saved = [apiProcessPhoto("a"), apiProcessPhoto("b"), apiProcessPhoto("c")];
+const [a, b, c] = saved;
 
 /** The process photos API: added photos get the ids `new-1`, `new-2`… */
 function processPhotosApi() {
@@ -40,13 +44,22 @@ function processPhotosApi() {
   ];
 }
 
+/** The error a save rejected with. */
+async function getSaveError(changes: ProcessPhotosChanges): Promise<unknown> {
+  return saveProcessPhotos(changes, () => {}).then(
+    () => undefined,
+    (error: unknown) => error,
+  );
+}
+
 beforeEach(() => {
   server.use(csrfHandler, ...processPhotosApi());
 });
 
 describe("saveProcessPhotos", () => {
-  it("deletes first, then saves the rows in order, then puts the photos in the new order", async () => {
+  it("deletes first, then saves the changed rows in order, then puts the photos in the new order", async () => {
     const requests = recordRequests();
+    const onRowSaved = vi.fn();
     let order: { ids: string[] } | undefined;
     server.use(
       mswHttp.put("/api/about/process-photos/order", async ({ request }) => {
@@ -54,16 +67,19 @@ describe("saveProcessPhotos", () => {
         return HttpResponse.json(order);
       }),
     );
-    const changes: ProcessPhotosChanges = {
-      deletedIds: ["b"],
-      steps: [
-        { alt: "Новый этап", file: imageFile(), type: "add" },
-        { photo: saved[2], type: "keep" },
-        { alt: "Эскиз", photo: saved[0], type: "updateAlt" },
-      ],
-    };
 
-    const result = await saveProcessPhotos(changes, saved);
+    await saveProcessPhotos(
+      {
+        deleted: [b],
+        isReordered: true,
+        steps: [
+          { alt: "Новый этап", file: imageFile(), type: "add" },
+          { photo: c, type: "keep" },
+          { alt: "Эскиз", photo: a, type: "updateAlt" },
+        ],
+      },
+      onRowSaved,
+    );
 
     expect(requests).toEqual([
       "GET /api/auth/csrf",
@@ -73,192 +89,101 @@ describe("saveProcessPhotos", () => {
       "PUT /api/about/process-photos/order",
     ]);
     expect(order).toEqual({ ids: ["new-1", "c", "a"] });
-    expect(result).toEqual({
-      error: undefined,
-      photos: [apiProcessPhoto("new-1", "Новый этап"), saved[2], apiProcessPhoto("a", "Эскиз")],
-      rows: [
-        {
-          alt: "Новый этап",
-          file: null,
-          photo: apiProcessPhoto("new-1", "Новый этап"),
-          status: "saved",
-        },
-        { alt: "Этап c", file: null, photo: apiProcessPhoto("c", "Этап c"), status: "saved" },
-        { alt: "Эскиз", file: null, photo: apiProcessPhoto("a", "Эскиз"), status: "saved" },
-      ],
-    });
+    expect(onRowSaved.mock.calls).toEqual([
+      [0, apiProcessPhoto("new-1", "Новый этап")],
+      [2, apiProcessPhoto("a", "Эскиз")],
+    ]);
   });
 
   it("does not send the order when it did not change", async () => {
     const requests = recordRequests();
 
-    const result = await saveProcessPhotos(
+    await saveProcessPhotos(
       {
-        deletedIds: [],
+        deleted: [],
+        isReordered: false,
         steps: [
-          { photo: saved[0], type: "keep" },
-          { alt: "Этап b", file: imageFile(), photo: saved[1], type: "replace" },
-          { photo: saved[2], type: "keep" },
-          { alt: "Последний этап", file: imageFile(), type: "add" },
+          { photo: a, type: "keep" },
+          { alt: "Этап b", file: imageFile(), photo: b, type: "replace" },
         ],
       },
-      saved,
+      () => {},
     );
 
-    expect(requests).toEqual([
-      "GET /api/auth/csrf",
-      "PUT /api/about/process-photos/b",
-      "POST /api/about/process-photos",
-    ]);
-    expect(result.photos.map((photo) => photo.id)).toEqual(["a", "b", "c", "new-1"]);
+    expect(requests).toEqual(["GET /api/auth/csrf", "PUT /api/about/process-photos/b"]);
   });
 
-  it("keeps the change of a failed row and saves the others", async () => {
+  it("stops at the first request that fails, after reporting the rows saved before it", async () => {
     server.use(mswHttp.patch("/api/about/process-photos/a", () => problem(500)));
     const requests = recordRequests();
-    const file = imageFile("etude.png");
+    const onRowSaved = vi.fn();
 
-    const result = await saveProcessPhotos(
+    const error = await saveProcessPhotos(
       {
-        deletedIds: [],
+        deleted: [],
+        isReordered: true,
         steps: [
-          { alt: "Эскиз", photo: saved[0], type: "updateAlt" },
-          { alt: "Новый этап", file, type: "add" },
-          { photo: saved[2], type: "keep" },
-          { photo: saved[1], type: "keep" },
+          { alt: "Новый этап", file: imageFile(), type: "add" },
+          { alt: "Эскиз", photo: a, type: "updateAlt" },
+          { alt: "Эскиз b", photo: b, type: "updateAlt" },
         ],
       },
-      saved,
-    );
+      onRowSaved,
+    ).catch((rejection: unknown) => rejection);
 
     expect(requests).toEqual([
       "GET /api/auth/csrf",
-      "PATCH /api/about/process-photos/a",
       "POST /api/about/process-photos",
-      "PUT /api/about/process-photos/order",
+      "PATCH /api/about/process-photos/a",
     ]);
-    expect(result.error).toBe("Сервис временно недоступен. Попробуйте позже");
-    expect(result.rows).toEqual([
-      { alt: "Эскиз", file: null, photo: saved[0], status: "saved" },
-      {
-        alt: "Новый этап",
-        file: null,
-        photo: apiProcessPhoto("new-1", "Новый этап"),
-        status: "saved",
-      },
-      { alt: "Этап c", file: null, photo: apiProcessPhoto("c", "Этап c"), status: "saved" },
-      { alt: "Этап b", file: null, photo: apiProcessPhoto("b", "Этап b"), status: "saved" },
-    ]);
-    expect(result.photos.map((photo) => photo.id)).toEqual(["a", "new-1", "c", "b"]);
+    expect(onRowSaved.mock.calls).toEqual([[0, apiProcessPhoto("new-1", "Новый этап")]]);
+    expect(error).toBeInstanceOf(SaveProcessPhotoError);
+    expect(error).toMatchObject({ cause: new HttpError(500), fileName: "a.jpg" });
   });
 
-  it("leaves a new photo that was not uploaded out of the order", async () => {
+  it("names the picked file of a failed upload", async () => {
     server.use(mswHttp.post("/api/about/process-photos", () => problem(409)));
-    const file = imageFile("etude.png");
 
-    const result = await saveProcessPhotos(
-      {
-        deletedIds: [],
-        steps: [
-          { alt: "Новый этап", file, type: "add" },
-          { photo: saved[1], type: "keep" },
-          { photo: saved[0], type: "keep" },
-          { photo: saved[2], type: "keep" },
-        ],
-      },
-      saved,
-    );
+    const error = await getSaveError({
+      deleted: [],
+      isReordered: false,
+      steps: [{ alt: "Новый этап", file: imageFile("etude.png"), type: "add" }],
+    });
 
-    expect(result.error).toBe("Фото «etude.png» не добавлено: фото уже максимум");
-    expect(result.rows[0]).toEqual({ alt: "Новый этап", file, status: "new" });
-    expect(result.photos.map((photo) => photo.id)).toEqual(["b", "a", "c"]);
+    expect(error).toMatchObject({ fileName: "etude.png" });
   });
 
-  it("does not send the order when a photo was not deleted: the server would refuse it", async () => {
+  it("does not save the rows when a photo was not deleted", async () => {
     server.use(mswHttp.delete("/api/about/process-photos/a", () => problem(500)));
     const requests = recordRequests();
 
-    const result = await saveProcessPhotos(
-      {
-        deletedIds: ["a"],
-        steps: [
-          { photo: saved[2], type: "keep" },
-          { photo: saved[1], type: "keep" },
-        ],
-      },
-      saved,
-    );
-
-    expect(requests).toEqual(["GET /api/auth/csrf", "DELETE /api/about/process-photos/a"]);
-    expect(result.photos).toEqual(saved);
-  });
-
-  it("stops at an expired session and keeps every change that was not sent", async () => {
-    server.use(mswHttp.delete("/api/about/process-photos/a", () => problem(401)));
-    const requests = recordRequests();
-    const file = imageFile();
-
-    const result = await saveProcessPhotos(
-      {
-        deletedIds: ["a", "b"],
-        steps: [
-          { photo: saved[2], type: "keep" },
-          { alt: "Новый этап", file, type: "add" },
-        ],
-      },
-      saved,
-    );
-
-    expect(requests).toEqual(["GET /api/auth/csrf", "DELETE /api/about/process-photos/a"]);
-    expect(result).toEqual({
-      error: sessionExpiredMessage,
-      photos: saved,
-      rows: [
-        { alt: "Этап c", file: null, photo: apiProcessPhoto("c", "Этап c"), status: "saved" },
-        { alt: "Новый этап", file, status: "new" },
+    const error = await getSaveError({
+      deleted: [a],
+      isReordered: true,
+      steps: [
+        { photo: c, type: "keep" },
+        { alt: "Эскиз", photo: b, type: "updateAlt" },
       ],
     });
+
+    expect(requests).toEqual(["GET /api/auth/csrf", "DELETE /api/about/process-photos/a"]);
+    expect(error).toMatchObject({ fileName: "a.jpg" });
   });
 
-  it("says once a reason that several photos failed for", async () => {
-    server.use(
-      mswHttp.patch("/api/about/process-photos/:id", () => HttpResponse.error()),
-      mswHttp.put("/api/about/process-photos/order", () => HttpResponse.error()),
-    );
-
-    const result = await saveProcessPhotos(
-      {
-        deletedIds: [],
-        steps: [
-          { alt: "Эскиз c", photo: saved[2], type: "updateAlt" },
-          { alt: "Эскиз b", photo: saved[1], type: "updateAlt" },
-          { photo: saved[0], type: "keep" },
-        ],
-      },
-      saved,
-    );
-
-    expect(result.error).toBe("Нет соединения с сервером. Проверьте интернет и попробуйте ещё раз");
-  });
-
-  it("explains an order that the server refused", async () => {
+  it("names no photo when the order failed", async () => {
     server.use(mswHttp.put("/api/about/process-photos/order", () => problem(409)));
 
-    const result = await saveProcessPhotos(
-      {
-        deletedIds: [],
-        steps: [
-          { photo: saved[2], type: "keep" },
-          { photo: saved[1], type: "keep" },
-          { photo: saved[0], type: "keep" },
-        ],
-      },
-      saved,
-    );
+    const error = await getSaveError({
+      deleted: [],
+      isReordered: true,
+      steps: [
+        { photo: c, type: "keep" },
+        { photo: b, type: "keep" },
+        { photo: a, type: "keep" },
+      ],
+    });
 
-    expect(result.error).toBe(
-      "Порядок фото не сохранён: фото на сервере изменились. Обновите страницу",
-    );
-    expect(result.photos).toEqual(saved);
+    expect(error).toBeInstanceOf(SaveProcessPhotoError);
+    expect(error).toMatchObject({ cause: new HttpError(409), fileName: undefined });
   });
 });

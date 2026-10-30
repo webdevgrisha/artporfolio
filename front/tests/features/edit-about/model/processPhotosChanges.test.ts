@@ -18,7 +18,8 @@ describe("getProcessPhotosChanges", () => {
     const [rowA, rowB, rowC] = toProcessPhotoRows(saved);
 
     expect(getProcessPhotosChanges([rowC, rowA, rowB], saved)).toEqual({
-      deletedIds: [],
+      deleted: [],
+      isReordered: true,
       steps: [
         { photo: c, type: "keep" },
         { photo: a, type: "keep" },
@@ -33,7 +34,8 @@ describe("getProcessPhotosChanges", () => {
     );
 
     expect(getProcessPhotosChanges(rows, saved)).toEqual({
-      deletedIds: ["b"],
+      deleted: [b],
+      isReordered: false,
       steps: [
         { photo: a, type: "keep" },
         { photo: c, type: "keep" },
@@ -53,7 +55,9 @@ describe("getProcessPhotosChanges", () => {
     ];
 
     expect(getProcessPhotosChanges(rows, saved)).toEqual({
-      deletedIds: [],
+      deleted: [],
+      // The server puts an added photo at the end.
+      isReordered: true,
       steps: [
         { alt: "Новый этап", file: added, type: "add" },
         { alt: "Этап a", file: replacement, photo: a, type: "replace" },
@@ -61,5 +65,21 @@ describe("getProcessPhotosChanges", () => {
         { photo: c, type: "keep" },
       ],
     });
+  });
+
+  it("needs no new order for photos added at the end", () => {
+    const rows: ProcessPhotoRow[] = [
+      ...toProcessPhotoRows(saved),
+      { alt: "Новый этап", file: imageFile(), status: "new" },
+    ];
+
+    expect(getProcessPhotosChanges(rows, saved)?.isReordered).toBe(false);
+  });
+
+  it("counts a saved row that the server list does not have yet as added", () => {
+    // Saved a moment ago, before the server list is loaded again.
+    const rows = toProcessPhotoRows([...saved, apiProcessPhoto("new-1")]);
+
+    expect(getProcessPhotosChanges(rows, saved)).toBeUndefined();
   });
 });

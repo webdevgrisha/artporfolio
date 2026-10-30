@@ -1,14 +1,21 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { aboutQuery, type ProcessPhoto } from "@/entities/about";
+import type { MutationFeedback } from "@/shared/api/queryClient";
 
+import { getSaveProcessPhotosErrorMessage } from "../lib/saveErrorMessages";
 import type { ProcessPhotosChanges } from "./processPhotosChanges";
-import { type SaveProcessPhotosResult, saveProcessPhotos } from "./saveProcessPhotos";
+import { saveProcessPhotos } from "./saveProcessPhotos";
+
+export const saveProcessPhotosFeedback: MutationFeedback = {
+  getErrorMessage: getSaveProcessPhotosErrorMessage,
+  toastId: "process-photos-save",
+};
 
 interface SaveProcessPhotosVariables {
   changes: ProcessPhotosChanges;
-  /** The process photos the changes were made against. */
-  savedProcessPhotos: readonly ProcessPhoto[];
+  /** Gets each saved row with the photo the server returned. */
+  onRowSaved: (index: number, photo: ProcessPhoto) => void;
 }
 
 /**
@@ -19,21 +26,9 @@ export function useSaveProcessPhotos() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      changes,
-      savedProcessPhotos,
-    }: SaveProcessPhotosVariables): Promise<SaveProcessPhotosResult> => {
-      const result = await saveProcessPhotos(changes, savedProcessPhotos);
-
-      // The result follows the requests that succeeded, but a request whose response was lost may
-      // have changed the server too: the photos the server now has are the saved ones.
-      try {
-        const about = await queryClient.fetchQuery({ ...aboutQuery, staleTime: 0 });
-        return { ...result, photos: about.processPhotos };
-      } catch {
-        return result;
-      }
-    },
-    onError: () => queryClient.invalidateQueries({ queryKey: aboutQuery.queryKey }),
+    meta: { feedback: saveProcessPhotosFeedback },
+    mutationFn: ({ changes, onRowSaved }: SaveProcessPhotosVariables) =>
+      saveProcessPhotos(changes, onRowSaved),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: aboutQuery.queryKey }),
   });
 }

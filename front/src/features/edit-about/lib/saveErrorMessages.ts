@@ -2,12 +2,7 @@ import { imageUploadRules } from "@/shared/api/image";
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
-/** For a save of the process photos that failed as a whole, not photo by photo. */
-export function getSaveProcessPhotosErrorMessage(error: unknown): string {
-  return getSaveErrorMessage(error, {
-    fallback: "Не удалось сохранить изменения. Попробуйте ещё раз",
-  });
-}
+import { SaveProcessPhotoError } from "../model/saveProcessPhotos";
 
 export function getSaveTextErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
@@ -16,7 +11,7 @@ export function getSaveTextErrorMessage(error: unknown): string {
   });
 }
 
-export function getSaveProcessPhotoErrorMessage(error: unknown, fileName: string): string {
+function getSaveProcessPhotoErrorMessage(error: unknown, fileName: string): string {
   return getSaveErrorMessage(error, {
     byStatus: {
       400: `Сервер не принял фото «${fileName}». Попробуйте другой файл`,
@@ -29,7 +24,7 @@ export function getSaveProcessPhotoErrorMessage(error: unknown, fileName: string
   });
 }
 
-export function getSaveProcessPhotoOrderErrorMessage(error: unknown): string {
+function getSaveProcessPhotoOrderErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
     byStatus: {
       // The photos on the server differ from the ones on the page, e.g. after a save in another
@@ -38,4 +33,17 @@ export function getSaveProcessPhotoOrderErrorMessage(error: unknown): string {
     },
     fallback: "Не удалось сохранить порядок фото. Попробуйте ещё раз",
   });
+}
+
+/** For a save of the process photos: names the photo whose request failed. */
+export function getSaveProcessPhotosErrorMessage(error: unknown): string {
+  if (!(error instanceof SaveProcessPhotoError)) {
+    return getSaveErrorMessage(error, {
+      fallback: "Не удалось сохранить изменения. Попробуйте ещё раз",
+    });
+  }
+
+  return error.fileName === undefined
+    ? getSaveProcessPhotoOrderErrorMessage(error.cause)
+    : getSaveProcessPhotoErrorMessage(error.cause, error.fileName);
 }
