@@ -5,10 +5,7 @@ interface UnsavedChangesDialogProps {
   hasUnsavedChanges: boolean;
 }
 
-/**
- * Asks before leaving a page with unsaved changes. React Router allows one blocker at a time, so a
- * page renders one.
- */
+/** Asks before leaving a page with unsaved changes. `UnsavedChangesProvider` renders it once. */
 export function UnsavedChangesDialog({ hasUnsavedChanges }: UnsavedChangesDialogProps) {
   const guard = useUnsavedChangesGuard(hasUnsavedChanges);
 

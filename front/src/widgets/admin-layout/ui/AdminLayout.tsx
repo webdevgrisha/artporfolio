@@ -3,6 +3,7 @@ import { Outlet } from "react-router";
 import { useSessionUser } from "@/entities/user";
 import { adminNavigation } from "@/shared/config/routes";
 import { documentTitle } from "@/shared/lib/documentTitle";
+import { UnsavedChangesProvider } from "@/shared/ui/unsaved-changes";
 
 import { useActiveAdminPageIndex } from "../model/useActiveAdminPageIndex";
 import { useMobileMenu } from "../model/useMobileMenu";
@@ -46,7 +47,9 @@ export function AdminLayout() {
           <title>{documentTitle(pageTitle)}</title>
           <h1 className={styles.title}>{pageTitle}</h1>
           <div className={styles.contentFrame}>
-            <Outlet />
+            <UnsavedChangesProvider>
+              <Outlet />
+            </UnsavedChangesProvider>
           </div>
         </main>
       </div>

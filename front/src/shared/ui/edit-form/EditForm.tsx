@@ -2,7 +2,7 @@ import clsx from "clsx";
 import type { FormEventHandler, ReactNode } from "react";
 
 import { FormActions } from "@/shared/ui/form-actions";
-import { UnsavedChangesDialog } from "@/shared/ui/unsaved-changes-dialog";
+import { useReportUnsavedChanges } from "@/shared/ui/unsaved-changes";
 
 import styles from "./EditForm.module.css";
 
@@ -20,7 +20,7 @@ interface EditFormProps {
 
 /**
  * A form that edits saved data: the fields, then the revert and save buttons at the bottom.
- * Leaving the page with unsaved changes asks first, so a page has one such form.
+ * Leaving the page with unsaved changes asks first; a page may have several such forms.
  */
 export function EditForm({
   children,
@@ -30,6 +30,8 @@ export function EditForm({
   onRevert,
   onSubmit,
 }: EditFormProps) {
+  useReportUnsavedChanges(hasUnsavedChanges);
+
   return (
     <form className={clsx(styles.root, className)} noValidate onSubmit={onSubmit}>
       {children}
@@ -39,7 +41,6 @@ export function EditForm({
         isSaving={isSaving}
         onRevert={onRevert}
       />
-      <UnsavedChangesDialog hasUnsavedChanges={hasUnsavedChanges} />
     </form>
   );
 }
