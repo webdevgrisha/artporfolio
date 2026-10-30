@@ -1,14 +1,16 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
-import { http as mswHttp } from "msw/http";
+import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { aboutQuery } from "@/entities/about";
+import { processPhotosQuery } from "@/entities/about";
 import {
   saveProcessPhotosFeedback,
   useSaveProcessPhotos,
 } from "@/features/edit-about/model/useSaveProcessPhotos";
+import { HttpError } from "@/shared/api/httpError";
+import { UploadError } from "@/shared/api/upload";
 
 import { csrfHandler, problem } from "../../../support/handlers";
 import { apiProcessPhoto } from "../../../support/images";
@@ -16,10 +18,11 @@ import { server } from "../../../support/server";
 
 const a = apiProcessPhoto("a");
 const b = apiProcessPhoto("b");
+const etag = '"list-tag"';
 
 function setUp() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  queryClient.setQueryData(aboutQuery.queryKey, { photo: null, processPhotos: [a, b], text: null });
+  queryClient.setQueryData(processPhotosQuery.queryKey, { etag, processPhotos: [a, b] });
 
   function wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
@@ -31,19 +34,9 @@ function setUp() {
   };
 }
 
-/** Deletes `a`, whose request fails with `status`. */
-async function deleteA(status: number) {
-  server.use(mswHttp.delete("/api/about/process-photos/a", () => problem(status)));
-  const { queryClient, saveProcessPhotos } = setUp();
-
-  const error = await saveProcessPhotos
-    .mutateAsync({
-      changes: { deleted: [a], isReordered: false, steps: [{ photo: b, type: "keep" }] },
-      onRowSaved: () => {},
-    })
-    .catch((rejection: unknown) => rejection);
-
-  return { error, queryClient };
+/** Keeps only `b`, as the list `etag` names. */
+function keepB() {
+  return { etag, rows: [{ alt: b.alt, file: null, photo: b, status: "saved" as const }] };
 }
 
 beforeEach(() => {
@@ -51,18 +44,46 @@ beforeEach(() => {
 });
 
 describe("useSaveProcessPhotos", () => {
-  it("loads the About page again after a failed save: the server may have changed anyway", async () => {
-    // The server deletes the photo, but its response is lost on the way.
-    const { queryClient } = await deleteA(502);
+  it("puts the saved list into the cache without loading it again", async () => {
+    server.use(
+      mswHttp.put("/api/about/process-photos", () =>
+        HttpResponse.json({ processPhotos: [b] }, { headers: { ETag: '"new-tag"' } }),
+      ),
+    );
+    const { queryClient, saveProcessPhotos } = setUp();
 
-    expect(queryClient.getQueryState(aboutQuery.queryKey)?.isInvalidated).toBe(true);
+    await saveProcessPhotos.mutateAsync(keepB());
+
+    expect(queryClient.getQueryData(processPhotosQuery.queryKey)).toEqual({
+      etag: '"new-tag"',
+      processPhotos: [b],
+    });
   });
 
-  it("names the photo whose request failed", async () => {
-    const { error } = await deleteA(404);
+  it("keeps the cached list after a failed save, which changed nothing", async () => {
+    server.use(mswHttp.put("/api/about/process-photos", () => problem(412)));
+    const { queryClient, saveProcessPhotos } = setUp();
 
-    expect(saveProcessPhotosFeedback.getErrorMessage(error)).toBe(
-      "Фото «a.jpg» уже удалено. Обновите страницу",
-    );
+    await expect(saveProcessPhotos.mutateAsync(keepB())).rejects.toBeInstanceOf(HttpError);
+
+    expect(queryClient.getQueryData(processPhotosQuery.queryKey)).toEqual({
+      etag,
+      processPhotos: [a, b],
+    });
+  });
+});
+
+describe("saveProcessPhotosFeedback", () => {
+  it.each([
+    [
+      new HttpError(412),
+      "Фото уже изменили в другой вкладке. Обновите страницу и внесите изменения заново",
+    ],
+    [
+      new UploadError("etude.png", new HttpError(400)),
+      "Сервер не принял фото «etude.png». Попробуйте другой файл",
+    ],
+  ])("explains %o", (error, message) => {
+    expect(saveProcessPhotosFeedback.getErrorMessage(error)).toBe(message);
   });
 });

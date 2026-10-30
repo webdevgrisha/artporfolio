@@ -127,6 +127,52 @@ describe("http", () => {
   });
 });
 
+describe("http entity tags", () => {
+  const etag = '"list-tag"';
+
+  it("returns the ETag of a representation with its body", async () => {
+    server.use(
+      mswHttp.get("/api/items", () =>
+        HttpResponse.json({ name: "Холст" }, { headers: { ETag: etag } }),
+      ),
+    );
+
+    await expect(http.getWithETag({ path: "/items", schema: itemSchema })).resolves.toEqual({
+      data: { name: "Холст" },
+      etag,
+    });
+  });
+
+  it("sends a conditional change with If-Match and returns the new ETag", async () => {
+    let request: Request | undefined;
+    server.use(
+      mswHttp.put("/api/items", ({ request: received }) => {
+        request = received.clone();
+        return HttpResponse.json({ name: "Холст" }, { headers: { ETag: '"new-tag"' } });
+      }),
+    );
+
+    const result = await http.putIfMatch({
+      body: { name: "Холст" },
+      etag,
+      path: "/items",
+      schema: itemSchema,
+    });
+
+    expect(request?.headers.get("If-Match")).toBe(etag);
+    expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
+    expect(result).toEqual({ data: { name: "Холст" }, etag: '"new-tag"' });
+  });
+
+  it("rejects a response without the ETag it was asked for", async () => {
+    server.use(mswHttp.get("/api/untagged", () => HttpResponse.json({ name: "Холст" })));
+
+    await expect(http.getWithETag({ path: "/untagged", schema: itemSchema })).rejects.toThrow(
+      "has no ETag",
+    );
+  });
+});
+
 describe("http CSRF token", () => {
   /** The X-CSRF-Token header of each request to /api/items, in order. */
   function recordTokens(): (string | null)[] {

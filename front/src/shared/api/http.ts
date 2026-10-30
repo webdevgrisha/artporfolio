@@ -26,6 +26,18 @@ interface BodyOptions<TBody extends object, TSchema extends ZodType> extends Htt
   schema: TSchema;
 }
 
+interface ConditionalBodyOptions<TBody extends object, TSchema extends ZodType>
+  extends BodyOptions<TBody, TSchema> {
+  /** The tag of the representation the change was made against, sent in If-Match. */
+  etag: string;
+}
+
+/** A representation with its entity tag, which a later change sends back in If-Match. */
+export interface Tagged<T> {
+  data: T;
+  etag: string;
+}
+
 interface PostVoidOptions extends HttpOptions {
   path: string;
 }
@@ -38,6 +50,16 @@ interface RequestOptions extends HttpOptions {
   /** Sent as JSON; `FormData` is sent as `multipart/form-data`. */
   body?: object;
   method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
+}
+
+function readETag(response: Response): string {
+  const etag = response.headers.get("ETag");
+
+  if (!etag) {
+    throw new Error(`The response of ${response.url} has no ETag`);
+  }
+
+  return etag;
 }
 
 class Http {
@@ -60,6 +82,20 @@ class Http {
     });
 
     return schema.parse(await response.json());
+  }
+
+  /** A GET that also returns the ETag of the representation, for a later `putIfMatch`. */
+  async getWithETag<TSchema extends ZodType>({
+    path,
+    schema,
+    ...options
+  }: GetOptions<TSchema>): Promise<Tagged<z.output<TSchema>>> {
+    const response = await this.request(path, {
+      ...options,
+      method: "GET",
+    });
+
+    return { data: schema.parse(await response.json()), etag: readETag(response) };
   }
 
   async post<TBody extends object, TSchema extends ZodType>({
@@ -90,6 +126,31 @@ class Http {
     });
 
     return schema.parse(await response.json());
+  }
+
+  /**
+   * A PUT that replaces the representation only while it still has the tag `etag`; the server
+   * rejects it with 412 otherwise. Returns the new representation and its tag.
+   */
+  async putIfMatch<TBody extends object, TSchema extends ZodType>({
+    body,
+    etag,
+    headers,
+    path,
+    schema,
+    ...options
+  }: ConditionalBodyOptions<TBody, TSchema>): Promise<Tagged<z.output<TSchema>>> {
+    const requestHeaders = new Headers(headers);
+    requestHeaders.set("If-Match", etag);
+
+    const response = await this.request(path, {
+      ...options,
+      body,
+      headers: requestHeaders,
+      method: "PUT",
+    });
+
+    return { data: schema.parse(await response.json()), etag: readETag(response) };
   }
 
   async patch<TBody extends object, TSchema extends ZodType>({

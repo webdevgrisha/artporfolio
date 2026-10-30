@@ -1,10 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { aboutQuery, type ProcessPhoto } from "@/entities/about";
+import { processPhotosQuery } from "@/entities/about";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 
 import { getSaveProcessPhotosErrorMessage } from "../lib/saveErrorMessages";
-import type { ProcessPhotosChanges } from "./processPhotosChanges";
 import { saveProcessPhotos } from "./saveProcessPhotos";
 
 export const saveProcessPhotosFeedback: MutationFeedback = {
@@ -12,23 +11,16 @@ export const saveProcessPhotosFeedback: MutationFeedback = {
   toastId: "process-photos-save",
 };
 
-interface SaveProcessPhotosVariables {
-  changes: ProcessPhotosChanges;
-  /** Gets each saved row with the photo the server returned. */
-  onRowSaved: (index: number, photo: ProcessPhoto) => void;
-}
-
 /**
- * Saves the changes of the process photos, then loads the About page again. That happens after a
- * failed save too: a request that failed may still have changed the photos on the server.
+ * Saves the list of process photos, then puts the saved list into the cache: the server returns
+ * all of it, so the page need not load it again. A failed save changed nothing on the server.
  */
 export function useSaveProcessPhotos() {
   const queryClient = useQueryClient();
 
   return useMutation({
     meta: { feedback: saveProcessPhotosFeedback },
-    mutationFn: ({ changes, onRowSaved }: SaveProcessPhotosVariables) =>
-      saveProcessPhotos(changes, onRowSaved),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: aboutQuery.queryKey }),
+    mutationFn: saveProcessPhotos,
+    onSuccess: (list) => queryClient.setQueryData(processPhotosQuery.queryKey, list),
   });
 }

@@ -12,7 +12,14 @@ export const processPhotoSchema = photoSchema.extend({
 
 export type ProcessPhoto = z.infer<typeof processPhotoSchema>;
 
-/** The shape of every API response that returns one process photo. */
-export const processPhotoResponseSchema = z.object({
-  processPhoto: processPhotoSchema,
+/** The shape of every API response that returns the process photos. */
+export const processPhotosResponseSchema = z.object({
+  /** In the order the site shows them. */
+  processPhotos: z.array(processPhotoSchema),
 });
+
+/** The process photos with the ETag of their list, which a replacement of the list sends back. */
+export interface ProcessPhotoList {
+  etag: string;
+  processPhotos: ProcessPhoto[];
+}

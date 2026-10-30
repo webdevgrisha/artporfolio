@@ -104,9 +104,13 @@ export const router = createBrowserRouter([
                       },
                       {
                         path: routes.aboutProcess,
-                        lazy: async () => ({
-                          Component: (await import("@/pages/about")).AboutProcessSection,
-                        }),
+                        lazy: async () => {
+                          const { AboutProcessSection, aboutProcessLoader } = await import(
+                            "@/pages/about"
+                          );
+
+                          return { Component: AboutProcessSection, loader: aboutProcessLoader };
+                        },
                       },
                     ],
                   },

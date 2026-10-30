@@ -1,13 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
-import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 
-import type { ProcessPhoto } from "@/entities/about";
+import type { ProcessPhotoList } from "@/entities/about";
 import { EditForm } from "@/shared/ui/edit-form";
 import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
-import { toProcessPhotoRow, toProcessPhotoRows } from "../model/processPhotoRows";
-import { getProcessPhotosChanges } from "../model/processPhotosChanges";
+import { toProcessPhotoRows } from "../model/processPhotoRows";
 import {
   type ProcessPhotosFormValues,
   processPhotosFormSchema,
@@ -17,52 +16,45 @@ import { ProcessPhotoFields } from "./ProcessPhotoFields";
 
 interface EditProcessPhotosFormProps {
   className?: string;
-  /** The process photos as last loaded from the server. */
-  processPhotos: readonly ProcessPhoto[];
+  /** The process photos as stored on the server when the form opens. */
+  list: ProcessPhotoList;
 }
 
-export function EditProcessPhotosForm({ className, processPhotos }: EditProcessPhotosFormProps) {
+export function EditProcessPhotosForm({ className, list }: EditProcessPhotosFormProps) {
+  // The list the rows were made from. Its ETag goes with the save, so a list changed since, for
+  // example in another tab, is not overwritten.
+  const [savedList, setSavedList] = React.useState(list);
   const form = useForm<ProcessPhotosFormValues>({
-    defaultValues: { processPhotos: toProcessPhotoRows(processPhotos) },
+    defaultValues: { processPhotos: toProcessPhotoRows(list.processPhotos) },
     resolver: zodResolver(processPhotosFormSchema),
   });
   const {
-    control,
-    formState: { isSubmitting },
+    formState: { isDirty, isSubmitting },
     handleSubmit,
     reset,
-    setValue,
   } = form;
-  const rows = useWatch({ control, name: "processPhotos" });
-  // The photos this form has shown or saved. Another one, such as a photo added in another tab,
-  // is not in the rows and must not count as deleted.
-  const [knownIds, setKnownIds] = React.useState(
-    () => new Set(processPhotos.map((photo) => photo.id)),
-  );
-  // Follows the reloads of the page data: a request that failed may still have changed the server.
-  const savedPhotos = processPhotos.filter((photo) => knownIds.has(photo.id));
-  const changes = getProcessPhotosChanges(rows, savedPhotos);
   const saveProcessPhotos = useSaveProcessPhotos();
 
-  function markRowSaved(index: number, photo: ProcessPhoto) {
-    setValue(`processPhotos.${index}`, toProcessPhotoRow(photo));
-    setKnownIds((ids) => new Set(ids).add(photo.id));
-  }
-
   async function saveChanges(values: ProcessPhotosFormValues) {
-    const valuesChanges = getProcessPhotosChanges(values.processPhotos, savedPhotos);
-
-    if (!valuesChanges) {
+    if (!isDirty) {
       showSuccessToast(savedMessage, { id: saveProcessPhotosFeedback.toastId });
       return;
     }
 
+    let saved: ProcessPhotoList;
+
     try {
-      await saveProcessPhotos.mutateAsync({ changes: valuesChanges, onRowSaved: markRowSaved });
+      saved = await saveProcessPhotos.mutateAsync({
+        etag: savedList.etag,
+        rows: values.processPhotos,
+      });
     } catch {
-      // The mutation has shown the error. The rows saved before it are marked as saved; the
-      // others keep their changes, so the save can be repeated.
+      // The mutation has shown the error; nothing was saved, so the changes stay.
+      return;
     }
+
+    setSavedList(saved);
+    reset({ processPhotos: toProcessPhotoRows(saved.processPhotos) });
   }
 
   return (
@@ -70,15 +62,12 @@ export function EditProcessPhotosForm({ className, processPhotos }: EditProcessP
     <FormProvider {...form}>
       <EditForm
         className={className}
-        hasUnsavedChanges={changes !== undefined}
+        hasUnsavedChanges={isDirty}
         isSaving={isSubmitting}
-        onRevert={() => reset({ processPhotos: toProcessPhotoRows(savedPhotos) })}
+        onRevert={() => reset()}
         onSubmit={handleSubmit(saveChanges)}
       >
-        <ProcessPhotoFields
-          isListModified={Boolean(changes && (changes.deleted.length > 0 || changes.isReordered))}
-          isSaving={isSubmitting}
-        />
+        <ProcessPhotoFields isSaving={isSubmitting} savedPhotos={savedList.processPhotos} />
       </EditForm>
     </FormProvider>
   );
