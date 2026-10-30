@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import type { DocumentSnapshot, QuerySnapshot } from "firebase-admin/firestore";
+import { type DocumentSnapshot, type QuerySnapshot, Timestamp } from "firebase-admin/firestore";
 
 import {
   type Project,
@@ -57,9 +57,20 @@ function editedContent({ description, link, photos, title }: StoredProject) {
   return { description, link, photos, title };
 }
 
-/** The stored project as the API returns it, with download URLs. */
-function toProject(id: string, { description, link, photos, title }: StoredProject): Project {
-  return { description, id, link, photos: photos.map(toListPhoto), title };
+/** The stored project as the API returns it, with download URLs and ISO 8601 dates. */
+function toProject(
+  id: string,
+  { createdAt, description, link, photos, title, updatedAt }: StoredProject,
+): Project {
+  return {
+    createdAt: createdAt.toDate().toISOString(),
+    description,
+    id,
+    link,
+    photos: photos.map(toListPhoto),
+    title,
+    updatedAt: updatedAt.toDate().toISOString(),
+  };
 }
 
 function toSavedProject(id: string, project: StoredProject): SavedProject {
@@ -96,7 +107,14 @@ export async function createProject(body: ProjectBody): Promise<SavedProject> {
       const { docs } = await transaction.get(orderedProjects().limit(1));
       const first = docs[0];
       const position = first ? readProject(first).position - 1 : 0;
-      const created: StoredProject = { ...body, photos: draft.build([]), position };
+      const now = Timestamp.now();
+      const created: StoredProject = {
+        ...body,
+        createdAt: now,
+        photos: draft.build([]),
+        position,
+        updatedAt: now,
+      };
 
       transaction.create(projectDocument(id), created);
       return created;
@@ -133,7 +151,12 @@ export async function replaceProject(
 
       assertIfMatch(ifMatch, editedContent(current));
 
-      const next: StoredProject = { ...current, ...body, photos: draft.build(current.photos) };
+      const next: StoredProject = {
+        ...current,
+        ...body,
+        photos: draft.build(current.photos),
+        updatedAt: Timestamp.now(),
+      };
 
       transaction.set(document, next);
       return [current.photos, next];

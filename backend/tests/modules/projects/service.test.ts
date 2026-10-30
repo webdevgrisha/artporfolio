@@ -61,6 +61,8 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 }));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
+import { Timestamp } from "firebase-admin/firestore";
+
 import {
   createProject,
   deleteProject,
@@ -100,8 +102,19 @@ function storedPhoto(projectId: string) {
   };
 }
 
+/** When the seeded projects were made and last saved. */
+const seededAt = Timestamp.fromDate(new Date("2026-01-15T10:00:00.000Z"));
+
 function storedProject(id: string, title: string, position: number) {
-  return { description: "", link: "", photos: [storedPhoto(id)], position, title };
+  return {
+    createdAt: seededAt,
+    description: "",
+    link: "",
+    photos: [storedPhoto(id)],
+    position,
+    title,
+    updatedAt: seededAt,
+  };
 }
 
 /** The image publishUpload makes from an upload, in a new version under `folder`. */
@@ -198,6 +211,13 @@ describe("createProject", () => {
     expect(uploads.deleteUploadsOrWarn).toHaveBeenCalledWith([uploadId]);
   });
 
+  it("dates the new project by the server clock", async () => {
+    const { data } = await createProject(body);
+
+    expect(data.createdAt).toBe(data.updatedAt);
+    expect(Date.parse(data.createdAt)).toBeGreaterThan(seededAt.toMillis());
+  });
+
   it("creates the first project at position 0", async () => {
     projects.clear();
 
@@ -226,6 +246,13 @@ describe("replaceProject", () => {
     expect(data.photos.map((photo) => photo.alt)).toEqual(["Новое фото"]);
     expect(projects.get(elephantId)?.position).toBe(0);
     expect(storage.deleteFolder).toHaveBeenCalledWith(`projects/${elephantId}/photos/${photoId}`);
+  });
+
+  it("keeps the creation date and moves the update date", async () => {
+    const { data } = await replaceProject(elephantId, body, await readTag(elephantId));
+
+    expect(data.createdAt).toBe(seededAt.toDate().toISOString());
+    expect(Date.parse(data.updatedAt)).toBeGreaterThan(seededAt.toMillis());
   });
 
   it("keeps a saved photo by id and changes its alt text", async () => {
@@ -295,6 +322,8 @@ describe("projects order", () => {
 
     expect(order).toEqual({ data: [tigerId, elephantId], etag: entityTag([tigerId, elephantId]) });
     expect((await getProjectsOrder()).data).toEqual([tigerId, elephantId]);
+    // Moving a project is not editing it.
+    expect((await getProject(elephantId)).data.updatedAt).toBe(seededAt.toDate().toISOString());
   });
 
   it("returns 412 when the order has changed since it was read", async () => {

@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import {
@@ -47,6 +48,10 @@ export const storedProjectSchema = z.object({
   photos: z.array(storedListPhotoSchema),
   /** The place in the list: the site shows the projects by ascending position. */
   position: z.number(),
+  /** Set by the server when the project is created. */
+  createdAt: z.instanceof(Timestamp),
+  /** Set by the server whenever the admin saves the project; moving it does not count. */
+  updatedAt: z.instanceof(Timestamp),
 });
 
 /** A project as the API returns it. */
@@ -56,6 +61,8 @@ export const projectSchema = z.object({
   description: z.string(),
   link: z.string(),
   photos: z.array(listPhotoSchema),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 /** The order of the projects: every project, once, in the order the site shows them. */

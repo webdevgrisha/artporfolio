@@ -41,6 +41,8 @@ const project = {
   link: "https://elephant.com",
   photos: [{ ...apiImage("cover.png"), alt: "Обложка", id: otherId }],
   title: "Слон",
+  createdAt: "2026-01-15T10:00:00.000Z",
+  updatedAt: "2026-02-01T12:30:00.000Z",
 };
 const body = {
   description: "Иллюстрации к книге.",
