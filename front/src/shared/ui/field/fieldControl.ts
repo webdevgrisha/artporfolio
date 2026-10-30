@@ -36,5 +36,5 @@ export function useFieldIds({
  * invalid states. An invalid control is marked with `aria-invalid`.
  */
 export function getFieldControlClassName(isModified: boolean): string {
-  return clsx(styles.control, { [styles.controlModified]: isModified });
+  return clsx(styles.control, isModified && styles.controlModified);
 }

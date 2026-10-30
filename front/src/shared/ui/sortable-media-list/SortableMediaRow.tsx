@@ -71,10 +71,11 @@ export function SortableMediaRow({
   return (
     <li
       ref={setNodeRef}
-      className={clsx(styles.row, {
-        [styles.rowModified]: item.isModified,
-        [styles.rowDragging]: isDragging,
-      })}
+      className={clsx(
+        styles.row,
+        item.isModified && styles.rowModified,
+        isDragging && styles.rowDragging,
+      )}
       // Translate only: scaling would stretch rows of different heights into each other.
       style={{ transform: CSS.Translate.toString(transform), transition }}
       data-item-id={item.id}

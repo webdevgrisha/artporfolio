@@ -51,9 +51,11 @@ export function Input({
         <input
           ref={ref}
           id={controlId}
-          className={clsx(getFieldControlClassName(isModified), styles.control, {
-            [styles.controlWithAdornment]: Boolean(endAdornment),
-          })}
+          className={clsx(
+            getFieldControlClassName(isModified),
+            styles.control,
+            Boolean(endAdornment) && styles.controlWithAdornment,
+          )}
           aria-describedby={describedBy}
           aria-invalid={ariaInvalid ?? Boolean(error)}
           {...inputProps}

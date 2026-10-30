@@ -54,12 +54,14 @@ export function MediaFieldset({
       <legend className={styles.label}>{label}</legend>
 
       <div
-        className={clsx(styles.frame, frameClassName, {
-          [styles.frameModified]: isModified,
-          [styles.frameInvalid]: Boolean(error),
-          [styles.frameDragOver]: isDragOver,
-          [styles.frameDisabled]: disabled,
-        })}
+        className={clsx(
+          styles.frame,
+          frameClassName,
+          isModified && styles.frameModified,
+          Boolean(error) && styles.frameInvalid,
+          isDragOver && styles.frameDragOver,
+          disabled && styles.frameDisabled,
+        )}
       >
         {children}
       </div>

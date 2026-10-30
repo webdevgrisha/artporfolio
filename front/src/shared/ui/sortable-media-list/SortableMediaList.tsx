@@ -151,6 +151,7 @@ export function SortableMediaList({
 
   function moveItem(from: number, to: number, control?: RowControl) {
     const item = items[from];
+    if (!item) return;
 
     onRejectionChange(undefined);
     if (control) {
@@ -163,11 +164,14 @@ export function SortableMediaList({
   }
 
   function removeItem(index: number) {
+    const item = items[index];
+    if (!item) return;
+
     // The focus goes to the next item, or the previous one at the end of the list.
     const nextItem = items[index + 1] ?? items[index - 1];
     focusAfterUpdate(nextItem ? { control: "remove", itemId: nextItem.id } : "add");
     onRejectionChange(undefined);
-    onRemove(items[index].id);
+    onRemove(item.id);
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {

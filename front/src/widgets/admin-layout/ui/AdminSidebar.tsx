@@ -25,12 +25,12 @@ export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
     <>
       {/* A pointer-only shortcut: keyboard users close the menu with Escape or the close button. */}
       <div
-        className={clsx(styles.backdrop, { [styles.backdropVisible]: isOpen })}
+        className={clsx(styles.backdrop, isOpen && styles.backdropVisible)}
         aria-hidden="true"
         onClick={onClose}
       />
 
-      <div ref={ref} id={id} className={clsx(styles.sidebar, { [styles.open]: isOpen })}>
+      <div ref={ref} id={id} className={clsx(styles.sidebar, isOpen && styles.open)}>
         <Tooltip className={styles.close} content={closeLabel}>
           <IconButton label={closeLabel} onClick={onClose}>
             <CloseIcon />

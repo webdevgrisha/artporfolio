@@ -16,8 +16,8 @@ export const imageSchema = z.object({
   height: z.number(),
   /** Ordered by width. The server makes every format in at least one width. */
   sources: z.object({
-    avif: z.array(imageSourceSchema).min(1),
-    webp: z.array(imageSourceSchema).min(1),
+    avif: z.tuple([imageSourceSchema], imageSourceSchema),
+    webp: z.tuple([imageSourceSchema], imageSourceSchema),
   }),
   version: z.string(),
   width: z.number(),

@@ -1,7 +1,7 @@
 import { HttpResponse, http as mswHttp } from "msw/http";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { toProcessPhotoRows } from "@/features/edit-about/model/processPhotoRows";
+import { toProcessPhotoRow } from "@/features/edit-about/model/processPhotoRows";
 import { saveProcessPhotos } from "@/features/edit-about/model/saveProcessPhotos";
 import { UploadError } from "@/shared/api/upload";
 
@@ -36,7 +36,8 @@ describe("saveProcessPhotos", () => {
         return HttpResponse.json({ processPhotos: [b, a] }, { headers: { ETag: '"new-tag"' } });
       }),
     );
-    const [rowA, rowB] = toProcessPhotoRows([a, b]);
+    const rowA = toProcessPhotoRow(a);
+    const rowB = toProcessPhotoRow(b);
 
     const saved = await saveProcessPhotos({
       etag,
