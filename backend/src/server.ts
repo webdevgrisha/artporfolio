@@ -8,6 +8,7 @@ import { authRouter } from "#modules/auth/routes";
 import { contactsRouter } from "#modules/contacts/routes";
 import { healthRouter } from "#modules/health/routes";
 import { pagesRouter } from "#modules/pages/routes";
+import { projectsIntroRouter } from "#modules/projects-intro/routes";
 import { uploadsRouter } from "#modules/uploads/routes";
 import { corsOptions } from "#shared/config/cors";
 import { NotFoundError } from "#shared/http/errors";
@@ -26,6 +27,7 @@ server.use("/api/auth", authRouter);
 server.use("/api/contacts", contactsRouter);
 server.use("/api/pages", pagesRouter);
 server.use("/api/about", aboutRouter);
+server.use("/api/projects-intro", projectsIntroRouter);
 server.use("/api/uploads", uploadsRouter);
 
 server.use((_request, _response, next) => {
