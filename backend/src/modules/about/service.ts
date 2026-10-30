@@ -1,9 +1,10 @@
 import { aboutDocument } from "#modules/about/document";
 import { aboutPhoto } from "#modules/about/photo";
-import { readProcessPhotos, toProcessPhoto } from "#modules/about/process-photos/service";
+import { readProcessPhotos } from "#modules/about/process-photos/service";
 import type { AboutResponse } from "#modules/about/schema";
 import { readAboutText } from "#modules/about/text/service";
 import { readPhoto, toPhoto } from "#shared/images/photo";
+import { toListPhoto } from "#shared/images/photo-list";
 
 /** One read for the whole page: the texts, «My photo» and the process photos. */
 export async function getAbout(): Promise<AboutResponse> {
@@ -13,6 +14,6 @@ export async function getAbout(): Promise<AboutResponse> {
   return {
     text: readAboutText(snapshot),
     photo: photo && toPhoto(photo),
-    processPhotos: readProcessPhotos(snapshot).map(toProcessPhoto),
+    processPhotos: readProcessPhotos(snapshot).map(toListPhoto),
   };
 }
