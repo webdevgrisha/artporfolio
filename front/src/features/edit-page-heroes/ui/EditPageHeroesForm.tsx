@@ -25,7 +25,7 @@ export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps
   const {
     clearErrors,
     control,
-    formState: { errors, isDirty, isSubmitting },
+    formState: { dirtyFields, errors, isDirty, isSubmitting },
     handleSubmit,
     reset,
     resetField,
@@ -37,7 +37,7 @@ export function EditPageHeroesForm({ className, pages }: EditPageHeroesFormProps
 
   async function saveChanges(values: PageHeroesFormValues) {
     const { error, savedPages } = await savePageHeroes.mutateAsync(
-      getPageHeroesChanges(values, pages),
+      getPageHeroesChanges(values, dirtyFields),
     );
 
     // What was saved is no longer modified; a page that failed keeps its unsaved change.

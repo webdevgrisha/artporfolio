@@ -25,22 +25,28 @@ describe("getPageHeroesChanges", () => {
       home: "saved",
       projects: null,
     });
-    expect(getPageHeroesChanges(values, pages)).toEqual({});
+    expect(getPageHeroesChanges(values, {})).toEqual({});
   });
 
   it("uploads a picked file, also in place of a saved hero", () => {
     const home = imageFile("home.png");
     const projects = imageFile("projects.png");
 
-    expect(getPageHeroesChanges({ ...values, home, projects }, pages)).toEqual({
+    expect(
+      getPageHeroesChanges({ ...values, home, projects }, { home: true, projects: true }),
+    ).toEqual({
       home: { file: home, type: "upload" },
       projects: { file: projects, type: "upload" },
     });
   });
 
-  it("deletes a removed hero, and only one that is on the server", () => {
-    expect(getPageHeroesChanges({ ...values, contacts: null, gallery: null }, pages)).toEqual({
+  it("deletes a hero removed in the form", () => {
+    expect(getPageHeroesChanges({ ...values, gallery: null }, { gallery: true })).toEqual({
       gallery: { type: "delete" },
     });
+  });
+
+  it("does not delete a hero the form did not show, such as one uploaded in another tab", () => {
+    expect(getPageHeroesChanges({ ...values, contacts: null }, {})).toEqual({});
   });
 });
