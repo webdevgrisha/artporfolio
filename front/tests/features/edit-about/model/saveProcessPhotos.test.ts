@@ -1,16 +1,16 @@
 import { HttpResponse, http as mswHttp } from "msw/http";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { toProcessPhotoRow } from "@/features/edit-about/model/processPhotoRows";
 import { saveProcessPhotos } from "@/features/edit-about/model/saveProcessPhotos";
 import { UploadError } from "@/shared/api/upload";
+import { toPhotoListRow } from "@/shared/lib/photoListForm";
 
 import { csrfHandler, problem } from "../../../support/handlers";
-import { apiProcessPhoto, imageFile } from "../../../support/images";
+import { apiListPhoto, imageFile } from "../../../support/images";
 import { recordRequests, server } from "../../../support/server";
 
 const etag = '"list-tag"';
-const [a, b] = [apiProcessPhoto("a"), apiProcessPhoto("b")];
+const [a, b] = [apiListPhoto("a"), apiListPhoto("b")];
 
 /** The uploads API: uploads get the ids `upload-1`, `upload-2`… */
 function uploadsApi() {
@@ -36,8 +36,8 @@ describe("saveProcessPhotos", () => {
         return HttpResponse.json({ processPhotos: [b, a] }, { headers: { ETag: '"new-tag"' } });
       }),
     );
-    const rowA = toProcessPhotoRow(a);
-    const rowB = toProcessPhotoRow(b);
+    const rowA = toPhotoListRow(a);
+    const rowB = toPhotoListRow(b);
 
     const saved = await saveProcessPhotos({
       etag,
