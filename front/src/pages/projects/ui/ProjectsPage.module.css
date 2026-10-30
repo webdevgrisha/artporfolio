@@ -35,3 +35,11 @@
   font-weight: normal;
   overflow-wrap: anywhere;
 }
+
+.sectionsBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--layout-space-12);
+  align-items: flex-start;
+  justify-content: space-between;
+}

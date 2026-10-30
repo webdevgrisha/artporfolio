@@ -13,11 +13,11 @@ import React from "react";
 import { Link, useSearchParams } from "react-router";
 
 import type { Project } from "@/entities/project";
-import { projectPath, routes } from "@/shared/config/routes";
-import { Button, ButtonLink } from "@/shared/ui/button";
+import { projectPath } from "@/shared/config/routes";
+import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, EditIcon, TrashIcon } from "@/shared/ui/icon";
+import { IconButton, IconButtonLink } from "@/shared/ui/icon-button";
 import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
 import { SearchInput } from "@/shared/ui/search-input";
 import { Tooltip } from "@/shared/ui/tooltip";
@@ -40,10 +40,18 @@ const ariaSort = {
   desc: "descending",
 } as const satisfies Record<SortDirection, string>;
 
+/** Which way a column is sorted: an arrow once it is, the chevron of the design until then. */
+function SortIcon({ direction }: { direction: SortDirection | false }) {
+  if (direction === "asc") return <ArrowUpIcon className={styles.sortArrow} />;
+  if (direction === "desc") return <ArrowDownIcon className={styles.sortArrow} />;
+
+  return <ChevronDownIcon className={styles.sortChevron} />;
+}
+
 /**
  * Every project; until it is sorted, in the order the site shows them. The search and the sorting
- * are kept in the address. A project opens for editing by its title and is deleted after a
- * confirmation; its place on the site is changed in «Порядок на сайте».
+ * are kept in the address. A project opens for editing by its title or the pencil and is deleted
+ * after a confirmation; its place on the site is changed in «Порядок на сайте».
  */
 export function ProjectsTable({ className, projects }: ProjectsTableProps) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -59,32 +67,29 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
   const columns = React.useMemo<ColumnDef<Project>[]>(
     () => [
       {
-        id: "photos",
-        header: "Фото",
-        accessorFn: (project) => project.photos.length,
-        cell: ({ row: { original: project } }) => {
-          const [cover] = project.photos;
-
-          return (
-            <div className={styles.photos}>
-              {cover ? (
-                <MediaImage className={styles.cover} source={imageToMediaItem(cover).source} />
-              ) : (
-                <span className={styles.cover} />
-              )}
-              <span className={styles.muted}>{project.photos.length} фото</span>
-            </div>
-          );
-        },
-      },
-      {
         id: "title",
         header: "Название",
         accessorFn: (project) => project.title,
         sortingFn: (a, b) => collator.compare(a.original.title, b.original.title),
         cell: ({ row: { original: project } }) => (
-          <Link to={projectPath(project.id)}>{project.title}</Link>
+          <Link className={styles.textLink} to={projectPath(project.id)}>
+            {project.title}
+          </Link>
         ),
+      },
+      {
+        id: "photos",
+        header: "Фото",
+        enableSorting: false,
+        cell: ({ row: { original: project } }) => {
+          const [cover] = project.photos;
+
+          return cover ? (
+            <MediaImage className={styles.cover} source={imageToMediaItem(cover).source} />
+          ) : (
+            <span className={styles.cover} />
+          );
+        },
       },
       {
         id: "link",
@@ -93,7 +98,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         sortingFn: (a, b) => collator.compare(linkHost(a.original.link), linkHost(b.original.link)),
         cell: ({ row: { original: project } }) =>
           project.link ? (
-            <a href={project.link} target="_blank" rel="noreferrer">
+            <a className={styles.textLink} href={project.link} target="_blank" rel="noreferrer">
               {linkHost(project.link)}
             </a>
           ) : (
@@ -105,10 +110,16 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         header: () => <VisuallyHidden>Действия</VisuallyHidden>,
         enableSorting: false,
         cell: ({ row: { original: project } }) => {
+          const editLabel = `Изменить ${project.title}`;
           const deleteLabel = `Удалить ${project.title}`;
 
           return (
             <div className={styles.actions}>
+              <Tooltip content={editLabel}>
+                <IconButtonLink label={editLabel} to={projectPath(project.id)}>
+                  <EditIcon className={styles.editIcon} />
+                </IconButtonLink>
+              </Tooltip>
               <Tooltip content={deleteLabel}>
                 <IconButton label={deleteLabel} onClick={() => setDeleted(project)}>
                   <TrashIcon className={styles.removeIcon} />
@@ -146,16 +157,12 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
 
   return (
     <div className={clsx(styles.root, className)}>
-      <div className={styles.toolbar}>
-        <SearchInput
-          className={styles.search}
-          label="Поиск по названию и ссылке"
-          clearLabel="Очистить поиск"
-          value={view.query}
-          onChange={(query) => changeView({ query })}
-        />
-        <ButtonLink to={routes.projectNew}>Добавить проект</ButtonLink>
-      </div>
+      <SearchInput
+        label="Поиск по названию и ссылке"
+        clearLabel="Очистить поиск"
+        value={view.query}
+        onChange={(query) => changeView({ query })}
+      />
 
       {projects.length === 0 ? (
         <p className={styles.empty}>Проектов пока нет</p>
@@ -198,10 +205,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
                             onClick={header.column.getToggleSortingHandler()}
                           >
                             {label}
-                            {sorted === "asc" ? <ArrowUpIcon className={styles.sortIcon} /> : null}
-                            {sorted === "desc" ? (
-                              <ArrowDownIcon className={styles.sortIcon} />
-                            ) : null}
+                            <SortIcon direction={sorted} />
                           </button>
                         ) : (
                           label

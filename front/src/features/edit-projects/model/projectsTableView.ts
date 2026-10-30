@@ -3,7 +3,7 @@ import type { SortingState } from "@tanstack/react-table";
 import type { Project } from "@/entities/project";
 
 /** The columns the table sorts by, as named in the address. */
-export const sortableColumns = ["title", "photos", "link"] as const;
+export const sortableColumns = ["title", "link"] as const;
 
 type SortableColumn = (typeof sortableColumns)[number];
 

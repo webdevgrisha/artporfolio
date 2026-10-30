@@ -17,14 +17,14 @@ const elephant = {
 
 describe("readTableView", () => {
   it("reads the search and the sorting from the address", () => {
-    expect(readTableView(new URLSearchParams("q=слон&sort=photos.desc"))).toEqual({
+    expect(readTableView(new URLSearchParams("q=слон&sort=link.desc"))).toEqual({
       query: "слон",
-      sorting: [{ desc: true, id: "photos" }],
+      sorting: [{ desc: true, id: "link" }],
     });
   });
 
   it("ignores a sorting it does not know", () => {
-    for (const sort of ["position.asc", "title.up", "title", ""]) {
+    for (const sort of ["photos.asc", "title.up", "title", ""]) {
       expect(readTableView(new URLSearchParams({ sort })).sorting).toEqual([]);
     }
   });
