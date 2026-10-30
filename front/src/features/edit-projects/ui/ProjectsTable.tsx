@@ -37,8 +37,8 @@ import styles from "./ProjectsTable.module.css";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
-    /** Fits the column to its content, so the rest of the width goes to the text columns. */
-    isNarrow?: boolean;
+    /** The class of the column's header and cells, such as its width. */
+    className?: string;
   }
 }
 
@@ -94,14 +94,14 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "position",
         header: "№",
-        meta: { isNarrow: true },
+        meta: { className: styles.positionColumn },
         accessorFn: (row) => row.position,
         cell: ({ row: { original } }) => <span className={styles.muted}>{original.position}</span>,
       },
       {
         id: "photos",
         header: "Фото",
-        meta: { isNarrow: true },
+        meta: { className: styles.photoColumn },
         enableSorting: false,
         cell: ({ row: { original } }) => {
           const [cover] = original.project.photos;
@@ -123,6 +123,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "title",
         header: "Название",
+        meta: { className: styles.titleColumn },
         accessorFn: (row) => row.project.title,
         sortingFn: (a, b) => collator.compare(a.original.project.title, b.original.project.title),
         cell: ({ row: { original } }) => (
@@ -134,6 +135,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "link",
         header: "Ссылка",
+        meta: { className: styles.linkColumn },
         accessorFn: (row) => linkHost(row.project.link),
         sortingFn: (a, b) =>
           collator.compare(linkHost(a.original.project.link), linkHost(b.original.project.link)),
@@ -143,7 +145,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
           return link ? (
             <Tooltip content={link}>
               <a className={styles.externalLink} href={link} target="_blank" rel="noreferrer">
-                {linkHost(link)}
+                <span className={styles.externalHost}>{linkHost(link)}</span>
                 <ExternalLinkIcon className={styles.externalIcon} />
                 <VisuallyHidden>(откроется в новой вкладке)</VisuallyHidden>
               </a>
@@ -156,7 +158,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "actions",
         header: () => <VisuallyHidden>Действия</VisuallyHidden>,
-        meta: { isNarrow: true },
+        meta: { className: styles.actionsColumn },
         enableSorting: false,
         cell: ({ row: { original } }) => {
           const { project } = original;
@@ -247,7 +249,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
                     return (
                       <th
                         key={header.id}
-                        className={clsx(header.column.columnDef.meta?.isNarrow && styles.narrow)}
+                        className={header.column.columnDef.meta?.className}
                         scope="col"
                         aria-sort={canSort ? (sorted ? ariaSort[sorted] : "none") : undefined}
                       >
@@ -273,10 +275,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
               {table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className={styles.row}>
                   {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className={clsx(cell.column.columnDef.meta?.isNarrow && styles.narrow)}
-                    >
+                    <td key={cell.id} className={cell.column.columnDef.meta?.className}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
