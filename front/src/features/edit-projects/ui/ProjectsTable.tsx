@@ -67,17 +67,6 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
   const columns = React.useMemo<ColumnDef<Project>[]>(
     () => [
       {
-        id: "title",
-        header: "Название",
-        accessorFn: (project) => project.title,
-        sortingFn: (a, b) => collator.compare(a.original.title, b.original.title),
-        cell: ({ row: { original: project } }) => (
-          <Link className={styles.textLink} to={projectPath(project.id)}>
-            {project.title}
-          </Link>
-        ),
-      },
-      {
         id: "photos",
         header: "Фото",
         enableSorting: false,
@@ -90,6 +79,17 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
             <span className={styles.cover} />
           );
         },
+      },
+      {
+        id: "title",
+        header: "Название",
+        accessorFn: (project) => project.title,
+        sortingFn: (a, b) => collator.compare(a.original.title, b.original.title),
+        cell: ({ row: { original: project } }) => (
+          <Link className={styles.textLink} to={projectPath(project.id)}>
+            {project.title}
+          </Link>
+        ),
       },
       {
         id: "link",
