@@ -8,7 +8,7 @@ import { ClearableInput } from "@/shared/ui/clearable-input";
 import { imageToMediaItem } from "@/shared/ui/media-preview";
 import { type SortableMediaItem, SortableMediaList } from "@/shared/ui/sortable-media-list";
 
-import type { AboutFormValues, ProcessPhotoRow } from "../model/aboutFormSchema";
+import type { ProcessPhotoRow, ProcessPhotosFormValues } from "../model/processPhotosFormSchema";
 import styles from "./ProcessPhotoFields.module.css";
 
 interface ProcessPhotoFieldsProps {
@@ -41,10 +41,10 @@ function toMediaItem(
     : { id: key, name: "", size: 0, source: "" };
 }
 
-/** The process photos tab of `EditAboutForm`; it reads the form from its context. */
+/** The fields of `EditProcessPhotosForm`; they read the form from its context. */
 export function ProcessPhotoFields({ className, isSaving, serverPhotos }: ProcessPhotoFieldsProps) {
   const { clearErrors, control, register, setError, setFocus, setValue } =
-    useFormContext<AboutFormValues>();
+    useFormContext<ProcessPhotosFormValues>();
   const { errors, isSubmitted } = useFormState({ control });
   // `fields` gives every row a stable key; the values come from `rows`, which also follow typing.
   const { append, fields, move, remove } = useFieldArray({ control, name: "processPhotos" });

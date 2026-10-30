@@ -2,9 +2,8 @@ import clsx from "clsx";
 import { useFormContext, useFormState } from "react-hook-form";
 
 import { Textarea } from "@/shared/ui/textarea";
-
-import { type AboutFormValues, aboutTextMaxLengths } from "../model/aboutFormSchema";
 import { aboutTextFields } from "../model/aboutTextFields";
+import { type AboutTextFormValues, aboutTextMaxLengths } from "../model/aboutTextFormSchema";
 import styles from "./AboutTextFields.module.css";
 
 interface AboutTextFieldsProps {
@@ -12,9 +11,9 @@ interface AboutTextFieldsProps {
   isSaving: boolean;
 }
 
-/** The texts tab of `EditAboutForm`; it reads the form from its context. */
+/** The fields of `EditAboutTextForm`; they read the form from its context. */
 export function AboutTextFields({ className, isSaving }: AboutTextFieldsProps) {
-  const { control, register } = useFormContext<AboutFormValues>();
+  const { control, register } = useFormContext<AboutTextFormValues>();
   const { dirtyFields, errors } = useFormState({ control });
 
   return (

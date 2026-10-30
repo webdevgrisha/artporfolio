@@ -1,6 +1,6 @@
 import type { ProcessPhoto } from "@/entities/about";
 
-import type { ProcessPhotoRow } from "./aboutFormSchema";
+import type { ProcessPhotoRow } from "./processPhotosFormSchema";
 
 /** What a save does with one row of the process photos. */
 export type ProcessPhotoStep =

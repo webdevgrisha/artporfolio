@@ -2,10 +2,17 @@
   display: flex;
   flex: 1;
   flex-direction: column;
+  gap: var(--layout-space-8);
   padding: var(--layout-space-8);
 }
 
-/* Fills the frame so the form actions sit at its bottom. */
+/* Fills the frame so the form actions sit at its bottom; a hidden panel stays hidden. */
+.panel:not([hidden]) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 .form {
   flex: 1;
 }

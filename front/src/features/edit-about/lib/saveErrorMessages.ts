@@ -7,8 +7,8 @@ import { HttpError } from "@/shared/api/httpError";
 import { imageUploadRules } from "@/shared/api/image";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
-/** For a failure before any part is sent, such as getting the CSRF token. */
-export function getSaveAboutErrorMessage(error: unknown): string {
+/** For a save of the process photos that could not start, such as without a CSRF token. */
+export function getSaveProcessPhotosErrorMessage(error: unknown): string {
   if (isSessionExpiredError(error)) return sessionExpiredMessage;
 
   return getRequestErrorMessage(error, "Не удалось сохранить изменения. Попробуйте ещё раз");

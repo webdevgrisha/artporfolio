@@ -13,9 +13,9 @@ import {
   getSaveProcessPhotoErrorMessage,
   getSaveProcessPhotoOrderErrorMessage,
 } from "../lib/saveErrorMessages";
-import type { ProcessPhotoRow } from "./aboutFormSchema";
-import { toProcessPhotoRow } from "./aboutFormValues";
+import { toProcessPhotoRow } from "./processPhotoRows";
 import type { ProcessPhotoStep, ProcessPhotosChanges } from "./processPhotosChanges";
+import type { ProcessPhotoRow } from "./processPhotosFormSchema";
 
 type EditStep = Exclude<ProcessPhotoStep, { type: "keep" }>;
 

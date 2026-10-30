@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-
-import type { ProcessPhotoRow } from "@/features/edit-about/model/aboutFormSchema";
-import { toProcessPhotoRows } from "@/features/edit-about/model/aboutFormValues";
+import { toProcessPhotoRows } from "@/features/edit-about/model/processPhotoRows";
 import { getProcessPhotosChanges } from "@/features/edit-about/model/processPhotosChanges";
+import type { ProcessPhotoRow } from "@/features/edit-about/model/processPhotosFormSchema";
 
 import { apiProcessPhoto, imageFile } from "../../../support/images";
 
