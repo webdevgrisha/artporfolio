@@ -34,7 +34,7 @@ export function getSavePhotoErrorMessage(error: unknown): string {
       // Only an update of the alt text expects an existing photo.
       404: "Фото уже удалено. Обновите страницу",
       // The photo was changed since this page loaded it, for example in another tab.
-      412: "Фото уже изменили в другой вкладке. Обновите страницу и внесите изменения заново",
+      412: "Фото уже изменили в другой вкладке",
       413: `Фото больше ${formatFileSize(imageUploadRules.maxFileSize)}`,
       // The upload is kept for a day; the photo is sent right after it, so this is rare.
       422: "Загрузка фото устарела. Выберите фото ещё раз",

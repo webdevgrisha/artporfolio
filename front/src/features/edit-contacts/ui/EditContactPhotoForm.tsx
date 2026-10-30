@@ -1,3 +1,4 @@
+import { contactPhotoQuery } from "@/entities/contacts";
 import type { Tagged } from "@/shared/api/http";
 import type { Photo } from "@/shared/api/photo";
 import { EditPhotoForm } from "@/shared/ui/edit-photo-form";
@@ -18,6 +19,7 @@ export function EditContactPhotoForm({ className, photo }: EditContactPhotoFormP
       className={className}
       label="Фото"
       photo={photo}
+      query={contactPhotoQuery}
       toastId={saveContactPhotoFeedback.toastId}
       onSave={savePhoto.mutateAsync}
     />

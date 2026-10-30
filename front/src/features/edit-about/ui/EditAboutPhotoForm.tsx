@@ -1,3 +1,4 @@
+import { aboutPhotoQuery } from "@/entities/about";
 import type { Tagged } from "@/shared/api/http";
 import type { Photo } from "@/shared/api/photo";
 import { EditPhotoForm } from "@/shared/ui/edit-photo-form";
@@ -18,6 +19,7 @@ export function EditAboutPhotoForm({ className, photo }: EditAboutPhotoFormProps
       className={className}
       label="Моё фото"
       photo={photo}
+      query={aboutPhotoQuery}
       toastId={saveAboutPhotoFeedback.toastId}
       onSave={savePhoto.mutateAsync}
     />

@@ -75,10 +75,7 @@ describe("useSaveProcessPhotos", () => {
 
 describe("saveProcessPhotosFeedback", () => {
   it.each([
-    [
-      new HttpError(412),
-      "Фото уже изменили в другой вкладке. Обновите страницу и внесите изменения заново",
-    ],
+    [new HttpError(412), "Фото уже изменили в другой вкладке"],
     [
       new UploadError("etude.png", new HttpError(400)),
       "Сервер не принял фото «etude.png». Попробуйте другой файл",
