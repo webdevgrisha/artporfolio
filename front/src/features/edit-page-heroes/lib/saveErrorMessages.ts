@@ -12,3 +12,9 @@ export function getSaveHeroErrorMessage(error: unknown, pageLabel: string): stri
     fallback: `Не удалось сохранить фото страницы «${pageLabel}». Попробуйте ещё раз`,
   });
 }
+
+export function getDeleteHeroErrorMessage(error: unknown, pageLabel: string): string {
+  return getSaveErrorMessage(error, {
+    fallback: `Не удалось удалить фото страницы «${pageLabel}». Попробуйте ещё раз`,
+  });
+}

@@ -1,6 +1,6 @@
 import type { SitePageId } from "@/entities/site-page";
 
-interface HeroField {
+export interface HeroField {
   /** The name of the page in the admin. */
   label: string;
   page: SitePageId;
