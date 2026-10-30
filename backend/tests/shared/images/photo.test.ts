@@ -33,23 +33,23 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 }));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
-import type { DocumentSnapshot } from "firebase-admin/firestore";
+import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
 import { NotFoundError } from "#shared/http/errors";
 import {
   deletePhoto,
-  type PhotoSlot,
   photoAltBodySchema,
+  photoSlot,
   readPhoto,
   savePhoto,
   toPhoto,
   updatePhotoAlt,
 } from "#shared/images/photo";
 
-const slot = {
-  document: () => document,
+const slot = photoSlot({
+  document: () => document as unknown as DocumentReference,
   field: "photo",
   folder: "contacts/photo",
-} as unknown as PhotoSlot;
+});
 
 const uploadId = "11111111-1111-4111-8111-111111111111";
 
@@ -98,7 +98,7 @@ function storedAs(photo: unknown) {
 
 /** The photo of the document as the API returns it. */
 function returned(photo: unknown) {
-  const stored = readPhoto(snapshotWith(photo), "photo");
+  const stored = readPhoto(slot, snapshotWith(photo));
 
   return stored && toPhoto(stored);
 }

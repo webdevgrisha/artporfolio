@@ -1,20 +1,10 @@
-import {
-  type DocumentReference,
-  type DocumentSnapshot,
-  FieldValue,
-  type Transaction,
-} from "firebase-admin/firestore";
+import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
 import { z } from "zod";
 
-import { firestore } from "#shared/firebase/firestore";
 import { NotFoundError } from "#shared/http/errors";
-import {
-  deleteImageFilesOrWarn,
-  imageSchema,
-  storedImageSchema,
-  toImage,
-} from "#shared/images/storage";
-import { deleteUploadsOrWarn, publishUpload, uploadIdSchema } from "#shared/images/uploads";
+import { changeSlot, clearSlot, fillSlot, type ImageSlot, readSlot } from "#shared/images/slot";
+import { imageSchema, storedImageSchema, toImage } from "#shared/images/storage";
+import { uploadIdSchema } from "#shared/images/uploads";
 
 /** The text alternative of a photo. */
 export const altSchema = z.string().trim().min(1).max(250);
@@ -52,15 +42,8 @@ export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
 export type Photo = z.infer<typeof photoSchema>;
 export type PhotoResponse = z.infer<typeof photoResponseSchema>;
 
-/**
- * Where a single photo is kept: a field of a Firestore document, and a Storage folder with one
- * subfolder per uploaded version.
- */
-export interface PhotoSlot {
-  document: () => DocumentReference;
-  field: string;
-  folder: string;
-}
+/** A single photo with its alt text, such as «My photo» or the contact photo. */
+export type PhotoSlot = ImageSlot<StoredPhoto>;
 
 /** The saved photo, and whether it is the first one rather than a replacement. */
 export interface SavedPhoto {
@@ -68,20 +51,17 @@ export interface SavedPhoto {
   photo: Photo;
 }
 
-type PhotoChange<T> = (
-  photo: StoredPhoto | null,
-  transaction: Transaction,
-  document: DocumentReference,
-) => T;
-
-function versionFolder(slot: PhotoSlot, version: string): string {
-  return `${slot.folder}/${version}`;
+/** A photo slot in a field of `document`, with its versions in the Storage folder `folder`. */
+export function photoSlot(place: {
+  document: () => DocumentReference;
+  field: string;
+  folder: string;
+}): PhotoSlot {
+  return { ...place, schema: storedPhotoSchema };
 }
 
-export function readPhoto(snapshot: DocumentSnapshot, field: string): StoredPhoto | null {
-  const photo: unknown = snapshot.get(field);
-
-  return photo === undefined ? null : storedPhotoSchema.parse(photo);
+export function readPhoto(slot: PhotoSlot, snapshot: DocumentSnapshot): StoredPhoto | null {
+  return readSlot(slot, snapshot);
 }
 
 /** The stored photo as the API returns it, with download URLs. */
@@ -89,51 +69,18 @@ export function toPhoto(photo: StoredPhoto): Photo {
   return { ...toImage(photo), alt: photo.alt };
 }
 
-/**
- * Reads the photo and writes the change in one transaction: concurrent requests, such as a delete
- * and an alt update, would otherwise leave a broken photo behind.
- */
-function changePhoto<T>(slot: PhotoSlot, change: PhotoChange<T>): Promise<T> {
-  return firestore().runTransaction(async (transaction) => {
-    const document = slot.document();
-
-    return change(readPhoto(await transaction.get(document), slot.field), transaction, document);
-  });
-}
-
-/**
- * Puts the uploaded photo in the slot, before removing the previous one, so the site never links
- * to missing files. If the photo cannot be saved, its copy is removed and the upload is kept.
- */
+/** Puts the uploaded photo with its alt text in the slot, replacing the previous one. */
 export async function savePhoto(
   slot: PhotoSlot,
   { alt, uploadId }: PhotoBody,
 ): Promise<SavedPhoto> {
-  const photo: StoredPhoto = { ...(await publishUpload(uploadId, slot.folder)), alt };
-  let previous: StoredPhoto | null;
+  const { created, stored } = await fillSlot(slot, uploadId, (image) => ({ ...image, alt }));
 
-  try {
-    previous = await changePhoto(slot, (current, transaction, document) => {
-      // Merging keeps the other fields of the document.
-      transaction.set(document, { [slot.field]: photo }, { merge: true });
-      return current;
-    });
-  } catch (error) {
-    await deleteImageFilesOrWarn(versionFolder(slot, photo.version));
-    throw error;
-  }
-
-  if (previous) {
-    await deleteImageFilesOrWarn(versionFolder(slot, previous.version));
-  }
-
-  await deleteUploadsOrWarn([uploadId]);
-
-  return { created: previous === null, photo: toPhoto(photo) };
+  return { created, photo: toPhoto(stored) };
 }
 
 export function updatePhotoAlt(slot: PhotoSlot, alt: string): Promise<Photo> {
-  return changePhoto(slot, (photo, transaction, document) => {
+  return changeSlot(slot, (photo, transaction, document) => {
     if (!photo) {
       throw new NotFoundError("There is no photo");
     }
@@ -143,16 +90,6 @@ export function updatePhotoAlt(slot: PhotoSlot, alt: string): Promise<Photo> {
   });
 }
 
-export async function deletePhoto(slot: PhotoSlot): Promise<void> {
-  const deleted = await changePhoto(slot, (photo, transaction, document) => {
-    if (photo) {
-      transaction.update(document, { [slot.field]: FieldValue.delete() });
-    }
-
-    return photo;
-  });
-
-  if (deleted) {
-    await deleteImageFilesOrWarn(versionFolder(slot, deleted.version));
-  }
+export function deletePhoto(slot: PhotoSlot): Promise<void> {
+  return clearSlot(slot);
 }

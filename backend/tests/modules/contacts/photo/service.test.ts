@@ -6,7 +6,10 @@ const photo = vi.hoisted(() => ({
   updatePhotoAlt: vi.fn(),
 }));
 
-vi.mock("#shared/images/photo", () => photo);
+vi.mock("#shared/images/photo", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...photo,
+}));
 
 import { contactsDocument } from "#modules/contacts/document";
 import {
@@ -14,8 +17,14 @@ import {
   saveContactPhoto,
   updateContactPhotoAlt,
 } from "#modules/contacts/photo/service";
+import { storedPhotoSchema } from "#shared/images/photo";
 
-const contactPhoto = { document: contactsDocument, field: "photo", folder: "contacts/photo" };
+const contactPhoto = {
+  document: contactsDocument,
+  field: "photo",
+  folder: "contacts/photo",
+  schema: storedPhotoSchema,
+};
 const body = { alt: "Portrait", uploadId: "11111111-1111-4111-8111-111111111111" };
 
 beforeEach(() => {

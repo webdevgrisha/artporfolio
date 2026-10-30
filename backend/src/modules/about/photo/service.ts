@@ -1,20 +1,28 @@
+import type { DocumentSnapshot } from "firebase-admin/firestore";
+
 import { aboutDocument } from "#modules/about/document";
 import {
   deletePhoto,
   type Photo,
   type PhotoBody,
-  type PhotoSlot,
+  photoSlot,
+  readPhoto,
   type SavedPhoto,
+  type StoredPhoto,
   savePhoto,
   updatePhotoAlt,
 } from "#shared/images/photo";
 
 /** «My photo», the portrait next to the introduction. */
-const aboutPhoto: PhotoSlot = {
+const aboutPhoto = photoSlot({
   document: aboutDocument,
   field: "photo",
   folder: "about/photo",
-};
+});
+
+export function readAboutPhoto(snapshot: DocumentSnapshot): StoredPhoto | null {
+  return readPhoto(aboutPhoto, snapshot);
+}
 
 export function saveAboutPhoto(body: PhotoBody): Promise<SavedPhoto> {
   return savePhoto(aboutPhoto, body);
