@@ -5,11 +5,11 @@ import {
   processPhotosFormSchema,
 } from "@/features/edit-about/model/processPhotosFormSchema";
 
-import { imageFile } from "../../../support/images";
+import { apiProcessPhoto, imageFile } from "../../../support/images";
 import { fieldErrors } from "../../../support/schema";
 
-function savedRow(photoId: string, alt = "Этап"): ProcessPhotoRow {
-  return { alt, file: null, photoId, status: "saved" };
+function savedRow(id: string, alt = "Этап"): ProcessPhotoRow {
+  return { alt, file: null, photo: apiProcessPhoto(id), status: "saved" };
 }
 
 describe("processPhotosFormSchema", () => {

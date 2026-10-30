@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import React from "react";
 import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import { maxProcessPhotos, type ProcessPhoto } from "@/entities/about";
@@ -14,31 +13,19 @@ import styles from "./ProcessPhotoFields.module.css";
 interface ProcessPhotoFieldsProps {
   className?: string;
   isSaving: boolean;
-  /** The process photos on the server, shown for the rows that keep their saved file. */
+  /** The process photos on the server, to show that saved ones were removed or moved. */
   serverPhotos: readonly ProcessPhoto[];
 }
 
-function toMediaItem(
-  key: string,
-  row: ProcessPhotoRow,
-  savedPhoto: ProcessPhoto | undefined,
-): SortableMediaItem {
-  if (row.file) {
-    // A new photo, or one whose saved file is replaced.
-    return {
-      id: key,
-      isModified: true,
-      name: row.file.name,
-      size: row.file.size,
-      source: row.file,
-    };
-  }
+/** A picked file: a new photo, or one that replaces a saved file. */
+function toFileItem(key: string, file: File): SortableMediaItem {
+  return { id: key, isModified: true, name: file.name, size: file.size, source: file };
+}
 
-  // A saved row always has its photo on the server; an empty item covers the moment between a
-  // save and the reload of the server photos.
-  return savedPhoto
-    ? { ...imageToMediaItem(savedPhoto), id: key }
-    : { id: key, name: "", size: 0, source: "" };
+function toMediaItem(key: string, row: ProcessPhotoRow): SortableMediaItem {
+  if (row.status === "new") return toFileItem(key, row.file);
+
+  return row.file ? toFileItem(key, row.file) : { ...imageToMediaItem(row.photo), id: key };
 }
 
 /** The fields of `EditProcessPhotosForm`; they read the form from its context. */
@@ -49,22 +36,14 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
   // `fields` gives every row a stable key; the values come from `rows`, which also follow typing.
   const { append, fields, move, remove } = useFieldArray({ control, name: "processPhotos" });
   const rows = useWatch({ control, name: "processPhotos" });
-  const serverPhotosById = React.useMemo(
-    () => new Map(serverPhotos.map((photo) => [photo.id, photo])),
-    [serverPhotos],
-  );
-
-  const items = fields.map((field, index): SortableMediaItem => {
-    const row = rows[index] ?? field;
-    const savedPhoto = row.status === "saved" ? serverPhotosById.get(row.photoId) : undefined;
-
-    return toMediaItem(field.id, row, savedPhoto);
-  });
+  const items = fields.map((field, index) => toMediaItem(field.id, rows[index] ?? field));
 
   // Added rows are highlighted by themselves; the list shows that saved photos were removed or
   // moved.
   const savedOrder = serverPhotos.map((photo) => photo.id).join("\n");
-  const rowsOrder = rows.flatMap((row) => (row.status === "saved" ? [row.photoId] : [])).join("\n");
+  const rowsOrder = rows
+    .flatMap((row) => (row.status === "saved" ? [row.photo.id] : []))
+    .join("\n");
 
   function getRowIndex(key: string): number {
     return fields.findIndex((field) => field.id === key);
@@ -110,8 +89,6 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
         }
         renderItemFields={(item, index) => {
           const row = rows[index];
-          const savedAlt =
-            row?.status === "saved" ? serverPhotosById.get(row.photoId)?.alt : undefined;
 
           return (
             <ClearableInput
@@ -120,7 +97,7 @@ export function ProcessPhotoFields({ className, isSaving, serverPhotos }: Proces
               placeholder="Например: эскиз углём на холсте"
               disabled={isSaving}
               error={errors.processPhotos?.[index]?.alt?.message}
-              isModified={savedAlt !== undefined && row?.alt !== savedAlt}
+              isModified={row?.status === "saved" && row.alt !== row.photo.alt}
               hasValue={Boolean(row?.alt)}
               clearLabel={`Очистить описание ${item.name}`}
               onClear={() => clearAlt(index)}

@@ -4,9 +4,9 @@ import type { ProcessPhotoRow } from "./processPhotosFormSchema";
 
 /** What a save does with one row of the process photos. */
 export type ProcessPhotoStep =
-  | { id: string; type: "keep" }
-  | { alt: string; id: string; type: "updateAlt" }
-  | { alt: string; file: File; id: string; type: "replace" }
+  | { photo: ProcessPhoto; type: "keep" }
+  | { alt: string; photo: ProcessPhoto; type: "updateAlt" }
+  | { alt: string; file: File; photo: ProcessPhoto; type: "replace" }
   | { alt: string; file: File; type: "add" };
 
 export interface ProcessPhotosChanges {
@@ -16,14 +16,12 @@ export interface ProcessPhotosChanges {
   steps: ProcessPhotoStep[];
 }
 
-function toStep(row: ProcessPhotoRow, saved: ReadonlyMap<string, ProcessPhoto>): ProcessPhotoStep {
+function toStep(row: ProcessPhotoRow): ProcessPhotoStep {
   if (row.status === "new") return { alt: row.alt, file: row.file, type: "add" };
-  if (row.file) return { alt: row.alt, file: row.file, id: row.photoId, type: "replace" };
-  if (row.alt !== saved.get(row.photoId)?.alt) {
-    return { alt: row.alt, id: row.photoId, type: "updateAlt" };
-  }
+  if (row.file) return { alt: row.alt, file: row.file, photo: row.photo, type: "replace" };
+  if (row.alt !== row.photo.alt) return { alt: row.alt, photo: row.photo, type: "updateAlt" };
 
-  return { id: row.photoId, type: "keep" };
+  return { photo: row.photo, type: "keep" };
 }
 
 /**
@@ -35,15 +33,14 @@ export function getProcessPhotosChanges(
   rows: readonly ProcessPhotoRow[],
   saved: readonly ProcessPhoto[],
 ): ProcessPhotosChanges | undefined {
-  const savedById = new Map(saved.map((photo) => [photo.id, photo]));
-  const keptIds = new Set(rows.flatMap((row) => (row.status === "saved" ? [row.photoId] : [])));
+  const keptIds = new Set(rows.flatMap((row) => (row.status === "saved" ? [row.photo.id] : [])));
   const deletedIds = saved.filter((photo) => !keptIds.has(photo.id)).map((photo) => photo.id);
-  const steps = rows.map((row) => toStep(row, savedById));
+  const steps = rows.map(toStep);
 
   // Every photo is kept as saved, in the same order.
   const isUnchanged =
     steps.length === saved.length &&
-    steps.every((step, index) => step.type === "keep" && step.id === saved[index]?.id);
+    steps.every((step, index) => step.type === "keep" && step.photo.id === saved[index]?.id);
 
   return isUnchanged ? undefined : { deletedIds, steps };
 }

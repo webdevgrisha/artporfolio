@@ -34,9 +34,9 @@ function toUnsavedRow(step: EditStep): ProcessPhotoRow {
     case "add":
       return { alt: step.alt, file: step.file, status: "new" };
     case "replace":
-      return { alt: step.alt, file: step.file, photoId: step.id, status: "saved" };
+      return { alt: step.alt, file: step.file, photo: step.photo, status: "saved" };
     case "updateAlt":
-      return { alt: step.alt, file: null, photoId: step.id, status: "saved" };
+      return { alt: step.alt, file: null, photo: step.photo, status: "saved" };
   }
 }
 
@@ -45,9 +45,9 @@ async function saveStep(step: EditStep): Promise<ProcessPhoto> {
     case "add":
       return addProcessPhoto({ alt: step.alt, file: step.file });
     case "replace":
-      return replaceProcessPhoto({ alt: step.alt, file: step.file, id: step.id });
+      return replaceProcessPhoto({ alt: step.alt, file: step.file, id: step.photo.id });
     case "updateAlt":
-      return updateProcessPhotoAlt({ alt: step.alt, id: step.id });
+      return updateProcessPhotoAlt({ alt: step.alt, id: step.photo.id });
   }
 }
 
@@ -88,8 +88,7 @@ export async function saveProcessPhotos(
 
   for (const step of steps) {
     if (step.type === "keep") {
-      const photo = savedById.get(step.id);
-      if (photo) rows.push(toProcessPhotoRow(photo));
+      rows.push(toProcessPhotoRow(step.photo));
       continue;
     }
 
@@ -106,7 +105,7 @@ export async function saveProcessPhotos(
           : serverPhotos.map((serverPhoto) => (serverPhoto.id === photo.id ? photo : serverPhoto));
       rows.push(toProcessPhotoRow(photo));
     } catch (error) {
-      const fileName = "file" in step ? step.file.name : (savedById.get(step.id)?.fileName ?? "");
+      const fileName = "file" in step ? step.file.name : step.photo.fileName;
       addError(error, getSaveProcessPhotoErrorMessage(error, fileName));
       rows.push(toUnsavedRow(step));
     }
@@ -114,7 +113,7 @@ export async function saveProcessPhotos(
 
   // The order names every photo on the server once: a new photo that was not uploaded is left
   // out, and a photo that was not deleted makes the order impossible.
-  const ids = rows.flatMap((row) => (row.status === "saved" ? [row.photoId] : []));
+  const ids = rows.flatMap((row) => (row.status === "saved" ? [row.photo.id] : []));
   const isEveryPhotoListed = serverPhotos.length === ids.length;
   const isReordered = ids.some((id, index) => id !== serverPhotos[index]?.id);
 

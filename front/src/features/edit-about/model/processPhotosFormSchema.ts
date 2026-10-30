@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { maxProcessPhotos } from "@/entities/about";
+import { maxProcessPhotos, type ProcessPhoto } from "@/entities/about";
 import { photoAltSchema } from "@/shared/lib/photoForm";
 
 const processPhotoRowSchema = z.discriminatedUnion("status", [
@@ -8,7 +8,8 @@ const processPhotoRowSchema = z.discriminatedUnion("status", [
     alt: photoAltSchema,
     /** A picked file that replaces the saved one; `null` keeps the saved file. */
     file: z.instanceof(File).nullable(),
-    photoId: z.string(),
+    /** The photo on the server the row was made from, as the user saw it. */
+    photo: z.custom<ProcessPhoto>(),
     status: z.literal("saved"),
   }),
   z.object({

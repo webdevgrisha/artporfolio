@@ -58,8 +58,8 @@ describe("saveProcessPhotos", () => {
       deletedIds: ["b"],
       steps: [
         { alt: "Новый этап", file: imageFile(), type: "add" },
-        { id: "c", type: "keep" },
-        { alt: "Эскиз", id: "a", type: "updateAlt" },
+        { photo: saved[2], type: "keep" },
+        { alt: "Эскиз", photo: saved[0], type: "updateAlt" },
       ],
     };
 
@@ -77,9 +77,14 @@ describe("saveProcessPhotos", () => {
       error: undefined,
       photos: [apiProcessPhoto("new-1", "Новый этап"), saved[2], apiProcessPhoto("a", "Эскиз")],
       rows: [
-        { alt: "Новый этап", file: null, photoId: "new-1", status: "saved" },
-        { alt: "Этап c", file: null, photoId: "c", status: "saved" },
-        { alt: "Эскиз", file: null, photoId: "a", status: "saved" },
+        {
+          alt: "Новый этап",
+          file: null,
+          photo: apiProcessPhoto("new-1", "Новый этап"),
+          status: "saved",
+        },
+        { alt: "Этап c", file: null, photo: apiProcessPhoto("c", "Этап c"), status: "saved" },
+        { alt: "Эскиз", file: null, photo: apiProcessPhoto("a", "Эскиз"), status: "saved" },
       ],
     });
   });
@@ -91,9 +96,9 @@ describe("saveProcessPhotos", () => {
       {
         deletedIds: [],
         steps: [
-          { id: "a", type: "keep" },
-          { alt: "Этап b", file: imageFile(), id: "b", type: "replace" },
-          { id: "c", type: "keep" },
+          { photo: saved[0], type: "keep" },
+          { alt: "Этап b", file: imageFile(), photo: saved[1], type: "replace" },
+          { photo: saved[2], type: "keep" },
           { alt: "Последний этап", file: imageFile(), type: "add" },
         ],
       },
@@ -117,10 +122,10 @@ describe("saveProcessPhotos", () => {
       {
         deletedIds: [],
         steps: [
-          { alt: "Эскиз", id: "a", type: "updateAlt" },
+          { alt: "Эскиз", photo: saved[0], type: "updateAlt" },
           { alt: "Новый этап", file, type: "add" },
-          { id: "c", type: "keep" },
-          { id: "b", type: "keep" },
+          { photo: saved[2], type: "keep" },
+          { photo: saved[1], type: "keep" },
         ],
       },
       saved,
@@ -134,10 +139,15 @@ describe("saveProcessPhotos", () => {
     ]);
     expect(result.error).toBe("Сервис временно недоступен. Попробуйте позже");
     expect(result.rows).toEqual([
-      { alt: "Эскиз", file: null, photoId: "a", status: "saved" },
-      { alt: "Новый этап", file: null, photoId: "new-1", status: "saved" },
-      { alt: "Этап c", file: null, photoId: "c", status: "saved" },
-      { alt: "Этап b", file: null, photoId: "b", status: "saved" },
+      { alt: "Эскиз", file: null, photo: saved[0], status: "saved" },
+      {
+        alt: "Новый этап",
+        file: null,
+        photo: apiProcessPhoto("new-1", "Новый этап"),
+        status: "saved",
+      },
+      { alt: "Этап c", file: null, photo: apiProcessPhoto("c", "Этап c"), status: "saved" },
+      { alt: "Этап b", file: null, photo: apiProcessPhoto("b", "Этап b"), status: "saved" },
     ]);
     expect(result.photos.map((photo) => photo.id)).toEqual(["a", "new-1", "c", "b"]);
   });
@@ -151,9 +161,9 @@ describe("saveProcessPhotos", () => {
         deletedIds: [],
         steps: [
           { alt: "Новый этап", file, type: "add" },
-          { id: "b", type: "keep" },
-          { id: "a", type: "keep" },
-          { id: "c", type: "keep" },
+          { photo: saved[1], type: "keep" },
+          { photo: saved[0], type: "keep" },
+          { photo: saved[2], type: "keep" },
         ],
       },
       saved,
@@ -172,8 +182,8 @@ describe("saveProcessPhotos", () => {
       {
         deletedIds: ["a"],
         steps: [
-          { id: "c", type: "keep" },
-          { id: "b", type: "keep" },
+          { photo: saved[2], type: "keep" },
+          { photo: saved[1], type: "keep" },
         ],
       },
       saved,
@@ -192,7 +202,7 @@ describe("saveProcessPhotos", () => {
       {
         deletedIds: ["a", "b"],
         steps: [
-          { id: "c", type: "keep" },
+          { photo: saved[2], type: "keep" },
           { alt: "Новый этап", file, type: "add" },
         ],
       },
@@ -204,7 +214,7 @@ describe("saveProcessPhotos", () => {
       error: sessionExpiredMessage,
       photos: saved,
       rows: [
-        { alt: "Этап c", file: null, photoId: "c", status: "saved" },
+        { alt: "Этап c", file: null, photo: apiProcessPhoto("c", "Этап c"), status: "saved" },
         { alt: "Новый этап", file, status: "new" },
       ],
     });
@@ -220,9 +230,9 @@ describe("saveProcessPhotos", () => {
       {
         deletedIds: [],
         steps: [
-          { alt: "Эскиз c", id: "c", type: "updateAlt" },
-          { alt: "Эскиз b", id: "b", type: "updateAlt" },
-          { id: "a", type: "keep" },
+          { alt: "Эскиз c", photo: saved[2], type: "updateAlt" },
+          { alt: "Эскиз b", photo: saved[1], type: "updateAlt" },
+          { photo: saved[0], type: "keep" },
         ],
       },
       saved,
@@ -238,9 +248,9 @@ describe("saveProcessPhotos", () => {
       {
         deletedIds: [],
         steps: [
-          { id: "c", type: "keep" },
-          { id: "b", type: "keep" },
-          { id: "a", type: "keep" },
+          { photo: saved[2], type: "keep" },
+          { photo: saved[1], type: "keep" },
+          { photo: saved[0], type: "keep" },
         ],
       },
       saved,

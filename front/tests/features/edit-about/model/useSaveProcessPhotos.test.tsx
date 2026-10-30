@@ -40,19 +40,21 @@ describe("useSaveProcessPhotos", () => {
     );
 
     const result = await renderSaveProcessPhotos().mutateAsync({
-      changes: { deletedIds: ["a"], steps: [{ id: "b", type: "keep" }] },
+      changes: { deletedIds: ["a"], steps: [{ photo: b, type: "keep" }] },
       savedProcessPhotos: [a, b],
     });
 
     expect(result.photos).toEqual([b]);
-    expect(result.rows).toEqual([{ alt: "Этап b", file: null, photoId: "b", status: "saved" }]);
+    expect(result.rows).toEqual([
+      { alt: "Этап b", file: null, photo: apiProcessPhoto("b", "Этап b"), status: "saved" },
+    ]);
   });
 
   it("keeps the photos the requests suggest when the page cannot be loaded again", async () => {
     server.use(mswHttp.get("/api/about", () => HttpResponse.error()));
 
     const result = await renderSaveProcessPhotos().mutateAsync({
-      changes: { deletedIds: ["a"], steps: [{ id: "b", type: "keep" }] },
+      changes: { deletedIds: ["a"], steps: [{ photo: b, type: "keep" }] },
       savedProcessPhotos: [a, b],
     });
 
