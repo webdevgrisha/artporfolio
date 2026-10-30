@@ -3,6 +3,7 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  type RowData,
   type SortDirection,
   type SortingState,
   type Updater,
@@ -34,6 +35,13 @@ import { linkHost, matchesQuery, readTableView, writeTableView } from "../model/
 import { useDeleteProject } from "../model/useDeleteProject";
 import styles from "./ProjectsTable.module.css";
 
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** Fits the column to its content, so the rest of the width goes to the text columns. */
+    isNarrow?: boolean;
+  }
+}
+
 interface ProjectsTableProps {
   className?: string;
   /** In the order the site shows them. */
@@ -48,9 +56,6 @@ interface ProjectRow {
 
 const collator = new Intl.Collator("ru", { sensitivity: "base" });
 
-const dateFormat = new Intl.DateTimeFormat("ru", { dateStyle: "medium" });
-const dateTimeFormat = new Intl.DateTimeFormat("ru", { dateStyle: "long", timeStyle: "short" });
-
 const ariaSort = {
   asc: "ascending",
   desc: "descending",
@@ -62,22 +67,6 @@ function SortState({ direction }: { direction: SortDirection | false }) {
   if (direction === "desc") return <ArrowDownIcon className={styles.sortArrow} />;
 
   return <SortIcon className={styles.sortIdle} />;
-}
-
-/** A date for the table, with the time in its tooltip. */
-function ProjectDate({ value }: { value: string }) {
-  const date = new Date(value);
-
-  return (
-    <time className={styles.date} dateTime={value} title={dateTimeFormat.format(date)}>
-      {dateFormat.format(date)}
-    </time>
-  );
-}
-
-/** ISO 8601 dates in UTC sort as text. */
-function compareDates(a: string, b: string): number {
-  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 /**
@@ -105,12 +94,14 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "position",
         header: "№",
+        meta: { isNarrow: true },
         accessorFn: (row) => row.position,
         cell: ({ row: { original } }) => <span className={styles.muted}>{original.position}</span>,
       },
       {
         id: "photos",
         header: "Фото",
+        meta: { isNarrow: true },
         enableSorting: false,
         cell: ({ row: { original } }) => {
           const [cover] = original.project.photos;
@@ -163,27 +154,9 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         },
       },
       {
-        id: "createdAt",
-        header: "Добавлен",
-        accessorFn: (row) => row.project.createdAt,
-        sortingFn: (a, b) =>
-          compareDates(a.original.project.createdAt, b.original.project.createdAt),
-        // The newest first: that is what a date is sorted for.
-        sortDescFirst: true,
-        cell: ({ row: { original } }) => <ProjectDate value={original.project.createdAt} />,
-      },
-      {
-        id: "updatedAt",
-        header: "Изменён",
-        accessorFn: (row) => row.project.updatedAt,
-        sortingFn: (a, b) =>
-          compareDates(a.original.project.updatedAt, b.original.project.updatedAt),
-        sortDescFirst: true,
-        cell: ({ row: { original } }) => <ProjectDate value={original.project.updatedAt} />,
-      },
-      {
         id: "actions",
         header: () => <VisuallyHidden>Действия</VisuallyHidden>,
+        meta: { isNarrow: true },
         enableSorting: false,
         cell: ({ row: { original } }) => {
           const { project } = original;
@@ -274,6 +247,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
                     return (
                       <th
                         key={header.id}
+                        className={clsx(header.column.columnDef.meta?.isNarrow && styles.narrow)}
                         scope="col"
                         aria-sort={canSort ? (sorted ? ariaSort[sorted] : "none") : undefined}
                       >
@@ -299,7 +273,10 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
               {table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className={styles.row}>
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id}>
+                    <td
+                      key={cell.id}
+                      className={clsx(cell.column.columnDef.meta?.isNarrow && styles.narrow)}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}

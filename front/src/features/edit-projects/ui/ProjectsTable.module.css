@@ -18,9 +18,20 @@
 
 .table th,
 .table td {
-  padding: var(--space-4) var(--space-2);
+  padding: var(--space-4);
   vertical-align: middle;
   text-align: start;
+}
+
+/* As narrow as its content: a table gives the width it has left to the other columns. */
+.narrow {
+  inline-size: 1%;
+  white-space: nowrap;
+}
+
+/* The global reset fits images and icons to their box, which a 1% column would shrink. */
+.narrow :is(img, svg) {
+  max-inline-size: none;
 }
 
 /* The sort buttons are tall enough to tap; the row needs no padding above them. */
@@ -92,10 +103,6 @@
 .externalIcon {
   inline-size: 0.75rem;
   block-size: auto;
-}
-
-.date {
-  white-space: nowrap;
 }
 
 .search {
