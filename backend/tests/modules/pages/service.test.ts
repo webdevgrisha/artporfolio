@@ -24,20 +24,37 @@ const storage = vi.hoisted(() => ({
   deleteFolder: vi.fn(),
   downloadUrl: ({ path, token }: { path: string; token: string }) =>
     `https://storage.test/${path}?token=${token}`,
-  saveDownloadableFile: vi.fn(),
-  saveFile: vi.fn(),
 }));
 
-const processImage = vi.hoisted(() => vi.fn());
+const uploads = vi.hoisted(() => ({
+  deleteUploadsOrWarn: vi.fn(),
+  publishUpload: vi.fn(),
+}));
 
 vi.mock("#shared/firebase/firestore", () => ({ firestore: () => database }));
 vi.mock("#shared/firebase/storage", () => storage);
-vi.mock("#shared/images/processing", () => ({ processImage }));
+vi.mock("#shared/images/uploads", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...uploads,
+}));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import { deletePageHero, getPages, savePageHero } from "#modules/pages/service";
 
-const upload = { data: Buffer.from("original"), name: "painting.jpg", size: 8 };
+const uploadId = "11111111-1111-4111-8111-111111111111";
+
+/** The image publishUpload copies from the upload into a new version folder. */
+const published = {
+  fileName: "painting.jpg",
+  fileSize: 8,
+  height: 320,
+  sources: {
+    avif: [{ path: "pages/about/hero/new/640.avif", token: "token", width: 640 }],
+    webp: [{ path: "pages/about/hero/new/640.webp", token: "token", width: 640 }],
+  },
+  version: "new",
+  width: 640,
+};
 
 const aboutDocument = database.doc("pages/about");
 
@@ -53,19 +70,11 @@ const storedHero = {
   width: 960,
 };
 
-function encoded(format: "avif" | "webp", width: number) {
-  return { data: Buffer.from(format), format, height: width / 2, width };
-}
-
 function snapshotOf(document: FakeDocument) {
   return {
     get: (field: string) => (field === "hero" ? storedHeroes.get(document.path) : undefined),
     id: document.id,
   };
-}
-
-function downloadablePaths(): string[] {
-  return storage.saveDownloadableFile.mock.calls.map(([path]) => path as string);
 }
 
 beforeEach(() => {
@@ -76,15 +85,8 @@ beforeEach(() => {
   );
   transaction.get.mockImplementation(async (document: FakeDocument) => snapshotOf(document));
   storage.deleteFolder.mockResolvedValue(undefined);
-  storage.saveDownloadableFile.mockImplementation(async (path: string) => ({
-    path,
-    token: "token",
-  }));
-  storage.saveFile.mockResolvedValue(undefined);
-  processImage.mockResolvedValue({
-    images: [encoded("avif", 640), encoded("webp", 640)],
-    sourceFormat: "jpeg",
-  });
+  uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
+  uploads.publishUpload.mockResolvedValue(published);
 });
 
 describe("page service", () => {
@@ -131,39 +133,25 @@ describe("page service", () => {
     });
   });
 
-  it("stores the hero in a new version folder of its page", async () => {
-    const { created, hero } = await savePageHero("about", upload);
-    const folder = `pages/about/hero/${hero.version}`;
+  it("puts the upload into a new version folder of its page and uses it up", async () => {
+    const { created, hero } = await savePageHero("about", uploadId);
 
     expect(created).toBe(true);
-
-    expect(downloadablePaths()).toEqual([`${folder}/640.avif`, `${folder}/640.webp`]);
-    expect(storage.saveFile).toHaveBeenCalledWith(`${folder}/original.jpeg`, upload.data, {
-      contentType: "image/jpeg",
-    });
+    expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "pages/about/hero");
     expect(transaction.set).toHaveBeenCalledWith(
       aboutDocument,
-      {
-        hero: {
-          fileName: "painting.jpg",
-          fileSize: 8,
-          height: 320,
-          sources: {
-            avif: [{ path: `${folder}/640.avif`, token: "token", width: 640 }],
-            webp: [{ path: `${folder}/640.webp`, token: "token", width: 640 }],
-          },
-          version: hero.version,
-          width: 640,
-        },
-      },
+      { hero: published },
       { merge: true },
     );
-    expect(hero.sources.webp[0]?.url).toBe(`https://storage.test/${folder}/640.webp?token=token`);
+    expect(hero.sources.webp[0]?.url).toBe(
+      "https://storage.test/pages/about/hero/new/640.webp?token=token",
+    );
+    expect(uploads.deleteUploadsOrWarn).toHaveBeenCalledWith([uploadId]);
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
   it("reads the previous hero in the transaction that records the new one", async () => {
-    await savePageHero("about", upload);
+    await savePageHero("about", uploadId);
 
     expect(transaction.get).toHaveBeenCalledWith(aboutDocument);
   });
@@ -171,7 +159,7 @@ describe("page service", () => {
   it("deletes the previous hero after saving the new one", async () => {
     storedHeroes.set("pages/about", storedHero);
 
-    const { created } = await savePageHero("about", upload);
+    const { created } = await savePageHero("about", uploadId);
 
     expect(created).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/old");
@@ -180,25 +168,22 @@ describe("page service", () => {
     );
   });
 
-  it("removes the new files when the hero cannot be recorded", async () => {
+  it("removes the copy and keeps the upload when the hero cannot be recorded", async () => {
     transaction.set.mockImplementation(() => {
       throw new Error("Firestore is unavailable");
     });
 
-    await expect(savePageHero("about", upload)).rejects.toThrow("Firestore is unavailable");
+    await expect(savePageHero("about", uploadId)).rejects.toThrow("Firestore is unavailable");
 
-    const [folder] = storage.deleteFolder.mock.calls[0] as [string];
-    expect(folder).toMatch(/^pages\/about\/hero\//);
-    expect(downloadablePaths().every((path) => path.startsWith(`${folder}/`))).toBe(true);
+    expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/new");
+    expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
   });
 
-  it("does not store anything when the image is rejected", async () => {
-    processImage.mockRejectedValue(new Error("Unsupported image format"));
+  it("records nothing when the upload cannot be published", async () => {
+    uploads.publishUpload.mockRejectedValue(new Error("There is no upload"));
 
-    await expect(savePageHero("about", upload)).rejects.toThrow("Unsupported image format");
+    await expect(savePageHero("about", uploadId)).rejects.toThrow("There is no upload");
 
-    expect(storage.saveDownloadableFile).not.toHaveBeenCalled();
-    expect(storage.saveFile).not.toHaveBeenCalled();
     expect(transaction.set).not.toHaveBeenCalled();
   });
 

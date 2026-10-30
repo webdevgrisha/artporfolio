@@ -2,12 +2,12 @@ import { aboutDocument } from "#modules/about/document";
 import {
   deletePhoto,
   type Photo,
+  type PhotoBody,
   type PhotoSlot,
   type SavedPhoto,
   savePhoto,
   updatePhotoAlt,
 } from "#shared/images/photo";
-import type { UploadedFile } from "#shared/middleware/upload";
 
 /** «My photo», the portrait next to the introduction. */
 const aboutPhoto: PhotoSlot = {
@@ -16,8 +16,8 @@ const aboutPhoto: PhotoSlot = {
   folder: "about/photo",
 };
 
-export function saveAboutPhoto(file: UploadedFile, alt: string): Promise<SavedPhoto> {
-  return savePhoto(aboutPhoto, file, alt);
+export function saveAboutPhoto(body: PhotoBody): Promise<SavedPhoto> {
+  return savePhoto(aboutPhoto, body);
 }
 
 export function updateAboutPhotoAlt(alt: string): Promise<Photo> {

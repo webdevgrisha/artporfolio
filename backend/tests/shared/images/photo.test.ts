@@ -14,11 +14,12 @@ const storage = vi.hoisted(() => ({
   deleteFolder: vi.fn(),
   downloadUrl: ({ path, token }: { path: string; token: string }) =>
     `https://storage.test/${path}?token=${token}`,
-  saveDownloadableFile: vi.fn(),
-  saveFile: vi.fn(),
 }));
 
-const processImage = vi.hoisted(() => vi.fn());
+const uploads = vi.hoisted(() => ({
+  deleteUploadsOrWarn: vi.fn(),
+  publishUpload: vi.fn(),
+}));
 
 vi.mock("#shared/firebase/firestore", () => ({
   firestore: () => ({
@@ -26,7 +27,10 @@ vi.mock("#shared/firebase/firestore", () => ({
   }),
 }));
 vi.mock("#shared/firebase/storage", () => storage);
-vi.mock("#shared/images/processing", () => ({ processImage }));
+vi.mock("#shared/images/uploads", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...uploads,
+}));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import type { DocumentSnapshot } from "firebase-admin/firestore";
@@ -47,7 +51,20 @@ const slot = {
   folder: "contacts/photo",
 } as unknown as PhotoSlot;
 
-const upload = { data: Buffer.from("original"), name: "photo.png", size: 8 };
+const uploadId = "11111111-1111-4111-8111-111111111111";
+
+/** The image publishUpload copies from the upload into a new version folder. */
+const published = {
+  fileName: "photo.png",
+  fileSize: 8,
+  height: 480,
+  sources: {
+    avif: [{ path: "contacts/photo/new-version/960.avif", token: "token", width: 960 }],
+    webp: [{ path: "contacts/photo/new-version/960.webp", token: "token", width: 960 }],
+  },
+  version: "new-version",
+  width: 960,
+};
 
 const storedPhoto = {
   alt: "Portrait",
@@ -71,10 +88,6 @@ const returnedPhoto = {
   },
 };
 
-function encoded(format: "avif" | "webp", width: number) {
-  return { data: Buffer.from(format), format, height: width / 2, width };
-}
-
 function snapshotWith(photo: unknown) {
   return { get: () => photo } as unknown as DocumentSnapshot;
 }
@@ -90,27 +103,11 @@ function returned(photo: unknown) {
   return stored && toPhoto(stored);
 }
 
-function downloadablePaths(): string[] {
-  return storage.saveDownloadableFile.mock.calls.map(([path]) => path as string);
-}
-
 beforeEach(() => {
   vi.clearAllMocks();
   storage.deleteFolder.mockResolvedValue(undefined);
-  storage.saveDownloadableFile.mockImplementation(async (path: string) => ({
-    path,
-    token: "token",
-  }));
-  storage.saveFile.mockResolvedValue(undefined);
-  processImage.mockResolvedValue({
-    images: [
-      encoded("avif", 640),
-      encoded("webp", 640),
-      encoded("avif", 960),
-      encoded("webp", 960),
-    ],
-    sourceFormat: "jpeg",
-  });
+  uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
+  uploads.publishUpload.mockResolvedValue(published);
   storedAs(undefined);
 });
 
@@ -123,58 +120,26 @@ describe("photo", () => {
     expect(returned(storedPhoto)).toEqual(returnedPhoto);
   });
 
-  it("stores the web images and the original in a new version folder", async () => {
-    const { created, photo } = await savePhoto(slot, upload, "Portrait");
-    const folder = `contacts/photo/${photo.version}`;
+  it("puts the upload into a new version folder of the slot and uses it up", async () => {
+    const { created, photo } = await savePhoto(slot, { alt: "Portrait", uploadId });
 
     expect(created).toBe(true);
-
-    expect(downloadablePaths()).toEqual([
-      `${folder}/640.avif`,
-      `${folder}/640.webp`,
-      `${folder}/960.avif`,
-      `${folder}/960.webp`,
-    ]);
-    expect(storage.saveDownloadableFile).toHaveBeenCalledWith(
-      `${folder}/640.avif`,
-      Buffer.from("avif"),
-      {
-        cacheControl: "public, max-age=31536000, immutable",
-        contentType: "image/avif",
-      },
+    expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "contacts/photo");
+    expect(transaction.set).toHaveBeenCalledWith(
+      document,
+      { photo: { ...published, alt: "Portrait" } },
+      { merge: true },
     );
-    expect(storage.saveFile).toHaveBeenCalledWith(`${folder}/original.jpeg`, upload.data, {
-      contentType: "image/jpeg",
-    });
-    const stored = {
-      alt: "Portrait",
-      fileName: "photo.png",
-      fileSize: 8,
-      height: 480,
-      sources: {
-        avif: [
-          { path: `${folder}/640.avif`, token: "token", width: 640 },
-          { path: `${folder}/960.avif`, token: "token", width: 960 },
-        ],
-        webp: [
-          { path: `${folder}/640.webp`, token: "token", width: 640 },
-          { path: `${folder}/960.webp`, token: "token", width: 960 },
-        ],
-      },
-      version: photo.version,
-      width: 960,
-    };
-
-    expect(transaction.set).toHaveBeenCalledWith(document, { photo: stored }, { merge: true });
     expect(photo.sources.avif[0]).toEqual({
-      url: `https://storage.test/${folder}/640.avif?token=token`,
-      width: 640,
+      url: "https://storage.test/contacts/photo/new-version/960.avif?token=token",
+      width: 960,
     });
+    expect(uploads.deleteUploadsOrWarn).toHaveBeenCalledWith([uploadId]);
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
   it("reads the previous photo in the transaction that records the new one", async () => {
-    await savePhoto(slot, upload, "Portrait");
+    await savePhoto(slot, { alt: "Portrait", uploadId });
 
     expect(transaction.get).toHaveBeenCalledWith(document);
     expect(document.get).not.toHaveBeenCalled();
@@ -183,7 +148,7 @@ describe("photo", () => {
   it("deletes the previous version after saving the new one", async () => {
     storedAs(storedPhoto);
 
-    const { created } = await savePhoto(slot, upload, "Portrait");
+    const { created } = await savePhoto(slot, { alt: "Portrait", uploadId });
 
     expect(created).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/old-version");
@@ -196,39 +161,32 @@ describe("photo", () => {
     storedAs(storedPhoto);
     storage.deleteFolder.mockRejectedValue(new Error("Storage is unavailable"));
 
-    await expect(savePhoto(slot, upload, "Portrait")).resolves.toMatchObject({
+    await expect(savePhoto(slot, { alt: "Portrait", uploadId })).resolves.toMatchObject({
       photo: { alt: "Portrait" },
     });
   });
 
-  it("removes the new files when an image cannot be stored", async () => {
-    storage.saveDownloadableFile.mockRejectedValueOnce(new Error("Storage is unavailable"));
+  it("records nothing when the upload cannot be published", async () => {
+    uploads.publishUpload.mockRejectedValue(new Error("There is no upload"));
 
-    await expect(savePhoto(slot, upload, "Portrait")).rejects.toThrow("Storage is unavailable");
+    await expect(savePhoto(slot, { alt: "Portrait", uploadId })).rejects.toThrow(
+      "There is no upload",
+    );
 
-    expect(storage.deleteFolder).toHaveBeenCalledWith(expect.stringMatching(/^contacts\/photo\//));
     expect(transaction.set).not.toHaveBeenCalled();
   });
 
-  it("removes the new files when the photo cannot be recorded", async () => {
+  it("removes the copy and keeps the upload when the photo cannot be recorded", async () => {
     transaction.set.mockImplementation(() => {
       throw new Error("Firestore is unavailable");
     });
 
-    await expect(savePhoto(slot, upload, "Portrait")).rejects.toThrow("Firestore is unavailable");
+    await expect(savePhoto(slot, { alt: "Portrait", uploadId })).rejects.toThrow(
+      "Firestore is unavailable",
+    );
 
-    const [folder] = storage.deleteFolder.mock.calls[0] as [string];
-    expect(downloadablePaths().every((path) => path.startsWith(`${folder}/`))).toBe(true);
-  });
-
-  it("does not store anything when the image is rejected", async () => {
-    processImage.mockRejectedValue(new Error("Unsupported image format"));
-
-    await expect(savePhoto(slot, upload, "Portrait")).rejects.toThrow("Unsupported image format");
-
-    expect(storage.saveDownloadableFile).not.toHaveBeenCalled();
-    expect(storage.saveFile).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
+    expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/new-version");
+    expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
   });
 
   it("reads a saved alt text longer than today's limit", () => {

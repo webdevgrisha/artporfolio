@@ -2,11 +2,12 @@ import { type QueryClient, useMutation, useQueryClient } from "@tanstack/react-q
 
 import {
   deletePageHero,
+  replacePageHero,
   type SitePageId,
   sitePagesQuery,
-  uploadPageHero,
 } from "@/entities/site-page";
 import type { Image } from "@/shared/api/image";
+import { uploadImage } from "@/shared/api/upload";
 
 import { getDeleteHeroErrorMessage, getSaveHeroErrorMessage } from "../lib/saveErrorMessages";
 import type { HeroField } from "./heroFields";
@@ -38,7 +39,7 @@ export function useUploadPageHero({ label, page }: HeroField) {
         toastId: getHeroToastId(page),
       },
     },
-    mutationFn: (file: File) => uploadPageHero({ file, page }),
+    mutationFn: async (file: File) => replacePageHero({ page, uploadId: await uploadImage(file) }),
     onError: () => queryClient.invalidateQueries({ queryKey: sitePagesQuery.queryKey }),
     onSuccess: (hero) => setPageHero(queryClient, page, hero),
   });

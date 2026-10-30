@@ -16,7 +16,7 @@ import {
 } from "#modules/contacts/photo/service";
 
 const contactPhoto = { document: contactsDocument, field: "photo", folder: "contacts/photo" };
-const upload = { data: Buffer.from("original"), name: "photo.png", size: 8 };
+const body = { alt: "Portrait", uploadId: "11111111-1111-4111-8111-111111111111" };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -24,11 +24,11 @@ beforeEach(() => {
 
 describe("contact photo service", () => {
   it("keeps the photo in the photo field of the contacts document", async () => {
-    await saveContactPhoto(upload, "Portrait");
+    await saveContactPhoto(body);
     await updateContactPhotoAlt("New alt");
     await deleteContactPhoto();
 
-    expect(photo.savePhoto).toHaveBeenCalledWith(contactPhoto, upload, "Portrait");
+    expect(photo.savePhoto).toHaveBeenCalledWith(contactPhoto, body);
     expect(photo.updatePhotoAlt).toHaveBeenCalledWith(contactPhoto, "New alt");
     expect(photo.deletePhoto).toHaveBeenCalledWith(contactPhoto);
   });

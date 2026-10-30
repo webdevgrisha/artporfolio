@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { heroUploadBodySchema, pageIds, pageParamsSchema } from "#modules/pages/schema";
+import { heroBodySchema, pageIds, pageParamsSchema } from "#modules/pages/schema";
 
 describe("page schemas", () => {
   it.each(pageIds)("accepts the page %s", (page) => {
@@ -11,11 +11,19 @@ describe("page schemas", () => {
     expect(pageParamsSchema.safeParse({ page }).success).toBe(false);
   });
 
-  it("accepts a hero upload without text fields", () => {
-    expect(heroUploadBodySchema.safeParse({}).success).toBe(true);
+  it("takes a hero by its upload id", () => {
+    expect(
+      heroBodySchema.safeParse({ uploadId: "11111111-1111-4111-8111-111111111111" }).success,
+    ).toBe(true);
+    expect(heroBodySchema.safeParse({ uploadId: "painting" }).success).toBe(false);
   });
 
-  it("rejects text fields sent with a hero", () => {
-    expect(heroUploadBodySchema.safeParse({ alt: "Painting" }).success).toBe(false);
+  it("rejects other fields sent with a hero, as a hero has no alt text", () => {
+    expect(
+      heroBodySchema.safeParse({
+        alt: "Painting",
+        uploadId: "11111111-1111-4111-8111-111111111111",
+      }).success,
+    ).toBe(false);
   });
 });

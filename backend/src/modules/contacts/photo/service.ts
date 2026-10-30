@@ -2,12 +2,12 @@ import { contactsDocument } from "#modules/contacts/document";
 import {
   deletePhoto,
   type Photo,
+  type PhotoBody,
   type PhotoSlot,
   type SavedPhoto,
   savePhoto,
   updatePhotoAlt,
 } from "#shared/images/photo";
-import type { UploadedFile } from "#shared/middleware/upload";
 
 const contactPhoto: PhotoSlot = {
   document: contactsDocument,
@@ -15,8 +15,8 @@ const contactPhoto: PhotoSlot = {
   folder: "contacts/photo",
 };
 
-export function saveContactPhoto(file: UploadedFile, alt: string): Promise<SavedPhoto> {
-  return savePhoto(contactPhoto, file, alt);
+export function saveContactPhoto(body: PhotoBody): Promise<SavedPhoto> {
+  return savePhoto(contactPhoto, body);
 }
 
 export function updateContactPhotoAlt(alt: string): Promise<Photo> {

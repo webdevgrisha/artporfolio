@@ -95,6 +95,31 @@ describe("saveUpload", () => {
       expect.stringMatching(/^uploads\/[0-9a-f-]{36}$/),
     );
   });
+  it("fails only after every write has ended, so no file is added after the cleanup", async () => {
+    const error = new Error("Storage is down");
+    const finishSlowWrites: (() => void)[] = [];
+    storage.saveFile.mockImplementation((path: string) =>
+      path.endsWith("original.png")
+        ? Promise.reject(error)
+        : new Promise<void>((resolve) => {
+            finishSlowWrites.push(resolve);
+          }),
+    );
+    let failed = false;
+    const saving = saveUpload(file).catch((reason: unknown) => {
+      failed = true;
+      return reason;
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(failed).toBe(false);
+    expect(storage.deleteFolder).not.toHaveBeenCalled();
+
+    for (const finish of finishSlowWrites) finish();
+
+    await expect(saving).resolves.toBe(error);
+    expect(storage.deleteFolder).toHaveBeenCalled();
+  });
 });
 
 describe("publishUpload", () => {

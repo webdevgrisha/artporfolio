@@ -34,27 +34,18 @@ const pages = {
 
 let server: TestServer;
 
-function heroForm(fields: { alt?: string; file?: Blob }): FormData {
-  const form = new FormData();
+const uploadId = "11111111-1111-4111-8111-111111111111";
 
-  if (fields.alt !== undefined) {
-    form.append("alt", fields.alt);
-  }
-
-  if (fields.file) {
-    form.append("file", fields.file, "painting.jpg");
-  }
-
-  return form;
+function sendHero(method: string, page: string, headers: Record<string, string>, body?: unknown) {
+  return fetch(`${server.baseUrl}/api/pages/${page}/hero`, {
+    body: body === undefined ? null : JSON.stringify(body),
+    headers,
+    method,
+  });
 }
 
-function sendHero(
-  method: string,
-  page: string,
-  headers: Record<string, string>,
-  body?: FormData | string,
-) {
-  return fetch(`${server.baseUrl}/api/pages/${page}/hero`, { body: body ?? null, headers, method });
+async function jsonHeaders(): Promise<Record<string, string>> {
+  return { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" };
 }
 
 beforeAll(async () => {
@@ -82,92 +73,53 @@ describe("page routes", () => {
   it("returns 201 when the upload creates the first hero of a page", async () => {
     pageService.savePageHero.mockResolvedValue({ created: true, hero });
 
-    const response = await sendHero(
-      "PUT",
-      "about",
-      await adminHeaders(server.baseUrl),
-      heroForm({ file: new Blob(["image"]) }),
-    );
+    const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(201);
     await expect(response.json()).resolves.toEqual({ hero });
   });
 
-  it("replaces the hero of a page", async () => {
-    const response = await sendHero(
-      "PUT",
-      "about",
-      await adminHeaders(server.baseUrl),
-      heroForm({ file: new Blob(["image"]) }),
-    );
+  it("replaces the hero of a page with the upload", async () => {
+    const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ hero });
-    expect(pageService.savePageHero).toHaveBeenCalledWith("about", {
-      data: Buffer.from("image"),
-      name: "painting.jpg",
-      size: 5,
-    });
+    expect(pageService.savePageHero).toHaveBeenCalledWith("about", uploadId);
   });
 
-  it("rejects an unknown page before reading the body", async () => {
-    // Not a multipart body: reading it would fail with 415, so 404 means it was never read.
-    const response = await sendHero(
-      "PUT",
-      "contact",
-      { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
-      "{}",
-    );
+  it("rejects an unknown page", async () => {
+    const response = await sendHero("PUT", "contact", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(404);
     expect(pageService.savePageHero).not.toHaveBeenCalled();
   });
 
-  it("rejects text fields sent with the hero", async () => {
-    const response = await sendHero(
-      "PUT",
-      "about",
-      await adminHeaders(server.baseUrl),
-      heroForm({ alt: "Painting", file: new Blob(["image"]) }),
-    );
+  it.each([
+    ["without an upload", {}],
+    ["with alt text, which a hero does not have", { alt: "Painting", uploadId }],
+  ])("rejects a hero %s", async (_case, body) => {
+    const response = await sendHero("PUT", "about", await jsonHeaders(), body);
 
     expect(response.status).toBe(400);
     expect(pageService.savePageHero).not.toHaveBeenCalled();
   });
 
-  it("requires a file", async () => {
-    const response = await sendHero(
-      "PUT",
-      "about",
-      await adminHeaders(server.baseUrl),
-      heroForm({}),
-    );
-
-    expect(response.status).toBe(400);
-    expect(pageService.savePageHero).not.toHaveBeenCalled();
-  });
-
-  it("rejects an upload without a session", async () => {
-    const headers = await adminHeaders(server.baseUrl);
+  it("rejects a change without a session", async () => {
+    const headers = await jsonHeaders();
     auth.verifySession.mockRejectedValue(new UnauthorizedError());
 
-    const response = await sendHero(
-      "PUT",
-      "about",
-      headers,
-      heroForm({ file: new Blob(["image"]) }),
-    );
+    const response = await sendHero("PUT", "about", headers, { uploadId });
 
     expect(response.status).toBe(401);
     expect(pageService.savePageHero).not.toHaveBeenCalled();
   });
 
-  it("rejects an upload without a CSRF token", async () => {
+  it("rejects a change without a CSRF token", async () => {
     const response = await sendHero(
       "PUT",
       "about",
-      { Cookie: adminSessionCookie },
-      heroForm({ file: new Blob(["image"]) }),
+      { Cookie: adminSessionCookie, "Content-Type": "application/json" },
+      { uploadId },
     );
 
     expect(response.status).toBe(403);

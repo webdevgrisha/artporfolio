@@ -43,24 +43,6 @@ export async function saveFile(path: string, data: Buffer, metadata: FileMetadat
   await storageBucket().file(path).save(data, { metadata, resumable: false });
 }
 
-/** Saves a file that anyone can read through its download URL; see downloadUrl. */
-export async function saveDownloadableFile(
-  path: string,
-  data: Buffer,
-  metadata: FileMetadata,
-): Promise<DownloadableFile> {
-  const token = randomUUID();
-
-  await storageBucket()
-    .file(path)
-    .save(data, {
-      metadata: { ...metadata, metadata: { firebaseStorageDownloadTokens: token } },
-      resumable: false,
-    });
-
-  return { path, token };
-}
-
 /**
  * Copies a file within the bucket into one that anyone can read through its download URL; see
  * downloadUrl. The copy gets its own token and the given metadata.

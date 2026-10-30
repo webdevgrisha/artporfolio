@@ -10,7 +10,7 @@ import { validateBody } from "#shared/middleware/validation";
 
 export const uploadsRouter = Router();
 
-// A photo is uploaded here once, and the content refers to it by its id.
+// The only multipart route: a photo is uploaded here once, and the content refers to it by its id.
 // Authentication runs first, so an anonymous request is rejected before its file is read.
 uploadsRouter.post(
   "/",

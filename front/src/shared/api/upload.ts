@@ -37,6 +37,11 @@ export async function uploadImage(file: File): Promise<string> {
   }
 }
 
+/** The request error behind a failed upload, or the error itself, for the messages by status. */
+export function requestErrorOf(error: unknown): unknown {
+  return error instanceof UploadError ? error.cause : error;
+}
+
 export function getUploadErrorMessage({ cause, fileName }: UploadError): string {
   return getSaveErrorMessage(cause, {
     byStatus: {

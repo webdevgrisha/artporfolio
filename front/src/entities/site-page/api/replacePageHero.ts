@@ -9,19 +9,17 @@ const heroResponseSchema = z.object({
   hero: imageSchema,
 });
 
-interface UploadPageHeroParams {
-  file: File;
+interface ReplacePageHeroParams {
   page: SitePageId;
+  /** The new file, uploaded with `uploadImage`. */
+  uploadId: string;
 }
 
-/** Uploads or replaces the hero of the page and returns it as stored by the server. */
-export async function uploadPageHero({ file, page }: UploadPageHeroParams): Promise<Image> {
-  const body = new FormData();
-  body.set("file", file);
-
+/** Sets or replaces the hero of the page and returns it as stored by the server. */
+export async function replacePageHero({ page, uploadId }: ReplacePageHeroParams): Promise<Image> {
   const response = await http.put({
     path: `/pages/${page}/hero`,
-    body,
+    body: { uploadId },
     schema: heroResponseSchema,
   });
 

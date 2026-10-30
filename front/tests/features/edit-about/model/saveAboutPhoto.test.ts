@@ -4,7 +4,14 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { saveAboutPhoto } from "@/features/edit-about/model/saveAboutPhoto";
 import { HttpError } from "@/shared/api/httpError";
 
-import { csrfHandler, csrfToken, noContent, problem } from "../../../support/handlers";
+import {
+  csrfHandler,
+  csrfToken,
+  noContent,
+  problem,
+  uploadId,
+  uploadsHandler,
+} from "../../../support/handlers";
 import { apiPhoto, imageFile } from "../../../support/images";
 import { recordRequests, server } from "../../../support/server";
 
@@ -22,11 +29,11 @@ beforeEach(() => {
   received = {};
   server.use(
     csrfHandler,
+    uploadsHandler,
     mswHttp.put("/api/about/photo", async ({ request }) => {
-      const formData = await request.formData();
-      const body = { alt: formData.get("alt"), file: formData.get("file") };
+      const body = (await request.json()) as { alt: string };
       receive(request, body);
-      return HttpResponse.json({ photo: apiPhoto(String(body.alt)) });
+      return HttpResponse.json({ photo: apiPhoto(body.alt) });
     }),
     mswHttp.patch("/api/about/photo", async ({ request }) => {
       const body = (await request.json()) as { alt: string };
@@ -41,12 +48,12 @@ beforeEach(() => {
 });
 
 describe("saveAboutPhoto", () => {
-  it("uploads the photo with its description and the CSRF token", async () => {
+  it("uploads the file, then puts the photo by its upload with its description", async () => {
     await saveAboutPhoto({ alt: "Портрет", file: imageFile(), type: "upload" });
 
     expect(received).toEqual({
       "PUT /api/about/photo": {
-        body: { alt: "Портрет", file: expect.any(File) },
+        body: { alt: "Портрет", uploadId },
         token: csrfToken,
       },
     });

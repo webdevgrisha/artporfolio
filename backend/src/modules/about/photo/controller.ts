@@ -5,14 +5,13 @@ import {
   saveAboutPhoto,
   updateAboutPhotoAlt,
 } from "#modules/about/photo/service";
-import type { PhotoAltBody, PhotoResponse } from "#shared/images/photo";
-import { uploadedFile } from "#shared/middleware/upload";
+import type { PhotoAltBody, PhotoBody, PhotoResponse } from "#shared/images/photo";
 
-export const uploadPhoto: RequestHandler<object, PhotoResponse, PhotoAltBody> = async (
+export const putPhoto: RequestHandler<object, PhotoResponse, PhotoBody> = async (
   request,
   response,
 ) => {
-  const { created, photo } = await saveAboutPhoto(uploadedFile(request), request.body.alt);
+  const { created, photo } = await saveAboutPhoto(request.body);
 
   response.status(created ? 201 : 200).json({ photo });
 };

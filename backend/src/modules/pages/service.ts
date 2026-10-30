@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 import {
   type DocumentReference,
   type DocumentSnapshot,
@@ -9,16 +7,14 @@ import {
 
 import { type Page, type PageId, pageIds } from "#modules/pages/schema";
 import { firestore } from "#shared/firebase/firestore";
-import { processImage } from "#shared/images/processing";
 import {
   deleteImageFilesOrWarn,
   type Image,
   type StoredImage,
-  saveImageFiles,
   storedImageSchema,
   toImage,
 } from "#shared/images/storage";
-import type { UploadedFile } from "#shared/middleware/upload";
+import { deleteUploadsOrWarn, publishUpload } from "#shared/images/uploads";
 
 type HeroChange<T> = (
   hero: StoredImage | null,
@@ -31,8 +27,12 @@ function pageDocument(page: PageId) {
   return firestore().doc(`pages/${page}`);
 }
 
-function heroFolder(page: PageId, version: string): string {
-  return `pages/${page}/hero/${version}`;
+function heroFolder(page: PageId): string {
+  return `pages/${page}/hero`;
+}
+
+function versionFolder(page: PageId, version: string): string {
+  return `${heroFolder(page)}/${version}`;
 }
 
 function readHero(snapshot: DocumentSnapshot): StoredImage | null {
@@ -72,30 +72,29 @@ export interface SavedHero {
 }
 
 /**
- * Stores the new hero before removing the previous one, so the site never links to missing files.
- * If storing fails halfway, the files saved so far are removed.
+ * Puts the uploaded photo as the hero, before removing the previous one, so the site never links
+ * to missing files. If the hero cannot be saved, its copy is removed and the upload is kept.
  */
-export async function savePageHero(page: PageId, file: UploadedFile): Promise<SavedHero> {
-  const processed = await processImage(file.data);
-  const version = randomUUID();
-  let hero: StoredImage;
+export async function savePageHero(page: PageId, uploadId: string): Promise<SavedHero> {
+  const hero = await publishUpload(uploadId, heroFolder(page));
   let previous: StoredImage | null;
 
   try {
-    hero = await saveImageFiles({ file, folder: heroFolder(page, version), processed, version });
     previous = await changeHero(page, (current, transaction, document) => {
       // Merging keeps the other fields of the page document.
       transaction.set(document, { hero }, { merge: true });
       return current;
     });
   } catch (error) {
-    await deleteImageFilesOrWarn(heroFolder(page, version));
+    await deleteImageFilesOrWarn(versionFolder(page, hero.version));
     throw error;
   }
 
   if (previous) {
-    await deleteImageFilesOrWarn(heroFolder(page, previous.version));
+    await deleteImageFilesOrWarn(versionFolder(page, previous.version));
   }
+
+  await deleteUploadsOrWarn([uploadId]);
 
   return { created: previous === null, hero: toImage(hero) };
 }
@@ -110,6 +109,6 @@ export async function deletePageHero(page: PageId): Promise<void> {
   });
 
   if (deleted) {
-    await deleteImageFilesOrWarn(heroFolder(page, deleted.version));
+    await deleteImageFilesOrWarn(versionFolder(page, deleted.version));
   }
 }

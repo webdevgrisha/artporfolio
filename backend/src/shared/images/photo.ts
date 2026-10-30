@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 import {
   type DocumentReference,
   type DocumentSnapshot,
@@ -10,25 +8,27 @@ import { z } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
 import { NotFoundError } from "#shared/http/errors";
-import { processImage } from "#shared/images/processing";
 import {
   deleteImageFilesOrWarn,
   imageSchema,
-  saveImageFiles,
   storedImageSchema,
   toImage,
 } from "#shared/images/storage";
-import type { UploadedFile } from "#shared/middleware/upload";
+import { deleteUploadsOrWarn, publishUpload, uploadIdSchema } from "#shared/images/uploads";
 
 /** The text alternative of a photo. */
 export const altSchema = z.string().trim().min(1).max(250);
 
-/** Text fields sent with a photo file, and the body of an alt text update. */
-export const photoAltBodySchema = z
-  .object({
-    alt: altSchema,
-  })
-  .strict();
+/** A new photo: the file uploaded before (see uploads.ts) and its alt text. */
+export const photoBodySchema = z.strictObject({
+  alt: altSchema,
+  uploadId: uploadIdSchema,
+});
+
+/** An update of the alt text alone. */
+export const photoAltBodySchema = z.strictObject({
+  alt: altSchema,
+});
 
 /**
  * A photo as stored in Firestore: the uploaded image and its alt text. The alt text rules apply
@@ -46,6 +46,7 @@ export const photoSchema = imageSchema.extend({ alt: z.string() });
 
 export const photoResponseSchema = z.object({ photo: photoSchema });
 
+export type PhotoBody = z.infer<typeof photoBodySchema>;
 export type PhotoAltBody = z.infer<typeof photoAltBodySchema>;
 export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
 export type Photo = z.infer<typeof photoSchema>;
@@ -101,36 +102,32 @@ function changePhoto<T>(slot: PhotoSlot, change: PhotoChange<T>): Promise<T> {
 }
 
 /**
- * Stores the new photo before removing the previous one, so the site never links to missing
- * files. If storing fails halfway, the files saved so far are removed.
+ * Puts the uploaded photo in the slot, before removing the previous one, so the site never links
+ * to missing files. If the photo cannot be saved, its copy is removed and the upload is kept.
  */
 export async function savePhoto(
   slot: PhotoSlot,
-  file: UploadedFile,
-  alt: string,
+  { alt, uploadId }: PhotoBody,
 ): Promise<SavedPhoto> {
-  const processed = await processImage(file.data);
-  const version = randomUUID();
-  const folder = versionFolder(slot, version);
-  let photo: StoredPhoto;
+  const photo: StoredPhoto = { ...(await publishUpload(uploadId, slot.folder)), alt };
   let previous: StoredPhoto | null;
 
   try {
-    const image = await saveImageFiles({ file, folder, processed, version });
-    photo = { ...image, alt };
     previous = await changePhoto(slot, (current, transaction, document) => {
       // Merging keeps the other fields of the document.
       transaction.set(document, { [slot.field]: photo }, { merge: true });
       return current;
     });
   } catch (error) {
-    await deleteImageFilesOrWarn(folder);
+    await deleteImageFilesOrWarn(versionFolder(slot, photo.version));
     throw error;
   }
 
   if (previous) {
     await deleteImageFilesOrWarn(versionFolder(slot, previous.version));
   }
+
+  await deleteUploadsOrWarn([uploadId]);
 
   return { created: previous === null, photo: toPhoto(photo) };
 }

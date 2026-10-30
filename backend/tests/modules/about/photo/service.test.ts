@@ -16,7 +16,7 @@ import {
 } from "#modules/about/photo/service";
 
 const aboutPhoto = { document: aboutDocument, field: "photo", folder: "about/photo" };
-const upload = { data: Buffer.from("original"), name: "photo.png", size: 8 };
+const body = { alt: "Portrait", uploadId: "11111111-1111-4111-8111-111111111111" };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -24,11 +24,11 @@ beforeEach(() => {
 
 describe("about photo service", () => {
   it("keeps «My photo» in the photo field of the About document", async () => {
-    await saveAboutPhoto(upload, "Portrait");
+    await saveAboutPhoto(body);
     await updateAboutPhotoAlt("New alt");
     await deleteAboutPhoto();
 
-    expect(photo.savePhoto).toHaveBeenCalledWith(aboutPhoto, upload, "Portrait");
+    expect(photo.savePhoto).toHaveBeenCalledWith(aboutPhoto, body);
     expect(photo.updatePhotoAlt).toHaveBeenCalledWith(aboutPhoto, "New alt");
     expect(photo.deletePhoto).toHaveBeenCalledWith(aboutPhoto);
   });

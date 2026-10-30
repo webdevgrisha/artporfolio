@@ -1,16 +1,10 @@
 import { warn as logWarning } from "firebase-functions/logger";
 import { z } from "zod";
 
-import {
-  deleteFolder,
-  downloadUrl,
-  saveDownloadableFile,
-  saveFile,
-} from "#shared/firebase/storage";
-import type { EncodedImage, OutputFormat, ProcessedImage } from "#shared/images/processing";
-import type { UploadedFile } from "#shared/middleware/upload";
+import { deleteFolder, downloadUrl } from "#shared/firebase/storage";
 
-// Every upload gets its own folder and therefore new URLs, so the files can be cached forever.
+// Every saved image gets its own version folder and therefore new URLs, so the files can be cached
+// forever.
 export const immutableCacheControl = "public, max-age=31536000, immutable";
 
 /** One encoded file in Cloud Storage; its download URL is built from the path and token. */
@@ -62,19 +56,6 @@ export type StoredImage = z.infer<typeof storedImageSchema>;
 export type ImageSource = z.infer<typeof imageSourceSchema>;
 export type Image = z.infer<typeof imageSchema>;
 
-/** A processed upload and the folder to store it in; the version identifies the image. */
-interface NewImage {
-  file: UploadedFile;
-  folder: string;
-  processed: ProcessedImage;
-  version: string;
-}
-
-interface SavedImageFile {
-  file: StoredImageFile;
-  format: OutputFormat;
-}
-
 function toImageSource({ path, token, width }: StoredImageFile): ImageSource {
   return { url: downloadUrl({ path, token }), width };
 }
@@ -98,64 +79,6 @@ export function toImage({
     },
     version,
     width,
-  };
-}
-
-async function saveImageFile(folder: string, image: EncodedImage): Promise<SavedImageFile> {
-  const path = `${folder}/${String(image.width)}.${image.format}`;
-  const file = await saveDownloadableFile(path, image.data, {
-    cacheControl: immutableCacheControl,
-    contentType: `image/${image.format}`,
-  });
-
-  return { file: { ...file, width: image.width }, format: image.format };
-}
-
-function filesIn(format: OutputFormat, saved: SavedImageFile[]): StoredImageFile[] {
-  return saved.filter((entry) => entry.format === format).map((entry) => entry.file);
-}
-
-/**
- * Saves the web images and the original, which is kept to rebuild the images later, and returns
- * the image that describes them.
- */
-export async function saveImageFiles({
-  file,
-  folder,
-  processed,
-  version,
-}: NewImage): Promise<StoredImage> {
-  const { images, sourceFormat } = processed;
-  const largest = images.reduce((widest, current) =>
-    current.width > widest.width ? current : widest,
-  );
-
-  const savingImages = images.map((image) => saveImageFile(folder, image));
-  const savingOriginal = saveFile(`${folder}/original.${sourceFormat}`, file.data, {
-    contentType: `image/${sourceFormat}`,
-  });
-
-  // Waits for every write, even after one has failed: the caller then deletes the folder, and a
-  // write still running would add a file to it afterwards.
-  const results = await Promise.allSettled([savingOriginal, ...savingImages]);
-  const failure = results.find((result) => result.status === "rejected");
-
-  if (failure) {
-    throw failure.reason;
-  }
-
-  const savedFiles = await Promise.all(savingImages);
-
-  return {
-    fileName: file.name,
-    fileSize: file.size,
-    height: largest.height,
-    sources: {
-      avif: filesIn("avif", savedFiles),
-      webp: filesIn("webp", savedFiles),
-    },
-    version,
-    width: largest.width,
   };
 }
 

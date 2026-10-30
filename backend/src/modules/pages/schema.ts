@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { imageSchema } from "#shared/images/storage";
+import { uploadIdSchema } from "#shared/images/uploads";
 
 /** A page as the API returns it. */
 export const pageSchema = z.object({
@@ -26,8 +27,10 @@ export const pageParamsSchema = z.object({
   page: pageIdSchema,
 });
 
-/** A hero upload sends only the file: a text field is rejected. */
-export const heroUploadBodySchema = z.object({}).strict();
+/** A new hero: the file uploaded before (see uploads.ts); a hero has no alt text. */
+export const heroBodySchema = z.strictObject({
+  uploadId: uploadIdSchema,
+});
 
 export const pagesResponseSchema = z.object({ pages: pagesSchema });
 
@@ -35,6 +38,7 @@ export const heroResponseSchema = z.object({ hero: imageSchema });
 
 export type PageId = z.infer<typeof pageIdSchema>;
 export type PageParams = z.infer<typeof pageParamsSchema>;
+export type HeroBody = z.infer<typeof heroBodySchema>;
 export type Page = z.infer<typeof pageSchema>;
 export type PagesResponse = z.infer<typeof pagesResponseSchema>;
 export type HeroResponse = z.infer<typeof heroResponseSchema>;

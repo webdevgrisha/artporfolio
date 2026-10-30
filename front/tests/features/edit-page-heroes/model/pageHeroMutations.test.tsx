@@ -10,7 +10,7 @@ import {
   useUploadPageHero,
 } from "@/features/edit-page-heroes/model/pageHeroMutations";
 
-import { csrfHandler, noContent, problem } from "../../../support/handlers";
+import { csrfHandler, noContent, problem, uploadsHandler } from "../../../support/handlers";
 import { apiImage, imageFile } from "../../../support/images";
 import { recordRequests, server } from "../../../support/server";
 
@@ -44,6 +44,7 @@ function setUp() {
 beforeEach(() => {
   server.use(
     csrfHandler,
+    uploadsHandler,
     mswHttp.put("/api/pages/home/hero", () => HttpResponse.json({ hero: apiImage("new.jpg") })),
     mswHttp.delete("/api/pages/home/hero", () => noContent()),
   );
@@ -56,7 +57,11 @@ describe("useUploadPageHero", () => {
 
     await uploadHero.mutateAsync(imageFile());
 
-    expect(requests).toEqual(["GET /api/auth/csrf", "PUT /api/pages/home/hero"]);
+    expect(requests).toEqual([
+      "GET /api/auth/csrf",
+      "POST /api/uploads",
+      "PUT /api/pages/home/hero",
+    ]);
     expect(queryClient.getQueryData(sitePagesQuery.queryKey)).toEqual(
       sitePages(apiImage("new.jpg")),
     );
