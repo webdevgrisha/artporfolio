@@ -47,7 +47,8 @@ const ariaSort = {
  */
 export function ProjectsTable({ className, projects }: ProjectsTableProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const view = readTableView(searchParams);
+  // Read once per address: the table recomputes its rows whenever its sorting is a new array.
+  const view = React.useMemo(() => readTableView(searchParams), [searchParams]);
   const deletion = useDeleteProject();
   const [deleted, setDeleted] = React.useState<Project>();
   const shownProjects = React.useMemo(
@@ -132,6 +133,8 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
 
   const table = useReactTable({
     columns,
+    // There are no pages, so nothing to reset when the rows change; the reset would render again.
+    autoResetPageIndex: false,
     data: shownProjects,
     enableMultiSort: false,
     getCoreRowModel: getCoreRowModel(),
