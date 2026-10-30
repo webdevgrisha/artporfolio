@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 
 import { HttpError } from "./httpError";
+import { NetworkError } from "./networkError";
 
 const maxRetries = 2;
 
@@ -26,10 +27,12 @@ declare module "@tanstack/react-query" {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // A client error, such as an expired session, fails the same way again; a lost connection
-      // or a server error may pass.
+      // Only a lost connection or a server error may pass on a retry. Anything else fails the same
+      // way again: a client error, such as an expired session, a response of an unexpected
+      // shape, or a bug.
       retry: (failureCount, error) =>
-        !(error instanceof HttpError && error.status < 500) && failureCount < maxRetries,
+        failureCount < maxRetries &&
+        (error instanceof NetworkError || (error instanceof HttpError && error.status >= 500)),
       // The admin is the only one who changes the data, and every save puts what it saved into
       // the cache. A page loads its data afresh when it is entered. A reload under an open form
       // changes its props, so a form finds its changes against the values it was opened with,

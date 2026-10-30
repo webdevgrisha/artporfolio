@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ZodError } from "zod";
 
 import { HttpError } from "@/shared/api/httpError";
 import { NetworkError } from "@/shared/api/networkError";
@@ -14,6 +15,13 @@ function shouldRetry(failureCount: number, error: Error): boolean {
 describe("queryClient", () => {
   it.each([400, 401, 404])("does not retry a query that failed with %d", (status) => {
     expect(shouldRetry(0, new HttpError(status))).toBe(false);
+  });
+
+  it.each([
+    ["a response of an unexpected shape", new ZodError([])],
+    ["a bug", new TypeError("Cannot read properties of undefined")],
+  ])("does not retry %s", (_name, error) => {
+    expect(shouldRetry(0, error)).toBe(false);
   });
 
   it.each([
