@@ -1,18 +1,30 @@
-import { deleteAboutPhoto, replaceAboutPhoto, updateAboutPhotoAlt } from "@/entities/about";
+import {
+  deleteAboutPhoto,
+  getAboutPhoto,
+  replaceAboutPhoto,
+  updateAboutPhotoAlt,
+} from "@/entities/about";
+import type { Tagged } from "@/shared/api/http";
+import type { Photo } from "@/shared/api/photo";
 import { uploadImage } from "@/shared/api/upload";
-import type { PhotoChange } from "@/shared/lib/photoForm";
+import type { SavePhotoParams } from "@/shared/lib/photoForm";
 
-/** Sends a change of «Моё фото»; rejects when it was not saved. */
-export async function saveAboutPhoto(change: PhotoChange): Promise<void> {
+/**
+ * Sends a change of «Моё фото» made from the photo with the ETag `etag`; resolves with the photo now
+ * saved and its ETag, and rejects when it was not saved.
+ */
+export async function saveAboutPhoto({
+  change,
+  etag,
+}: SavePhotoParams): Promise<Tagged<Photo | null>> {
   switch (change.type) {
     case "upload":
-      await replaceAboutPhoto({ alt: change.alt, uploadId: await uploadImage(change.file) });
-      break;
+      return replaceAboutPhoto({ alt: change.alt, etag, uploadId: await uploadImage(change.file) });
     case "updateAlt":
-      await updateAboutPhotoAlt({ alt: change.alt });
-      break;
+      return updateAboutPhotoAlt({ alt: change.alt, etag });
     case "delete":
-      await deleteAboutPhoto();
-      break;
+      await deleteAboutPhoto({ etag });
+      // A deletion returns no content, so the empty photo is read again for the ETag of the next change.
+      return getAboutPhoto();
   }
 }

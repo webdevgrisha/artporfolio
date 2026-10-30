@@ -79,12 +79,8 @@ export const router = createBrowserRouter([
                   },
                   {
                     path: routes.about,
-                    lazy: async () => {
-                      const { AboutPage, aboutLoader } = await import("@/pages/about");
-
-                      return { Component: AboutPage, loader: aboutLoader };
-                    },
-                    // Each section has its own form and URL; the page opens its first one.
+                    lazy: async () => ({ Component: (await import("@/pages/about")).AboutPage }),
+                    // Each section has its own form, URL and resource; the page opens its first one.
                     children: [
                       {
                         index: true,
@@ -92,15 +88,23 @@ export const router = createBrowserRouter([
                       },
                       {
                         path: routes.aboutText,
-                        lazy: async () => ({
-                          Component: (await import("@/pages/about")).AboutTextSection,
-                        }),
+                        lazy: async () => {
+                          const { AboutTextSection, aboutTextLoader } = await import(
+                            "@/pages/about"
+                          );
+
+                          return { Component: AboutTextSection, loader: aboutTextLoader };
+                        },
                       },
                       {
                         path: routes.aboutPhoto,
-                        lazy: async () => ({
-                          Component: (await import("@/pages/about")).AboutPhotoSection,
-                        }),
+                        lazy: async () => {
+                          const { AboutPhotoSection, aboutPhotoLoader } = await import(
+                            "@/pages/about"
+                          );
+
+                          return { Component: AboutPhotoSection, loader: aboutPhotoLoader };
+                        },
                       },
                       {
                         path: routes.aboutProcess,
@@ -116,11 +120,9 @@ export const router = createBrowserRouter([
                   },
                   {
                     path: routes.contacts,
-                    lazy: async () => {
-                      const { ContactsPage, contactsLoader } = await import("@/pages/contacts");
-
-                      return { Component: ContactsPage, loader: contactsLoader };
-                    },
+                    lazy: async () => ({
+                      Component: (await import("@/pages/contacts")).ContactsPage,
+                    }),
                     children: [
                       {
                         index: true,
@@ -128,15 +130,23 @@ export const router = createBrowserRouter([
                       },
                       {
                         path: routes.contactLinks,
-                        lazy: async () => ({
-                          Component: (await import("@/pages/contacts")).ContactLinksSection,
-                        }),
+                        lazy: async () => {
+                          const { ContactLinksSection, contactLinksLoader } = await import(
+                            "@/pages/contacts"
+                          );
+
+                          return { Component: ContactLinksSection, loader: contactLinksLoader };
+                        },
                       },
                       {
                         path: routes.contactPhoto,
-                        lazy: async () => ({
-                          Component: (await import("@/pages/contacts")).ContactPhotoSection,
-                        }),
+                        lazy: async () => {
+                          const { ContactPhotoSection, contactPhotoLoader } = await import(
+                            "@/pages/contacts"
+                          );
+
+                          return { Component: ContactPhotoSection, loader: contactPhotoLoader };
+                        },
                       },
                     ],
                   },

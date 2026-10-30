@@ -1,6 +1,6 @@
-import { http } from "@/shared/api/http";
+import { http, type Tagged } from "@/shared/api/http";
 
-import { type ProcessPhotoList, processPhotosResponseSchema } from "../model/processPhoto";
+import { type ProcessPhoto, processPhotosResponseSchema } from "../model/processPhoto";
 
 /**
  * One photo of the new list: a saved one by its id, a new file by its upload (see `uploadImage`),
@@ -25,13 +25,13 @@ interface ReplaceProcessPhotosParams {
 export async function replaceProcessPhotos({
   etag,
   processPhotos,
-}: ReplaceProcessPhotosParams): Promise<ProcessPhotoList> {
-  const response = await http.putIfMatch({
+}: ReplaceProcessPhotosParams): Promise<Tagged<ProcessPhoto[]>> {
+  const { data, etag: savedEtag } = await http.putIfMatch({
     path: "/about/process-photos",
     body: { processPhotos },
     etag,
     schema: processPhotosResponseSchema,
   });
 
-  return { etag: response.etag, processPhotos: response.data.processPhotos };
+  return { data: data.processPhotos, etag: savedEtag };
 }

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { contactsQuery } from "@/entities/contacts";
+import { contactPhotoQuery } from "@/entities/contacts";
 import { getSavePhotoErrorMessage } from "@/shared/api/photo";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 
@@ -12,8 +12,8 @@ export const saveContactPhotoFeedback: MutationFeedback = {
 };
 
 /**
- * Saves a change of the photo, then loads the contacts again. That happens after a failed save
- * too: a request that failed may still have changed the photo on the server.
+ * Saves a change of the contacts photo, then puts the saved photo into the cache: the server returns it with
+ * its ETag, so the page need not load it again.
  */
 export function useSaveContactPhoto() {
   const queryClient = useQueryClient();
@@ -21,6 +21,6 @@ export function useSaveContactPhoto() {
   return useMutation({
     meta: { feedback: saveContactPhotoFeedback },
     mutationFn: saveContactPhoto,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: contactsQuery.queryKey }),
+    onSuccess: (saved) => queryClient.setQueryData(contactPhotoQuery.queryKey, saved),
   });
 }

@@ -1,12 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-interface FakeDocument {
-  id: string;
-  path: string;
-}
-
 /** The stored hero of each page document, by document path. */
 const storedHeroes = vi.hoisted(() => new Map<string, unknown>());
+
+/** A page document; `get` reads its stored hero. */
+const FakeDocument = vi.hoisted(
+  () =>
+    class FakeDocument {
+      readonly id: string;
+
+      constructor(readonly path: string) {
+        this.id = path.slice(path.lastIndexOf("/") + 1);
+      }
+
+      get() {
+        return Promise.resolve({
+          get: (field: string) => (field === "hero" ? storedHeroes.get(this.path) : undefined),
+          id: this.id,
+        });
+      }
+    },
+);
+
+type FakeDocument = InstanceType<typeof FakeDocument>;
 
 const transaction = vi.hoisted(() => ({
   get: vi.fn(),
@@ -15,7 +31,7 @@ const transaction = vi.hoisted(() => ({
 }));
 
 const database = vi.hoisted(() => ({
-  doc: (path: string): FakeDocument => ({ id: path.slice(path.lastIndexOf("/") + 1), path }),
+  doc: (path: string) => new FakeDocument(path),
   getAll: vi.fn(),
   runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
 }));
@@ -39,7 +55,9 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 }));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
-import { deletePageHero, getPages, savePageHero } from "#modules/pages/service";
+import { deletePageHero, getPageHero, getPages, savePageHero } from "#modules/pages/service";
+import { PreconditionFailedError } from "#shared/http/errors";
+import { entityTag } from "#shared/http/etag";
 
 const uploadId = "11111111-1111-4111-8111-111111111111";
 
@@ -70,20 +88,17 @@ const storedHero = {
   width: 960,
 };
 
-function snapshotOf(document: FakeDocument) {
-  return {
-    get: (field: string) => (field === "hero" ? storedHeroes.get(document.path) : undefined),
-    id: document.id,
-  };
-}
+/** The tags of a page without a hero and of a page with `storedHero`, as a client read them. */
+const emptyTag = entityTag(null);
+const storedTag = entityTag(storedHero);
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   storedHeroes.clear();
-  database.getAll.mockImplementation(async (...documents: FakeDocument[]) =>
-    documents.map(snapshotOf),
+  database.getAll.mockImplementation((...documents: FakeDocument[]) =>
+    Promise.all(documents.map((document) => document.get())),
   );
-  transaction.get.mockImplementation(async (document: FakeDocument) => snapshotOf(document));
+  transaction.get.mockImplementation((document: FakeDocument) => document.get());
   storage.deleteFolder.mockResolvedValue(undefined);
   uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
   uploads.publishUpload.mockResolvedValue(published);
@@ -133,8 +148,18 @@ describe("page service", () => {
     });
   });
 
+  it("tags the hero of one page by what its document stores", async () => {
+    storedHeroes.set("pages/about", storedHero);
+
+    await expect(getPageHero("about")).resolves.toMatchObject({
+      data: { version: "old" },
+      etag: storedTag,
+    });
+    await expect(getPageHero("home")).resolves.toEqual({ data: null, etag: emptyTag });
+  });
+
   it("puts the upload into a new version folder of its page and uses it up", async () => {
-    const { created, hero } = await savePageHero("about", uploadId);
+    const { created, data: hero, etag } = await savePageHero("about", uploadId, emptyTag);
 
     expect(created).toBe(true);
     expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "pages/about/hero");
@@ -143,6 +168,7 @@ describe("page service", () => {
       { hero: published },
       { merge: true },
     );
+    expect(etag).toBe(entityTag(published));
     expect(hero.sources.webp[0]?.url).toBe(
       "https://storage.test/pages/about/hero/new/640.webp?token=token",
     );
@@ -151,7 +177,7 @@ describe("page service", () => {
   });
 
   it("reads the previous hero in the transaction that records the new one", async () => {
-    await savePageHero("about", uploadId);
+    await savePageHero("about", uploadId, emptyTag);
 
     expect(transaction.get).toHaveBeenCalledWith(aboutDocument);
   });
@@ -159,7 +185,7 @@ describe("page service", () => {
   it("deletes the previous hero after saving the new one", async () => {
     storedHeroes.set("pages/about", storedHero);
 
-    const { created } = await savePageHero("about", uploadId);
+    const { created } = await savePageHero("about", uploadId, storedTag);
 
     expect(created).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/old");
@@ -173,7 +199,9 @@ describe("page service", () => {
       throw new Error("Firestore is unavailable");
     });
 
-    await expect(savePageHero("about", uploadId)).rejects.toThrow("Firestore is unavailable");
+    await expect(savePageHero("about", uploadId, emptyTag)).rejects.toThrow(
+      "Firestore is unavailable",
+    );
 
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/new");
     expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
@@ -182,24 +210,44 @@ describe("page service", () => {
   it("records nothing when the upload cannot be published", async () => {
     uploads.publishUpload.mockRejectedValue(new Error("There is no upload"));
 
-    await expect(savePageHero("about", uploadId)).rejects.toThrow("There is no upload");
+    await expect(savePageHero("about", uploadId, emptyTag)).rejects.toThrow("There is no upload");
 
     expect(transaction.set).not.toHaveBeenCalled();
+  });
+
+  it("refuses a hero saved against an outdated read and removes its copy", async () => {
+    storedHeroes.set("pages/about", storedHero);
+
+    await expect(savePageHero("about", uploadId, emptyTag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
+
+    expect(transaction.set).not.toHaveBeenCalled();
+    expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/new");
   });
 
   it("deletes the hero and its files", async () => {
     storedHeroes.set("pages/about", storedHero);
 
-    await deletePageHero("about");
+    await deletePageHero("about", storedTag);
 
     expect(transaction.update).toHaveBeenCalledWith(aboutDocument, { hero: expect.anything() });
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/old");
   });
 
   it("does nothing when deleting a missing hero", async () => {
-    await deletePageHero("about");
+    await deletePageHero("about", emptyTag);
 
     expect(transaction.update).not.toHaveBeenCalled();
     expect(storage.deleteFolder).not.toHaveBeenCalled();
+  });
+
+  it("refuses to delete a hero replaced since it was read", async () => {
+    storedHeroes.set("pages/about", { ...storedHero, version: "newer" });
+
+    await expect(deletePageHero("about", storedTag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
+    expect(transaction.update).not.toHaveBeenCalled();
   });
 });

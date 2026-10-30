@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { type AboutText, aboutQuery, replaceAboutText } from "@/entities/about";
+import { aboutTextQuery, replaceAboutText } from "@/entities/about";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 
 import { getSaveTextErrorMessage } from "../lib/saveErrorMessages";
@@ -11,15 +11,15 @@ export const saveAboutTextFeedback: MutationFeedback = {
 };
 
 /**
- * Replaces all texts, then loads the About page again. That happens after a failed save too: a
- * request that failed may still have changed the texts on the server.
+ * Replaces all texts, then puts the saved texts into the cache: the server returns them with
+ * their ETag, so the page need not load them again.
  */
 export function useSaveAboutText() {
   const queryClient = useQueryClient();
 
   return useMutation({
     meta: { feedback: saveAboutTextFeedback },
-    mutationFn: (text: AboutText) => replaceAboutText({ text }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: aboutQuery.queryKey }),
+    mutationFn: replaceAboutText,
+    onSuccess: (saved) => queryClient.setQueryData(aboutTextQuery.queryKey, saved),
   });
 }

@@ -2,6 +2,8 @@ import type { DocumentSnapshot } from "firebase-admin/firestore";
 
 import { aboutDocument } from "#modules/about/document";
 import { type AboutText, storedAboutTextSchema } from "#modules/about/text/schema";
+import { firestore } from "#shared/firebase/firestore";
+import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 
 /** The field of the About document that holds the texts. */
 const field = "text";
@@ -15,11 +17,25 @@ export function readAboutText(snapshot: DocumentSnapshot): AboutText {
   return text === undefined ? emptyText : storedAboutTextSchema.parse(text);
 }
 
-export async function getAboutText(): Promise<AboutText> {
-  return readAboutText(await aboutDocument().get());
+/** The texts with the entity tag for If-Match; the tag follows the stored texts. */
+export async function getAboutText(): Promise<Tagged<AboutText>> {
+  const text = readAboutText(await aboutDocument().get());
+
+  return { data: text, etag: entityTag(text) };
 }
 
-export async function saveAboutText(text: AboutText): Promise<void> {
-  // Merging keeps the photos, which live in the same document.
-  await aboutDocument().set({ [field]: text }, { merge: true });
+/** Replaces the texts while they are still the ones the client read (`ifMatch`). */
+export async function replaceAboutText(
+  text: AboutText,
+  ifMatch: string,
+): Promise<Tagged<AboutText>> {
+  await firestore().runTransaction(async (transaction) => {
+    const document = aboutDocument();
+
+    assertIfMatch(ifMatch, readAboutText(await transaction.get(document)));
+    // Merging keeps the photos, which live in the same document.
+    transaction.set(document, { [field]: text }, { merge: true });
+  });
+
+  return { data: text, etag: entityTag(text) };
 }

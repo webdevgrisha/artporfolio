@@ -1,4 +1,4 @@
 export { deletePageHero } from "./api/deletePageHero";
+export { pageHeroQuery } from "./api/pageHeroQuery";
 export { replacePageHero } from "./api/replacePageHero";
-export { sitePagesQuery } from "./api/sitePagesQuery";
-export type { SitePageId, SitePages } from "./model/sitePage";
+export { type SitePageId, sitePageIds } from "./model/sitePage";

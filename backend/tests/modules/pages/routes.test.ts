@@ -12,6 +12,7 @@ const auth = vi.hoisted(() => ({
 
 const pageService = vi.hoisted(() => ({
   deletePageHero: vi.fn(),
+  getPageHero: vi.fn(),
   getPages: vi.fn(),
   savePageHero: vi.fn(),
 }));
@@ -20,7 +21,7 @@ vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/pages/service", () => pageService);
 
 import { pagesRouter } from "#modules/pages/routes";
-import { UnauthorizedError } from "#shared/http/errors";
+import { PreconditionFailedError, UnauthorizedError } from "#shared/http/errors";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const hero = apiImage("painting.jpg");
@@ -35,6 +36,8 @@ const pages = {
 let server: TestServer;
 
 const uploadId = "11111111-1111-4111-8111-111111111111";
+const etag = '"read"';
+const savedEtag = '"saved"';
 
 function sendHero(method: string, page: string, headers: Record<string, string>, body?: unknown) {
   return fetch(`${server.baseUrl}/api/pages/${page}/hero`, {
@@ -45,7 +48,12 @@ function sendHero(method: string, page: string, headers: Record<string, string>,
 }
 
 async function jsonHeaders(): Promise<Record<string, string>> {
-  return { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" };
+  return { ...(await ifMatchHeaders()), "Content-Type": "application/json" };
+}
+
+/** The headers of a signed-in admin with the ETag of the hero they read. */
+async function ifMatchHeaders(): Promise<Record<string, string>> {
+  return { ...(await adminHeaders(server.baseUrl)), "If-Match": etag };
 }
 
 beforeAll(async () => {
@@ -57,7 +65,8 @@ beforeEach(() => {
   auth.verifySession.mockResolvedValue(admin);
   pageService.deletePageHero.mockResolvedValue(undefined);
   pageService.getPages.mockResolvedValue(pages);
-  pageService.savePageHero.mockResolvedValue({ created: false, hero });
+  pageService.getPageHero.mockResolvedValue({ data: hero, etag });
+  pageService.savePageHero.mockResolvedValue({ created: false, data: hero, etag: savedEtag });
 });
 
 afterAll(() => server.close());
@@ -70,8 +79,42 @@ describe("page routes", () => {
     await expect(response.json()).resolves.toEqual({ pages });
   });
 
+  it("returns the hero of one page to every visitor, with its ETag", async () => {
+    const response = await fetch(`${server.baseUrl}/api/pages/about/hero`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(etag);
+    await expect(response.json()).resolves.toEqual({ hero });
+    expect(pageService.getPageHero).toHaveBeenCalledWith("about");
+  });
+
+  it("returns 404 for the hero of an unknown page", async () => {
+    const response = await fetch(`${server.baseUrl}/api/pages/contact/hero`);
+
+    expect(response.status).toBe(404);
+  });
+
+  it.each(["PUT", "DELETE"])("requires the ETag of the hero for %s", async (method) => {
+    const response = await sendHero(
+      method,
+      "about",
+      { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
+      method === "PUT" ? { uploadId } : undefined,
+    );
+
+    expect(response.status).toBe(428);
+  });
+
+  it("refuses a hero changed since it was read", async () => {
+    pageService.deletePageHero.mockRejectedValue(new PreconditionFailedError());
+
+    const response = await sendHero("DELETE", "about", await ifMatchHeaders());
+
+    expect(response.status).toBe(412);
+  });
+
   it("returns 201 when the upload creates the first hero of a page", async () => {
-    pageService.savePageHero.mockResolvedValue({ created: true, hero });
+    pageService.savePageHero.mockResolvedValue({ created: true, data: hero, etag: savedEtag });
 
     const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
@@ -84,7 +127,8 @@ describe("page routes", () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ hero });
-    expect(pageService.savePageHero).toHaveBeenCalledWith("about", uploadId);
+    expect(response.headers.get("ETag")).toBe(savedEtag);
+    expect(pageService.savePageHero).toHaveBeenCalledWith("about", uploadId, etag);
   });
 
   it("rejects an unknown page", async () => {
@@ -127,10 +171,10 @@ describe("page routes", () => {
   });
 
   it("deletes the hero of a page", async () => {
-    const response = await sendHero("DELETE", "about", await adminHeaders(server.baseUrl));
+    const response = await sendHero("DELETE", "about", await ifMatchHeaders());
 
     expect(response.status).toBe(204);
-    expect(pageService.deletePageHero).toHaveBeenCalledWith("about");
+    expect(pageService.deletePageHero).toHaveBeenCalledWith("about", etag);
   });
 
   it("returns 404 when deleting the hero of an unknown page", async () => {

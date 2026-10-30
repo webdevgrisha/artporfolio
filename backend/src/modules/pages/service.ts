@@ -1,6 +1,14 @@
 import { type Page, type PageId, pageIds } from "#modules/pages/schema";
 import { firestore } from "#shared/firebase/firestore";
-import { clearSlot, fillSlot, type ImageSlot, readSlot, type SlotField } from "#shared/images/slot";
+import type { Tagged } from "#shared/http/etag";
+import {
+  clearSlot,
+  fillSlot,
+  getSlot,
+  type ImageSlot,
+  readSlot,
+  type SlotField,
+} from "#shared/images/slot";
 import { type Image, type StoredImage, storedImageSchema, toImage } from "#shared/images/storage";
 
 /** A hero is the image alone: a background under the page title, so it has no alt text. */
@@ -27,19 +35,34 @@ export async function getPages(): Promise<Record<PageId, Page>> {
   return Object.fromEntries(pages) as Record<PageId, Page>;
 }
 
-/** The saved hero, and whether it is the first one of the page rather than a replacement. */
-export interface SavedHero {
+/** The hero of the page, `null` until one is uploaded, with the entity tag for If-Match. */
+export async function getPageHero(page: PageId): Promise<Tagged<Image | null>> {
+  const { data, etag } = await getSlot(heroSlot(page));
+
+  return { data: data && toImage(data), etag };
+}
+
+/** The saved hero with its tag, and whether it is the first one of the page rather than a replacement. */
+export interface SavedHero extends Tagged<Image> {
   created: boolean;
-  hero: Image;
 }
 
 /** Puts the uploaded photo as the hero of the page, replacing the previous one. */
-export async function savePageHero(page: PageId, uploadId: string): Promise<SavedHero> {
-  const { created, stored } = await fillSlot(heroSlot(page), uploadId, (image) => image);
+export async function savePageHero(
+  page: PageId,
+  uploadId: string,
+  ifMatch: string,
+): Promise<SavedHero> {
+  const { created, data, etag } = await fillSlot(
+    heroSlot(page),
+    uploadId,
+    ifMatch,
+    (image) => image,
+  );
 
-  return { created, hero: toImage(stored) };
+  return { created, data: toImage(data), etag };
 }
 
-export function deletePageHero(page: PageId): Promise<void> {
-  return clearSlot(heroSlot(page));
+export function deletePageHero(page: PageId, ifMatch: string): Promise<void> {
+  return clearSlot(heroSlot(page), ifMatch);
 }

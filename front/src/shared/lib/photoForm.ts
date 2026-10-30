@@ -2,12 +2,7 @@ import { z } from "zod";
 
 import type { Photo } from "@/shared/api/photo";
 
-import {
-  type ImageFieldValue,
-  imageFieldValueSchema,
-  savedImage,
-  toImageFieldValue,
-} from "./imageFieldValue";
+import { type ImageFieldValue, imageFieldValueSchema, toImageFieldValue } from "./imageFieldValue";
 
 // Mirrors the server rule in backend/src/shared/images/photo.ts.
 const maxAltLength = 250;
@@ -49,17 +44,17 @@ export function toPhotoFormValues(photo: Photo | null): PhotoFormValues {
   return { photo: toImageFieldValue(photo), photoAlt: photo?.alt ?? "" };
 }
 
-/** The photo fields once their change is saved: a picked file becomes the saved photo. */
-export function toSavedPhotoValues({ photo, photoAlt }: PhotoFormValues): PhotoFormValues {
-  // A deleted photo takes its description with it.
-  return photo === null ? { photo: null, photoAlt: "" } : { photo: savedImage, photoAlt };
-}
-
 /** What a save does with the photo. */
 export type PhotoChange =
   | { alt: string; file: File; type: "upload" }
   | { alt: string; type: "updateAlt" }
   | { type: "delete" };
+
+/** A change of a photo, made from the photo with the ETag `etag`. */
+export interface SavePhotoParams {
+  change: PhotoChange;
+  etag: string;
+}
 
 /**
  * The change of the submitted photo fields, or `undefined` when there is none. Only what the user

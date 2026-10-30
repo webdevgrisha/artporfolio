@@ -3,7 +3,11 @@ import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
 export function getSaveTextErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
-    byStatus: { 400: "Сервер не принял тексты. Проверьте их и попробуйте ещё раз" },
+    byStatus: {
+      400: "Сервер не принял тексты. Проверьте их и попробуйте ещё раз",
+      // The texts were changed since this page loaded them, for example in another tab.
+      412: "Тексты уже изменили в другой вкладке. Обновите страницу и внесите изменения заново",
+    },
     fallback: "Не удалось сохранить тексты. Попробуйте ещё раз",
   });
 }

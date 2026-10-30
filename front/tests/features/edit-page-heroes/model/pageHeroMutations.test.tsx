@@ -4,7 +4,7 @@ import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { sitePagesQuery } from "@/entities/site-page";
+import { pageHeroQuery } from "@/entities/site-page";
 import {
   useDeletePageHero,
   useUploadPageHero,
@@ -15,20 +15,15 @@ import { apiImage, imageFile } from "../../../support/images";
 import { recordRequests, server } from "../../../support/server";
 
 const home = { label: "Главная", page: "home" } as const;
+const { queryKey } = pageHeroQuery("home");
 
-function sitePages(homeHero: ReturnType<typeof apiImage> | null) {
-  return {
-    about: { hero: null },
-    contacts: { hero: null },
-    gallery: { hero: null },
-    home: { hero: homeHero },
-    projects: { hero: null },
-  };
-}
+/** The ETag of the hero the card shows, and of the hero each change saves. */
+const etag = '"read"';
+const savedEtag = '"saved"';
 
 function setUp() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  queryClient.setQueryData(sitePagesQuery.queryKey, sitePages(apiImage("old.jpg")));
+  queryClient.setQueryData(queryKey, { data: apiImage("old.jpg"), etag });
 
   function wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
@@ -41,60 +36,79 @@ function setUp() {
   };
 }
 
+/** The If-Match header of each change of the home hero, in order. */
+function recordIfMatch(): (string | null)[] {
+  const headers: (string | null)[] = [];
+  server.events.on("request:start", ({ request }) => {
+    if (request.method !== "GET" && new URL(request.url).pathname === "/api/pages/home/hero") {
+      headers.push(request.headers.get("If-Match"));
+    }
+  });
+  return headers;
+}
+
 beforeEach(() => {
   server.use(
     csrfHandler,
     uploadsHandler,
-    mswHttp.put("/api/pages/home/hero", () => HttpResponse.json({ hero: apiImage("new.jpg") })),
+    mswHttp.get("/api/pages/home/hero", () =>
+      HttpResponse.json({ hero: null }, { headers: { ETag: savedEtag } }),
+    ),
+    mswHttp.put("/api/pages/home/hero", () =>
+      HttpResponse.json({ hero: apiImage("new.jpg") }, { headers: { ETag: savedEtag } }),
+    ),
     mswHttp.delete("/api/pages/home/hero", () => noContent()),
   );
 });
 
 describe("useUploadPageHero", () => {
-  it("puts the uploaded hero into the pages without loading them again", async () => {
+  it("puts the uploaded hero with its ETag into the cache without loading it again", async () => {
     const { queryClient, uploadHero } = setUp();
     const requests = recordRequests();
+    const ifMatch = recordIfMatch();
 
-    await uploadHero.mutateAsync(imageFile());
+    await uploadHero.mutateAsync({ etag, file: imageFile() });
 
     expect(requests).toEqual([
       "GET /api/auth/csrf",
       "POST /api/uploads",
       "PUT /api/pages/home/hero",
     ]);
-    expect(queryClient.getQueryData(sitePagesQuery.queryKey)).toEqual(
-      sitePages(apiImage("new.jpg")),
-    );
+    expect(ifMatch).toEqual([etag]);
+    expect(queryClient.getQueryData(queryKey)).toEqual({
+      data: apiImage("new.jpg"),
+      etag: savedEtag,
+    });
   });
 
-  // The page observes the pages, so invalidating them loads them again.
-  it("invalidates the pages after a failure, as the hero may have changed anyway", async () => {
-    server.use(mswHttp.put("/api/pages/home/hero", () => problem(502)));
+  // The card observes its hero, so invalidating it loads it again.
+  it("invalidates the hero after a failure, as it may have changed anyway", async () => {
+    server.use(mswHttp.put("/api/pages/home/hero", () => problem(412)));
     const { queryClient, uploadHero } = setUp();
 
-    await expect(uploadHero.mutateAsync(imageFile())).rejects.toThrow();
+    await expect(uploadHero.mutateAsync({ etag, file: imageFile() })).rejects.toThrow();
 
-    expect(queryClient.getQueryState(sitePagesQuery.queryKey)?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true);
   });
 });
 
 describe("useDeletePageHero", () => {
-  it("removes the hero from the pages without loading them again", async () => {
+  it("deletes the hero it shows, then marks it for loading again for its new ETag", async () => {
     const { deleteHero, queryClient } = setUp();
-    const requests = recordRequests();
+    const ifMatch = recordIfMatch();
 
-    await deleteHero.mutateAsync();
+    await deleteHero.mutateAsync({ etag });
 
-    expect(requests).toEqual(["GET /api/auth/csrf", "DELETE /api/pages/home/hero"]);
-    expect(queryClient.getQueryData(sitePagesQuery.queryKey)).toEqual(sitePages(null));
+    expect(ifMatch).toEqual([etag]);
+    expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true);
   });
 
-  it("invalidates the pages after a failure, as the hero may be deleted anyway", async () => {
+  it("invalidates the hero after a failure, as it may be deleted anyway", async () => {
     server.use(mswHttp.delete("/api/pages/home/hero", () => problem(502)));
     const { deleteHero, queryClient } = setUp();
 
-    await expect(deleteHero.mutateAsync()).rejects.toThrow();
+    await expect(deleteHero.mutateAsync({ etag })).rejects.toThrow();
 
-    expect(queryClient.getQueryState(sitePagesQuery.queryKey)?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true);
   });
 });

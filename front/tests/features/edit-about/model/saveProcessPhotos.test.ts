@@ -63,7 +63,7 @@ describe("saveProcessPhotos", () => {
       },
       ifMatch: etag,
     });
-    expect(saved).toEqual({ etag: '"new-tag"', processPhotos: [b, a] });
+    expect(saved).toEqual({ data: [b, a], etag: '"new-tag"' });
   });
 
   it("does not change the list when a file was not uploaded", async () => {

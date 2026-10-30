@@ -12,6 +12,7 @@ const auth = vi.hoisted(() => ({
 
 const photoService = vi.hoisted(() => ({
   deleteAboutPhoto: vi.fn(),
+  getAboutPhoto: vi.fn(),
   saveAboutPhoto: vi.fn(),
   updateAboutPhotoAlt: vi.fn(),
 }));
@@ -20,11 +21,13 @@ vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/about/photo/service", () => photoService);
 
 import { aboutPhotoRouter } from "#modules/about/photo/routes";
-import { NotFoundError, UnauthorizedError } from "#shared/http/errors";
+import { NotFoundError, PreconditionFailedError, UnauthorizedError } from "#shared/http/errors";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const photo = { ...apiImage("photo.png"), alt: "Portrait" };
 const uploadId = "11111111-1111-4111-8111-111111111111";
+const etag = '"read"';
+const savedEtag = '"saved"';
 
 let server: TestServer;
 
@@ -37,7 +40,12 @@ function sendPhoto(method: string, headers: Record<string, string>, body?: unkno
 }
 
 async function jsonHeaders(): Promise<Record<string, string>> {
-  return { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" };
+  return { ...(await ifMatchHeaders()), "Content-Type": "application/json" };
+}
+
+/** The headers of a signed-in admin with the ETag of the photo they read. */
+async function ifMatchHeaders(): Promise<Record<string, string>> {
+  return { ...(await adminHeaders(server.baseUrl)), "If-Match": etag };
 }
 
 beforeAll(async () => {
@@ -48,15 +56,33 @@ beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
   photoService.deleteAboutPhoto.mockResolvedValue(undefined);
-  photoService.saveAboutPhoto.mockResolvedValue({ created: false, photo });
-  photoService.updateAboutPhotoAlt.mockResolvedValue(photo);
+  photoService.getAboutPhoto.mockResolvedValue({ data: photo, etag });
+  photoService.saveAboutPhoto.mockResolvedValue({ created: false, data: photo, etag: savedEtag });
+  photoService.updateAboutPhotoAlt.mockResolvedValue({ data: photo, etag: savedEtag });
 });
 
 afterAll(() => server.close());
 
 describe("about photo routes", () => {
+  it("returns the photo to every visitor, with its ETag", async () => {
+    const response = await fetch(`${server.baseUrl}/api/about/photo`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(etag);
+    await expect(response.json()).resolves.toEqual({ photo });
+    expect(auth.verifySession).not.toHaveBeenCalled();
+  });
+
+  it("returns null before a photo is uploaded", async () => {
+    photoService.getAboutPhoto.mockResolvedValue({ data: null, etag });
+
+    const response = await fetch(`${server.baseUrl}/api/about/photo`);
+
+    await expect(response.json()).resolves.toEqual({ photo: null });
+  });
+
   it("returns 201 when the upload creates the photo", async () => {
-    photoService.saveAboutPhoto.mockResolvedValue({ created: true, photo });
+    photoService.saveAboutPhoto.mockResolvedValue({ created: true, data: photo, etag: savedEtag });
 
     const response = await sendPhoto("PUT", await jsonHeaders(), { alt: "Portrait", uploadId });
 
@@ -71,8 +97,27 @@ describe("about photo routes", () => {
     });
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(savedEtag);
     await expect(response.json()).resolves.toEqual({ photo });
-    expect(photoService.saveAboutPhoto).toHaveBeenCalledWith({ alt: "Portrait", uploadId });
+    expect(photoService.saveAboutPhoto).toHaveBeenCalledWith({ alt: "Portrait", uploadId }, etag);
+  });
+
+  it.each(["PUT", "PATCH", "DELETE"])("requires the ETag of the photo for %s", async (method) => {
+    const response = await sendPhoto(
+      method,
+      { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
+      method === "DELETE" ? undefined : { alt: "Portrait", uploadId },
+    );
+
+    expect(response.status).toBe(428);
+  });
+
+  it("refuses a photo changed since it was read", async () => {
+    photoService.saveAboutPhoto.mockRejectedValue(new PreconditionFailedError());
+
+    const response = await sendPhoto("PUT", await jsonHeaders(), { alt: "Portrait", uploadId });
+
+    expect(response.status).toBe(412);
   });
 
   it.each([
@@ -123,8 +168,9 @@ describe("about photo routes", () => {
     const response = await sendPhoto("PATCH", await jsonHeaders(), { alt: "New alt" });
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(savedEtag);
     await expect(response.json()).resolves.toEqual({ photo });
-    expect(photoService.updateAboutPhotoAlt).toHaveBeenCalledWith("New alt");
+    expect(photoService.updateAboutPhotoAlt).toHaveBeenCalledWith("New alt", etag);
   });
 
   it("returns 404 when updating the alt text without a photo", async () => {
@@ -136,9 +182,9 @@ describe("about photo routes", () => {
   });
 
   it("deletes the photo", async () => {
-    const response = await sendPhoto("DELETE", await adminHeaders(server.baseUrl));
+    const response = await sendPhoto("DELETE", await ifMatchHeaders());
 
     expect(response.status).toBe(204);
-    expect(photoService.deleteAboutPhoto).toHaveBeenCalled();
+    expect(photoService.deleteAboutPhoto).toHaveBeenCalledWith(etag);
   });
 });

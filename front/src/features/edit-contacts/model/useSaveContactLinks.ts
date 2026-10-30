@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { type ContactLinks, contactsQuery, replaceContactLinks } from "@/entities/contacts";
+import { contactLinksQuery, replaceContactLinks } from "@/entities/contacts";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 
 import { getSaveContactLinksErrorMessage } from "../lib/saveErrorMessages";
@@ -11,15 +11,15 @@ export const saveContactLinksFeedback: MutationFeedback = {
 };
 
 /**
- * Replaces all links, then loads the contacts again. That happens after a failed save too: a
- * request that failed may still have changed the contacts on the server.
+ * Replaces all links, then puts the saved links into the cache: the server returns them with
+ * their ETag, so the page need not load them again.
  */
 export function useSaveContactLinks() {
   const queryClient = useQueryClient();
 
   return useMutation({
     meta: { feedback: saveContactLinksFeedback },
-    mutationFn: (links: ContactLinks) => replaceContactLinks({ links }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: contactsQuery.queryKey }),
+    mutationFn: replaceContactLinks,
+    onSuccess: (saved) => queryClient.setQueryData(contactLinksQuery.queryKey, saved),
   });
 }

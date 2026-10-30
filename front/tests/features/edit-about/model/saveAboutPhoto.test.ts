@@ -15,14 +15,23 @@ import {
 import { apiPhoto, imageFile } from "../../../support/images";
 import { recordRequests, server } from "../../../support/server";
 
-/** The body and the CSRF token of each request the API received, by `METHOD /path`. */
-let received: Record<string, { body: unknown; token: string | null }>;
+/** The ETag of the photo the form was made from, and of the photo each change saves. */
+const etag = '"read"';
+const savedEtag = '"saved"';
+
+/** The body, CSRF token and If-Match of each change the API received, by `METHOD /path`. */
+let received: Record<string, { body: unknown; ifMatch: string | null; token: string | null }>;
 
 function receive(request: Request, body: unknown) {
   received[`${request.method} ${new URL(request.url).pathname}`] = {
     body,
+    ifMatch: request.headers.get("If-Match"),
     token: request.headers.get("X-CSRF-Token"),
   };
+}
+
+function tagged(body: object) {
+  return HttpResponse.json(body, { headers: { ETag: savedEtag } });
 }
 
 beforeEach(() => {
@@ -30,15 +39,16 @@ beforeEach(() => {
   server.use(
     csrfHandler,
     uploadsHandler,
+    mswHttp.get("/api/about/photo", () => tagged({ photo: null })),
     mswHttp.put("/api/about/photo", async ({ request }) => {
       const body = (await request.json()) as { alt: string };
       receive(request, body);
-      return HttpResponse.json({ photo: apiPhoto(body.alt) });
+      return tagged({ photo: apiPhoto(body.alt) });
     }),
     mswHttp.patch("/api/about/photo", async ({ request }) => {
       const body = (await request.json()) as { alt: string };
       receive(request, body);
-      return HttpResponse.json({ photo: apiPhoto(body.alt) });
+      return tagged({ photo: apiPhoto(body.alt) });
     }),
     mswHttp.delete("/api/about/photo", ({ request }) => {
       receive(request, null);
@@ -49,41 +59,58 @@ beforeEach(() => {
 
 describe("saveAboutPhoto", () => {
   it("uploads the file, then puts the photo by its upload with its description", async () => {
-    await saveAboutPhoto({ alt: "Портрет", file: imageFile(), type: "upload" });
+    const saved = await saveAboutPhoto({
+      change: { alt: "Портрет", file: imageFile(), type: "upload" },
+      etag,
+    });
 
     expect(received).toEqual({
       "PUT /api/about/photo": {
         body: { alt: "Портрет", uploadId },
+        ifMatch: etag,
         token: csrfToken,
       },
     });
+    expect(saved).toEqual({ data: apiPhoto("Портрет"), etag: savedEtag });
   });
 
   it("updates only the description of the photo", async () => {
-    await saveAboutPhoto({ alt: "Автопортрет", type: "updateAlt" });
+    const saved = await saveAboutPhoto({ change: { alt: "Автопортрет", type: "updateAlt" }, etag });
 
     expect(received).toEqual({
-      "PATCH /api/about/photo": { body: { alt: "Автопортрет" }, token: csrfToken },
+      "PATCH /api/about/photo": { body: { alt: "Автопортрет" }, ifMatch: etag, token: csrfToken },
     });
+    expect(saved).toEqual({ data: apiPhoto("Автопортрет"), etag: savedEtag });
   });
 
-  it("deletes the photo", async () => {
-    await saveAboutPhoto({ type: "delete" });
+  it("deletes the photo, then reads the empty photo for the ETag of the next change", async () => {
+    const requests = recordRequests();
 
-    expect(received).toEqual({ "DELETE /api/about/photo": { body: null, token: csrfToken } });
+    const saved = await saveAboutPhoto({ change: { type: "delete" }, etag });
+
+    expect(received).toEqual({
+      "DELETE /api/about/photo": { body: null, ifMatch: etag, token: csrfToken },
+    });
+    expect(requests.slice(-2)).toEqual(["DELETE /api/about/photo", "GET /api/about/photo"]);
+    expect(saved).toEqual({ data: null, etag: savedEtag });
   });
 
   it("rejects with the error of the server", async () => {
-    server.use(mswHttp.delete("/api/about/photo", () => problem(503)));
+    server.use(mswHttp.delete("/api/about/photo", () => problem(412)));
 
-    await expect(saveAboutPhoto({ type: "delete" })).rejects.toBeInstanceOf(HttpError);
+    await expect(saveAboutPhoto({ change: { type: "delete" }, etag })).rejects.toMatchObject({
+      status: 412,
+    });
+    await expect(saveAboutPhoto({ change: { type: "delete" }, etag })).rejects.toBeInstanceOf(
+      HttpError,
+    );
   });
 
   it("sends nothing when the CSRF token was not received", async () => {
     server.use(mswHttp.get("/api/auth/csrf", () => HttpResponse.error()));
     const requests = recordRequests();
 
-    await expect(saveAboutPhoto({ type: "delete" })).rejects.toThrow();
+    await expect(saveAboutPhoto({ change: { type: "delete" }, etag })).rejects.toThrow();
     expect(requests).toEqual(["GET /api/auth/csrf"]);
   });
 });

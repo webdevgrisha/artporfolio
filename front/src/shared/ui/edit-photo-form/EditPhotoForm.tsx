@@ -1,16 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import type { Tagged } from "@/shared/api/http";
 import type { Photo } from "@/shared/api/photo";
 import {
   getPhotoChange,
-  type PhotoChange,
   type PhotoFormValues,
   photoFieldsShape,
   refinePhotoAlt,
+  type SavePhotoParams,
   toPhotoFormValues,
-  toSavedPhotoValues,
 } from "@/shared/lib/photoForm";
 import { EditForm } from "@/shared/ui/edit-form";
 import { PhotoFields } from "@/shared/ui/photo-fields";
@@ -21,18 +22,24 @@ const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhotoAlt);
 interface EditPhotoFormProps {
   className?: string;
   label: string;
-  /** Sends the change to the server and shows its result; rejects when it was not saved. */
-  onSave: (change: PhotoChange) => Promise<unknown>;
-  /** The photo as stored on the server. */
-  photo: Photo | null;
+  /**
+   * Sends the change to the server and shows its result; resolves with the photo now saved and its
+   * ETag, and rejects when it was not saved.
+   */
+  onSave: (params: SavePhotoParams) => Promise<Tagged<Photo | null>>;
+  /** The photo as stored on the server when the form opens, with its ETag. */
+  photo: Tagged<Photo | null>;
   /** The toast id of `onSave`, for the result of a save with nothing to send. */
   toastId: string;
 }
 
 /** Edits a single photo with its description, such as «Моё фото» or the contacts photo. */
 export function EditPhotoForm({ className, label, onSave, photo, toastId }: EditPhotoFormProps) {
+  // The photo the fields were made from. Its ETag goes with the save, so a photo changed since,
+  // for example in another tab, is not overwritten.
+  const [savedPhoto, setSavedPhoto] = React.useState(photo);
   const form = useForm<PhotoFormValues>({
-    defaultValues: toPhotoFormValues(photo),
+    defaultValues: toPhotoFormValues(photo.data),
     resolver: zodResolver(photoFormSchema),
   });
   const {
@@ -52,14 +59,17 @@ export function EditPhotoForm({ className, label, onSave, photo, toastId }: Edit
       return;
     }
 
+    let saved: Tagged<Photo | null>;
+
     try {
-      await onSave(change);
+      saved = await onSave({ change, etag: savedPhoto.etag });
     } catch {
       // `onSave` has shown the error; the changes stay, so the save can be repeated.
       return;
     }
 
-    reset(toSavedPhotoValues(values));
+    setSavedPhoto(saved);
+    reset(toPhotoFormValues(saved.data));
   }
 
   return (
@@ -72,7 +82,7 @@ export function EditPhotoForm({ className, label, onSave, photo, toastId }: Edit
         onRevert={() => reset()}
         onSubmit={handleSubmit(saveChanges)}
       >
-        <PhotoFields label={label} isSaving={isSubmitting} serverPhoto={photo} />
+        <PhotoFields label={label} isSaving={isSubmitting} serverPhoto={savedPhoto.data} />
       </EditForm>
     </FormProvider>
   );

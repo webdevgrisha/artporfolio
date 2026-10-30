@@ -34,9 +34,11 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
-import { NotFoundError } from "#shared/http/errors";
+import { NotFoundError, PreconditionFailedError } from "#shared/http/errors";
+import { entityTag } from "#shared/http/etag";
 import {
   deletePhoto,
+  getPhoto,
   photoAltBodySchema,
   photoSlot,
   readPhoto,
@@ -88,6 +90,10 @@ const returnedPhoto = {
   },
 };
 
+/** The tags of the empty slot and of the slot with `storedPhoto`, as a client read them. */
+const emptyTag = entityTag(null);
+const storedTag = entityTag(storedPhoto);
+
 function snapshotWith(photo: unknown) {
   return { get: () => photo } as unknown as DocumentSnapshot;
 }
@@ -104,7 +110,7 @@ function returned(photo: unknown) {
 }
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   storage.deleteFolder.mockResolvedValue(undefined);
   uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
   uploads.publishUpload.mockResolvedValue(published);
@@ -120,17 +126,26 @@ describe("photo", () => {
     expect(returned(storedPhoto)).toEqual(returnedPhoto);
   });
 
+  it("tags the photo by what the slot stores, null while it is empty", async () => {
+    document.get.mockResolvedValue(snapshotWith(storedPhoto));
+    await expect(getPhoto(slot)).resolves.toEqual({
+      data: returnedPhoto,
+      etag: entityTag(storedPhoto),
+    });
+
+    document.get.mockResolvedValue(snapshotWith(undefined));
+    await expect(getPhoto(slot)).resolves.toEqual({ data: null, etag: emptyTag });
+  });
+
   it("puts the upload into a new version folder of the slot and uses it up", async () => {
-    const { created, photo } = await savePhoto(slot, { alt: "Portrait", uploadId });
+    const { created, data, etag } = await savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag);
+    const stored = { ...published, alt: "Portrait" };
 
     expect(created).toBe(true);
     expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "contacts/photo");
-    expect(transaction.set).toHaveBeenCalledWith(
-      document,
-      { photo: { ...published, alt: "Portrait" } },
-      { merge: true },
-    );
-    expect(photo.sources.avif[0]).toEqual({
+    expect(transaction.set).toHaveBeenCalledWith(document, { photo: stored }, { merge: true });
+    expect(etag).toBe(entityTag(stored));
+    expect(data.sources.avif[0]).toEqual({
       url: "https://storage.test/contacts/photo/new-version/960.avif?token=token",
       width: 960,
     });
@@ -139,7 +154,7 @@ describe("photo", () => {
   });
 
   it("reads the previous photo in the transaction that records the new one", async () => {
-    await savePhoto(slot, { alt: "Portrait", uploadId });
+    await savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag);
 
     expect(transaction.get).toHaveBeenCalledWith(document);
     expect(document.get).not.toHaveBeenCalled();
@@ -148,7 +163,7 @@ describe("photo", () => {
   it("deletes the previous version after saving the new one", async () => {
     storedAs(storedPhoto);
 
-    const { created } = await savePhoto(slot, { alt: "Portrait", uploadId });
+    const { created } = await savePhoto(slot, { alt: "Portrait", uploadId }, storedTag);
 
     expect(created).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/old-version");
@@ -161,15 +176,15 @@ describe("photo", () => {
     storedAs(storedPhoto);
     storage.deleteFolder.mockRejectedValue(new Error("Storage is unavailable"));
 
-    await expect(savePhoto(slot, { alt: "Portrait", uploadId })).resolves.toMatchObject({
-      photo: { alt: "Portrait" },
+    await expect(savePhoto(slot, { alt: "Portrait", uploadId }, storedTag)).resolves.toMatchObject({
+      data: { alt: "Portrait" },
     });
   });
 
   it("records nothing when the upload cannot be published", async () => {
     uploads.publishUpload.mockRejectedValue(new Error("There is no upload"));
 
-    await expect(savePhoto(slot, { alt: "Portrait", uploadId })).rejects.toThrow(
+    await expect(savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag)).rejects.toThrow(
       "There is no upload",
     );
 
@@ -181,10 +196,22 @@ describe("photo", () => {
       throw new Error("Firestore is unavailable");
     });
 
-    await expect(savePhoto(slot, { alt: "Portrait", uploadId })).rejects.toThrow(
+    await expect(savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag)).rejects.toThrow(
       "Firestore is unavailable",
     );
 
+    expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/new-version");
+    expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
+  });
+
+  it("refuses a photo saved against an outdated read and removes its copy", async () => {
+    storedAs(storedPhoto);
+
+    await expect(savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
+
+    expect(transaction.set).not.toHaveBeenCalled();
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/new-version");
     expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
   });
@@ -197,31 +224,49 @@ describe("photo", () => {
 
   it("updates only the alt text", async () => {
     storedAs(storedPhoto);
+    const stored = { ...storedPhoto, alt: "New alt" };
 
-    await expect(updatePhotoAlt(slot, "New alt")).resolves.toEqual({
-      ...returnedPhoto,
-      alt: "New alt",
+    await expect(updatePhotoAlt(slot, "New alt", storedTag)).resolves.toEqual({
+      data: { ...returnedPhoto, alt: "New alt" },
+      etag: entityTag(stored),
     });
-    expect(transaction.update).toHaveBeenCalledWith(document, { "photo.alt": "New alt" });
+    expect(transaction.set).toHaveBeenCalledWith(document, { photo: stored }, { merge: true });
   });
 
   it("cannot update the alt text without a photo", async () => {
-    await expect(updatePhotoAlt(slot, "New alt")).rejects.toBeInstanceOf(NotFoundError);
-    expect(transaction.update).not.toHaveBeenCalled();
+    await expect(updatePhotoAlt(slot, "New alt", emptyTag)).rejects.toBeInstanceOf(NotFoundError);
+    expect(transaction.set).not.toHaveBeenCalled();
+  });
+
+  it("refuses an alt text for a photo replaced since it was read", async () => {
+    storedAs({ ...storedPhoto, version: "newer-version" });
+
+    await expect(updatePhotoAlt(slot, "New alt", storedTag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
+    expect(transaction.set).not.toHaveBeenCalled();
   });
 
   it("deletes the photo and its files", async () => {
     storedAs(storedPhoto);
 
-    await deletePhoto(slot);
+    await deletePhoto(slot, storedTag);
 
     expect(transaction.update).toHaveBeenCalledWith(document, { photo: expect.anything() });
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/old-version");
   });
 
   it("does nothing when deleting a missing photo", async () => {
-    await deletePhoto(slot);
+    await deletePhoto(slot, emptyTag);
 
+    expect(transaction.update).not.toHaveBeenCalled();
+    expect(storage.deleteFolder).not.toHaveBeenCalled();
+  });
+
+  it("refuses to delete a photo uploaded since the slot was read empty", async () => {
+    storedAs(storedPhoto);
+
+    await expect(deletePhoto(slot, emptyTag)).rejects.toBeInstanceOf(PreconditionFailedError);
     expect(transaction.update).not.toHaveBeenCalled();
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });

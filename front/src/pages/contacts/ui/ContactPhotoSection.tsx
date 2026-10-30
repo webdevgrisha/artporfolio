@@ -1,13 +1,13 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { contactsQuery } from "@/entities/contacts";
+import { contactPhotoQuery } from "@/entities/contacts";
 import { EditContactPhotoForm } from "@/features/edit-contacts";
 
 import styles from "./ContactsPage.module.css";
 
 export function ContactPhotoSection() {
-  // The loader of the page has fetched the data, so this never suspends.
-  const { data } = useSuspenseQuery(contactsQuery);
+  // The loader of the section has fetched the data, so this never suspends.
+  const { data: photo } = useSuspenseQuery(contactPhotoQuery);
 
-  return <EditContactPhotoForm className={styles.form} photo={data.photo} />;
+  return <EditContactPhotoForm className={styles.form} photo={photo} />;
 }

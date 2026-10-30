@@ -1,13 +1,13 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { aboutQuery } from "@/entities/about";
+import { aboutTextQuery } from "@/entities/about";
 import { EditAboutTextForm } from "@/features/edit-about";
 
 import styles from "./AboutPage.module.css";
 
 export function AboutTextSection() {
-  // The loader of the page has fetched the data, so this never suspends.
-  const { data: about } = useSuspenseQuery(aboutQuery);
+  // The loader of the section has fetched the data, so this never suspends.
+  const { data: text } = useSuspenseQuery(aboutTextQuery);
 
-  return <EditAboutTextForm className={styles.form} text={about.text} />;
+  return <EditAboutTextForm className={styles.form} text={text} />;
 }

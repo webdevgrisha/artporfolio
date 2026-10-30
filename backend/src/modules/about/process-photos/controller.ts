@@ -11,9 +11,9 @@ export const listPhotos: RequestHandler<object, ProcessPhotosResponse> = async (
   _request,
   response,
 ) => {
-  const { etag, processPhotos } = await listProcessPhotos();
+  const { data, etag } = await listProcessPhotos();
 
-  response.status(200).set("ETag", etag).json({ processPhotos });
+  response.status(200).set("ETag", etag).json({ processPhotos: data });
 };
 
 export const replacePhotos: RequestHandler<
@@ -21,10 +21,10 @@ export const replacePhotos: RequestHandler<
   ProcessPhotosResponse,
   ProcessPhotosBody
 > = async (request, response) => {
-  const { etag, processPhotos } = await replaceProcessPhotos(
+  const { data, etag } = await replaceProcessPhotos(
     request.body.processPhotos,
     ifMatchHeader(request),
   );
 
-  response.status(200).set("ETag", etag).json({ processPhotos });
+  response.status(200).set("ETag", etag).json({ processPhotos: data });
 };

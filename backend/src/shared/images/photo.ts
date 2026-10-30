@@ -2,7 +2,15 @@ import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firesto
 import { z } from "zod";
 
 import { NotFoundError } from "#shared/http/errors";
-import { changeSlot, clearSlot, fillSlot, type ImageSlot, readSlot } from "#shared/images/slot";
+import type { Tagged } from "#shared/http/etag";
+import {
+  changeSlot,
+  clearSlot,
+  fillSlot,
+  getSlot,
+  type ImageSlot,
+  readSlot,
+} from "#shared/images/slot";
 import { imageSchema, storedImageSchema, toImage } from "#shared/images/storage";
 import { uploadIdSchema } from "#shared/images/uploads";
 
@@ -36,19 +44,22 @@ export const photoSchema = imageSchema.extend({ alt: z.string() });
 
 export const photoResponseSchema = z.object({ photo: photoSchema });
 
+/** The photo of a slot as `GET` returns it: null until one is uploaded. */
+export const slotPhotoResponseSchema = z.object({ photo: photoSchema.nullable() });
+
 export type PhotoBody = z.infer<typeof photoBodySchema>;
 export type PhotoAltBody = z.infer<typeof photoAltBodySchema>;
 export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
 export type Photo = z.infer<typeof photoSchema>;
 export type PhotoResponse = z.infer<typeof photoResponseSchema>;
+export type SlotPhotoResponse = z.infer<typeof slotPhotoResponseSchema>;
 
 /** A single photo with its alt text, such as «My photo» or the contact photo. */
 export type PhotoSlot = ImageSlot<StoredPhoto>;
 
-/** The saved photo, and whether it is the first one rather than a replacement. */
-export interface SavedPhoto {
+/** The saved photo with its tag, and whether it is the first one rather than a replacement. */
+export interface SavedPhoto extends Tagged<Photo> {
   created: boolean;
-  photo: Photo;
 }
 
 /** A photo slot in a field of `document`, with its versions in the Storage folder `folder`. */
@@ -69,27 +80,43 @@ export function toPhoto(photo: StoredPhoto): Photo {
   return { ...toImage(photo), alt: photo.alt };
 }
 
+/** The photo of the slot, `null` while it is empty, with the entity tag for If-Match. */
+export async function getPhoto(slot: PhotoSlot): Promise<Tagged<Photo | null>> {
+  const { data, etag } = await getSlot(slot);
+
+  return { data: data && toPhoto(data), etag };
+}
+
 /** Puts the uploaded photo with its alt text in the slot, replacing the previous one. */
 export async function savePhoto(
   slot: PhotoSlot,
   { alt, uploadId }: PhotoBody,
+  ifMatch: string,
 ): Promise<SavedPhoto> {
-  const { created, stored } = await fillSlot(slot, uploadId, (image) => ({ ...image, alt }));
+  const { created, data, etag } = await fillSlot(slot, uploadId, ifMatch, (image) => ({
+    ...image,
+    alt,
+  }));
 
-  return { created, photo: toPhoto(stored) };
+  return { created, data: toPhoto(data), etag };
 }
 
-export function updatePhotoAlt(slot: PhotoSlot, alt: string): Promise<Photo> {
-  return changeSlot(slot, (photo, transaction, document) => {
+export async function updatePhotoAlt(
+  slot: PhotoSlot,
+  alt: string,
+  ifMatch: string,
+): Promise<Tagged<Photo>> {
+  const { data, etag } = await changeSlot(slot, ifMatch, (photo) => {
     if (!photo) {
       throw new NotFoundError("There is no photo");
     }
 
-    transaction.update(document, { [`${slot.field}.alt`]: alt });
-    return toPhoto({ ...photo, alt });
+    return { ...photo, alt };
   });
+
+  return { data: toPhoto(data), etag };
 }
 
-export function deletePhoto(slot: PhotoSlot): Promise<void> {
-  return clearSlot(slot);
+export function deletePhoto(slot: PhotoSlot, ifMatch: string): Promise<void> {
+  return clearSlot(slot, ifMatch);
 }

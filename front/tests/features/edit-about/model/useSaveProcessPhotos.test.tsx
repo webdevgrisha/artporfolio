@@ -22,7 +22,7 @@ const etag = '"list-tag"';
 
 function setUp() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  queryClient.setQueryData(processPhotosQuery.queryKey, { etag, processPhotos: [a, b] });
+  queryClient.setQueryData(processPhotosQuery.queryKey, { data: [a, b], etag });
 
   function wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
@@ -55,8 +55,8 @@ describe("useSaveProcessPhotos", () => {
     await saveProcessPhotos.mutateAsync(keepB());
 
     expect(queryClient.getQueryData(processPhotosQuery.queryKey)).toEqual({
+      data: [b],
       etag: '"new-tag"',
-      processPhotos: [b],
     });
   });
 
@@ -67,8 +67,8 @@ describe("useSaveProcessPhotos", () => {
     await expect(saveProcessPhotos.mutateAsync(keepB())).rejects.toBeInstanceOf(HttpError);
 
     expect(queryClient.getQueryData(processPhotosQuery.queryKey)).toEqual({
+      data: [a, b],
       etag,
-      processPhotos: [a, b],
     });
   });
 });

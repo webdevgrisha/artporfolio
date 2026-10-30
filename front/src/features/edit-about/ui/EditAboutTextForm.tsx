@@ -1,7 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 import type { AboutText } from "@/entities/about";
+import type { Tagged } from "@/shared/api/http";
 import { EditForm } from "@/shared/ui/edit-form";
 import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
@@ -11,13 +13,16 @@ import { AboutTextFields } from "./AboutTextFields";
 
 interface EditAboutTextFormProps {
   className?: string;
-  /** The texts as stored on the server. */
-  text: AboutText;
+  /** The texts as stored on the server when the form opens, with their ETag. */
+  text: Tagged<AboutText>;
 }
 
 export function EditAboutTextForm({ className, text }: EditAboutTextFormProps) {
+  // The texts the fields were made from. Their ETag goes with the save, so texts changed since,
+  // for example in another tab, are not overwritten.
+  const [savedText, setSavedText] = React.useState(text);
   const form = useForm<AboutTextFormValues>({
-    defaultValues: text,
+    defaultValues: text.data,
     resolver: zodResolver(aboutTextFormSchema),
   });
   const {
@@ -33,15 +38,18 @@ export function EditAboutTextForm({ className, text }: EditAboutTextFormProps) {
       return;
     }
 
+    let saved: Tagged<AboutText>;
+
     try {
       // The server replaces all texts at once.
-      await saveText.mutateAsync(values);
+      saved = await saveText.mutateAsync({ etag: savedText.etag, text: values });
     } catch {
       // The mutation has shown the error; the changes stay, so the save can be repeated.
       return;
     }
 
-    reset(values);
+    setSavedText(saved);
+    reset(saved.data);
   }
 
   return (

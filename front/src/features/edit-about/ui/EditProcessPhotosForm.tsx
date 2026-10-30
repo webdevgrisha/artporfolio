@@ -2,7 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
-import type { ProcessPhotoList } from "@/entities/about";
+import type { ProcessPhoto } from "@/entities/about";
+import type { Tagged } from "@/shared/api/http";
 import { EditForm } from "@/shared/ui/edit-form";
 import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
@@ -17,7 +18,7 @@ import { ProcessPhotoFields } from "./ProcessPhotoFields";
 interface EditProcessPhotosFormProps {
   className?: string;
   /** The process photos as stored on the server when the form opens. */
-  list: ProcessPhotoList;
+  list: Tagged<ProcessPhoto[]>;
 }
 
 export function EditProcessPhotosForm({ className, list }: EditProcessPhotosFormProps) {
@@ -25,7 +26,7 @@ export function EditProcessPhotosForm({ className, list }: EditProcessPhotosForm
   // example in another tab, is not overwritten.
   const [savedList, setSavedList] = React.useState(list);
   const form = useForm<ProcessPhotosFormValues>({
-    defaultValues: { processPhotos: toProcessPhotoRows(list.processPhotos) },
+    defaultValues: { processPhotos: toProcessPhotoRows(list.data) },
     resolver: zodResolver(processPhotosFormSchema),
   });
   const {
@@ -41,7 +42,7 @@ export function EditProcessPhotosForm({ className, list }: EditProcessPhotosForm
       return;
     }
 
-    let saved: ProcessPhotoList;
+    let saved: Tagged<ProcessPhoto[]>;
 
     try {
       saved = await saveProcessPhotos.mutateAsync({
@@ -54,7 +55,7 @@ export function EditProcessPhotosForm({ className, list }: EditProcessPhotosForm
     }
 
     setSavedList(saved);
-    reset({ processPhotos: toProcessPhotoRows(saved.processPhotos) });
+    reset({ processPhotos: toProcessPhotoRows(saved.data) });
   }
 
   return (
@@ -67,7 +68,7 @@ export function EditProcessPhotosForm({ className, list }: EditProcessPhotosForm
         onRevert={() => reset()}
         onSubmit={handleSubmit(saveChanges)}
       >
-        <ProcessPhotoFields isSaving={isSubmitting} savedPhotos={savedList.processPhotos} />
+        <ProcessPhotoFields isSaving={isSubmitting} savedPhotos={savedList.data} />
       </EditForm>
     </FormProvider>
   );

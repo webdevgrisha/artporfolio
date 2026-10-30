@@ -11,8 +11,8 @@ import {
   storedProcessPhotoSchema,
 } from "#modules/about/process-photos/schema";
 import { firestore } from "#shared/firebase/firestore";
-import { PreconditionFailedError, UnprocessableContentError } from "#shared/http/errors";
-import { entityTag, matchesIfMatch } from "#shared/http/etag";
+import { UnprocessableContentError } from "#shared/http/errors";
+import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { toPhoto } from "#shared/images/photo";
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
 import { deleteUploadsOrWarn, publishUpload } from "#shared/images/uploads";
@@ -21,12 +21,6 @@ import { deleteUploadsOrWarn, publishUpload } from "#shared/images/uploads";
 const field = "processPhotos";
 
 const storedProcessPhotosSchema = z.array(storedProcessPhotoSchema);
-
-/** The photos in their order, and the entity tag of the list for If-Match. */
-export interface ProcessPhotoList {
-  etag: string;
-  processPhotos: ProcessPhoto[];
-}
 
 /** A photo of the new list: the id it will have, and its new file, if any. */
 interface PlannedPhoto {
@@ -57,12 +51,13 @@ export function toProcessPhoto(photo: StoredProcessPhoto): ProcessPhoto {
   return { ...toPhoto(photo), id: photo.id };
 }
 
-function toProcessPhotoList(photos: StoredProcessPhoto[]): ProcessPhotoList {
+/** The photos in their order, and the entity tag of the list for If-Match. */
+function toProcessPhotoList(photos: StoredProcessPhoto[]): Tagged<ProcessPhoto[]> {
   // The tag follows the stored data, so any change of the list, by any request, changes it.
-  return { etag: entityTag(photos), processPhotos: photos.map(toProcessPhoto) };
+  return { data: photos.map(toProcessPhoto), etag: entityTag(photos) };
 }
 
-export async function listProcessPhotos(): Promise<ProcessPhotoList> {
+export async function listProcessPhotos(): Promise<Tagged<ProcessPhoto[]>> {
   return toProcessPhotoList(readProcessPhotos(await aboutDocument().get()));
 }
 
@@ -149,7 +144,7 @@ async function deleteUnusedFiles(
 export async function replaceProcessPhotos(
   items: ProcessPhotoItem[],
   ifMatch: string,
-): Promise<ProcessPhotoList> {
+): Promise<Tagged<ProcessPhoto[]>> {
   const planned = items.map(toPlannedPhoto);
   const images = await publishFiles(planned);
   let saved: StoredProcessPhoto[];
@@ -160,9 +155,7 @@ export async function replaceProcessPhotos(
       const document = aboutDocument();
       const current = readProcessPhotos(await transaction.get(document));
 
-      if (!matchesIfMatch(ifMatch, entityTag(current))) {
-        throw new PreconditionFailedError("The process photos have changed since they were read");
-      }
+      assertIfMatch(ifMatch, current);
 
       const next = buildPhotos(planned, current, images);
       // Merging keeps the other fields of the document; the array itself is replaced.

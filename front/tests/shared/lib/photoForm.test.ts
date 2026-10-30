@@ -8,7 +8,6 @@ import {
   photoFieldsShape,
   refinePhotoAlt,
   toPhotoFormValues,
-  toSavedPhotoValues,
 } from "@/shared/lib/photoForm";
 
 import { apiPhoto, imageFile } from "../../support/images";
@@ -45,17 +44,6 @@ describe("photo form fields", () => {
       photoAlt: "Портрет",
     });
     expect(toPhotoFormValues(null)).toEqual({ photo: null, photoAlt: "" });
-  });
-
-  it("keeps a saved file with its description and drops the description of a deleted photo", () => {
-    expect(toSavedPhotoValues({ photo: imageFile(), photoAlt: "Портрет" })).toEqual({
-      photo: savedImage,
-      photoAlt: "Портрет",
-    });
-    expect(toSavedPhotoValues({ photo: null, photoAlt: "Портрет" })).toEqual({
-      photo: null,
-      photoAlt: "",
-    });
   });
 });
 

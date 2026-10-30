@@ -2,6 +2,8 @@ import type { DocumentSnapshot } from "firebase-admin/firestore";
 
 import { contactsDocument } from "#modules/contacts/document";
 import { type ContactLinks, storedContactLinksSchema } from "#modules/contacts/links/schema";
+import { firestore } from "#shared/firebase/firestore";
+import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 
 const emptyLinks: ContactLinks = {
   email: "",
@@ -18,11 +20,25 @@ export function readContactLinks(snapshot: DocumentSnapshot): ContactLinks {
   return storedContactLinksSchema.parse({ ...emptyLinks, ...snapshot.data() });
 }
 
-export async function getContactLinks(): Promise<ContactLinks> {
-  return readContactLinks(await contactsDocument().get());
+/** The links with the entity tag for If-Match; the tag follows the stored links. */
+export async function getContactLinks(): Promise<Tagged<ContactLinks>> {
+  const links = readContactLinks(await contactsDocument().get());
+
+  return { data: links, etag: entityTag(links) };
 }
 
-export async function saveContactLinks(links: ContactLinks): Promise<void> {
-  // Merging keeps the photo, which lives in the same document.
-  await contactsDocument().set(links, { merge: true });
+/** Replaces the links while they are still the ones the client read (`ifMatch`). */
+export async function replaceContactLinks(
+  links: ContactLinks,
+  ifMatch: string,
+): Promise<Tagged<ContactLinks>> {
+  await firestore().runTransaction(async (transaction) => {
+    const document = contactsDocument();
+
+    assertIfMatch(ifMatch, readContactLinks(await transaction.get(document)));
+    // Merging keeps the photo, which lives in the same document.
+    transaction.set(document, links, { merge: true });
+  });
+
+  return { data: links, etag: entityTag(links) };
 }

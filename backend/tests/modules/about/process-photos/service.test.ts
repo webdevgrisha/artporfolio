@@ -110,13 +110,13 @@ describe("listProcessPhotos", () => {
     storedAs(undefined);
 
     await expect(listProcessPhotos()).resolves.toEqual({
+      data: [],
       etag: entityTag([]),
-      processPhotos: [],
     });
   });
 
   it("lists the photos in order with download URLs", async () => {
-    const { processPhotos: photos } = await listProcessPhotos();
+    const { data: photos } = await listProcessPhotos();
 
     expect(photos.map((photo) => photo.id)).toEqual([firstId, secondId]);
     expect(photos[0]?.sources.avif[0]?.url).toBe(
@@ -141,7 +141,7 @@ describe("replaceProcessPhotos", () => {
       { alt: "Second", id: secondId },
       { alt: "First", id: firstId },
     ]);
-    expect(list.processPhotos.map((photo) => photo.id)).toEqual([secondId, firstId]);
+    expect(list.data.map((photo) => photo.id)).toEqual([secondId, firstId]);
     expect(list.etag).toBe(entityTag(writtenPhotos()));
     expect(uploads.publishUpload).not.toHaveBeenCalled();
     expect(storage.deleteFolder).not.toHaveBeenCalled();
@@ -156,7 +156,7 @@ describe("replaceProcessPhotos", () => {
       ],
       readTag(),
     );
-    const added = list.processPhotos[2];
+    const added = list.data[2];
 
     expect(uploads.publishUpload).toHaveBeenCalledWith(
       uploadId,

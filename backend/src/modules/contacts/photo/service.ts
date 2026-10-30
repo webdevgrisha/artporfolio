@@ -1,8 +1,10 @@
 import type { DocumentSnapshot } from "firebase-admin/firestore";
 
 import { contactsDocument } from "#modules/contacts/document";
+import type { Tagged } from "#shared/http/etag";
 import {
   deletePhoto,
+  getPhoto,
   type Photo,
   type PhotoBody,
   photoSlot,
@@ -23,14 +25,18 @@ export function readContactPhoto(snapshot: DocumentSnapshot): StoredPhoto | null
   return readPhoto(contactPhoto, snapshot);
 }
 
-export function saveContactPhoto(body: PhotoBody): Promise<SavedPhoto> {
-  return savePhoto(contactPhoto, body);
+export function getContactPhoto(): Promise<Tagged<Photo | null>> {
+  return getPhoto(contactPhoto);
 }
 
-export function updateContactPhotoAlt(alt: string): Promise<Photo> {
-  return updatePhotoAlt(contactPhoto, alt);
+export function saveContactPhoto(body: PhotoBody, ifMatch: string): Promise<SavedPhoto> {
+  return savePhoto(contactPhoto, body, ifMatch);
 }
 
-export function deleteContactPhoto(): Promise<void> {
-  return deletePhoto(contactPhoto);
+export function updateContactPhotoAlt(alt: string, ifMatch: string): Promise<Tagged<Photo>> {
+  return updatePhotoAlt(contactPhoto, alt, ifMatch);
+}
+
+export function deleteContactPhoto(ifMatch: string): Promise<void> {
+  return deletePhoto(contactPhoto, ifMatch);
 }

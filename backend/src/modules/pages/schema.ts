@@ -36,9 +36,13 @@ export const pagesResponseSchema = z.object({ pages: pagesSchema });
 
 export const heroResponseSchema = z.object({ hero: imageSchema });
 
+/** The hero of a page as `GET` returns it: null until one is uploaded. */
+export const pageHeroResponseSchema = z.object({ hero: imageSchema.nullable() });
+
 export type PageId = z.infer<typeof pageIdSchema>;
 export type PageParams = z.infer<typeof pageParamsSchema>;
 export type HeroBody = z.infer<typeof heroBodySchema>;
 export type Page = z.infer<typeof pageSchema>;
 export type PagesResponse = z.infer<typeof pagesResponseSchema>;
 export type HeroResponse = z.infer<typeof heroResponseSchema>;
+export type PageHeroResponse = z.infer<typeof pageHeroResponseSchema>;

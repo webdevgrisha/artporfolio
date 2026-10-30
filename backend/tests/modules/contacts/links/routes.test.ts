@@ -11,14 +11,14 @@ const auth = vi.hoisted(() => ({
 
 const linksService = vi.hoisted(() => ({
   getContactLinks: vi.fn(),
-  saveContactLinks: vi.fn(),
+  replaceContactLinks: vi.fn(),
 }));
 
 vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/contacts/links/service", () => linksService);
 
 import { linksRouter } from "#modules/contacts/links/routes";
-import { UnauthorizedError } from "#shared/http/errors";
+import { PreconditionFailedError, UnauthorizedError } from "#shared/http/errors";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 
@@ -29,12 +29,15 @@ const links = {
   youtube: "",
 };
 
+const etag = '"read"';
+const savedEtag = '"saved"';
+
 let server: TestServer;
 
 function putLinks(body: unknown, headers: Record<string, string>) {
   return fetch(`${server.baseUrl}/api/contacts/links`, {
     body: JSON.stringify(body),
-    headers: { "Content-Type": "application/json", ...headers },
+    headers: { "Content-Type": "application/json", "If-Match": etag, ...headers },
     method: "PUT",
   });
 }
@@ -46,17 +49,20 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  linksService.getContactLinks.mockResolvedValue(links);
-  linksService.saveContactLinks.mockResolvedValue(undefined);
+  linksService.getContactLinks.mockResolvedValue({ data: links, etag });
+  linksService.replaceContactLinks.mockImplementation((saved: unknown) =>
+    Promise.resolve({ data: saved, etag: savedEtag }),
+  );
 });
 
 afterAll(() => server.close());
 
 describe("contact links routes", () => {
-  it("returns the links without a session", async () => {
+  it("returns the links without a session, with their ETag", async () => {
     const response = await fetch(`${server.baseUrl}/api/contacts/links`);
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(etag);
     await expect(response.json()).resolves.toEqual({ links });
     expect(auth.verifySession).not.toHaveBeenCalled();
   });
@@ -69,8 +75,28 @@ describe("contact links routes", () => {
     const saved = { ...links, linkedin: "https://linkedin.com/in/artist" };
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(savedEtag);
     await expect(response.json()).resolves.toEqual({ links: saved });
-    expect(linksService.saveContactLinks).toHaveBeenCalledWith(saved);
+    expect(linksService.replaceContactLinks).toHaveBeenCalledWith(saved, etag);
+  });
+
+  it("requires the ETag of the links in If-Match", async () => {
+    const response = await fetch(`${server.baseUrl}/api/contacts/links`, {
+      body: JSON.stringify(links),
+      headers: { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
+      method: "PUT",
+    });
+
+    expect(response.status).toBe(428);
+    expect(linksService.replaceContactLinks).not.toHaveBeenCalled();
+  });
+
+  it("refuses links changed since they were read", async () => {
+    linksService.replaceContactLinks.mockRejectedValue(new PreconditionFailedError());
+
+    const response = await putLinks(links, await adminHeaders(server.baseUrl));
+
+    expect(response.status).toBe(412);
   });
 
   it("rejects saving without a session", async () => {
@@ -80,7 +106,7 @@ describe("contact links routes", () => {
     const response = await putLinks(links, headers);
 
     expect(response.status).toBe(401);
-    expect(linksService.saveContactLinks).not.toHaveBeenCalled();
+    expect(linksService.replaceContactLinks).not.toHaveBeenCalled();
   });
 
   it("rejects saving without a CSRF token", async () => {
@@ -90,7 +116,7 @@ describe("contact links routes", () => {
     });
 
     expect(response.status).toBe(403);
-    expect(linksService.saveContactLinks).not.toHaveBeenCalled();
+    expect(linksService.replaceContactLinks).not.toHaveBeenCalled();
   });
 
   it("rejects a body that is not JSON", async () => {
@@ -100,7 +126,7 @@ describe("contact links routes", () => {
     });
 
     expect(response.status).toBe(415);
-    expect(linksService.saveContactLinks).not.toHaveBeenCalled();
+    expect(linksService.replaceContactLinks).not.toHaveBeenCalled();
   });
 
   it("rejects invalid links", async () => {
@@ -110,6 +136,6 @@ describe("contact links routes", () => {
     );
 
     expect(response.status).toBe(400);
-    expect(linksService.saveContactLinks).not.toHaveBeenCalled();
+    expect(linksService.replaceContactLinks).not.toHaveBeenCalled();
   });
 });

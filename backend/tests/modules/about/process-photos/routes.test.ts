@@ -53,11 +53,8 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  service.listProcessPhotos.mockResolvedValue({ etag, processPhotos: [processPhoto] });
-  service.replaceProcessPhotos.mockResolvedValue({
-    etag: newEtag,
-    processPhotos: [processPhoto],
-  });
+  service.listProcessPhotos.mockResolvedValue({ data: [processPhoto], etag });
+  service.replaceProcessPhotos.mockResolvedValue({ data: [processPhoto], etag: newEtag });
 });
 
 afterAll(() => server.close());

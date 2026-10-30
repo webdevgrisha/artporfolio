@@ -39,13 +39,13 @@ describe("http", () => {
   it("sends an object as JSON with its headers and the CSRF token", async () => {
     let request: Request | undefined;
     server.use(
-      mswHttp.put("/api/items/1", ({ request: received }) => {
+      mswHttp.post("/api/items/1", ({ request: received }) => {
         request = received.clone();
         return HttpResponse.json({ name: "Холст" });
       }),
     );
 
-    await http.put({
+    await http.post({
       body: { name: "Холст" },
       headers: { "X-Request": "edit" },
       path: "/items/1",
@@ -88,7 +88,7 @@ describe("http", () => {
     );
 
     await expect(http.postVoid({ path: "/items/1/publish" })).resolves.toBeUndefined();
-    await expect(http.delete({ path: "/items/1" })).resolves.toBeUndefined();
+    await expect(http.deleteIfMatch({ etag: '"tag"', path: "/items/1" })).resolves.toBeUndefined();
   });
 
   it("rejects an error response with its status", async () => {
@@ -143,25 +143,46 @@ describe("http entity tags", () => {
     });
   });
 
-  it("sends a conditional change with If-Match and returns the new ETag", async () => {
+  it.each(["PUT", "PATCH"] as const)(
+    "sends a conditional %s with If-Match and returns the new ETag",
+    async (method) => {
+      let request: Request | undefined;
+      const handler = method === "PUT" ? mswHttp.put : mswHttp.patch;
+      server.use(
+        handler("/api/items", ({ request: received }) => {
+          request = received.clone();
+          return HttpResponse.json({ name: "Холст" }, { headers: { ETag: '"new-tag"' } });
+        }),
+      );
+      const send = method === "PUT" ? http.putIfMatch : http.patchIfMatch;
+
+      const result = await send.call(http, {
+        body: { name: "Холст" },
+        etag,
+        path: "/items",
+        schema: itemSchema,
+      });
+
+      expect(request?.method).toBe(method);
+      expect(request?.headers.get("If-Match")).toBe(etag);
+      expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
+      expect(result).toEqual({ data: { name: "Холст" }, etag: '"new-tag"' });
+    },
+  );
+
+  it("sends a conditional deletion with If-Match", async () => {
     let request: Request | undefined;
     server.use(
-      mswHttp.put("/api/items", ({ request: received }) => {
-        request = received.clone();
-        return HttpResponse.json({ name: "Холст" }, { headers: { ETag: '"new-tag"' } });
+      mswHttp.delete("/api/items/1", ({ request: received }) => {
+        request = received;
+        return new HttpResponse(null, { status: 204 });
       }),
     );
 
-    const result = await http.putIfMatch({
-      body: { name: "Холст" },
-      etag,
-      path: "/items",
-      schema: itemSchema,
-    });
+    await http.deleteIfMatch({ etag, path: "/items/1" });
 
     expect(request?.headers.get("If-Match")).toBe(etag);
     expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
-    expect(result).toEqual({ data: { name: "Холст" }, etag: '"new-tag"' });
   });
 
   it("rejects a response without the ETag it was asked for", async () => {
@@ -188,7 +209,7 @@ describe("http CSRF token", () => {
   beforeEach(() => {
     server.use(
       mswHttp.get("/api/items/1", () => HttpResponse.json({ name: "Холст" })),
-      mswHttp.delete("/api/items/:id", () => new HttpResponse(null, { status: 204 })),
+      mswHttp.post("/api/items/:id", () => new HttpResponse(null, { status: 204 })),
     );
   });
 
@@ -196,7 +217,7 @@ describe("http CSRF token", () => {
     const requests = recordRequests();
     const tokens = recordTokens();
 
-    await Promise.all([http.delete({ path: "/items/1" }), http.delete({ path: "/items/2" })]);
+    await Promise.all([http.postVoid({ path: "/items/1" }), http.postVoid({ path: "/items/2" })]);
     await http.get({ path: "/items/1", schema: itemSchema });
 
     expect(requests.filter((request) => request === "GET /api/auth/csrf")).toHaveLength(1);
@@ -206,49 +227,49 @@ describe("http CSRF token", () => {
   it("sends a change made without a session without asking for a token", async () => {
     const requests = recordRequests();
 
-    await http.delete({ path: "/items/1", withCsrfToken: false });
+    await http.postVoid({ path: "/items/1", withCsrfToken: false });
 
-    expect(requests).toEqual(["DELETE /api/items/1"]);
+    expect(requests).toEqual(["POST /api/items/1"]);
   });
 
   it("sends a change once more with a new token after the session changed", async () => {
     let session = "old";
     server.use(
       mswHttp.get("/api/auth/csrf", () => HttpResponse.json({ csrfToken: `token-${session}` })),
-      mswHttp.delete("/api/items/1", ({ request }) =>
+      mswHttp.post("/api/items/1", ({ request }) =>
         request.headers.get("X-CSRF-Token") === `token-${session}`
           ? new HttpResponse(null, { status: 204 })
           : problem(403),
       ),
     );
-    await http.delete({ path: "/items/1" });
+    await http.postVoid({ path: "/items/1" });
     session = "new";
     const tokens = recordTokens();
 
-    await expect(http.delete({ path: "/items/1" })).resolves.toBeUndefined();
+    await expect(http.postVoid({ path: "/items/1" })).resolves.toBeUndefined();
     expect(tokens).toEqual(["token-old", "token-new"]);
   });
 
   it("sends a change once more at most", async () => {
-    server.use(mswHttp.delete("/api/items/1", () => problem(403)));
+    server.use(mswHttp.post("/api/items/1", () => problem(403)));
     const tokens = recordTokens();
 
-    await expect(http.delete({ path: "/items/1" })).rejects.toMatchObject({ status: 403 });
+    await expect(http.postVoid({ path: "/items/1" })).rejects.toMatchObject({ status: 403 });
     expect(tokens).toHaveLength(2);
   });
 
   it("asks again after the token was not received", async () => {
     server.use(mswHttp.get("/api/auth/csrf", () => HttpResponse.error(), { once: true }));
 
-    await expect(http.delete({ path: "/items/1" })).rejects.toBeInstanceOf(NetworkError);
-    await expect(http.delete({ path: "/items/1" })).resolves.toBeUndefined();
+    await expect(http.postVoid({ path: "/items/1" })).rejects.toBeInstanceOf(NetworkError);
+    await expect(http.postVoid({ path: "/items/1" })).resolves.toBeUndefined();
   });
 
   it("rejects a change with the reason the token was not received", async () => {
     server.use(mswHttp.get("/api/auth/csrf", () => problem(401)));
     const requests = recordRequests();
 
-    await expect(http.delete({ path: "/items/1" })).rejects.toMatchObject({ status: 401 });
+    await expect(http.postVoid({ path: "/items/1" })).rejects.toMatchObject({ status: 401 });
     expect(requests).toEqual(["GET /api/auth/csrf"]);
   });
 });

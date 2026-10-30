@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { entityTag, matchesIfMatch } from "#shared/http/etag";
+import { PreconditionFailedError } from "#shared/http/errors";
+import { assertIfMatch, entityTag, matchesIfMatch } from "#shared/http/etag";
 
 describe("entityTag", () => {
   it("is a quoted strong tag that follows the data, not the order of its keys", () => {
@@ -27,5 +28,20 @@ describe("matchesIfMatch", () => {
   it("rejects another tag, and the weak form of the current one", () => {
     expect(matchesIfMatch('"old"', tag)).toBe(false);
     expect(matchesIfMatch(`W/${tag}`, tag)).toBe(false);
+  });
+});
+
+describe("assertIfMatch", () => {
+  it("passes a change made from the stored data and refuses one made from older data", () => {
+    const stored = { alt: "Sketch" };
+
+    expect(() => assertIfMatch(entityTag(stored), stored)).not.toThrow();
+    expect(() => assertIfMatch(entityTag({ alt: "Study" }), stored)).toThrow(
+      PreconditionFailedError,
+    );
+  });
+
+  it("tags an empty slot as null", () => {
+    expect(() => assertIfMatch(entityTag(null), null)).not.toThrow();
   });
 });

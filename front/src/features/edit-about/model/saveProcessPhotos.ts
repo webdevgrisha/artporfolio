@@ -1,8 +1,5 @@
-import {
-  type ProcessPhotoItem,
-  type ProcessPhotoList,
-  replaceProcessPhotos,
-} from "@/entities/about";
+import { type ProcessPhoto, type ProcessPhotoItem, replaceProcessPhotos } from "@/entities/about";
+import type { Tagged } from "@/shared/api/http";
 import { uploadImage } from "@/shared/api/upload";
 
 import type { ProcessPhotoRow } from "./processPhotosFormSchema";
@@ -28,7 +25,7 @@ async function toItem(row: ProcessPhotoRow): Promise<ProcessPhotoItem> {
 export async function saveProcessPhotos({
   etag,
   rows,
-}: SaveProcessPhotosParams): Promise<ProcessPhotoList> {
+}: SaveProcessPhotosParams): Promise<Tagged<ProcessPhoto[]>> {
   const processPhotos: ProcessPhotoItem[] = [];
 
   for (const row of rows) {

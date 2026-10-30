@@ -1,3 +1,4 @@
+import type { Tagged } from "@/shared/api/http";
 import type { Photo } from "@/shared/api/photo";
 import { EditPhotoForm } from "@/shared/ui/edit-photo-form";
 
@@ -5,8 +6,8 @@ import { saveAboutPhotoFeedback, useSaveAboutPhoto } from "../model/useSaveAbout
 
 interface EditAboutPhotoFormProps {
   className?: string;
-  /** «Моё фото» as stored on the server. */
-  photo: Photo | null;
+  /** «Моё фото» as stored on the server, with its ETag. */
+  photo: Tagged<Photo | null>;
 }
 
 export function EditAboutPhotoForm({ className, photo }: EditAboutPhotoFormProps) {
