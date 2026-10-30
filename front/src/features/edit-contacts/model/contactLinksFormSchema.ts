@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Mirrors the server rule in backend/src/modules/contacts/schema.ts.
+// Mirrors the server rule in backend/src/modules/contacts/links/schema.ts.
 const maxLinkLength = 2_048;
 
 /** An empty string hides the contact on the site. */

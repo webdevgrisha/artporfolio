@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { AboutText } from "@/entities/about";
 
-// Mirror the server rules in backend/src/modules/about/schema.ts.
+// Mirror the server rules in backend/src/modules/about/text/schema.ts.
 export const aboutTextMaxLengths: Readonly<Record<keyof AboutText, number>> = {
   about: 500,
   biography: 2_000,
