@@ -38,8 +38,11 @@ export const storedPhotoSchema = storedImageSchema.extend({
   alt: z.string(),
 });
 
-/** A photo as the API returns it, with download URLs in place of the stored paths. */
-export const photoSchema = imageSchema.extend({ alt: altSchema });
+/**
+ * A photo as the API returns it, with download URLs in place of the stored paths. The alt text is
+ * returned as it was saved, even if the rules have changed since.
+ */
+export const photoSchema = imageSchema.extend({ alt: z.string() });
 
 export const photoResponseSchema = z.object({ photo: photoSchema });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { aboutTextBodySchema } from "#modules/about/schema";
+import { aboutResponseSchema, aboutTextBodySchema } from "#modules/about/schema";
 
 const text = { about: "Иллюстратор.", biography: "Родилась в Минске.", creation: "Пишет маслом." };
 
@@ -34,5 +34,15 @@ describe("about text body", () => {
 
   it("rejects unknown fields", () => {
     expect(isValid({ ...text, title: "О себе" })).toBe(false);
+  });
+});
+
+describe("about response", () => {
+  it("describes a text saved before its limit was lowered", () => {
+    const savedText = { ...text, about: "a".repeat(1_000) };
+
+    expect(
+      aboutResponseSchema.safeParse({ photo: null, processPhotos: [], text: savedText }).success,
+    ).toBe(true);
   });
 });

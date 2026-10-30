@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { contactsBodySchema } from "#modules/contacts/schema";
+import { contactsBodySchema, contactsResponseSchema } from "#modules/contacts/schema";
+import { apiImage } from "../../support/images.js";
 
 const contacts = {
   email: "artist@example.com",
@@ -52,5 +53,16 @@ describe("contacts schema", () => {
 
   it("rejects unknown fields", () => {
     expect(isValid({ ...contacts, telegram: "https://t.me/artist" })).toBe(false);
+  });
+});
+
+describe("contacts response", () => {
+  it("describes links and an alt text saved under older rules", () => {
+    const response = {
+      contacts: { ...contacts, linkedin: "linkedin.com/in/artist" },
+      photo: { ...apiImage("photo.png"), alt: "" },
+    };
+
+    expect(contactsResponseSchema.safeParse(response).success).toBe(true);
   });
 });

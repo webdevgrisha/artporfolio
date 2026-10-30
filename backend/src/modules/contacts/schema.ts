@@ -23,8 +23,6 @@ const contactFields = {
   youtube: webLink,
 };
 
-export const contactsSchema = z.object(contactFields);
-
 export const contactsBodySchema = z.strictObject(contactFields);
 
 /**
@@ -32,6 +30,17 @@ export const contactsBodySchema = z.strictObject(contactFields);
  * links are saved, so tightening a rule later never makes saved links unreadable.
  */
 export const storedContactsSchema = z.object({
+  email: z.string(),
+  instagram: z.string(),
+  linkedin: z.string(),
+  youtube: z.string(),
+});
+
+/**
+ * The links as the API returns them: as they were saved, so only their shape is described. A
+ * link saved before a rule was tightened is returned unchanged.
+ */
+export const contactsSchema = z.object({
   email: z.string(),
   instagram: z.string(),
   linkedin: z.string(),

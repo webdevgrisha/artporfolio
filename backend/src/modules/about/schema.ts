@@ -21,8 +21,6 @@ const aboutTextFields = {
 };
 
 /** The texts of the About page. Every text is sent, empty when its section is hidden. */
-export const aboutTextSchema = z.object(aboutTextFields);
-
 export const aboutTextBodySchema = z.strictObject(aboutTextFields);
 
 /**
@@ -30,6 +28,16 @@ export const aboutTextBodySchema = z.strictObject(aboutTextFields);
  * texts are saved, so tightening a limit later never makes saved texts unreadable.
  */
 export const storedAboutTextSchema = z.object({
+  about: z.string(),
+  biography: z.string(),
+  creation: z.string(),
+});
+
+/**
+ * The texts as the API returns them: as they were saved, so only their shape is described. A text
+ * saved before a limit was lowered is returned unchanged.
+ */
+export const aboutTextSchema = z.object({
   about: z.string(),
   biography: z.string(),
   creation: z.string(),
