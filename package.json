@@ -42,9 +42,9 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "@vitest/coverage-v8": "5.0.5",
-    "firebase-tools": "15.30.2",
+    "firebase-tools": "15.34.2",
     "husky": "9.1.7",
-    "lint-staged": "17.5.1",
+    "lint-staged": "17.6.0",
     "vitest": "5.0.5"
   }
 }
