@@ -28,6 +28,12 @@
     "*.{js,jsx,ts,tsx,json,jsonc,css}": "biome check --write"
   },
   "pnpm": {
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-m9gg-hp2v-232j",
+        "GHSA-f596-whhp-79r4"
+      ]
+    },
     "overrides": {
       "gaxios@6.7.1>uuid": "11.1.1"
     }

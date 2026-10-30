@@ -3,6 +3,11 @@
 Production deployments run from the `production` GitHub Environment when a commit is pushed to
 `main`.
 
+CI also audits the production dependencies in a separate job, so a new advisory fails a check but
+does not block a deploy. An advisory that does not apply is ignored by its GHSA id in
+`pnpm.auditConfig` of the root `package.json`, with the reason next to the audit job in
+`.github/workflows/ci.yml`.
+
 ## GitHub Environment variables
 
 Configure the following variables in **Settings → Environments → production → Environment
