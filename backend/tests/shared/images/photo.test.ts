@@ -29,13 +29,15 @@ vi.mock("#shared/firebase/storage", () => storage);
 vi.mock("#shared/images/processing", () => ({ processImage }));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
+import type { DocumentSnapshot } from "firebase-admin/firestore";
 import { NotFoundError } from "#shared/http/errors";
 import {
   deletePhoto,
-  getPhoto,
   type PhotoSlot,
   photoAltBodySchema,
+  readPhoto,
   savePhoto,
+  toPhoto,
   updatePhotoAlt,
 } from "#shared/images/photo";
 
@@ -73,11 +75,19 @@ function encoded(format: "avif" | "webp", width: number) {
   return { data: Buffer.from(format), format, height: width / 2, width };
 }
 
-function storedAs(photo: unknown) {
-  const snapshot = { get: () => photo };
+function snapshotWith(photo: unknown) {
+  return { get: () => photo } as unknown as DocumentSnapshot;
+}
 
-  document.get.mockResolvedValue(snapshot);
-  transaction.get.mockResolvedValue(snapshot);
+function storedAs(photo: unknown) {
+  transaction.get.mockResolvedValue(snapshotWith(photo));
+}
+
+/** The photo of the document as the API returns it. */
+function returned(photo: unknown) {
+  const stored = readPhoto(snapshotWith(photo), "photo");
+
+  return stored && toPhoto(stored);
 }
 
 function downloadablePaths(): string[] {
@@ -105,14 +115,12 @@ beforeEach(() => {
 });
 
 describe("photo", () => {
-  it("returns null when there is no photo", async () => {
-    await expect(getPhoto(slot)).resolves.toBeNull();
+  it("returns null when there is no photo", () => {
+    expect(returned(undefined)).toBeNull();
   });
 
-  it("returns the stored photo with download URLs built from the stored paths", async () => {
-    storedAs(storedPhoto);
-
-    await expect(getPhoto(slot)).resolves.toEqual(returnedPhoto);
+  it("returns the stored photo with download URLs built from the stored paths", () => {
+    expect(returned(storedPhoto)).toEqual(returnedPhoto);
   });
 
   it("stores the web images and the original in a new version folder", async () => {
@@ -223,11 +231,10 @@ describe("photo", () => {
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
-  it("reads a saved alt text longer than today's limit", async () => {
+  it("reads a saved alt text longer than today's limit", () => {
     const longer = { ...storedPhoto, alt: "a".repeat(500) };
-    storedAs(longer);
 
-    await expect(getPhoto(slot)).resolves.toMatchObject({ alt: longer.alt });
+    expect(returned(longer)).toMatchObject({ alt: longer.alt });
   });
 
   it("updates only the alt text", async () => {

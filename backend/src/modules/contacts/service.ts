@@ -1,5 +1,10 @@
 import { contactsDocument } from "#modules/contacts/document";
-import { type Contacts, storedContactsSchema } from "#modules/contacts/schema";
+import {
+  type Contacts,
+  type ContactsResponse,
+  storedContactsSchema,
+} from "#modules/contacts/schema";
+import { readPhoto, toPhoto } from "#shared/images/photo";
 
 const emptyContacts: Contacts = {
   email: "",
@@ -8,11 +13,16 @@ const emptyContacts: Contacts = {
   youtube: "",
 };
 
-export async function getContacts(): Promise<Contacts> {
+/** One read for the whole page: the links and the contact photo. */
+export async function getContacts(): Promise<ContactsResponse> {
   const snapshot = await contactsDocument().get();
+  const photo = readPhoto(snapshot, "photo");
 
-  // The document may not exist yet, or hold only the photo when the links were never saved.
-  return storedContactsSchema.parse({ ...emptyContacts, ...snapshot.data() });
+  return {
+    // The document may not exist yet, or hold only the photo when the links were never saved.
+    contacts: storedContactsSchema.parse({ ...emptyContacts, ...snapshot.data() }),
+    photo: photo && toPhoto(photo),
+  };
 }
 
 export async function saveContacts(contacts: Contacts): Promise<void> {

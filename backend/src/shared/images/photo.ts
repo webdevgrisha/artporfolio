@@ -100,12 +100,6 @@ function changePhoto<T>(slot: PhotoSlot, change: PhotoChange<T>): Promise<T> {
   });
 }
 
-export async function getPhoto(slot: PhotoSlot): Promise<Photo | null> {
-  const photo = readPhoto(await slot.document().get(), slot.field);
-
-  return photo && toPhoto(photo);
-}
-
 /**
  * Stores the new photo before removing the previous one, so the site never links to missing
  * files. If storing fails halfway, the files saved so far are removed.

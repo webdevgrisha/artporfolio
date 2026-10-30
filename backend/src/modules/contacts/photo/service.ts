@@ -1,7 +1,6 @@
 import { contactsDocument } from "#modules/contacts/document";
 import {
   deletePhoto,
-  getPhoto,
   type Photo,
   type PhotoSlot,
   type SavedPhoto,
@@ -15,10 +14,6 @@ const contactPhoto: PhotoSlot = {
   field: "photo",
   folder: "contacts/photo",
 };
-
-export function getContactPhoto(): Promise<Photo | null> {
-  return getPhoto(contactPhoto);
-}
 
 export function saveContactPhoto(file: UploadedFile, alt: string): Promise<SavedPhoto> {
   return savePhoto(contactPhoto, file, alt);
