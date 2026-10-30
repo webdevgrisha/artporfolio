@@ -1,4 +1,5 @@
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
+import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
 export function getSaveIntroErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
@@ -28,5 +29,20 @@ export function getDeleteProjectErrorMessage(error: unknown): string {
       404: "Проект уже удалён",
     },
     fallback: "Не удалось удалить проект. Попробуйте ещё раз",
+  });
+}
+
+export function getSaveProjectErrorMessage(error: unknown): string {
+  if (error instanceof UploadError) return getUploadErrorMessage(error);
+
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      400: "Сервер не принял проект. Проверьте поля и попробуйте ещё раз",
+      404: "Проект уже удалён",
+      // The project was changed since this page loaded it, for example in another tab.
+      412: "Проект уже изменили в другой вкладке",
+      422: "Фото на сервере изменились. Обновите страницу и внесите изменения заново",
+    },
+    fallback: "Не удалось сохранить проект. Попробуйте ещё раз",
   });
 }

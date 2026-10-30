@@ -3,7 +3,7 @@ import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, expect, it } from "vitest";
 
-import { useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
+import { afterSaveState, useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
 
 type Guard = ReturnType<typeof useUnsavedChangesGuard>;
 
@@ -33,7 +33,7 @@ function renderGuardedPage(hasUnsavedChanges: boolean) {
       return page.guard;
     },
     pathname: () => router.state.location.pathname,
-    navigate: (to: string) => act(() => router.navigate(to)),
+    navigate: (to: string, state?: unknown) => act(() => router.navigate(to, { state })),
     setHasUnsavedChanges: (value: boolean) => act(() => page.setHasUnsavedChanges?.(value)),
   };
 }
@@ -54,6 +54,15 @@ describe("useUnsavedChangesGuard", () => {
 
     expect(page.pathname()).toBe("/admin/contacts");
     expect(unloadPage()).toBe(false);
+  });
+
+  it("lets through the navigation a save makes itself", async () => {
+    const page = renderGuardedPage(true);
+
+    await page.navigate("/admin/contacts", afterSaveState);
+
+    expect(page.pathname()).toBe("/admin/contacts");
+    expect(page.guard.isBlocked).toBe(false);
   });
 
   it("holds the navigation away from unsaved changes until the user leaves", async () => {
