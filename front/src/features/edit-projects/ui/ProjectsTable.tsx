@@ -15,11 +15,11 @@ import { Link, useSearchParams } from "react-router";
 import type { Project } from "@/entities/project";
 import { projectPath, routes } from "@/shared/config/routes";
 import { Button, ButtonLink } from "@/shared/ui/button";
-import { ClearableInput } from "@/shared/ui/clearable-input";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
 import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
+import { SearchInput } from "@/shared/ui/search-input";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
@@ -144,16 +144,12 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
   return (
     <div className={clsx(styles.root, className)}>
       <div className={styles.toolbar}>
-        <ClearableInput
+        <SearchInput
           className={styles.search}
-          label="Поиск"
-          type="search"
-          placeholder="Название или ссылка"
-          value={view.query}
-          hasValue={Boolean(view.query)}
+          label="Поиск по названию и ссылке"
           clearLabel="Очистить поиск"
-          onClear={() => changeView({ query: "" })}
-          onChange={(event) => changeView({ query: event.target.value })}
+          value={view.query}
+          onChange={(query) => changeView({ query })}
         />
         <ButtonLink to={routes.projectNew}>Добавить проект</ButtonLink>
       </div>

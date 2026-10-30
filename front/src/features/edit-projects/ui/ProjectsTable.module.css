@@ -7,14 +7,13 @@
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
-  align-items: flex-end;
-  justify-content: space-between;
+  gap: var(--space-4) var(--space-8);
+  align-items: center;
 }
 
+/* As in the design, the search line runs across the table. */
 .search {
   flex: 1 1 20rem;
-  max-inline-size: 32rem;
 }
 
 /* A narrow screen scrolls the table instead of squeezing its columns. */
