@@ -7,12 +7,14 @@ import { RouterProvider } from "react-router/dom";
 import { queryClient } from "@/shared/api/queryClient";
 import { Toaster } from "@/shared/ui/toast";
 
+import { showMutationFeedback } from "./mutationFeedback";
 import { router } from "./router";
 import { reloadOnStaleChunks } from "./staleChunkReload";
 import "./styles/reset.css";
 import "./styles/globals.css";
 
 reloadOnStaleChunks();
+showMutationFeedback(queryClient);
 
 const rootElement = document.getElementById("root");
 

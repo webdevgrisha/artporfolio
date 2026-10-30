@@ -1,12 +1,10 @@
-import { MutationCache, QueryClient } from "@tanstack/react-query";
-
-import { savedMessage, showErrorToast, showSuccessToast } from "@/shared/ui/toast";
+import { QueryClient } from "@tanstack/react-query";
 
 import { HttpError } from "./httpError";
 
 const maxRetries = 2;
 
-/** How a change tells its result: the query client shows it in a toast. */
+/** How a change tells its result; the app shows it in a toast (app/mutationFeedback.ts). */
 export interface MutationFeedback {
   /** The text for a failure, usually from `getSaveErrorMessage`. */
   getErrorMessage: (error: unknown) => string;
@@ -39,18 +37,4 @@ export const queryClient = new QueryClient({
       staleTime: Number.POSITIVE_INFINITY,
     },
   },
-  // Every change that declares `meta.feedback` shows its result here, so a form only resets its
-  // fields after a save and keeps them after a failure.
-  mutationCache: new MutationCache({
-    onError: (error, _variables, _onMutateResult, mutation) => {
-      const feedback = mutation.meta?.feedback;
-      if (feedback) showErrorToast(feedback.getErrorMessage(error), { id: feedback.toastId });
-    },
-    onSuccess: (_data, _variables, _onMutateResult, mutation) => {
-      const feedback = mutation.meta?.feedback;
-      if (feedback) {
-        showSuccessToast(feedback.successMessage ?? savedMessage, { id: feedback.toastId });
-      }
-    },
-  }),
 });
