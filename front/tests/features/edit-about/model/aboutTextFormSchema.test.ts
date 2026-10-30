@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   type AboutTextFormValues,
   aboutTextFormSchema,
-  toAboutTextFormValues,
 } from "@/features/edit-about/model/aboutTextFormSchema";
 
 import { fieldErrors } from "../../../support/schema";
@@ -19,11 +18,5 @@ describe("aboutTextFormSchema", () => {
     expect(aboutTextFormSchema.parse({ ...values, biography: "\n Родилась… \n" }).biography).toBe(
       "Родилась…",
     );
-  });
-});
-
-describe("toAboutTextFormValues", () => {
-  it("starts with empty texts until they are first saved", () => {
-    expect(toAboutTextFormValues(null)).toEqual(values);
   });
 });

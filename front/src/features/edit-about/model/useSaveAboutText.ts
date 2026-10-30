@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { type AboutText, aboutQuery, updateAboutText } from "@/entities/about";
+import { type AboutText, aboutQuery, replaceAboutText } from "@/entities/about";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 
 import { getSaveTextErrorMessage } from "../lib/saveErrorMessages";
@@ -19,7 +19,7 @@ export function useSaveAboutText() {
 
   return useMutation({
     meta: { feedback: saveAboutTextFeedback },
-    mutationFn: (text: AboutText) => updateAboutText({ text }),
+    mutationFn: (text: AboutText) => replaceAboutText({ text }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: aboutQuery.queryKey }),
   });
 }

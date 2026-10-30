@@ -1,25 +1,14 @@
 import { Router } from "express";
 
-import { readAbout, updateAboutText } from "#modules/about/controller";
+import { readAbout } from "#modules/about/controller";
 import { aboutPhotoRouter } from "#modules/about/photo/routes";
 import { processPhotosRouter } from "#modules/about/process-photos/routes";
-import { aboutTextBodySchema } from "#modules/about/schema";
-import { requireAuth } from "#modules/auth/middleware";
-import { requireContentType } from "#shared/middleware/content-type";
-import { requireCsrfToken } from "#shared/middleware/csrf";
-import { validateBody } from "#shared/middleware/validation";
+import { aboutTextRouter } from "#modules/about/text/routes";
 
 export const aboutRouter = Router();
 
-// The About page is public: the site shows it to every visitor.
+// The About page is public: the site reads it whole. Each part is changed at its own resource.
 aboutRouter.get("/", readAbout);
-aboutRouter.put(
-  "/",
-  requireAuth,
-  requireCsrfToken,
-  requireContentType("application/json"),
-  validateBody(aboutTextBodySchema),
-  updateAboutText,
-);
+aboutRouter.use("/text", aboutTextRouter);
 aboutRouter.use("/photo", aboutPhotoRouter);
 aboutRouter.use("/process-photos", processPhotosRouter);

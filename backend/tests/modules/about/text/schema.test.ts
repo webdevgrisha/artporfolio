@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { aboutResponseSchema, aboutTextBodySchema } from "#modules/about/schema";
+import { aboutTextBodySchema, aboutTextResponseSchema } from "#modules/about/text/schema";
 
 const text = { about: "Иллюстратор.", biography: "Родилась в Минске.", creation: "Пишет маслом." };
 
@@ -37,12 +37,10 @@ describe("about text body", () => {
   });
 });
 
-describe("about response", () => {
+describe("about text response", () => {
   it("describes a text saved before its limit was lowered", () => {
     const savedText = { ...text, about: "a".repeat(1_000) };
 
-    expect(
-      aboutResponseSchema.safeParse({ photo: null, processPhotos: [], text: savedText }).success,
-    ).toBe(true);
+    expect(aboutTextResponseSchema.safeParse({ text: savedText }).success).toBe(true);
   });
 });

@@ -24,10 +24,3 @@ export const aboutTextFormSchema = z.object({
 });
 
 export type AboutTextFormValues = z.infer<typeof aboutTextFormSchema>;
-
-/** The texts are empty until they are first saved. */
-export function toAboutTextFormValues(text: AboutText | null): AboutTextFormValues {
-  const { about = "", biography = "", creation = "" } = text ?? {};
-
-  return { about, biography, creation };
-}

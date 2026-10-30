@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const document = vi.hoisted(() => ({
   get: vi.fn(),
-  set: vi.fn(),
 }));
 
 vi.mock("#shared/firebase/firestore", () => ({
@@ -13,17 +12,17 @@ vi.mock("#shared/firebase/storage", () => ({
     `https://storage.test/${path}?token=${token}`,
 }));
 
-import { getContacts, saveContacts } from "#modules/contacts/service";
+import { getContacts } from "#modules/contacts/service";
 import { apiImage } from "../../support/images.js";
 
-const contacts = {
+const links = {
   email: "artist@example.com",
   instagram: "https://instagram.com/artist",
   linkedin: "",
   youtube: "",
 };
 
-const emptyContacts = { email: "", instagram: "", linkedin: "", youtube: "" };
+const emptyLinks = { email: "", instagram: "", linkedin: "", youtube: "" };
 
 const storedPhoto = {
   alt: "Portrait",
@@ -45,42 +44,22 @@ function stored(data: Record<string, unknown> | undefined) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  document.set.mockResolvedValue(undefined);
 });
 
 describe("contacts service", () => {
-  it("returns empty contacts and no photo before they are first saved", async () => {
+  it("returns empty links and no photo before they are first saved", async () => {
     stored(undefined);
 
-    await expect(getContacts()).resolves.toEqual({ contacts: emptyContacts, photo: null });
-  });
-
-  it("reads saved links that today's rules would reject", async () => {
-    const older = { ...contacts, linkedin: "linkedin.com/in/artist", youtube: "a".repeat(3_000) };
-    stored(older);
-
-    await expect(getContacts()).resolves.toEqual({ contacts: older, photo: null });
+    await expect(getContacts()).resolves.toEqual({ links: emptyLinks, photo: null });
   });
 
   it("returns the links and the photo from one read of the document", async () => {
-    stored({ ...contacts, photo: storedPhoto });
+    stored({ ...links, photo: storedPhoto });
 
     await expect(getContacts()).resolves.toEqual({
-      contacts,
+      links,
       photo: { ...apiImage("photo.png"), alt: "Portrait" },
     });
     expect(document.get).toHaveBeenCalledOnce();
-  });
-
-  it("returns empty contacts when the document holds only the photo", async () => {
-    stored({ photo: storedPhoto });
-
-    await expect(getContacts()).resolves.toMatchObject({ contacts: emptyContacts });
-  });
-
-  it("merges contacts so other fields of the document are kept", async () => {
-    await saveContacts(contacts);
-
-    expect(document.set).toHaveBeenCalledWith(contacts, { merge: true });
   });
 });

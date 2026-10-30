@@ -1,11 +1,11 @@
 import type { HTMLInputAutoCompleteAttribute, HTMLInputTypeAttribute } from "react";
 
-import type { Contacts } from "@/entities/contacts";
+import type { ContactLinks } from "@/entities/contacts";
 
 interface ContactField {
   autoComplete: HTMLInputAutoCompleteAttribute;
   label: string;
-  name: keyof Contacts;
+  name: keyof ContactLinks;
   placeholder: string;
   type: HTMLInputTypeAttribute;
 }

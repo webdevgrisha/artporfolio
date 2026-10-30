@@ -9,5 +9,5 @@ export function ContactLinksSection() {
   // The loader of the page has fetched the data, so this never suspends.
   const { data } = useSuspenseQuery(contactsQuery);
 
-  return <EditContactLinksForm className={styles.form} contacts={data.contacts} />;
+  return <EditContactLinksForm className={styles.form} links={data.links} />;
 }

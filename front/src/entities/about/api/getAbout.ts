@@ -6,8 +6,8 @@ import { photoSchema } from "@/shared/api/photo";
 import { aboutTextSchema } from "../model/aboutText";
 
 const aboutSchema = z.object({
-  /** `null` until the texts are first saved. */
-  text: aboutTextSchema.nullable(),
+  /** Every text is empty until the texts are first saved. */
+  text: aboutTextSchema,
   /** `null` until a photo is uploaded. */
   photo: photoSchema.nullable(),
 });

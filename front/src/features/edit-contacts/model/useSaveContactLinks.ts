@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { type Contacts, contactsQuery, updateContacts } from "@/entities/contacts";
+import { type ContactLinks, contactsQuery, replaceContactLinks } from "@/entities/contacts";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 
 import { getSaveContactLinksErrorMessage } from "../lib/saveErrorMessages";
@@ -19,7 +19,7 @@ export function useSaveContactLinks() {
 
   return useMutation({
     meta: { feedback: saveContactLinksFeedback },
-    mutationFn: (contacts: Contacts) => updateContacts({ contacts }),
+    mutationFn: (links: ContactLinks) => replaceContactLinks({ links }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: contactsQuery.queryKey }),
   });
 }

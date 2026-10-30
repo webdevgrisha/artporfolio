@@ -1,7 +1,7 @@
 export { contactsQuery } from "./api/contactsQuery";
 export { deleteContactPhoto } from "./api/deleteContactPhoto";
-export type { ContactsWithPhoto } from "./api/getContacts";
+export type { Contacts } from "./api/getContacts";
+export { replaceContactLinks } from "./api/replaceContactLinks";
 export { replaceContactPhoto } from "./api/replaceContactPhoto";
 export { updateContactPhotoAlt } from "./api/updateContactPhotoAlt";
-export { updateContacts } from "./api/updateContacts";
-export type { Contacts } from "./model/contacts";
+export type { ContactLinks } from "./model/contactLinks";

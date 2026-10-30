@@ -3,25 +3,25 @@ import { z } from "zod";
 import { http } from "@/shared/api/http";
 import { photoSchema } from "@/shared/api/photo";
 
-import { contactsSchema } from "../model/contacts";
+import { contactLinksSchema } from "../model/contactLinks";
 
-const contactsWithPhotoSchema = z.object({
-  contacts: contactsSchema,
+const contactsSchema = z.object({
+  links: contactLinksSchema,
   /** `null` until a photo is uploaded. */
   photo: photoSchema.nullable(),
 });
 
-export type ContactsWithPhoto = z.infer<typeof contactsWithPhotoSchema>;
+export type Contacts = z.infer<typeof contactsSchema>;
 
 interface GetContactsParams {
   /** Cancels the request, e.g. when its query is cancelled. */
   signal: AbortSignal;
 }
 
-export async function getContacts({ signal }: GetContactsParams): Promise<ContactsWithPhoto> {
+export async function getContacts({ signal }: GetContactsParams): Promise<Contacts> {
   return http.get({
     path: "/contacts",
-    schema: contactsWithPhotoSchema,
+    schema: contactsSchema,
     signal,
   });
 }

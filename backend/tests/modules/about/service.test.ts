@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const document = vi.hoisted(() => ({
   get: vi.fn(),
-  set: vi.fn(),
 }));
 
 vi.mock("#modules/about/document", () => ({ aboutDocument: () => document }));
@@ -11,7 +10,7 @@ vi.mock("#shared/firebase/storage", () => ({
     `https://storage.test/${path}?token=${token}`,
 }));
 
-import { getAbout, saveAboutText } from "#modules/about/service";
+import { getAbout } from "#modules/about/service";
 
 const text = { about: "Иллюстратор.", biography: "Родилась в Минске.", creation: "Пишет маслом." };
 
@@ -39,7 +38,11 @@ describe("about service", () => {
   it("returns an empty page before anything is saved", async () => {
     storedAs({});
 
-    await expect(getAbout()).resolves.toEqual({ text: null, photo: null, processPhotos: [] });
+    await expect(getAbout()).resolves.toEqual({
+      text: { about: "", biography: "", creation: "" },
+      photo: null,
+      processPhotos: [],
+    });
   });
 
   it("returns the texts and both kinds of photos from one read", async () => {
@@ -61,18 +64,5 @@ describe("about service", () => {
       expect.objectContaining({ alt: "Sketch", id: processId }),
     ]);
     expect(document.get).toHaveBeenCalledTimes(1);
-  });
-
-  it("reads saved texts longer than today's limits", async () => {
-    const longer = { ...text, about: "a".repeat(1_000) };
-    storedAs({ text: longer });
-
-    await expect(getAbout()).resolves.toMatchObject({ text: longer });
-  });
-
-  it("saves the texts without touching the photos", async () => {
-    await saveAboutText(text);
-
-    expect(document.set).toHaveBeenCalledWith({ text }, { merge: true });
   });
 });

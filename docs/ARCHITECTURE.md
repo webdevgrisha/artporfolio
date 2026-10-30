@@ -115,11 +115,13 @@ backend/src/
 ├── firebase.ts         Cloud Function entry point
 ├── server.ts           Express app: global middleware and top-level module routers
 ├── modules/            one folder per domain
-│   ├── about/          the About page texts; document.ts is the Firestore document shared below
+│   ├── about/          the whole About page for the site; document.ts is the Firestore document shared below
+│   │   ├── text/       the texts, mounted by the about router
 │   │   ├── photo/      «My photo», mounted by the about router
 │   │   └── process-photos/  the ordered process photos, mounted by the about router
 │   ├── auth/           routes, controller, service, schema, middleware (requireAuth)
-│   ├── contacts/       contact links; document.ts is the Firestore document shared with photo/
+│   ├── contacts/       the whole contacts page for the site; document.ts is the Firestore document shared below
+│   │   ├── links/      the contact links, mounted by the contacts router
 │   │   └── photo/      the contact photo, mounted by the contacts router
 │   ├── health/
 │   ├── pages/          the pages of the public site and their main photos (heroes)
@@ -135,6 +137,7 @@ backend/src/
 - A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. The request flow is route → middleware → controller → service.
 - `shared/` never imports `modules/`; Biome enforces it. A module may use another module, as `contacts` uses `requireAuth` from `auth`.
 - `server.ts` mounts only top-level modules. A submodule is mounted by its parent's router, as `contacts` mounts `photo`.
+- Each part of a page that the admin saves on its own is a resource of its own, with its own `GET` and `PUT`: `/api/about/text`, `/api/about/photo`, `/api/about/process-photos`. A `PUT` replaces the whole resource at its URL (RFC 9110 §9.3.4), never a part of a larger one. The page itself (`GET /api/about`) is a read-only aggregate, so the site reads it in one request.
 - A single photo with alt text (the contact photo, «My photo») is a `PhotoSlot` from `shared/images/photo.ts`: a Firestore document, a field and a Storage folder. The module's service only names its slot; saving, replacing, the alt text and deleting are shared.
 - Data read from Firestore is checked for its shape only (`stored…Schema`): limits and formats are checked once, when the API writes the data. Tightening a rule later then never makes saved data unreadable. For the same reason the response schemas describe the shape of the data, not the rules of its request.
 - A photo is uploaded once (`shared/images/uploads.ts`): it is encoded and kept privately under `uploads/{id}` with a manifest, which is written last. A change that uses it copies it into a new version folder of its content (`publishUpload`) before Firestore is written, and replaced files and the used upload are deleted last, so the site never links to missing files. Uploads that are never used are deleted by the bucket's lifecycle rule (`storage.lifecycle.json`). Every change that reads and writes a document runs in a transaction.

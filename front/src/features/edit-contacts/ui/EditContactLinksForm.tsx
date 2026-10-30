@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import type { Contacts } from "@/entities/contacts";
+import type { ContactLinks } from "@/entities/contacts";
 import { EditForm } from "@/shared/ui/edit-form";
 import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
@@ -15,12 +15,12 @@ import { ContactLinksFields } from "./ContactLinksFields";
 interface EditContactLinksFormProps {
   className?: string;
   /** The links as stored on the server. */
-  contacts: Contacts;
+  links: ContactLinks;
 }
 
-export function EditContactLinksForm({ className, contacts }: EditContactLinksFormProps) {
+export function EditContactLinksForm({ className, links }: EditContactLinksFormProps) {
   const form = useForm<ContactLinksFormValues>({
-    defaultValues: contacts,
+    defaultValues: links,
     resolver: zodResolver(contactLinksFormSchema),
   });
   const {

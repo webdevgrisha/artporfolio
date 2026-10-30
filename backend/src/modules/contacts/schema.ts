@@ -1,60 +1,13 @@
 import { z } from "zod";
 
+import { contactLinksSchema } from "#modules/contacts/links/schema";
 import { photoSchema } from "#shared/images/photo";
 
-const maxLength = 2_048;
-
-/** An empty string means the contact is not shown on the site. */
-function optionalContact(format: z.ZodType<string, string>) {
-  return z
-    .string()
-    .trim()
-    .max(maxLength)
-    .pipe(z.union([z.literal(""), format]));
-}
-
-// Unlike z.url(), rejects "javascript:" links, which would run code when a visitor clicks them.
-const webLink = optionalContact(z.httpUrl());
-
-const contactFields = {
-  email: optionalContact(z.email()),
-  instagram: webLink,
-  linkedin: webLink,
-  youtube: webLink,
-};
-
-export const contactsBodySchema = z.strictObject(contactFields);
-
-/**
- * The links as stored in Firestore. Only their shape is checked: the rules above apply when the
- * links are saved, so tightening a rule later never makes saved links unreadable.
- */
-export const storedContactsSchema = z.object({
-  email: z.string(),
-  instagram: z.string(),
-  linkedin: z.string(),
-  youtube: z.string(),
-});
-
-/**
- * The links as the API returns them: as they were saved, so only their shape is described. A
- * link saved before a rule was tightened is returned unchanged.
- */
-export const contactsSchema = z.object({
-  email: z.string(),
-  instagram: z.string(),
-  linkedin: z.string(),
-  youtube: z.string(),
-});
-
+/** The whole contacts page in one read, for the site; each part is changed at its own resource. */
 export const contactsResponseSchema = z.object({
-  contacts: contactsSchema,
+  links: contactLinksSchema,
   /** null until a photo is uploaded. */
   photo: photoSchema.nullable(),
 });
 
-export const savedContactsResponseSchema = z.object({ contacts: contactsSchema });
-
-export type Contacts = z.infer<typeof contactsSchema>;
 export type ContactsResponse = z.infer<typeof contactsResponseSchema>;
-export type SavedContactsResponse = z.infer<typeof savedContactsResponseSchema>;

@@ -5,23 +5,19 @@ import type { AboutText } from "@/entities/about";
 import { EditForm } from "@/shared/ui/edit-form";
 import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
-import {
-  type AboutTextFormValues,
-  aboutTextFormSchema,
-  toAboutTextFormValues,
-} from "../model/aboutTextFormSchema";
+import { type AboutTextFormValues, aboutTextFormSchema } from "../model/aboutTextFormSchema";
 import { saveAboutTextFeedback, useSaveAboutText } from "../model/useSaveAboutText";
 import { AboutTextFields } from "./AboutTextFields";
 
 interface EditAboutTextFormProps {
   className?: string;
-  /** The texts as stored on the server; `null` until they are first saved. */
-  text: AboutText | null;
+  /** The texts as stored on the server. */
+  text: AboutText;
 }
 
 export function EditAboutTextForm({ className, text }: EditAboutTextFormProps) {
   const form = useForm<AboutTextFormValues>({
-    defaultValues: toAboutTextFormValues(text),
+    defaultValues: text,
     resolver: zodResolver(aboutTextFormSchema),
   });
   const {
