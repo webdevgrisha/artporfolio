@@ -7,7 +7,7 @@ export const corsOptions: CorsOptions = {
   allowedHeaders: ["Content-Type", "X-CSRF-Token"],
   credentials: true,
   maxAge: 600,
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   origin(origin, callback) {
     if (!origin || getEnv().corsOrigins.has(origin)) {
       callback(null, true);

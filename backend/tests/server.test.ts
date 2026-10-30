@@ -37,6 +37,19 @@ describe("CORS", () => {
     expect(response.headers.get("access-control-allow-credentials")).toBe("true");
   });
 
+  it.each(["POST", "PUT", "PATCH", "DELETE"])(
+    "allows %s requests in a preflight",
+    async (method) => {
+      const response = await fetch(`${server.baseUrl}/api/contacts/photo`, {
+        headers: { "Access-Control-Request-Method": method, Origin: "http://localhost:5173" },
+        method: "OPTIONS",
+      });
+
+      expect(response.status).toBe(204);
+      expect(response.headers.get("access-control-allow-methods")?.split(",")).toContain(method);
+    },
+  );
+
   it("rejects requests from an origin outside the allowlist", async () => {
     const response = await fetch(`${server.baseUrl}/api/health`, {
       headers: { Origin: "https://attacker.example" },
