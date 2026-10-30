@@ -13,11 +13,7 @@ const storage = vi.hoisted(() => ({
   deleteFolder: vi.fn(),
   downloadUrl: ({ path, token }: { path: string; token: string }) =>
     `https://storage.test/${path}?token=${token}`,
-  saveDownloadableFile: vi.fn(),
-  saveFile: vi.fn(),
 }));
-
-const processImage = vi.hoisted(() => vi.fn());
 
 const uploads = vi.hoisted(() => ({
   deleteUploadsOrWarn: vi.fn(),
@@ -31,41 +27,19 @@ vi.mock("#shared/firebase/firestore", () => ({
   }),
 }));
 vi.mock("#shared/firebase/storage", () => storage);
-vi.mock("#shared/images/processing", async (importOriginal) => ({
-  ...(await importOriginal<object>()),
-  processImage,
-}));
 vi.mock("#shared/images/uploads", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...uploads,
 }));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
-import { maxProcessPhotos } from "#modules/about/process-photos/schema";
-import {
-  addProcessPhoto,
-  deleteProcessPhoto,
-  getProcessPhoto,
-  getProcessPhotoOrder,
-  listProcessPhotos,
-  reorderProcessPhotos,
-  replaceProcessPhoto,
-  replaceProcessPhotos,
-  updateProcessPhotoAlt,
-} from "#modules/about/process-photos/service";
-import {
-  ConflictError,
-  NotFoundError,
-  PreconditionFailedError,
-  UnprocessableContentError,
-} from "#shared/http/errors";
+import { listProcessPhotos, replaceProcessPhotos } from "#modules/about/process-photos/service";
+import { PreconditionFailedError, UnprocessableContentError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
 
 const firstId = "11111111-1111-4111-8111-111111111111";
 const secondId = "22222222-2222-4222-8222-222222222222";
 const unknownId = "33333333-3333-4333-8333-333333333333";
-
-const upload = { data: Buffer.from("original"), name: "sketch.png", size: 8 };
 
 function storedPhoto(id: string) {
   const folder = `about/process-photos/${id}/old-version`;
@@ -124,18 +98,6 @@ function writtenPhotos(): { alt: string; id: string; version: string }[] {
 beforeEach(() => {
   vi.clearAllMocks();
   storage.deleteFolder.mockResolvedValue(undefined);
-  storage.saveDownloadableFile.mockImplementation(async (path: string) => ({
-    path,
-    token: "token",
-  }));
-  storage.saveFile.mockResolvedValue(undefined);
-  processImage.mockResolvedValue({
-    images: [
-      { data: Buffer.from("avif"), format: "avif", height: 320, width: 640 },
-      { data: Buffer.from("webp"), format: "webp", height: 320, width: 640 },
-    ],
-    sourceFormat: "jpeg",
-  });
   storedAs([storedPhoto(firstId), storedPhoto(secondId)]);
   uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
   uploads.publishUpload.mockImplementation(async (_uploadId: string, folder: string) =>
@@ -143,7 +105,7 @@ beforeEach(() => {
   );
 });
 
-describe("process photo service", () => {
+describe("listProcessPhotos", () => {
   it("lists nothing before the first photo", async () => {
     storedAs(undefined);
 
@@ -160,100 +122,6 @@ describe("process photo service", () => {
     expect(photos[0]?.sources.avif[0]?.url).toBe(
       `https://storage.test/about/process-photos/${firstId}/old-version/640.avif?token=token`,
     );
-  });
-
-  it("returns 404 for an unknown photo", async () => {
-    await expect(getProcessPhoto(unknownId)).rejects.toBeInstanceOf(NotFoundError);
-  });
-
-  it("adds a photo after the others, in a folder of its own", async () => {
-    const photo = await addProcessPhoto(upload, "Sketch");
-
-    expect(writtenPhotos().map(({ id }) => id)).toEqual([firstId, secondId, photo.id]);
-    expect(writtenPhotos()[2]).toMatchObject({ alt: "Sketch", id: photo.id });
-    expect(storage.saveFile).toHaveBeenCalledWith(
-      `about/process-photos/${photo.id}/${photo.version}/original.jpeg`,
-      upload.data,
-      { contentType: "image/jpeg" },
-    );
-    expect(transaction.set).toHaveBeenCalledWith(document, expect.anything(), { merge: true });
-  });
-
-  it("rejects a photo over the limit and removes its files", async () => {
-    const full = Array.from({ length: maxProcessPhotos }, () => storedPhoto(firstId));
-    transaction.get.mockResolvedValue({ get: () => full });
-
-    await expect(addProcessPhoto(upload, "Sketch")).rejects.toBeInstanceOf(ConflictError);
-
-    expect(transaction.set).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).toHaveBeenCalledWith(
-      expect.stringMatching(/^about\/process-photos\/[0-9a-f-]{36}$/),
-    );
-  });
-
-  it("replaces the file in place and deletes the previous version", async () => {
-    const photo = await replaceProcessPhoto(firstId, upload, "New sketch");
-
-    expect(photo.id).toBe(firstId);
-    expect(photo.version).not.toBe("old-version");
-    expect(writtenPhotos().map(({ id }) => id)).toEqual([firstId, secondId]);
-    expect(writtenPhotos()[0]).toMatchObject({ alt: "New sketch", version: photo.version });
-    expect(storage.deleteFolder).toHaveBeenCalledWith(
-      `about/process-photos/${firstId}/old-version`,
-    );
-    expect(transaction.set.mock.invocationCallOrder[0]).toBeLessThan(
-      storage.deleteFolder.mock.invocationCallOrder[0] as number,
-    );
-  });
-
-  it("rejects replacing an unknown photo and removes the new version", async () => {
-    transaction.get.mockResolvedValue({ get: () => [storedPhoto(secondId)] });
-
-    await expect(replaceProcessPhoto(firstId, upload, "Sketch")).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
-
-    expect(storage.deleteFolder).toHaveBeenCalledTimes(1);
-    expect(storage.deleteFolder).toHaveBeenCalledWith(
-      expect.stringMatching(new RegExp(`^about/process-photos/${firstId}/[0-9a-f-]{36}$`)),
-    );
-  });
-
-  it("changes only the alt text", async () => {
-    const photo = await updateProcessPhotoAlt(secondId, "New alt");
-
-    expect(photo).toMatchObject({ alt: "New alt", id: secondId, version: "old-version" });
-    expect(writtenPhotos().map(({ alt }) => alt)).toEqual([`Photo ${firstId}`, "New alt"]);
-  });
-
-  it("deletes a photo with every version of its files", async () => {
-    await deleteProcessPhoto(firstId);
-
-    expect(writtenPhotos().map(({ id }) => id)).toEqual([secondId]);
-    expect(storage.deleteFolder).toHaveBeenCalledWith(`about/process-photos/${firstId}`);
-  });
-
-  it("returns 404 when deleting an unknown photo", async () => {
-    await expect(deleteProcessPhoto(unknownId)).rejects.toBeInstanceOf(NotFoundError);
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
-  });
-
-  it("returns the order", async () => {
-    await expect(getProcessPhotoOrder()).resolves.toEqual([firstId, secondId]);
-  });
-
-  it("reorders the photos", async () => {
-    await expect(reorderProcessPhotos([secondId, firstId])).resolves.toEqual([secondId, firstId]);
-    expect(writtenPhotos().map(({ id }) => id)).toEqual([secondId, firstId]);
-  });
-
-  it.each([
-    ["misses a photo", [secondId]],
-    ["names an unknown photo", [secondId, unknownId]],
-    ["adds a photo", [secondId, firstId, unknownId]],
-  ])("rejects an order that %s", async (_, ids) => {
-    await expect(reorderProcessPhotos(ids)).rejects.toBeInstanceOf(ConflictError);
-    expect(transaction.set).not.toHaveBeenCalled();
   });
 });
 

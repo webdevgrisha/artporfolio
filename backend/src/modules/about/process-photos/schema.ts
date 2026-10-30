@@ -9,11 +9,6 @@ export const maxProcessPhotos = 30;
 /** Stays the same when the file is replaced. */
 const processPhotoIdSchema = z.uuid();
 
-/** The path parameters of a request about one process photo. */
-export const processPhotoParamsSchema = z.object({
-  id: processPhotoIdSchema,
-});
-
 /** A process photo as stored in Firestore, in the array that keeps their order. */
 export const storedProcessPhotoSchema = storedPhotoSchema.extend({
   id: processPhotoIdSchema,
@@ -21,19 +16,6 @@ export const storedProcessPhotoSchema = storedPhotoSchema.extend({
 
 /** A photo of the work in progress, as the API returns it. */
 export const processPhotoSchema = photoSchema.extend({ id: processPhotoIdSchema });
-
-const processPhotoOrderFields = {
-  /** Every process photo id, once, in the order the site shows them. */
-  ids: z
-    .array(processPhotoIdSchema)
-    .max(maxProcessPhotos)
-    .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once"),
-};
-
-/** The order of the process photos. */
-export const processPhotoOrderSchema = z.object(processPhotoOrderFields);
-
-export const processPhotoOrderBodySchema = z.strictObject(processPhotoOrderFields);
 
 /** One photo of the new list: a saved one by its id, a new file by its upload, or both to replace the file. */
 const processPhotoItemSchema = z
@@ -72,13 +54,8 @@ export const processPhotosResponseSchema = z.object({
   processPhotos: z.array(processPhotoSchema),
 });
 
-export const processPhotoResponseSchema = z.object({ processPhoto: processPhotoSchema });
-
-export type ProcessPhotoParams = z.infer<typeof processPhotoParamsSchema>;
 export type StoredProcessPhoto = z.infer<typeof storedProcessPhotoSchema>;
 export type ProcessPhoto = z.infer<typeof processPhotoSchema>;
-export type ProcessPhotoOrder = z.infer<typeof processPhotoOrderSchema>;
 export type ProcessPhotoItem = z.infer<typeof processPhotoItemSchema>;
 export type ProcessPhotosBody = z.infer<typeof processPhotosBodySchema>;
 export type ProcessPhotosResponse = z.infer<typeof processPhotosResponseSchema>;
-export type ProcessPhotoResponse = z.infer<typeof processPhotoResponseSchema>;

@@ -2,46 +2,66 @@ import { randomUUID } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
-import {
-  maxProcessPhotos,
-  processPhotoOrderBodySchema,
-  processPhotoParamsSchema,
-} from "#modules/about/process-photos/schema";
+import { maxProcessPhotos, processPhotosBodySchema } from "#modules/about/process-photos/schema";
 
-function isValidOrder(body: unknown): boolean {
-  return processPhotoOrderBodySchema.safeParse(body).success;
+function isValidList(processPhotos: unknown[]): boolean {
+  return processPhotosBodySchema.safeParse({ processPhotos }).success;
 }
 
-describe("process photo order body", () => {
-  it("accepts distinct ids", () => {
-    expect(isValidOrder({ ids: [randomUUID(), randomUUID()] })).toBe(true);
-    expect(isValidOrder({ ids: [] })).toBe(true);
+describe("process photos body", () => {
+  const id = randomUUID();
+  const uploadId = randomUUID();
+
+  it("takes saved photos by id, new files by upload, and replaced files by both", () => {
+    expect(
+      isValidList([
+        { alt: "Sketch", id },
+        { alt: "New", uploadId },
+        { alt: "Study", id: randomUUID(), uploadId: randomUUID() },
+      ]),
+    ).toBe(true);
+    expect(isValidList([])).toBe(true);
   });
 
-  it("rejects an id given twice", () => {
-    const id = randomUUID();
+  it("rejects a photo with neither an id nor an upload", () => {
+    expect(isValidList([{ alt: "Sketch" }])).toBe(false);
+  });
 
-    expect(isValidOrder({ ids: [id, id] })).toBe(false);
+  it("rejects an id or an upload given twice", () => {
+    expect(
+      isValidList([
+        { alt: "Sketch", id },
+        { alt: "Again", id },
+      ]),
+    ).toBe(false);
+    expect(
+      isValidList([
+        { alt: "New", uploadId },
+        { alt: "Again", uploadId },
+      ]),
+    ).toBe(false);
   });
 
   it("rejects ids that are not UUIDs", () => {
-    expect(isValidOrder({ ids: ["first"] })).toBe(false);
+    expect(isValidList([{ alt: "Sketch", id: "first" }])).toBe(false);
+    expect(isValidList([{ alt: "Sketch", uploadId: "upload" }])).toBe(false);
   });
 
-  it("rejects more ids than there can be photos", () => {
-    const ids = Array.from({ length: maxProcessPhotos + 1 }, () => randomUUID());
+  it("needs alt text on every photo", () => {
+    expect(isValidList([{ alt: " ", id }])).toBe(false);
+  });
 
-    expect(isValidOrder({ ids })).toBe(false);
+  it("rejects more photos than the page may have", () => {
+    const photos = Array.from({ length: maxProcessPhotos + 1 }, () => ({
+      alt: "New",
+      uploadId: randomUUID(),
+    }));
+
+    expect(isValidList(photos)).toBe(false);
   });
 
   it("rejects unknown fields", () => {
-    expect(isValidOrder({ ids: [], photos: [] })).toBe(false);
-  });
-});
-
-describe("process photo params", () => {
-  it("names a photo by its UUID", () => {
-    expect(processPhotoParamsSchema.safeParse({ id: randomUUID() }).success).toBe(true);
-    expect(processPhotoParamsSchema.safeParse({ id: "order" }).success).toBe(false);
+    expect(isValidList([{ alt: "Sketch", file: "sketch.png", id }])).toBe(false);
+    expect(processPhotosBodySchema.safeParse({ ids: [], processPhotos: [] }).success).toBe(false);
   });
 });

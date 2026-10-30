@@ -1,36 +1,17 @@
 import { Router } from "express";
 
-import {
-  deletePhoto,
-  listPhotos,
-  readOrder,
-  readPhoto,
-  replaceOrder,
-  replacePhoto,
-  replacePhotos,
-  updatePhotoAlt,
-  uploadPhoto,
-} from "#modules/about/process-photos/controller";
-import {
-  processPhotoOrderBodySchema,
-  processPhotoParamsSchema,
-  processPhotosBodySchema,
-} from "#modules/about/process-photos/schema";
+import { listPhotos, replacePhotos } from "#modules/about/process-photos/controller";
+import { processPhotosBodySchema } from "#modules/about/process-photos/schema";
 import { requireAuth } from "#modules/auth/middleware";
-import { photoAltBodySchema } from "#shared/images/photo";
-import { maxSourceFileSize } from "#shared/images/processing";
 import { requireContentType } from "#shared/middleware/content-type";
 import { requireCsrfToken } from "#shared/middleware/csrf";
 import { requireIfMatch } from "#shared/middleware/preconditions";
-import { parseUpload } from "#shared/middleware/upload";
-import { validateBody, validateParams } from "#shared/middleware/validation";
+import { validateBody } from "#shared/middleware/validation";
 
 export const processPhotosRouter = Router();
 
-const parsePhotoUpload = parseUpload({ fileField: "file", maxFileSize: maxSourceFileSize });
-
-// Reading is public: the site shows the photos to every visitor. Changes check authentication
-// first and the id next, so a rejected request never has its file read.
+// The photos are one list: reading it is public, as the site shows it to every visitor, and a
+// change replaces all of it, so it is saved all or nothing.
 processPhotosRouter.get("/", listPhotos);
 processPhotosRouter.put(
   "/",
@@ -40,50 +21,4 @@ processPhotosRouter.put(
   requireIfMatch,
   validateBody(processPhotosBodySchema),
   replacePhotos,
-);
-processPhotosRouter.post(
-  "/",
-  requireAuth,
-  requireCsrfToken,
-  parsePhotoUpload,
-  validateBody(photoAltBodySchema),
-  uploadPhoto,
-);
-
-// Before /:id, so "order" is not taken for a photo id.
-processPhotosRouter.get("/order", readOrder);
-processPhotosRouter.put(
-  "/order",
-  requireAuth,
-  requireCsrfToken,
-  requireContentType("application/json"),
-  validateBody(processPhotoOrderBodySchema),
-  replaceOrder,
-);
-
-processPhotosRouter.get("/:id", validateParams(processPhotoParamsSchema), readPhoto);
-processPhotosRouter.put(
-  "/:id",
-  requireAuth,
-  requireCsrfToken,
-  validateParams(processPhotoParamsSchema),
-  parsePhotoUpload,
-  validateBody(photoAltBodySchema),
-  replacePhoto,
-);
-processPhotosRouter.patch(
-  "/:id",
-  requireAuth,
-  requireCsrfToken,
-  validateParams(processPhotoParamsSchema),
-  requireContentType("application/json"),
-  validateBody(photoAltBodySchema),
-  updatePhotoAlt,
-);
-processPhotosRouter.delete(
-  "/:id",
-  requireAuth,
-  requireCsrfToken,
-  validateParams(processPhotoParamsSchema),
-  deletePhoto,
 );
