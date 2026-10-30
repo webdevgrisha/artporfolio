@@ -43,8 +43,8 @@ export function EditPhotoForm({ className, label, onSave, photo, toastId }: Edit
 
   async function saveChanges(values: PhotoFormValues) {
     const change = getPhotoChange(values, {
-      hasServerPhoto: photo !== null,
       isAltDirty: Boolean(dirtyFields.photoAlt),
+      isPhotoDirty: Boolean(dirtyFields.photo),
     });
 
     try {

@@ -66,20 +66,20 @@ describe("getPhotoChange", () => {
     expect(
       getPhotoChange(
         { photo: file, photoAlt: "Портрет" },
-        { hasServerPhoto: true, isAltDirty: false },
+        { isAltDirty: false, isPhotoDirty: true },
       ),
     ).toEqual({ alt: "Портрет", file, type: "upload" });
   });
 
-  it("deletes the photo on the server when it was removed", () => {
+  it("deletes the photo when it was removed in the form", () => {
     expect(
-      getPhotoChange({ photo: null, photoAlt: "" }, { hasServerPhoto: true, isAltDirty: true }),
+      getPhotoChange({ photo: null, photoAlt: "" }, { isAltDirty: true, isPhotoDirty: true }),
     ).toEqual({ type: "delete" });
   });
 
-  it("changes nothing when there was no photo to remove", () => {
+  it("does not delete a photo the form did not show, such as one uploaded in another tab", () => {
     expect(
-      getPhotoChange({ photo: null, photoAlt: "" }, { hasServerPhoto: false, isAltDirty: false }),
+      getPhotoChange({ photo: null, photoAlt: "" }, { isAltDirty: false, isPhotoDirty: false }),
     ).toBeUndefined();
   });
 
@@ -87,13 +87,13 @@ describe("getPhotoChange", () => {
     expect(
       getPhotoChange(
         { photo: savedImage, photoAlt: "Портрет" },
-        { hasServerPhoto: true, isAltDirty: true },
+        { isAltDirty: true, isPhotoDirty: false },
       ),
     ).toEqual({ alt: "Портрет", type: "updateAlt" });
     expect(
       getPhotoChange(
         { photo: savedImage, photoAlt: "Портрет" },
-        { hasServerPhoto: true, isAltDirty: false },
+        { isAltDirty: false, isPhotoDirty: false },
       ),
     ).toBeUndefined();
   });

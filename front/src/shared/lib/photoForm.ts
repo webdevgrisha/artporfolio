@@ -62,15 +62,16 @@ export type PhotoChange =
   | { type: "delete" };
 
 /**
- * The change of the submitted photo fields, or `undefined` when there is none. The photo is
- * compared by value: react-hook-form does not track changes inside a File.
+ * The change of the submitted photo fields, or `undefined` when there is none. Only what the user
+ * changed in the form counts: the photo is deleted only when they removed it here, never because
+ * the server has a photo the form did not show, such as one uploaded in another tab.
  */
 export function getPhotoChange(
   { photo, photoAlt }: PhotoFormValues,
-  { hasServerPhoto, isAltDirty }: { hasServerPhoto: boolean; isAltDirty: boolean },
+  { isAltDirty, isPhotoDirty }: { isAltDirty: boolean; isPhotoDirty: boolean },
 ): PhotoChange | undefined {
   if (photo instanceof File) return { alt: photoAlt, file: photo, type: "upload" };
-  if (photo === null) return hasServerPhoto ? { type: "delete" } : undefined;
+  if (photo === null) return isPhotoDirty ? { type: "delete" } : undefined;
 
   return isAltDirty ? { alt: photoAlt, type: "updateAlt" } : undefined;
 }
