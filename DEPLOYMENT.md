@@ -88,3 +88,14 @@ pnpm dev:front
 Vite proxies `/api` requests to the `api` function running in the local Functions Emulator. The
 Functions Emulator connects the Admin SDK to the Firestore and Storage emulators automatically. The
 Firestore Emulator needs Java 21 or later.
+
+The emulators start empty. Once they are ready, create the admin and fill the admin panel with demo
+content (page heroes, About, contacts, projects with photos), through the API as the admin would:
+
+```sh
+pnpm emulators:seed            # admin@example.com / admin123
+pnpm emulators:admin [email] [password]   # only the admin
+```
+
+Every run of `emulators:seed` replaces what the previous one left. Its images are drawn by the script
+(`scripts/seed-emulators.mjs`), so the content is the same on every machine and needs no network.
