@@ -1,10 +1,7 @@
-export { aboutPhotoQuery } from "./api/aboutPhotoQuery";
+export { aboutPhoto } from "./api/aboutPhoto";
 export { aboutTextQuery } from "./api/aboutTextQuery";
-export { deleteAboutPhoto } from "./api/deleteAboutPhoto";
 export { processPhotosQuery } from "./api/processPhotosQuery";
-export { replaceAboutPhoto } from "./api/replaceAboutPhoto";
 export { replaceAboutText } from "./api/replaceAboutText";
 export { type ProcessPhotoItem, replaceProcessPhotos } from "./api/replaceProcessPhotos";
-export { updateAboutPhotoAlt } from "./api/updateAboutPhotoAlt";
 export type { AboutText } from "./model/aboutText";
 export { maxProcessPhotos, type ProcessPhoto } from "./model/processPhoto";

@@ -1,8 +1,8 @@
+import { QueryClient } from "@tanstack/react-query";
 import { HttpResponse, http as mswHttp } from "msw/http";
 import { beforeEach, describe, expect, it } from "vitest";
-
-import { saveContactPhoto } from "@/features/edit-contacts/model/saveContactPhoto";
 import { HttpError } from "@/shared/api/httpError";
+import { photoSlot, saveSlotPhoto } from "@/shared/api/photoSlot";
 
 import {
   csrfHandler,
@@ -11,13 +11,14 @@ import {
   problem,
   uploadId,
   uploadsHandler,
-} from "../../../support/handlers";
-import { apiPhoto, imageFile } from "../../../support/images";
-import { recordRequests, server } from "../../../support/server";
+} from "../../support/handlers";
+import { apiPhoto, imageFile } from "../../support/images";
+import { recordRequests, server } from "../../support/server";
 
 /** The ETag of the photo the form was made from, and of the photo each change saves. */
 const etag = '"read"';
 const savedEtag = '"saved"';
+const slot = photoSlot("/contacts/photo", ["contacts", "photo"]);
 
 /** The body, CSRF token and If-Match of each change the API received, by `METHOD /path`. */
 let received: Record<string, { body: unknown; ifMatch: string | null; token: string | null }>;
@@ -57,9 +58,20 @@ beforeEach(() => {
   );
 });
 
-describe("saveContactPhoto", () => {
+describe("photoSlot", () => {
+  it("reads the photo with its ETag", async () => {
+    const queryClient = new QueryClient();
+
+    await expect(queryClient.fetchQuery(slot.query)).resolves.toEqual({
+      data: null,
+      etag: savedEtag,
+    });
+  });
+});
+
+describe("saveSlotPhoto", () => {
   it("uploads the file, then puts the photo by its upload with its description", async () => {
-    const saved = await saveContactPhoto({
+    const saved = await saveSlotPhoto(slot, {
       change: { alt: "Портрет", file: imageFile(), type: "upload" },
       etag,
     });
@@ -75,7 +87,7 @@ describe("saveContactPhoto", () => {
   });
 
   it("updates only the description of the photo", async () => {
-    const saved = await saveContactPhoto({
+    const saved = await saveSlotPhoto(slot, {
       change: { alt: "Автопортрет", type: "updateAlt" },
       etag,
     });
@@ -93,7 +105,7 @@ describe("saveContactPhoto", () => {
   it("deletes the photo and takes the ETag of the empty photo from the response", async () => {
     const requests = recordRequests();
 
-    const saved = await saveContactPhoto({ change: { type: "delete" }, etag });
+    const saved = await saveSlotPhoto(slot, { change: { type: "delete" }, etag });
 
     expect(received).toEqual({
       "DELETE /api/contacts/photo": { body: null, ifMatch: etag, token: csrfToken },
@@ -105,10 +117,10 @@ describe("saveContactPhoto", () => {
   it("rejects with the error of the server", async () => {
     server.use(mswHttp.delete("/api/contacts/photo", () => problem(412)));
 
-    await expect(saveContactPhoto({ change: { type: "delete" }, etag })).rejects.toMatchObject({
+    await expect(saveSlotPhoto(slot, { change: { type: "delete" }, etag })).rejects.toMatchObject({
       status: 412,
     });
-    await expect(saveContactPhoto({ change: { type: "delete" }, etag })).rejects.toBeInstanceOf(
+    await expect(saveSlotPhoto(slot, { change: { type: "delete" }, etag })).rejects.toBeInstanceOf(
       HttpError,
     );
   });
@@ -117,7 +129,7 @@ describe("saveContactPhoto", () => {
     server.use(mswHttp.get("/api/auth/csrf", () => HttpResponse.error()));
     const requests = recordRequests();
 
-    await expect(saveContactPhoto({ change: { type: "delete" }, etag })).rejects.toThrow();
+    await expect(saveSlotPhoto(slot, { change: { type: "delete" }, etag })).rejects.toThrow();
     expect(requests).toEqual(["GET /api/auth/csrf"]);
   });
 });

@@ -1,4 +1,4 @@
-import { contactLinksQuery, contactPhotoQuery } from "@/entities/contacts";
+import { contactLinksQuery, contactPhoto } from "@/entities/contacts";
 import { queryClient } from "@/shared/api/queryClient";
 
 // Each section loads its own resource afresh on entering it, even when it is cached: the form
@@ -11,7 +11,7 @@ export async function contactLinksLoader() {
 }
 
 export async function contactPhotoLoader() {
-  await queryClient.fetchQuery({ ...contactPhotoQuery, staleTime: 0 });
+  await queryClient.fetchQuery({ ...contactPhoto.query, staleTime: 0 });
 
   return null;
 }

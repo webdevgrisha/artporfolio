@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { FetchQueryOptions } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import type { Tagged } from "@/shared/api/http";
-import type { Photo } from "@/shared/api/photo";
+import { getSavePhotoErrorMessage, type Photo } from "@/shared/api/photo";
+import { type PhotoSlot, saveSlotPhoto } from "@/shared/api/photoSlot";
 import {
   getPhotoChange,
   type PhotoFormValues,
@@ -21,28 +22,30 @@ const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhotoAlt);
 interface EditPhotoFormProps {
   className?: string;
   label: string;
-  /**
-   * Sends the change to the server and shows its result; resolves with the photo now saved and its
-   * ETag, and rejects when it was not saved.
-   */
-  onSave: (params: SavePhotoParams) => Promise<Tagged<Photo | null>>;
   /** The photo as stored on the server when the form opens, with its ETag. */
   photo: Tagged<Photo | null>;
-  /** Reads the photo afresh when a save finds that it has changed since. */
-  query: FetchQueryOptions<Tagged<Photo | null>, Error, Tagged<Photo | null>, string[]>;
-  /** The toast id of `onSave`, for the result of a save with nothing to send. */
-  toastId: string;
+  slot: PhotoSlot;
+}
+
+/**
+ * Saves a change of the photo, then puts the saved photo into the cache: the server returns it
+ * with its ETag, so the page need not load it again.
+ */
+function useSavePhoto(slot: PhotoSlot, toastId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    meta: { feedback: { getErrorMessage: getSavePhotoErrorMessage, toastId } },
+    mutationFn: (params: SavePhotoParams) => saveSlotPhoto(slot, params),
+    onSuccess: (saved) => queryClient.setQueryData(slot.query.queryKey, saved),
+  });
 }
 
 /** Edits a single photo with its description, such as «Моё фото» or the contacts photo. */
-export function EditPhotoForm({
-  className,
-  label,
-  onSave,
-  photo,
-  query,
-  toastId,
-}: EditPhotoFormProps) {
+export function EditPhotoForm({ className, label, photo, slot }: EditPhotoFormProps) {
+  // One toast for the saves of this photo: a later result replaces the previous one.
+  const toastId = `save ${slot.path}`;
+  const savePhoto = useSavePhoto(slot, toastId);
   const form = useForm<PhotoFormValues>({
     defaultValues: toPhotoFormValues(photo.data),
     resolver: zodResolver(photoFormSchema),
@@ -51,14 +54,14 @@ export function EditPhotoForm({
   const { editForm, saved } = useSavedForm({
     form,
     initial: photo,
-    query,
+    query: slot.query,
     save: (values, etag) => {
       const change = getPhotoChange(values, {
         isAltDirty: Boolean(dirtyFields.photoAlt),
         isPhotoDirty: Boolean(dirtyFields.photo),
       });
 
-      return change ? onSave({ change, etag }) : null;
+      return change ? savePhoto.mutateAsync({ change, etag }) : null;
     },
     toValues: toPhotoFormValues,
     toastId,

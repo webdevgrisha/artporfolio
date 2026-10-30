@@ -1,4 +1,4 @@
-import { aboutPhotoQuery, aboutTextQuery, processPhotosQuery } from "@/entities/about";
+import { aboutPhoto, aboutTextQuery, processPhotosQuery } from "@/entities/about";
 import { queryClient } from "@/shared/api/queryClient";
 
 // Each section loads its own resource afresh on entering it, even when it is cached: the form
@@ -11,7 +11,7 @@ export async function aboutTextLoader() {
 }
 
 export async function aboutPhotoLoader() {
-  await queryClient.fetchQuery({ ...aboutPhotoQuery, staleTime: 0 });
+  await queryClient.fetchQuery({ ...aboutPhoto.query, staleTime: 0 });
 
   return null;
 }
