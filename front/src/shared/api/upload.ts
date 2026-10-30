@@ -10,6 +10,18 @@ const uploadResponseSchema = z.object({
   upload: z.object({ id: z.string() }),
 });
 
+/**
+ * How long an upload is reused for its file. The server keeps an upload for a day
+ * (backend/src/shared/images/uploads.ts); an hour stays well within it.
+ */
+const uploadReuseMs = 60 * 60 * 1000;
+
+/**
+ * The uploads made in this tab, by file: a save repeated after a failure refers to the photos
+ * already uploaded instead of sending them again, as the server encodes every one.
+ */
+const uploads = new WeakMap<File, { id: string; uploadedAt: number }>();
+
 /** A photo that was not uploaded; `cause` is the request error. */
 export class UploadError extends Error {
   readonly fileName: string;
@@ -22,19 +34,30 @@ export class UploadError extends Error {
 }
 
 /**
- * Uploads a photo for a later change to refer to, and returns the id of the upload: the server
- * keeps it for a day (backend/src/shared/images/uploads.ts). Rejects with `UploadError`.
+ * Uploads a photo for a later change to refer to, and returns the id of the upload. A file
+ * uploaded within the last hour is not sent again. Rejects with `UploadError`.
  */
 export async function uploadImage(file: File): Promise<string> {
+  const upload = uploads.get(file);
+
+  if (upload && Date.now() - upload.uploadedAt < uploadReuseMs) {
+    return upload.id;
+  }
+
   const body = new FormData();
   body.set("file", file);
 
+  let id: string;
+
   try {
     const response = await http.post({ path: "/uploads", body, schema: uploadResponseSchema });
-    return response.upload.id;
+    id = response.upload.id;
   } catch (error) {
     throw new UploadError(file.name, error);
   }
+
+  uploads.set(file, { id, uploadedAt: Date.now() });
+  return id;
 }
 
 /** The request error behind a failed upload, or the error itself, for the messages by status. */

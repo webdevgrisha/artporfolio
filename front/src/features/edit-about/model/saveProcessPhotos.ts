@@ -20,7 +20,8 @@ async function toItem(row: ProcessPhotoRow): Promise<ProcessPhotoItem> {
 /**
  * Uploads the picked files, one at a time because the server encodes every photo, then replaces
  * the list in one request, which the server saves all or nothing. Until that request, nothing on
- * the site changes. Returns the saved list.
+ * the site changes. A repeated save does not send the files that an earlier one uploaded. Returns
+ * the saved list.
  */
 export async function saveProcessPhotos({
   etag,
