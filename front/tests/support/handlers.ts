@@ -3,7 +3,7 @@ import { HttpResponse, http as mswHttp } from "msw/http";
 /** The token the CSRF handler returns. */
 export const csrfToken = "csrf-token";
 
-/** Returns the CSRF token that every save asks for first. */
+/** Returns the CSRF token that the HTTP client asks for before its first change. */
 export const csrfHandler = mswHttp.get("/api/auth/csrf", () => HttpResponse.json({ csrfToken }));
 
 /** A response without content, such as that of a deletion. */

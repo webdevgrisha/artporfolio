@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs, redirect, replace } from "react-router";
 
-import { getCsrfToken } from "@/shared/api/csrf";
 import { getRequestErrorMessage } from "@/shared/api/getRequestErrorMessage";
+import { http } from "@/shared/api/http";
 import { HttpError } from "@/shared/api/httpError";
 import { queryClient } from "@/shared/api/queryClient";
 import { adminHomePath, routes } from "@/shared/config/routes";
@@ -26,20 +26,13 @@ function getReturnPath(value: FormDataEntryValue | null): string {
  * never reached the server: then the session is still there.
  */
 async function logout(): Promise<void> {
-  let csrfToken: string;
-
   try {
-    csrfToken = await getCsrfToken();
+    await endSession();
   } catch (error) {
-    // The API gives no token without a session cookie: the user is already signed out.
-    if (error instanceof HttpError && error.status === 401) return;
-    throw error;
-  }
-
-  try {
-    await endSession({ csrfToken });
-  } catch (error) {
-    if (!(error instanceof HttpError && error.status >= 500)) throw error;
+    if (!(error instanceof HttpError)) throw error;
+    // The API gives no CSRF token without a session cookie: the user is already signed out.
+    if (error.status === 401) return;
+    if (error.status < 500) throw error;
   }
 }
 
@@ -60,6 +53,7 @@ export async function logoutAction({ request }: ActionFunctionArgs) {
 
   // The data of the session stays in the tab no longer than the session.
   queryClient.clear();
+  http.forgetCsrfToken();
 
   return redirect(routes.login);
 }

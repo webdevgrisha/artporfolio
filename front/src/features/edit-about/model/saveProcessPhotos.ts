@@ -40,14 +40,14 @@ function toUnsavedRow(step: EditStep): ProcessPhotoRow {
   }
 }
 
-async function saveStep(step: EditStep, csrfToken: string): Promise<ProcessPhoto> {
+async function saveStep(step: EditStep): Promise<ProcessPhoto> {
   switch (step.type) {
     case "add":
-      return addProcessPhoto({ alt: step.alt, csrfToken, file: step.file });
+      return addProcessPhoto({ alt: step.alt, file: step.file });
     case "replace":
-      return replaceProcessPhoto({ alt: step.alt, csrfToken, file: step.file, id: step.id });
+      return replaceProcessPhoto({ alt: step.alt, file: step.file, id: step.id });
     case "updateAlt":
-      return updateProcessPhotoAlt({ alt: step.alt, csrfToken, id: step.id });
+      return updateProcessPhotoAlt({ alt: step.alt, id: step.id });
   }
 }
 
@@ -60,7 +60,6 @@ async function saveStep(step: EditStep, csrfToken: string): Promise<ProcessPhoto
 export async function saveProcessPhotos(
   { deletedIds, steps }: ProcessPhotosChanges,
   saved: readonly ProcessPhoto[],
-  csrfToken: string,
 ): Promise<SaveProcessPhotosResult> {
   const savedById = new Map(saved.map((photo) => [photo.id, photo]));
   // Follows every saved change, so it is the list on the server at the end.
@@ -78,7 +77,7 @@ export async function saveProcessPhotos(
     if (isStopped) break;
 
     try {
-      await deleteProcessPhoto({ csrfToken, id });
+      await deleteProcessPhoto({ id });
       serverPhotos = serverPhotos.filter((photo) => photo.id !== id);
     } catch (error) {
       addError(error, getSaveProcessPhotoErrorMessage(error, savedById.get(id)?.fileName ?? ""));
@@ -100,7 +99,7 @@ export async function saveProcessPhotos(
     }
 
     try {
-      const photo = await saveStep(step, csrfToken);
+      const photo = await saveStep(step);
       serverPhotos =
         step.type === "add"
           ? [...serverPhotos, photo]
@@ -121,7 +120,7 @@ export async function saveProcessPhotos(
 
   if (!isStopped && isEveryPhotoListed && isReordered) {
     try {
-      const order = await reorderProcessPhotos({ csrfToken, ids });
+      const order = await reorderProcessPhotos({ ids });
       const serverPhotosById = new Map(serverPhotos.map((photo) => [photo.id, photo]));
       serverPhotos = order.flatMap((id) => serverPhotosById.get(id) ?? []);
     } catch (error) {

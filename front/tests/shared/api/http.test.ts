@@ -1,15 +1,19 @@
 import { HttpResponse, http as mswHttp } from "msw/http";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError, z } from "zod";
 
 import { http } from "@/shared/api/http";
 import { HttpError } from "@/shared/api/httpError";
 import { NetworkError } from "@/shared/api/networkError";
 
-import { problem } from "../../support/handlers";
-import { server } from "../../support/server";
+import { csrfHandler, csrfToken, problem } from "../../support/handlers";
+import { recordRequests, server } from "../../support/server";
 
 const itemSchema = z.object({ name: z.string() });
+
+beforeEach(() => {
+  server.use(csrfHandler);
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -32,7 +36,7 @@ describe("http", () => {
     );
   });
 
-  it("sends an object as JSON with its headers", async () => {
+  it("sends an object as JSON with its headers and the CSRF token", async () => {
     let request: Request | undefined;
     server.use(
       mswHttp.put("/api/items/1", ({ request: received }) => {
@@ -43,13 +47,14 @@ describe("http", () => {
 
     await http.put({
       body: { name: "Холст" },
-      headers: { "X-CSRF-Token": "token" },
+      headers: { "X-Request": "edit" },
       path: "/items/1",
       schema: itemSchema,
     });
 
     expect(request?.headers.get("Content-Type")).toBe("application/json");
-    expect(request?.headers.get("X-CSRF-Token")).toBe("token");
+    expect(request?.headers.get("X-Request")).toBe("edit");
+    expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
     await expect(request?.json()).resolves.toEqual({ name: "Холст" });
   });
 
@@ -119,5 +124,85 @@ describe("http", () => {
     await expect(http.get({ path: "/items/1", schema: itemSchema })).rejects.toBeInstanceOf(
       ZodError,
     );
+  });
+});
+
+describe("http CSRF token", () => {
+  /** The X-CSRF-Token header of each request to /api/items, in order. */
+  function recordTokens(): (string | null)[] {
+    const tokens: (string | null)[] = [];
+    server.events.on("request:start", ({ request }) => {
+      if (new URL(request.url).pathname.startsWith("/api/items")) {
+        tokens.push(request.headers.get("X-CSRF-Token"));
+      }
+    });
+    return tokens;
+  }
+
+  beforeEach(() => {
+    server.use(
+      mswHttp.get("/api/items/1", () => HttpResponse.json({ name: "Холст" })),
+      mswHttp.delete("/api/items/:id", () => new HttpResponse(null, { status: 204 })),
+    );
+  });
+
+  it("asks for the token once and sends it with every change, not with a read", async () => {
+    const requests = recordRequests();
+    const tokens = recordTokens();
+
+    await Promise.all([http.delete({ path: "/items/1" }), http.delete({ path: "/items/2" })]);
+    await http.get({ path: "/items/1", schema: itemSchema });
+
+    expect(requests.filter((request) => request === "GET /api/auth/csrf")).toHaveLength(1);
+    expect(tokens).toEqual([csrfToken, csrfToken, null]);
+  });
+
+  it("sends a change made without a session without asking for a token", async () => {
+    const requests = recordRequests();
+
+    await http.delete({ path: "/items/1", withCsrfToken: false });
+
+    expect(requests).toEqual(["DELETE /api/items/1"]);
+  });
+
+  it("sends a change once more with a new token after the session changed", async () => {
+    let session = "old";
+    server.use(
+      mswHttp.get("/api/auth/csrf", () => HttpResponse.json({ csrfToken: `token-${session}` })),
+      mswHttp.delete("/api/items/1", ({ request }) =>
+        request.headers.get("X-CSRF-Token") === `token-${session}`
+          ? new HttpResponse(null, { status: 204 })
+          : problem(403),
+      ),
+    );
+    await http.delete({ path: "/items/1" });
+    session = "new";
+    const tokens = recordTokens();
+
+    await expect(http.delete({ path: "/items/1" })).resolves.toBeUndefined();
+    expect(tokens).toEqual(["token-old", "token-new"]);
+  });
+
+  it("sends a change once more at most", async () => {
+    server.use(mswHttp.delete("/api/items/1", () => problem(403)));
+    const tokens = recordTokens();
+
+    await expect(http.delete({ path: "/items/1" })).rejects.toMatchObject({ status: 403 });
+    expect(tokens).toHaveLength(2);
+  });
+
+  it("asks again after the token was not received", async () => {
+    server.use(mswHttp.get("/api/auth/csrf", () => HttpResponse.error(), { once: true }));
+
+    await expect(http.delete({ path: "/items/1" })).rejects.toBeInstanceOf(NetworkError);
+    await expect(http.delete({ path: "/items/1" })).resolves.toBeUndefined();
+  });
+
+  it("rejects a change with the reason the token was not received", async () => {
+    server.use(mswHttp.get("/api/auth/csrf", () => problem(401)));
+    const requests = recordRequests();
+
+    await expect(http.delete({ path: "/items/1" })).rejects.toMatchObject({ status: 401 });
+    expect(requests).toEqual(["GET /api/auth/csrf"]);
   });
 });

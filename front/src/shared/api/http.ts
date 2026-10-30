@@ -1,9 +1,19 @@
-import type { ZodType, z } from "zod";
+import { type ZodType, z } from "zod";
 
 import { HttpError } from "./httpError";
 import { NetworkError } from "./networkError";
 
-type HttpOptions = Omit<RequestInit, "body" | "credentials" | "method">;
+const csrfTokenResponseSchema = z.object({
+  csrfToken: z.string().min(1),
+});
+
+type HttpOptions = Omit<RequestInit, "body" | "credentials" | "method"> & {
+  /**
+   * Whether a change carries the CSRF token of the session in its X-CSRF-Token header; on by
+   * default. Only a request made without a session, such as signing in, goes without it.
+   */
+  withCsrfToken?: boolean;
+};
 
 interface GetOptions<TSchema extends ZodType> extends HttpOptions {
   path: string;
@@ -32,6 +42,8 @@ interface RequestOptions extends HttpOptions {
 
 class Http {
   private readonly baseUrl: string;
+  /** The CSRF token of the current session, asked for by the first change and then reused. */
+  private csrfToken: Promise<string> | undefined;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -110,9 +122,58 @@ class Http {
     });
   }
 
+  /** Forgets the CSRF token, e.g. once its session has ended. */
+  forgetCsrfToken(): void {
+    this.csrfToken = undefined;
+  }
+
+  private getCsrfToken(): Promise<string> {
+    if (!this.csrfToken) {
+      const token = this.get({ path: "/auth/csrf", schema: csrfTokenResponseSchema }).then(
+        (response) => response.csrfToken,
+      );
+      this.csrfToken = token;
+      // A failed request is not kept: the next change asks again.
+      token.catch(() => {
+        if (this.csrfToken === token) this.forgetCsrfToken();
+      });
+    }
+
+    return this.csrfToken;
+  }
+
   private async request(
     path: string,
-    { body, headers, ...options }: RequestOptions,
+    { withCsrfToken = true, ...options }: RequestOptions,
+  ): Promise<Response> {
+    let response: Response;
+
+    if (options.method === "GET" || !withCsrfToken) {
+      response = await this.send(path, options);
+    } else {
+      const token = this.getCsrfToken();
+      response = await this.send(path, options, await token);
+
+      if (response.status === 403) {
+        // The session changed since the token was received, e.g. after signing in again in
+        // another tab. The server rejects a wrong token before it handles the change, so the
+        // change is sent once more with the token of the new session.
+        if (this.csrfToken === token) this.forgetCsrfToken();
+        response = await this.send(path, options, await this.getCsrfToken());
+      }
+    }
+
+    if (!response.ok) {
+      throw new HttpError(response.status);
+    }
+
+    return response;
+  }
+
+  private async send(
+    path: string,
+    { body, headers, ...options }: Omit<RequestOptions, "withCsrfToken">,
+    csrfToken?: string,
   ): Promise<Response> {
     const isFormData = body instanceof FormData;
     const requestBody = isFormData ? body : body ? JSON.stringify(body) : undefined;
@@ -123,10 +184,12 @@ class Http {
       requestHeaders.set("Content-Type", "application/json");
     }
 
-    let response: Response;
+    if (csrfToken) {
+      requestHeaders.set("X-CSRF-Token", csrfToken);
+    }
 
     try {
-      response = await fetch(`${this.baseUrl}${path}`, {
+      return await fetch(`${this.baseUrl}${path}`, {
         ...options,
         body: requestBody,
         credentials: "include",
@@ -139,12 +202,6 @@ class Http {
       // fetch rejects with a TypeError, which a bug in the code throws as well.
       throw new NetworkError(error);
     }
-
-    if (!response.ok) {
-      throw new HttpError(response.status);
-    }
-
-    return response;
   }
 }
 

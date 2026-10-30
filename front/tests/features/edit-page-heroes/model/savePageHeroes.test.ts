@@ -50,7 +50,7 @@ describe("savePageHeroes", () => {
   });
 
   it("stops at an expired session", async () => {
-    server.use(mswHttp.put("/api/pages/home/hero", () => problem(403)));
+    server.use(mswHttp.put("/api/pages/home/hero", () => problem(401)));
     const requests = recordRequests();
 
     const result = await savePageHeroes({

@@ -7,7 +7,6 @@ const processPhotoOrderSchema = z.object({
 });
 
 interface ReorderProcessPhotosParams {
-  csrfToken: string;
   /** Every process photo id, once, in the new order. */
   ids: readonly string[];
 }
@@ -16,16 +15,10 @@ interface ReorderProcessPhotosParams {
  * Puts the process photos in the given order and returns it. Rejected with 409 when the ids
  * differ from the photos on the server.
  */
-export async function reorderProcessPhotos({
-  csrfToken,
-  ids,
-}: ReorderProcessPhotosParams): Promise<string[]> {
+export async function reorderProcessPhotos({ ids }: ReorderProcessPhotosParams): Promise<string[]> {
   const response = await http.put({
     path: "/about/process-photos/order",
     body: { ids },
-    headers: {
-      "X-CSRF-Token": csrfToken,
-    },
     schema: processPhotoOrderSchema,
   });
 

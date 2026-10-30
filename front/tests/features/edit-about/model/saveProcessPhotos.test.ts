@@ -5,7 +5,7 @@ import type { ProcessPhotosChanges } from "@/features/edit-about/model/processPh
 import { saveProcessPhotos } from "@/features/edit-about/model/saveProcessPhotos";
 import { sessionExpiredMessage } from "@/shared/api/getRequestErrorMessage";
 
-import { csrfToken, noContent, problem } from "../../../support/handlers";
+import { csrfHandler, noContent, problem } from "../../../support/handlers";
 import { apiProcessPhoto, imageFile } from "../../../support/images";
 import { recordRequests, server } from "../../../support/server";
 
@@ -41,7 +41,7 @@ function processPhotosApi() {
 }
 
 beforeEach(() => {
-  server.use(...processPhotosApi());
+  server.use(csrfHandler, ...processPhotosApi());
 });
 
 describe("saveProcessPhotos", () => {
@@ -63,9 +63,10 @@ describe("saveProcessPhotos", () => {
       ],
     };
 
-    const result = await saveProcessPhotos(changes, saved, csrfToken);
+    const result = await saveProcessPhotos(changes, saved);
 
     expect(requests).toEqual([
+      "GET /api/auth/csrf",
       "DELETE /api/about/process-photos/b",
       "POST /api/about/process-photos",
       "PATCH /api/about/process-photos/a",
@@ -83,27 +84,6 @@ describe("saveProcessPhotos", () => {
     });
   });
 
-  it("sends the CSRF token with every request", async () => {
-    const tokens: (string | null)[] = [];
-    server.events.on("request:start", ({ request }) => {
-      tokens.push(request.headers.get("X-CSRF-Token"));
-    });
-
-    await saveProcessPhotos(
-      {
-        deletedIds: ["a"],
-        steps: [
-          { alt: "Этап c", file: imageFile(), id: "c", type: "replace" },
-          { id: "b", type: "keep" },
-        ],
-      },
-      saved,
-      csrfToken,
-    );
-
-    expect(tokens).toEqual([csrfToken, csrfToken, csrfToken]);
-  });
-
   it("does not send the order when it did not change", async () => {
     const requests = recordRequests();
 
@@ -118,10 +98,13 @@ describe("saveProcessPhotos", () => {
         ],
       },
       saved,
-      csrfToken,
     );
 
-    expect(requests).toEqual(["PUT /api/about/process-photos/b", "POST /api/about/process-photos"]);
+    expect(requests).toEqual([
+      "GET /api/auth/csrf",
+      "PUT /api/about/process-photos/b",
+      "POST /api/about/process-photos",
+    ]);
     expect(result.photos.map((photo) => photo.id)).toEqual(["a", "b", "c", "new-1"]);
   });
 
@@ -141,10 +124,10 @@ describe("saveProcessPhotos", () => {
         ],
       },
       saved,
-      csrfToken,
     );
 
     expect(requests).toEqual([
+      "GET /api/auth/csrf",
       "PATCH /api/about/process-photos/a",
       "POST /api/about/process-photos",
       "PUT /api/about/process-photos/order",
@@ -174,7 +157,6 @@ describe("saveProcessPhotos", () => {
         ],
       },
       saved,
-      csrfToken,
     );
 
     expect(result.error).toBe("Фото «etude.png» не добавлено: фото уже максимум");
@@ -195,10 +177,9 @@ describe("saveProcessPhotos", () => {
         ],
       },
       saved,
-      csrfToken,
     );
 
-    expect(requests).toEqual(["DELETE /api/about/process-photos/a"]);
+    expect(requests).toEqual(["GET /api/auth/csrf", "DELETE /api/about/process-photos/a"]);
     expect(result.photos).toEqual(saved);
   });
 
@@ -216,10 +197,9 @@ describe("saveProcessPhotos", () => {
         ],
       },
       saved,
-      csrfToken,
     );
 
-    expect(requests).toEqual(["DELETE /api/about/process-photos/a"]);
+    expect(requests).toEqual(["GET /api/auth/csrf", "DELETE /api/about/process-photos/a"]);
     expect(result).toEqual({
       error: sessionExpiredMessage,
       photos: saved,
@@ -246,7 +226,6 @@ describe("saveProcessPhotos", () => {
         ],
       },
       saved,
-      csrfToken,
     );
 
     expect(result.error).toBe("Нет соединения с сервером. Проверьте интернет и попробуйте ещё раз");
@@ -265,7 +244,6 @@ describe("saveProcessPhotos", () => {
         ],
       },
       saved,
-      csrfToken,
     );
 
     expect(result.error).toBe(

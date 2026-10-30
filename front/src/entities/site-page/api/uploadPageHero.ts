@@ -10,26 +10,18 @@ const heroResponseSchema = z.object({
 });
 
 interface UploadPageHeroParams {
-  csrfToken: string;
   file: File;
   page: SitePageId;
 }
 
 /** Uploads or replaces the hero of the page and returns it as stored by the server. */
-export async function uploadPageHero({
-  csrfToken,
-  file,
-  page,
-}: UploadPageHeroParams): Promise<Image> {
+export async function uploadPageHero({ file, page }: UploadPageHeroParams): Promise<Image> {
   const body = new FormData();
   body.set("file", file);
 
   const response = await http.put({
     path: `/pages/${page}/hero`,
     body,
-    headers: {
-      "X-CSRF-Token": csrfToken,
-    },
     schema: heroResponseSchema,
   });
 

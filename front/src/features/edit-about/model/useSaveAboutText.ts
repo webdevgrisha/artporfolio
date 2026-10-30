@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { type AboutText, aboutQuery, updateAboutText } from "@/entities/about";
-import { getCsrfToken } from "@/shared/api/csrf";
 
 /**
  * Replaces all texts, then loads the About page again. That happens after a failed save too: a
@@ -11,8 +10,7 @@ export function useSaveAboutText() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (text: AboutText) =>
-      updateAboutText({ csrfToken: await getCsrfToken(), text }),
+    mutationFn: (text: AboutText) => updateAboutText({ text }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: aboutQuery.queryKey }),
   });
 }

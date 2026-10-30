@@ -10,6 +10,8 @@ export async function createSession({ idToken }: CreateSessionParams): Promise<A
     path: "/auth/login",
     body: { idToken },
     schema: authUserResponseSchema,
+    // There is no session yet, so there is no CSRF token either.
+    withCsrfToken: false,
   });
 
   return response.user;

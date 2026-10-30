@@ -54,7 +54,7 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
 - A layer imports only from lower layers: `features` may use `entities` and `shared`, never `widgets` or `pages`.
 - Nothing imports `app`.
 - Inside one slice, use relative imports (`../model/login`). Across slices and layers, use the `@/` alias.
-- Slices of the same layer do not import each other. Shared needs move down a layer (`getCsrfToken` is used by logout and by every save, so it lives in `shared/api`).
+- Slices of the same layer do not import each other. Shared needs move down a layer (`isSessionExpiredError` is used by several features, so it lives in `shared/api`).
 
 `shared` has no slices. `shared/ui` exposes one public `index.ts` per component (`@/shared/ui/button`). `shared/api`, `shared/config` and `shared/lib` are imported file by file (`@/shared/api/http`) on purpose: a common index would make every chunk that needs the HTTP client also load Firebase.
 
@@ -78,6 +78,7 @@ Enforced by Biome (`noRestrictedImports` in `biome.json`):
   - an edit page loads its data afresh on entering it: its loader calls `queryClient.fetchQuery` (`pages/contacts/model/contactsRoute.ts`), and the page reads it with `useSuspenseQuery` and passes it to the form;
   - the form stays on the page, so it saves in its react-hook-form submit handler (`EditContactsForm`) through a mutation hook (`useSaveContacts`). The mutation sends the changes and invalidates the page's query after every save, a failed one included, since a failed request may still have changed the server; then the form resets the saved fields and shows the result. `isSubmitting` disables the form meanwhile;
   - logout clears the query cache.
+- Every change carries the CSRF token without its caller knowing: `http` (`shared/api/http.ts`) asks `GET /api/auth/csrf` for it with the first change and reuses it. A 403 means the session changed, for example after signing in again in another tab: `http` asks for the new token and sends the change once more. Login goes without a token (`withCsrfToken: false`); logout forgets it.
 - `PageLoading` is the `HydrateFallback` shown while the first loaders run.
 - A pathless root route catches every error that no route below handles with `ErrorPage` (`pages/error`), imported eagerly so it works when a chunk fails to load.
 - Admin pages are nested in a pathless route whose `ErrorBoundary` is `AdminPageError` (`widgets/admin-layout`): a page that fails to load or render is replaced inside the layout, and the navigation stays usable.

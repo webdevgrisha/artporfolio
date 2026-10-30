@@ -1,14 +1,7 @@
 import { http } from "@/shared/api/http";
 
-interface EndSessionParams {
-  csrfToken: string;
-}
-
-export async function endSession({ csrfToken }: EndSessionParams): Promise<void> {
+export async function endSession(): Promise<void> {
   await http.postVoid({
     path: "/auth/logout",
-    headers: {
-      "X-CSRF-Token": csrfToken,
-    },
   });
 }

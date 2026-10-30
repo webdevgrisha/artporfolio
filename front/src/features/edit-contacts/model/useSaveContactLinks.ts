@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { type Contacts, contactsQuery, updateContacts } from "@/entities/contacts";
-import { getCsrfToken } from "@/shared/api/csrf";
 
 /**
  * Replaces all links, then loads the contacts again. That happens after a failed save too: a
@@ -11,8 +10,7 @@ export function useSaveContactLinks() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (contacts: Contacts) =>
-      updateContacts({ contacts, csrfToken: await getCsrfToken() }),
+    mutationFn: (contacts: Contacts) => updateContacts({ contacts }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: contactsQuery.queryKey }),
   });
 }

@@ -1,9 +1,8 @@
 import { deletePageHero, type SitePageId, uploadPageHero } from "@/entities/site-page";
-import { getCsrfToken } from "@/shared/api/csrf";
 import { isSessionExpiredError } from "@/shared/api/getRequestErrorMessage";
 import { joinMessages } from "@/shared/lib/joinMessages";
 
-import { getSaveHeroErrorMessage, getSavePageHeroesErrorMessage } from "../lib/saveErrorMessages";
+import { getSaveHeroErrorMessage } from "../lib/saveErrorMessages";
 import { heroFields } from "./heroFields";
 import type { HeroChange, PageHeroesChanges } from "./pageHeroesChanges";
 
@@ -14,11 +13,11 @@ export interface SavePageHeroesResult {
   savedPages: SitePageId[];
 }
 
-async function saveHero(page: SitePageId, change: HeroChange, csrfToken: string): Promise<void> {
+async function saveHero(page: SitePageId, change: HeroChange): Promise<void> {
   if (change.type === "upload") {
-    await uploadPageHero({ csrfToken, file: change.file, page });
+    await uploadPageHero({ file: change.file, page });
   } else {
-    await deletePageHero({ csrfToken, page });
+    await deletePageHero({ page });
   }
 }
 
@@ -28,14 +27,6 @@ async function saveHero(page: SitePageId, change: HeroChange, csrfToken: string)
  * fails keeps its changes and does not stop the others. Failures are reported in `error`.
  */
 export async function savePageHeroes(changes: PageHeroesChanges): Promise<SavePageHeroesResult> {
-  let csrfToken: string;
-
-  try {
-    csrfToken = await getCsrfToken();
-  } catch (error) {
-    return { error: getSavePageHeroesErrorMessage(error), savedPages: [] };
-  }
-
   const savedPages: SitePageId[] = [];
   const errors = new Set<string>();
 
@@ -44,7 +35,7 @@ export async function savePageHeroes(changes: PageHeroesChanges): Promise<SavePa
     if (!change) continue;
 
     try {
-      await saveHero(page, change, csrfToken);
+      await saveHero(page, change);
       savedPages.push(page);
     } catch (error) {
       errors.add(getSaveHeroErrorMessage(error, label));

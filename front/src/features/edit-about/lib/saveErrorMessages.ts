@@ -7,7 +7,7 @@ import { HttpError } from "@/shared/api/httpError";
 import { imageUploadRules } from "@/shared/api/image";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
-/** For a save of the process photos that could not start, such as without a CSRF token. */
+/** For a save of the process photos that failed as a whole, not photo by photo. */
 export function getSaveProcessPhotosErrorMessage(error: unknown): string {
   if (isSessionExpiredError(error)) return sessionExpiredMessage;
 

@@ -7,11 +7,6 @@ import { HttpError } from "@/shared/api/httpError";
 import { imageUploadRules } from "@/shared/api/image";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
-/** For a save that could not start: the CSRF token was not received. */
-export function getSavePageHeroesErrorMessage(error: unknown): string {
-  return getRequestErrorMessage(error, "Не удалось сохранить изменения. Попробуйте ещё раз");
-}
-
 /** For the hero of one page, named by `pageLabel`. */
 export function getSaveHeroErrorMessage(error: unknown, pageLabel: string): string {
   if (isSessionExpiredError(error)) return sessionExpiredMessage;
