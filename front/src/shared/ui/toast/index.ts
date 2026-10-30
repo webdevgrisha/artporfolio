@@ -1,2 +1,2 @@
 export { Toaster } from "./Toaster";
-export { showErrorToast, showSaveResultToast } from "./toast";
+export { savedMessage, showErrorToast, showSaveResultToast, showSuccessToast } from "./toast";

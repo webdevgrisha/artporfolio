@@ -3,19 +3,15 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import type { AboutText } from "@/entities/about";
 import { EditForm } from "@/shared/ui/edit-form";
-import { showSaveResultToast } from "@/shared/ui/toast";
+import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
-import { getSaveTextErrorMessage } from "../lib/saveErrorMessages";
 import {
   type AboutTextFormValues,
   aboutTextFormSchema,
   toAboutTextFormValues,
 } from "../model/aboutTextFormSchema";
-import { useSaveAboutText } from "../model/useSaveAboutText";
+import { saveAboutTextFeedback, useSaveAboutText } from "../model/useSaveAboutText";
 import { AboutTextFields } from "./AboutTextFields";
-
-// One toast for the result of saving: a new result replaces the previous one.
-const saveToastId = "about-text-save";
 
 interface EditAboutTextFormProps {
   className?: string;
@@ -36,17 +32,20 @@ export function EditAboutTextForm({ className, text }: EditAboutTextFormProps) {
   const saveText = useSaveAboutText();
 
   async function saveChanges(values: AboutTextFormValues) {
+    if (!isDirty) {
+      showSuccessToast(savedMessage, { id: saveAboutTextFeedback.toastId });
+      return;
+    }
+
     try {
       // The server replaces all texts at once.
-      if (isDirty) await saveText.mutateAsync(values);
-    } catch (error) {
-      // The changes stay, so the save can be repeated.
-      showSaveResultToast(getSaveTextErrorMessage(error), { id: saveToastId });
+      await saveText.mutateAsync(values);
+    } catch {
+      // The mutation has shown the error; the changes stay, so the save can be repeated.
       return;
     }
 
     reset(values);
-    showSaveResultToast(undefined, { id: saveToastId });
   }
 
   return (

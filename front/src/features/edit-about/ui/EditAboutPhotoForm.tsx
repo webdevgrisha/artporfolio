@@ -1,7 +1,7 @@
 import type { Photo } from "@/shared/api/photo";
 import { EditPhotoForm } from "@/shared/ui/edit-photo-form";
 
-import { useSaveAboutPhoto } from "../model/useSaveAboutPhoto";
+import { saveAboutPhotoFeedback, useSaveAboutPhoto } from "../model/useSaveAboutPhoto";
 
 interface EditAboutPhotoFormProps {
   className?: string;
@@ -17,7 +17,7 @@ export function EditAboutPhotoForm({ className, photo }: EditAboutPhotoFormProps
       className={className}
       label="Моё фото"
       photo={photo}
-      toastId="about-photo-save"
+      toastId={saveAboutPhotoFeedback.toastId}
       onSave={savePhoto.mutateAsync}
     />
   );
