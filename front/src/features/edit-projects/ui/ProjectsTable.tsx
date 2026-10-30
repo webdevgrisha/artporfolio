@@ -16,7 +16,14 @@ import type { Project } from "@/entities/project";
 import { projectPath } from "@/shared/config/routes";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, EditIcon, TrashIcon } from "@/shared/ui/icon";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  EditIcon,
+  ExternalLinkIcon,
+  SortIcon,
+  TrashIcon,
+} from "@/shared/ui/icon";
 import { IconButton, IconButtonLink } from "@/shared/ui/icon-button";
 import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
 import { SearchInput } from "@/shared/ui/search-input";
@@ -33,25 +40,51 @@ interface ProjectsTableProps {
   projects: readonly Project[];
 }
 
+/** A project with its place on the site, which the sorting of the table does not change. */
+interface ProjectRow {
+  position: number;
+  project: Project;
+}
+
 const collator = new Intl.Collator("ru", { sensitivity: "base" });
+
+const dateFormat = new Intl.DateTimeFormat("ru", { dateStyle: "medium" });
+const dateTimeFormat = new Intl.DateTimeFormat("ru", { dateStyle: "long", timeStyle: "short" });
 
 const ariaSort = {
   asc: "ascending",
   desc: "descending",
 } as const satisfies Record<SortDirection, string>;
 
-/** Which way a column is sorted: an arrow once it is, the chevron of the design until then. */
-function SortIcon({ direction }: { direction: SortDirection | false }) {
+/** Which way a column is sorted: an arrow once it is, a pale double arrowhead until then. */
+function SortState({ direction }: { direction: SortDirection | false }) {
   if (direction === "asc") return <ArrowUpIcon className={styles.sortArrow} />;
   if (direction === "desc") return <ArrowDownIcon className={styles.sortArrow} />;
 
-  return <ChevronDownIcon className={styles.sortChevron} />;
+  return <SortIcon className={styles.sortIdle} />;
+}
+
+/** A date for the table, with the time in its tooltip. */
+function ProjectDate({ value }: { value: string }) {
+  const date = new Date(value);
+
+  return (
+    <time className={styles.date} dateTime={value} title={dateTimeFormat.format(date)}>
+      {dateFormat.format(date)}
+    </time>
+  );
+}
+
+/** ISO 8601 dates in UTC sort as text. */
+function compareDates(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 /**
- * Every project; until it is sorted, in the order the site shows them. The search and the sorting
- * are kept in the address. A project opens for editing by its title or the pencil and is deleted
- * after a confirmation; its place on the site is changed in «Порядок на сайте».
+ * Every project; until it is sorted, in the order the site shows them, which «№» keeps showing
+ * after a sort. The search and the sorting are kept in the address. A project opens for editing
+ * by its cover, its title or the pencil and is deleted after a confirmation; its place on the site
+ * is changed in «Порядок на сайте».
  */
 export function ProjectsTable({ className, projects }: ProjectsTableProps) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -59,57 +92,101 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
   const view = React.useMemo(() => readTableView(searchParams), [searchParams]);
   const deletion = useDeleteProject();
   const [deleted, setDeleted] = React.useState<Project>();
-  const shownProjects = React.useMemo(
-    () => projects.filter((project) => matchesQuery(project, view.query)),
+  const shownRows = React.useMemo(
+    () =>
+      projects
+        .map((project, index) => ({ position: index + 1, project }))
+        .filter(({ project }) => matchesQuery(project, view.query)),
     [projects, view.query],
   );
 
-  const columns = React.useMemo<ColumnDef<Project>[]>(
+  const columns = React.useMemo<ColumnDef<ProjectRow>[]>(
     () => [
+      {
+        id: "position",
+        header: "№",
+        accessorFn: (row) => row.position,
+        cell: ({ row: { original } }) => <span className={styles.muted}>{original.position}</span>,
+      },
       {
         id: "photos",
         header: "Фото",
         enableSorting: false,
-        cell: ({ row: { original: project } }) => {
-          const [cover] = project.photos;
-
-          return cover ? (
+        cell: ({ row: { original } }) => {
+          const [cover] = original.project.photos;
+          const image = cover ? (
             <MediaImage className={styles.cover} source={imageToMediaItem(cover).source} />
           ) : (
             <span className={styles.cover} />
+          );
+
+          // A larger target than the title; the title link names the project for assistive
+          // technology, so this one is skipped by it and by the keyboard.
+          return (
+            <Link to={projectPath(original.project.id)} tabIndex={-1} aria-hidden="true">
+              {image}
+            </Link>
           );
         },
       },
       {
         id: "title",
         header: "Название",
-        accessorFn: (project) => project.title,
-        sortingFn: (a, b) => collator.compare(a.original.title, b.original.title),
-        cell: ({ row: { original: project } }) => (
-          <Link className={styles.textLink} to={projectPath(project.id)}>
-            {project.title}
+        accessorFn: (row) => row.project.title,
+        sortingFn: (a, b) => collator.compare(a.original.project.title, b.original.project.title),
+        cell: ({ row: { original } }) => (
+          <Link className={styles.textLink} to={projectPath(original.project.id)}>
+            {original.project.title}
           </Link>
         ),
       },
       {
         id: "link",
         header: "Ссылка",
-        accessorFn: (project) => linkHost(project.link),
-        sortingFn: (a, b) => collator.compare(linkHost(a.original.link), linkHost(b.original.link)),
-        cell: ({ row: { original: project } }) =>
-          project.link ? (
-            <a className={styles.textLink} href={project.link} target="_blank" rel="noreferrer">
-              {linkHost(project.link)}
-            </a>
+        accessorFn: (row) => linkHost(row.project.link),
+        sortingFn: (a, b) =>
+          collator.compare(linkHost(a.original.project.link), linkHost(b.original.project.link)),
+        cell: ({ row: { original } }) => {
+          const { link } = original.project;
+
+          return link ? (
+            <Tooltip content={link}>
+              <a className={styles.externalLink} href={link} target="_blank" rel="noreferrer">
+                {linkHost(link)}
+                <ExternalLinkIcon className={styles.externalIcon} />
+                <VisuallyHidden>(откроется в новой вкладке)</VisuallyHidden>
+              </a>
+            </Tooltip>
           ) : (
             <span className={styles.muted}>Нет ссылки</span>
-          ),
+          );
+        },
+      },
+      {
+        id: "createdAt",
+        header: "Добавлен",
+        accessorFn: (row) => row.project.createdAt,
+        sortingFn: (a, b) =>
+          compareDates(a.original.project.createdAt, b.original.project.createdAt),
+        // The newest first: that is what a date is sorted for.
+        sortDescFirst: true,
+        cell: ({ row: { original } }) => <ProjectDate value={original.project.createdAt} />,
+      },
+      {
+        id: "updatedAt",
+        header: "Изменён",
+        accessorFn: (row) => row.project.updatedAt,
+        sortingFn: (a, b) =>
+          compareDates(a.original.project.updatedAt, b.original.project.updatedAt),
+        sortDescFirst: true,
+        cell: ({ row: { original } }) => <ProjectDate value={original.project.updatedAt} />,
       },
       {
         id: "actions",
         header: () => <VisuallyHidden>Действия</VisuallyHidden>,
         enableSorting: false,
-        cell: ({ row: { original: project } }) => {
+        cell: ({ row: { original } }) => {
+          const { project } = original;
           const editLabel = `Изменить ${project.title}`;
           const deleteLabel = `Удалить ${project.title}`;
 
@@ -146,10 +223,10 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
     columns,
     // There are no pages, so nothing to reset when the rows change; the reset would render again.
     autoResetPageIndex: false,
-    data: shownProjects,
+    data: shownRows,
     enableMultiSort: false,
     getCoreRowModel: getCoreRowModel(),
-    getRowId: (project) => project.id,
+    getRowId: (row) => row.project.id,
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: changeSorting,
     state: { sorting: view.sorting },
@@ -157,16 +234,23 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
 
   return (
     <div className={clsx(styles.root, className)}>
-      <SearchInput
-        label="Поиск по названию и ссылке"
-        clearLabel="Очистить поиск"
-        value={view.query}
-        onChange={(query) => changeView({ query })}
-      />
+      <div className={styles.search}>
+        <SearchInput
+          label="Поиск по названию и ссылке"
+          clearLabel="Очистить поиск"
+          value={view.query}
+          onChange={(query) => changeView({ query })}
+        />
+        <p className={styles.found} aria-live="polite">
+          {view.query && shownRows.length > 0
+            ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}`
+            : ""}
+        </p>
+      </div>
 
       {projects.length === 0 ? (
         <p className={styles.empty}>Проектов пока нет</p>
-      ) : shownProjects.length === 0 ? (
+      ) : shownRows.length === 0 ? (
         <div className={styles.empty}>
           <p>Ничего не найдено по запросу «{view.query}»</p>
           <Button variant="text" onClick={() => changeView({ query: "" })}>
@@ -184,28 +268,23 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     const sorted = header.column.getIsSorted();
+                    const canSort = header.column.getCanSort();
                     const label = flexRender(header.column.columnDef.header, header.getContext());
 
                     return (
                       <th
                         key={header.id}
                         scope="col"
-                        aria-sort={
-                          header.column.getCanSort()
-                            ? sorted
-                              ? ariaSort[sorted]
-                              : "none"
-                            : undefined
-                        }
+                        aria-sort={canSort ? (sorted ? ariaSort[sorted] : "none") : undefined}
                       >
-                        {header.column.getCanSort() ? (
+                        {canSort ? (
                           <button
                             type="button"
                             className={styles.sortButton}
                             onClick={header.column.getToggleSortingHandler()}
                           >
                             {label}
-                            <SortIcon direction={sorted} />
+                            <SortState direction={sorted} />
                           </button>
                         ) : (
                           label

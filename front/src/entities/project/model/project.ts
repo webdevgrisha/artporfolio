@@ -13,6 +13,10 @@ export const projectSchema = z.object({
   link: z.string(),
   /** In the order the site shows them. */
   photos: z.array(listPhotoSchema),
+  /** When the project was created, ISO 8601. */
+  createdAt: z.iso.datetime(),
+  /** When the admin last saved the project, ISO 8601; moving it does not count. */
+  updatedAt: z.iso.datetime(),
 });
 
 export type Project = z.infer<typeof projectSchema>;
