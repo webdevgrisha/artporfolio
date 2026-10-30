@@ -6,7 +6,7 @@ export interface HeroField {
   page: SitePageId;
 }
 
-/** The form fields in display order: the hero of each page. */
+/** The heroes in display order, one per page. */
 export const heroFields: readonly HeroField[] = [
   { label: "Главная", page: "home" },
   { label: "Проекты", page: "projects" },

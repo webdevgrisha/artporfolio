@@ -1,5 +1,5 @@
 /* As many columns as fit, each as wide as a field on the contacts page. */
-.fields {
+.root {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(0, 24rem));
   gap: var(--layout-space-6) var(--layout-space-8);

@@ -14,8 +14,3 @@ export type ImageFieldValue = z.infer<typeof imageFieldValueSchema>;
 export function toImageFieldValue(image: Image | null): ImageFieldValue {
   return image ? savedImage : null;
 }
-
-/** The field value once its change is saved: a picked file becomes the saved image. */
-export function toSavedImageFieldValue(value: ImageFieldValue): ImageFieldValue {
-  return value instanceof File ? savedImage : value;
-}

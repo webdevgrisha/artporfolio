@@ -1,1 +1,1 @@
-export { EditPageHeroesForm } from "./ui/EditPageHeroesForm";
+export { EditPageHeroes } from "./ui/EditPageHeroes";
