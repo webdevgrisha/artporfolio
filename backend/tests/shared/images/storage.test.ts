@@ -101,6 +101,30 @@ describe("image storage", () => {
     expect(storedImageSchema.safeParse(image).success).toBe(true);
   });
 
+  it("fails only after every write has ended, so no file is added after the cleanup", async () => {
+    const error = new Error("Storage is unavailable");
+    const finishSlowWrites: (() => void)[] = [];
+    storage.saveFile.mockRejectedValue(error);
+    storage.saveDownloadableFile.mockImplementation(
+      (path: string) =>
+        new Promise((resolve) => {
+          finishSlowWrites.push(() => resolve({ path, token: "token" }));
+        }),
+    );
+    let failed = false;
+    const saving = saveImageFiles(newImage).catch((reason: unknown) => {
+      failed = true;
+      return reason;
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(failed).toBe(false);
+
+    for (const finish of finishSlowWrites) finish();
+
+    await expect(saving).resolves.toBe(error);
+  });
+
   it("returns the image with download URLs in place of the stored paths", () => {
     expect(toImage(storedImage)).toEqual({
       ...storedImage,

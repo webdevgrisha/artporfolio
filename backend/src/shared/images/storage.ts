@@ -130,12 +130,21 @@ export async function saveImageFiles({
     current.width > widest.width ? current : widest,
   );
 
-  const [savedFiles] = await Promise.all([
-    Promise.all(images.map((image) => saveImageFile(folder, image))),
-    saveFile(`${folder}/original.${sourceFormat}`, file.data, {
-      contentType: `image/${sourceFormat}`,
-    }),
-  ]);
+  const savingImages = images.map((image) => saveImageFile(folder, image));
+  const savingOriginal = saveFile(`${folder}/original.${sourceFormat}`, file.data, {
+    contentType: `image/${sourceFormat}`,
+  });
+
+  // Waits for every write, even after one has failed: the caller then deletes the folder, and a
+  // write still running would add a file to it afterwards.
+  const results = await Promise.allSettled([savingOriginal, ...savingImages]);
+  const failure = results.find((result) => result.status === "rejected");
+
+  if (failure) {
+    throw failure.reason;
+  }
+
+  const savedFiles = await Promise.all(savingImages);
 
   return {
     fileName: file.name,
