@@ -4,6 +4,7 @@ import type {
   ProcessPhotoOrder,
   ProcessPhotoParams,
   ProcessPhotoResponse,
+  ProcessPhotosBody,
   ProcessPhotosResponse,
 } from "#modules/about/process-photos/schema";
 import {
@@ -14,16 +15,33 @@ import {
   listProcessPhotos,
   reorderProcessPhotos,
   replaceProcessPhoto,
+  replaceProcessPhotos,
   updateProcessPhotoAlt,
 } from "#modules/about/process-photos/service";
 import type { PhotoAltBody } from "#shared/images/photo";
+import { ifMatchHeader } from "#shared/middleware/preconditions";
 import { uploadedFile } from "#shared/middleware/upload";
 
 export const listPhotos: RequestHandler<object, ProcessPhotosResponse> = async (
   _request,
   response,
 ) => {
-  response.status(200).json({ processPhotos: await listProcessPhotos() });
+  const { etag, processPhotos } = await listProcessPhotos();
+
+  response.status(200).set("ETag", etag).json({ processPhotos });
+};
+
+export const replacePhotos: RequestHandler<
+  object,
+  ProcessPhotosResponse,
+  ProcessPhotosBody
+> = async (request, response) => {
+  const { etag, processPhotos } = await replaceProcessPhotos(
+    request.body.processPhotos,
+    ifMatchHeader(request),
+  );
+
+  response.status(200).set("ETag", etag).json({ processPhotos });
 };
 
 export const uploadPhoto: RequestHandler<object, ProcessPhotoResponse, PhotoAltBody> = async (

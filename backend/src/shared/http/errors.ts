@@ -55,9 +55,23 @@ export class ConflictError extends HttpError {
   }
 }
 
+/** The resource has changed since the client read it: its If-Match no longer matches. */
+export class PreconditionFailedError extends HttpError {
+  constructor(message = "The resource has changed since it was read") {
+    super(412, message);
+  }
+}
+
 /** The body is well-formed, but refers to something that does not exist, such as an expired upload. */
 export class UnprocessableContentError extends HttpError {
   constructor(message = "The request cannot be processed") {
     super(422, message);
+  }
+}
+
+/** A change that must name the version it replaces, with If-Match, came without it. */
+export class PreconditionRequiredError extends HttpError {
+  constructor(message = "The request must be conditional") {
+    super(428, message);
   }
 }

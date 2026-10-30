@@ -18,6 +18,7 @@ const service = vi.hoisted(() => ({
   listProcessPhotos: vi.fn(),
   reorderProcessPhotos: vi.fn(),
   replaceProcessPhoto: vi.fn(),
+  replaceProcessPhotos: vi.fn(),
   updateProcessPhotoAlt: vi.fn(),
 }));
 
@@ -25,13 +26,22 @@ vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/about/process-photos/service", () => service);
 
 import { processPhotosRouter } from "#modules/about/process-photos/routes";
-import { ConflictError, NotFoundError, UnauthorizedError } from "#shared/http/errors";
+import {
+  ConflictError,
+  NotFoundError,
+  PreconditionFailedError,
+  UnauthorizedError,
+  UnprocessableContentError,
+} from "#shared/http/errors";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const id = "11111111-1111-4111-8111-111111111111";
 const otherId = "22222222-2222-4222-8222-222222222222";
 const processPhoto = { ...apiImage("sketch.png"), alt: "Sketch", id };
 const upload = { data: Buffer.from("image"), name: "sketch.png", size: 5 };
+const uploadId = "44444444-4444-4444-8444-444444444444";
+const etag = '"list-tag"';
+const newEtag = '"new-list-tag"';
 
 let server: TestServer;
 
@@ -77,7 +87,11 @@ beforeEach(() => {
   service.deleteProcessPhoto.mockResolvedValue(undefined);
   service.getProcessPhoto.mockResolvedValue(processPhoto);
   service.getProcessPhotoOrder.mockResolvedValue([id, otherId]);
-  service.listProcessPhotos.mockResolvedValue([processPhoto]);
+  service.listProcessPhotos.mockResolvedValue({ etag, processPhotos: [processPhoto] });
+  service.replaceProcessPhotos.mockResolvedValue({
+    etag: newEtag,
+    processPhotos: [processPhoto],
+  });
   service.reorderProcessPhotos.mockImplementation(async (ids: string[]) => ids);
   service.replaceProcessPhoto.mockResolvedValue(processPhoto);
   service.updateProcessPhotoAlt.mockResolvedValue(processPhoto);
@@ -86,10 +100,11 @@ beforeEach(() => {
 afterAll(() => server.close());
 
 describe("process photo routes", () => {
-  it("lists the photos to every visitor", async () => {
+  it("lists the photos to every visitor, with the ETag of the list", async () => {
     const response = await send("GET", "");
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(etag);
     await expect(response.json()).resolves.toEqual({ processPhotos: [processPhoto] });
   });
 
@@ -247,5 +262,111 @@ describe("process photo routes", () => {
     );
 
     expect(response.status).toBe(409);
+  });
+});
+
+describe("replacing the process photos", () => {
+  const items = [
+    { alt: "  Sketch  ", id },
+    { alt: "New", uploadId },
+  ];
+
+  async function putList(body: unknown, headers: Record<string, string> = { "If-Match": etag }) {
+    return send("PUT", "", { ...(await jsonHeaders()), ...headers }, JSON.stringify(body));
+  }
+
+  it("replaces the list and returns it with its new ETag", async () => {
+    const response = await putList({ processPhotos: items });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(newEtag);
+    await expect(response.json()).resolves.toEqual({ processPhotos: [processPhoto] });
+    expect(service.replaceProcessPhotos).toHaveBeenCalledWith(
+      [
+        { alt: "Sketch", id },
+        { alt: "New", uploadId },
+      ],
+      etag,
+    );
+  });
+
+  it("returns 428 without If-Match", async () => {
+    const response = await putList({ processPhotos: items }, {});
+
+    expect(response.status).toBe(428);
+    expect(service.replaceProcessPhotos).not.toHaveBeenCalled();
+  });
+
+  it("returns 412 when the list has changed since it was read", async () => {
+    service.replaceProcessPhotos.mockRejectedValue(new PreconditionFailedError());
+
+    const response = await putList({ processPhotos: items });
+
+    expect(response.status).toBe(412);
+  });
+
+  it("returns 422 for an upload that has expired", async () => {
+    service.replaceProcessPhotos.mockRejectedValue(new UnprocessableContentError());
+
+    const response = await putList({ processPhotos: items });
+
+    expect(response.status).toBe(422);
+  });
+
+  it.each([
+    ["a photo with neither an id nor an upload", [{ alt: "Sketch" }]],
+    [
+      "a repeated id",
+      [
+        { alt: "Sketch", id },
+        { alt: "Again", id },
+      ],
+    ],
+    [
+      "a repeated upload",
+      [
+        { alt: "New", uploadId },
+        { alt: "Again", uploadId },
+      ],
+    ],
+    ["an empty alt text", [{ alt: " ", id }]],
+    ["an unknown field", [{ alt: "Sketch", file: "sketch.png", id }]],
+    [
+      "more photos than the limit",
+      Array.from({ length: 31 }, (_, index) => ({
+        alt: "New",
+        uploadId: `${String(index).padStart(8, "0")}-4444-4444-8444-444444444444`,
+      })),
+    ],
+  ])("rejects %s", async (_case, processPhotos) => {
+    const response = await putList({ processPhotos });
+
+    expect(response.status).toBe(400);
+    expect(service.replaceProcessPhotos).not.toHaveBeenCalled();
+  });
+
+  it("rejects a change without a session", async () => {
+    const headers = await jsonHeaders();
+    auth.verifySession.mockRejectedValue(new UnauthorizedError());
+
+    const response = await send(
+      "PUT",
+      "",
+      { ...headers, "If-Match": etag },
+      JSON.stringify({ processPhotos: items }),
+    );
+
+    expect(response.status).toBe(401);
+  });
+
+  it("rejects a change without a CSRF token", async () => {
+    const response = await send(
+      "PUT",
+      "",
+      { Cookie: adminSessionCookie, "Content-Type": "application/json", "If-Match": etag },
+      JSON.stringify({ processPhotos: items }),
+    );
+
+    expect(response.status).toBe(403);
   });
 });
