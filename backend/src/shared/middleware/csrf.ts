@@ -34,7 +34,6 @@ export const issueCsrfToken: RequestHandler<object, CsrfTokenResponse> = (reques
     throw new UnauthorizedError();
   }
 
-  response.set("Cache-Control", "no-store");
   response.status(200).json({ csrfToken: csrfTokenFor(session) });
 };
 

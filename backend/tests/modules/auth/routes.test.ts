@@ -158,6 +158,7 @@ describe("auth routes", () => {
     });
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual({ user: admin });
     expect(auth.verifySession).toHaveBeenCalledWith("firebase-session");
   });
@@ -168,6 +169,7 @@ describe("auth routes", () => {
     const response = await fetch(`${server.baseUrl}/api/auth/me`);
 
     expect(response.status).toBe(401);
+    expect(response.headers.get("cache-control")).toBe("no-store");
     expect(auth.verifySession).toHaveBeenCalledWith(undefined);
   });
 

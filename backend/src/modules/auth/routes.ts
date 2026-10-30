@@ -9,6 +9,13 @@ import { validateBody } from "#shared/middleware/validation";
 
 export const authRouter = Router();
 
+// Every answer here belongs to one session at one moment: the signed-in admin, a CSRF token, the
+// result of a login or logout. No cache may keep it, not even an error.
+authRouter.use((_request, response, next) => {
+  response.set("Cache-Control", "no-store");
+  next();
+});
+
 authRouter.get("/csrf", issueCsrfToken);
 // No CSRF token: there is no session yet. A forged login could only sign the browser in to the
 // account of the ID token, and only the admin may sign in. Requiring JSON also keeps out the
