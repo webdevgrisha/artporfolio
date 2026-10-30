@@ -92,9 +92,12 @@
   block-size: 1.125rem;
 }
 
-/* Under the file, aligned with the thumbnail. */
-.rowFields {
-  padding-inline-start: calc(var(--min-tap-target-size) + var(--space-2));
+/* Under the file: full width on a phone, where the description field would be too narrow,
+   aligned with the thumbnail from tablets on. */
+@media (width >= 40rem) {
+  .rowFields {
+    padding-inline-start: calc(var(--min-tap-target-size) + var(--space-2));
+  }
 }
 
 .placeholder {
