@@ -39,7 +39,8 @@ export const putHero: RequestHandler<PageParams, HeroResponse, HeroBody> = async
 };
 
 export const deleteHero: RequestHandler<PageParams> = async (request, response) => {
-  await deletePageHero(request.params.page, ifMatchHeader(request));
+  const etag = await deletePageHero(request.params.page, ifMatchHeader(request));
 
-  response.status(204).end();
+  // No content, but the tag of the empty hero: the next change sends it in If-Match.
+  response.status(204).set("ETag", etag).end();
 };

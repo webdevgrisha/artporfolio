@@ -42,7 +42,8 @@ export const updatePhotoAlt: RequestHandler<object, PhotoResponse, PhotoAltBody>
 };
 
 export const deletePhoto: RequestHandler = async (request, response) => {
-  await deleteContactPhoto(ifMatchHeader(request));
+  const etag = await deleteContactPhoto(ifMatchHeader(request));
 
-  response.status(204).end();
+  // No content, but the tag of the empty photo: the next change sends it in If-Match.
+  response.status(204).set("ETag", etag).end();
 };

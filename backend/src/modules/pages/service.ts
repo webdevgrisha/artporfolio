@@ -63,6 +63,7 @@ export async function savePageHero(
   return { created, data: toImage(data), etag };
 }
 
-export function deletePageHero(page: PageId, ifMatch: string): Promise<void> {
+/** Removes the hero and its files; returns the entity tag of the empty hero. */
+export function deletePageHero(page: PageId, ifMatch: string): Promise<string> {
   return clearSlot(heroSlot(page), ifMatch);
 }

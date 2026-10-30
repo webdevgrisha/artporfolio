@@ -14,9 +14,9 @@ export const uploadsHandler = mswHttp.post("/api/uploads", () =>
   HttpResponse.json({ upload: { id: uploadId } }, { status: 201 }),
 );
 
-/** A response without content, such as that of a deletion. */
-export function noContent() {
-  return new HttpResponse(null, { status: 204 });
+/** A response without content, such as that of a deletion, which sends the new ETag. */
+export function noContent(headers?: HeadersInit) {
+  return new HttpResponse(null, { headers, status: 204 });
 }
 
 /** An error response of the API, as RFC 9457 Problem Details. */

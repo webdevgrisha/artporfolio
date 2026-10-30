@@ -229,14 +229,14 @@ describe("page service", () => {
   it("deletes the hero and its files", async () => {
     storedHeroes.set("pages/about", storedHero);
 
-    await deletePageHero("about", storedTag);
+    await expect(deletePageHero("about", storedTag)).resolves.toBe(emptyTag);
 
     expect(transaction.update).toHaveBeenCalledWith(aboutDocument, { hero: expect.anything() });
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/old");
   });
 
   it("does nothing when deleting a missing hero", async () => {
-    await deletePageHero("about", emptyTag);
+    await expect(deletePageHero("about", emptyTag)).resolves.toBe(emptyTag);
 
     expect(transaction.update).not.toHaveBeenCalled();
     expect(storage.deleteFolder).not.toHaveBeenCalled();

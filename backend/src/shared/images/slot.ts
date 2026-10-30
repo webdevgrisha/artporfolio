@@ -119,14 +119,19 @@ export async function fillSlot<TStored extends StoredImage>(
   return { created: changed.previous === null, data: stored, etag: changed.etag };
 }
 
-/** Removes the image and its files; an empty slot stays empty. */
+/**
+ * Removes the image and its files; an empty slot stays empty. Returns the entity tag of the empty
+ * slot, so the client can make its next change without reading the slot again.
+ */
 export async function clearSlot<TStored extends StoredImage>(
   slot: ImageSlot<TStored>,
   ifMatch: string,
-): Promise<void> {
-  const { previous } = await changeSlot(slot, ifMatch, () => null);
+): Promise<string> {
+  const { etag, previous } = await changeSlot(slot, ifMatch, () => null);
 
   if (previous) {
     await deleteImageFilesOrWarn(versionFolder(slot, previous.version));
   }
+
+  return etag;
 }

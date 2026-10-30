@@ -52,8 +52,8 @@ export function useUploadPageHero({ label, page }: HeroField) {
 }
 
 /**
- * Deletes the hero of the page at once, then loads it again: a deletion returns no content, so
- * the empty hero is read for the ETag of the next change. That happens after a failure too.
+ * Deletes the hero of the page at once and puts the empty hero with its ETag into the cache. A
+ * failed deletion loads the hero again: a request that failed may still have deleted it.
  */
 export function useDeletePageHero({ label, page }: HeroField) {
   const queryClient = useQueryClient();
@@ -68,7 +68,7 @@ export function useDeletePageHero({ label, page }: HeroField) {
       },
     },
     mutationFn: ({ etag }: DeletePageHeroParams) => deletePageHero({ etag, page }),
-    // Returned, so the deletion stays pending until the card shows the empty hero.
-    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    onError: () => queryClient.invalidateQueries({ queryKey }),
+    onSuccess: (empty) => queryClient.setQueryData(queryKey, empty),
   });
 }

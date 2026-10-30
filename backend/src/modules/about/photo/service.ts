@@ -38,6 +38,6 @@ export function updateAboutPhotoAlt(alt: string, ifMatch: string): Promise<Tagge
   return updatePhotoAlt(aboutPhoto, alt, ifMatch);
 }
 
-export function deleteAboutPhoto(ifMatch: string): Promise<void> {
+export function deleteAboutPhoto(ifMatch: string): Promise<string> {
   return deletePhoto(aboutPhoto, ifMatch);
 }

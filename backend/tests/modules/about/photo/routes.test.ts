@@ -59,7 +59,7 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  photoService.deleteAboutPhoto.mockResolvedValue(undefined);
+  photoService.deleteAboutPhoto.mockResolvedValue(savedEtag);
   photoService.getAboutPhoto.mockResolvedValue({ data: photo, etag });
   photoService.saveAboutPhoto.mockResolvedValue({ created: false, data: photo, etag: savedEtag });
   photoService.updateAboutPhotoAlt.mockResolvedValue({ data: photo, etag: savedEtag });
@@ -198,6 +198,7 @@ describe("about photo routes", () => {
     const response = await sendPhoto("DELETE", await ifMatchHeaders());
 
     expect(response.status).toBe(204);
+    expect(response.headers.get("ETag")).toBe(savedEtag);
     expect(photoService.deleteAboutPhoto).toHaveBeenCalledWith(etag);
   });
 });

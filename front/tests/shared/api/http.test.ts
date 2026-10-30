@@ -84,11 +84,9 @@ describe("http", () => {
         expect(request.headers.has("Content-Type")).toBe(false);
         return new HttpResponse(null, { status: 204 });
       }),
-      mswHttp.delete("/api/items/1", () => new HttpResponse(null, { status: 204 })),
     );
 
     await expect(http.postVoid({ path: "/items/1/publish" })).resolves.toBeUndefined();
-    await expect(http.deleteIfMatch({ etag: '"tag"', path: "/items/1" })).resolves.toBeUndefined();
   });
 
   it("rejects an error response with its status", async () => {
@@ -173,18 +171,19 @@ describe("http entity tags", () => {
     },
   );
 
-  it("sends a conditional deletion with If-Match", async () => {
+  it("sends a conditional deletion with If-Match and returns the new ETag", async () => {
     let request: Request | undefined;
     server.use(
       mswHttp.delete("/api/items/1", ({ request: received }) => {
         request = received;
-        return new HttpResponse(null, { status: 204 });
+        return new HttpResponse(null, { headers: { ETag: '"new-tag"' }, status: 204 });
       }),
     );
 
-    await http.deleteIfMatch({ etag, path: "/items/1" });
+    const newEtag = await http.deleteIfMatch({ etag, path: "/items/1" });
 
     expect(request?.headers.get("If-Match")).toBe(etag);
+    expect(newEtag).toBe('"new-tag"');
     expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
   });
 

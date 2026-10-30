@@ -180,14 +180,17 @@ class Http {
 
   /**
    * A DELETE that applies only while the representation still has the tag `etag`; the server
-   * rejects it with 412 otherwise. The response has no content.
+   * rejects it with 412 otherwise. The response has no content; returns the tag of the resource
+   * after the deletion, for the next change.
    */
-  async deleteIfMatch({ etag, headers, path, ...options }: ConditionalOptions): Promise<void> {
-    await this.request(path, {
+  async deleteIfMatch({ etag, headers, path, ...options }: ConditionalOptions): Promise<string> {
+    const response = await this.request(path, {
       ...options,
       headers: withIfMatch(headers, etag),
       method: "DELETE",
     });
+
+    return readETag(response);
   }
 
   /** Forgets the CSRF token, e.g. once its session has ended. */

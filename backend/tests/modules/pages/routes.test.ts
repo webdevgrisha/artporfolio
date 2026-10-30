@@ -63,7 +63,7 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  pageService.deletePageHero.mockResolvedValue(undefined);
+  pageService.deletePageHero.mockResolvedValue(savedEtag);
   pageService.getPages.mockResolvedValue(pages);
   pageService.getPageHero.mockResolvedValue({ data: hero, etag });
   pageService.savePageHero.mockResolvedValue({ created: false, data: hero, etag: savedEtag });
@@ -174,6 +174,7 @@ describe("page routes", () => {
     const response = await sendHero("DELETE", "about", await ifMatchHeaders());
 
     expect(response.status).toBe(204);
+    expect(response.headers.get("ETag")).toBe(savedEtag);
     expect(pageService.deletePageHero).toHaveBeenCalledWith("about", etag);
   });
 

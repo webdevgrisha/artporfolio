@@ -1,9 +1,4 @@
-import {
-  deleteAboutPhoto,
-  getAboutPhoto,
-  replaceAboutPhoto,
-  updateAboutPhotoAlt,
-} from "@/entities/about";
+import { deleteAboutPhoto, replaceAboutPhoto, updateAboutPhotoAlt } from "@/entities/about";
 import type { Tagged } from "@/shared/api/http";
 import type { Photo } from "@/shared/api/photo";
 import { uploadImage } from "@/shared/api/upload";
@@ -23,8 +18,6 @@ export async function saveAboutPhoto({
     case "updateAlt":
       return updateAboutPhotoAlt({ alt: change.alt, etag });
     case "delete":
-      await deleteAboutPhoto({ etag });
-      // A deletion returns no content, so the empty photo is read again for the ETag of the next change.
-      return getAboutPhoto();
+      return deleteAboutPhoto({ etag });
   }
 }

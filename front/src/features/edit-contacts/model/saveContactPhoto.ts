@@ -1,6 +1,5 @@
 import {
   deleteContactPhoto,
-  getContactPhoto,
   replaceContactPhoto,
   updateContactPhotoAlt,
 } from "@/entities/contacts";
@@ -27,8 +26,6 @@ export async function saveContactPhoto({
     case "updateAlt":
       return updateContactPhotoAlt({ alt: change.alt, etag });
     case "delete":
-      await deleteContactPhoto({ etag });
-      // A deletion returns no content, so the empty photo is read again for the ETag of the next change.
-      return getContactPhoto();
+      return deleteContactPhoto({ etag });
   }
 }

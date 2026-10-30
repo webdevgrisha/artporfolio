@@ -1,7 +1,6 @@
 export { aboutPhotoQuery } from "./api/aboutPhotoQuery";
 export { aboutTextQuery } from "./api/aboutTextQuery";
 export { deleteAboutPhoto } from "./api/deleteAboutPhoto";
-export { getAboutPhoto } from "./api/getAboutPhoto";
 export { processPhotosQuery } from "./api/processPhotosQuery";
 export { replaceAboutPhoto } from "./api/replaceAboutPhoto";
 export { replaceAboutText } from "./api/replaceAboutText";

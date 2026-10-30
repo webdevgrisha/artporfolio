@@ -52,7 +52,7 @@ beforeEach(() => {
     }),
     mswHttp.delete("/api/contacts/photo", ({ request }) => {
       receive(request, null);
-      return noContent();
+      return noContent({ ETag: savedEtag });
     }),
   );
 });
@@ -90,7 +90,7 @@ describe("saveContactPhoto", () => {
     expect(saved).toEqual({ data: apiPhoto("Автопортрет"), etag: savedEtag });
   });
 
-  it("deletes the photo, then reads the empty photo for the ETag of the next change", async () => {
+  it("deletes the photo and takes the ETag of the empty photo from the response", async () => {
     const requests = recordRequests();
 
     const saved = await saveContactPhoto({ change: { type: "delete" }, etag });
@@ -98,7 +98,7 @@ describe("saveContactPhoto", () => {
     expect(received).toEqual({
       "DELETE /api/contacts/photo": { body: null, ifMatch: etag, token: csrfToken },
     });
-    expect(requests.slice(-2)).toEqual(["DELETE /api/contacts/photo", "GET /api/contacts/photo"]);
+    expect(requests.at(-1)).toBe("DELETE /api/contacts/photo");
     expect(saved).toEqual({ data: null, etag: savedEtag });
   });
 

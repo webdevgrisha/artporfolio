@@ -250,14 +250,14 @@ describe("photo", () => {
   it("deletes the photo and its files", async () => {
     storedAs(storedPhoto);
 
-    await deletePhoto(slot, storedTag);
+    await expect(deletePhoto(slot, storedTag)).resolves.toBe(emptyTag);
 
     expect(transaction.update).toHaveBeenCalledWith(document, { photo: expect.anything() });
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/old-version");
   });
 
   it("does nothing when deleting a missing photo", async () => {
-    await deletePhoto(slot, emptyTag);
+    await expect(deletePhoto(slot, emptyTag)).resolves.toBe(emptyTag);
 
     expect(transaction.update).not.toHaveBeenCalled();
     expect(storage.deleteFolder).not.toHaveBeenCalled();

@@ -117,6 +117,7 @@ export async function updatePhotoAlt(
   return { data: toPhoto(data), etag };
 }
 
-export function deletePhoto(slot: PhotoSlot, ifMatch: string): Promise<void> {
+/** Removes the photo and its files; returns the entity tag of the empty slot. */
+export function deletePhoto(slot: PhotoSlot, ifMatch: string): Promise<string> {
   return clearSlot(slot, ifMatch);
 }

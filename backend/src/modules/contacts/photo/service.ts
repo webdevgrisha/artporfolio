@@ -37,6 +37,6 @@ export function updateContactPhotoAlt(alt: string, ifMatch: string): Promise<Tag
   return updatePhotoAlt(contactPhoto, alt, ifMatch);
 }
 
-export function deleteContactPhoto(ifMatch: string): Promise<void> {
+export function deleteContactPhoto(ifMatch: string): Promise<string> {
   return deletePhoto(contactPhoto, ifMatch);
 }
