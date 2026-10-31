@@ -169,5 +169,5 @@ backend/src/
 
 1. Add the path to `routes` and the title to `adminNavigation` in `shared/config/routes.ts`.
 2. Create `pages/<name>/ui/<Name>Page.tsx` and `pages/<name>/index.ts`.
-3. Register the route in `app/router.tsx` with a lazy import of `@/pages/<name>`.
+3. Register the route in `app/router.tsx` with a lazy import of `@/pages/<name>`. A page that sits under another one gives its breadcrumbs, and a page with a main action (such as «Добавить проект») gives that action, in the route `handle` (`AdminPageHandle` from `widgets/admin-layout`); the layout shows both by the page title, from the deepest route that has them.
 4. Put data loading in a loader and saving in an action in the page's `model` segment. Put reusable actions in `features`, and data models and requests in `entities`.

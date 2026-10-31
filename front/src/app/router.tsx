@@ -82,9 +82,11 @@ export const router = createBrowserRouter([
                   },
                   {
                     path: routes.projects,
-                    lazy: async () => ({
-                      Component: (await import("@/pages/projects")).ProjectsPage,
-                    }),
+                    lazy: async () => {
+                      const { ProjectsPage, projectsHandle } = await import("@/pages/projects");
+
+                      return { Component: ProjectsPage, handle: projectsHandle };
+                    },
                     // The text and the list are saved independently; the page opens the list.
                     children: [
                       {
@@ -130,16 +132,24 @@ export const router = createBrowserRouter([
                   },
                   {
                     path: routes.projectNew,
-                    lazy: async () => ({
-                      Component: (await import("@/pages/projects")).NewProjectPage,
-                    }),
+                    lazy: async () => {
+                      const { NewProjectPage, newProjectHandle } = await import("@/pages/projects");
+
+                      return { Component: NewProjectPage, handle: newProjectHandle };
+                    },
                   },
                   {
                     path: `${routes.projects}/:id`,
                     lazy: async () => {
-                      const { EditProjectPage, projectLoader } = await import("@/pages/projects");
+                      const { EditProjectPage, editProjectHandle, projectLoader } = await import(
+                        "@/pages/projects"
+                      );
 
-                      return { Component: EditProjectPage, loader: projectLoader };
+                      return {
+                        Component: EditProjectPage,
+                        handle: editProjectHandle,
+                        loader: projectLoader,
+                      };
                     },
                   },
                   {

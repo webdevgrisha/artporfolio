@@ -4,7 +4,6 @@ import { useParams } from "react-router";
 import { projectQuery } from "@/entities/project";
 import { EditProjectForm } from "@/features/edit-projects";
 
-import { ProjectFormHeader } from "./ProjectFormHeader";
 import styles from "./ProjectsPage.module.css";
 
 export function EditProjectPage() {
@@ -14,7 +13,6 @@ export function EditProjectPage() {
 
   return (
     <div className={styles.root}>
-      <ProjectFormHeader title={project.data.title} />
       {/* A form per project: its values come from the project it opened with. */}
       <EditProjectForm key={id} className={styles.form} project={project} />
     </div>

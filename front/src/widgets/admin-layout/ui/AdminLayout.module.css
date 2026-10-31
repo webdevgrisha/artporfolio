@@ -24,8 +24,23 @@
   padding: 0 var(--page-gutter) var(--page-gutter);
 }
 
-.title {
+/* The title with the main action of the page, then the breadcrumbs, above the frame. */
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   margin-block-end: var(--layout-space-8);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--layout-space-8);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
   font-size: var(--font-size-xl);
   font-weight: 400;
   line-height: normal;

@@ -3,8 +3,10 @@ import { Outlet } from "react-router";
 import { useSessionUser } from "@/entities/user";
 import { adminNavigation } from "@/shared/config/routes";
 import { documentTitle } from "@/shared/lib/documentTitle";
+import { Breadcrumbs } from "@/shared/ui/breadcrumbs";
 import { UnsavedChangesProvider } from "@/shared/ui/unsaved-changes";
 
+import { useAdminPageHandle } from "../model/adminPageHandle";
 import { useActiveAdminPageIndex } from "../model/useActiveAdminPageIndex";
 import { useMobileMenu } from "../model/useMobileMenu";
 import { AdminHeader } from "./AdminHeader";
@@ -18,6 +20,7 @@ export function AdminLayout() {
   const user = useSessionUser();
   const mobileMenu = useMobileMenu();
   const pageTitle = adminNavigation[useActiveAdminPageIndex()]?.title ?? "";
+  const { breadcrumbs, titleAction } = useAdminPageHandle();
 
   return (
     <div className={styles.layout}>
@@ -45,7 +48,13 @@ export function AdminLayout() {
 
         <main className={styles.page}>
           <title>{documentTitle(pageTitle)}</title>
-          <h1 className={styles.title}>{pageTitle}</h1>
+          <div className={styles.pageHeader}>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>{pageTitle}</h1>
+              {titleAction}
+            </div>
+            {breadcrumbs ? <Breadcrumbs items={breadcrumbs} /> : null}
+          </div>
           <div className={styles.contentFrame}>
             <UnsavedChangesProvider>
               <Outlet />
