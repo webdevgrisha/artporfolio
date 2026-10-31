@@ -1,6 +1,7 @@
 import { Outlet } from "react-router";
 
 import { routes } from "@/shared/config/routes";
+import { ButtonLink } from "@/shared/ui/button";
 import { TabNav } from "@/shared/ui/tab-nav";
 
 import styles from "./ProjectsPage.module.css";
@@ -15,7 +16,13 @@ const sections = [
 export function ProjectsPage() {
   return (
     <div className={styles.root}>
-      <TabNav label="Разделы страницы «Проекты»" items={sections} />
+      {/* Adding is an action, not a section: it sits at the end of the tabs and opens a new page. */}
+      <div className={styles.sectionsBar}>
+        <TabNav label="Разделы страницы «Проекты»" items={sections} />
+        <ButtonLink className={styles.addLink} to={routes.projectNew}>
+          Добавить проект
+        </ButtonLink>
+      </div>
       <Outlet />
     </div>
   );

@@ -29,21 +29,13 @@
   text-align: start;
 }
 
-/* The narrow columns fit their content, the link gets enough for a domain, the title the rest. */
+/* «№» and the actions fit their content; the photo, the title and the link share the rest evenly. */
 .positionColumn {
   inline-size: 4.75rem;
 }
 
-.photoColumn {
-  inline-size: 6rem;
-}
-
 .titleColumn {
   overflow-wrap: anywhere;
-}
-
-.linkColumn {
-  inline-size: 30%;
 }
 
 .actionsColumn {
@@ -120,17 +112,8 @@
   block-size: auto;
 }
 
-/* The search takes the row; the button keeps its size at the end, level with the search line. */
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--layout-space-8);
-  align-items: flex-start;
-}
-
 .search {
   display: flex;
-  flex: 1 1 20rem;
   flex-direction: column;
   gap: var(--space-2);
 }

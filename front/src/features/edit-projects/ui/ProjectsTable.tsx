@@ -14,8 +14,8 @@ import React from "react";
 import { useSearchParams } from "react-router";
 
 import type { Project } from "@/entities/project";
-import { projectPath, routes } from "@/shared/config/routes";
-import { Button, ButtonLink } from "@/shared/ui/button";
+import { projectPath } from "@/shared/config/routes";
+import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import {
   ArrowDownIcon,
@@ -101,7 +101,6 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "photos",
         header: "Фото",
-        meta: { className: styles.photoColumn },
         enableSorting: false,
         cell: ({ row: { original } }) => {
           const [cover] = original.project.photos;
@@ -124,7 +123,6 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "link",
         header: "Ссылка",
-        meta: { className: styles.linkColumn },
         accessorFn: (row) => linkHost(row.project.link),
         sortingFn: (a, b) =>
           collator.compare(linkHost(a.original.project.link), linkHost(b.original.project.link)),
@@ -198,22 +196,18 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
 
   return (
     <div className={clsx(styles.root, className)}>
-      <div className={styles.toolbar}>
-        <div className={styles.search}>
-          <SearchInput
-            label="Поиск по названию и ссылке"
-            clearLabel="Очистить поиск"
-            value={view.query}
-            onChange={(query) => changeView({ query })}
-          />
-          <p className={styles.found} aria-live="polite">
-            {view.query && shownRows.length > 0
-              ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}`
-              : ""}
-          </p>
-        </div>
-        {/* Adding belongs to the list, not to the whole page. */}
-        <ButtonLink to={routes.projectNew}>Добавить проект</ButtonLink>
+      <div className={styles.search}>
+        <SearchInput
+          label="Поиск по названию и ссылке"
+          clearLabel="Очистить поиск"
+          value={view.query}
+          onChange={(query) => changeView({ query })}
+        />
+        <p className={styles.found} aria-live="polite">
+          {view.query && shownRows.length > 0
+            ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}`
+            : ""}
+        </p>
       </div>
 
       {projects.length === 0 ? (
