@@ -120,8 +120,17 @@
   block-size: auto;
 }
 
+/* The search takes the row; the button keeps its size at the end, level with the search line. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--layout-space-8);
+  align-items: flex-start;
+}
+
 .search {
   display: flex;
+  flex: 1 1 20rem;
   flex-direction: column;
   gap: var(--space-2);
 }

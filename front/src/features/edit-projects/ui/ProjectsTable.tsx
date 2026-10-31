@@ -14,8 +14,8 @@ import React from "react";
 import { useSearchParams } from "react-router";
 
 import type { Project } from "@/entities/project";
-import { projectPath } from "@/shared/config/routes";
-import { Button } from "@/shared/ui/button";
+import { projectPath, routes } from "@/shared/config/routes";
+import { Button, ButtonLink } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import {
   ArrowDownIcon,
@@ -198,18 +198,22 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
 
   return (
     <div className={clsx(styles.root, className)}>
-      <div className={styles.search}>
-        <SearchInput
-          label="Поиск по названию и ссылке"
-          clearLabel="Очистить поиск"
-          value={view.query}
-          onChange={(query) => changeView({ query })}
-        />
-        <p className={styles.found} aria-live="polite">
-          {view.query && shownRows.length > 0
-            ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}`
-            : ""}
-        </p>
+      <div className={styles.toolbar}>
+        <div className={styles.search}>
+          <SearchInput
+            label="Поиск по названию и ссылке"
+            clearLabel="Очистить поиск"
+            value={view.query}
+            onChange={(query) => changeView({ query })}
+          />
+          <p className={styles.found} aria-live="polite">
+            {view.query && shownRows.length > 0
+              ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}`
+              : ""}
+          </p>
+        </div>
+        {/* Adding belongs to the list, not to the whole page. */}
+        <ButtonLink to={routes.projectNew}>Добавить проект</ButtonLink>
       </div>
 
       {projects.length === 0 ? (

@@ -2,7 +2,6 @@ import type { UIMatch } from "react-router";
 
 import { routes } from "@/shared/config/routes";
 import type { BreadcrumbItem } from "@/shared/ui/breadcrumbs";
-import { ButtonLink } from "@/shared/ui/button";
 import type { AdminPageHandle } from "@/widgets/admin-layout";
 
 import { ProjectTitle } from "../ui/ProjectTitle";
@@ -12,11 +11,6 @@ const projectsCrumbs: BreadcrumbItem[] = [
   { label: "Проекты", to: routes.projects },
   { label: "Все проекты", to: routes.projectsAll },
 ];
-
-/** The sections of the page: adding is an action, not a section, so it sits by the title. */
-export const projectsHandle: AdminPageHandle = {
-  titleAction: <ButtonLink to={routes.projectNew}>Добавить проект</ButtonLink>,
-};
 
 export const newProjectHandle: AdminPageHandle = {
   breadcrumbs: () => [...projectsCrumbs, { label: "Новый проект" }],

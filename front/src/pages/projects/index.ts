@@ -1,4 +1,4 @@
-export { editProjectHandle, newProjectHandle, projectsHandle } from "./model/projectsHandles";
+export { editProjectHandle, newProjectHandle } from "./model/projectsHandles";
 export {
   projectLoader,
   projectsIntroLoader,
