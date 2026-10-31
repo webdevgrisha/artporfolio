@@ -29,13 +29,21 @@
   text-align: start;
 }
 
-/* «№» and the actions fit their content; the photo, the title and the link share the rest evenly. */
+/* The narrow columns fit their content, the link gets enough for a domain, the title the rest. */
 .positionColumn {
   inline-size: 4.75rem;
 }
 
+.photoColumn {
+  inline-size: 6rem;
+}
+
 .titleColumn {
   overflow-wrap: anywhere;
+}
+
+.linkColumn {
+  inline-size: 30%;
 }
 
 .actionsColumn {

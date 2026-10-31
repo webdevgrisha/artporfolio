@@ -101,6 +101,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "photos",
         header: "Фото",
+        meta: { className: styles.photoColumn },
         enableSorting: false,
         cell: ({ row: { original } }) => {
           const [cover] = original.project.photos;
@@ -123,6 +124,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
       {
         id: "link",
         header: "Ссылка",
+        meta: { className: styles.linkColumn },
         accessorFn: (row) => linkHost(row.project.link),
         sortingFn: (a, b) =>
           collator.compare(linkHost(a.original.project.link), linkHost(b.original.project.link)),
