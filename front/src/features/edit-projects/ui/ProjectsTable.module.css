@@ -4,8 +4,12 @@
   gap: var(--space-6);
 }
 
-/* A narrow screen scrolls the table instead of squeezing its columns. */
+/*
+ * A narrow screen scrolls the table instead of squeezing its columns. The scroll clips vertically too,
+ * so the padding keeps room for the focus ring of the sort buttons, which have none above them.
+ */
 .scroller {
+  padding-block-start: var(--space-1);
   overflow-x: auto;
 }
 
