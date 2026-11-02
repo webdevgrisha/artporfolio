@@ -127,6 +127,7 @@ backend/src/
 │   │   ├── links/      the contact links, mounted by the contacts router
 │   │   └── photo.ts    the contact photo, a photo slot mounted by the contacts router
 │   ├── gallery-intro/  the text above the works in the gallery
+│   ├── gallery-sections/ the sections of the gallery, each a Firestore document with its subsections
 │   ├── health/
 │   ├── pages/          the pages of the public site and their main photos (heroes)
 │   ├── photo-slot/     the routes of one photo slot, for the slot a module names
