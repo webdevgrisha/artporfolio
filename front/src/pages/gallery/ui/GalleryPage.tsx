@@ -9,6 +9,7 @@ import styles from "./GalleryPage.module.css";
 const sections = [
   { label: "Основной текст", to: routes.galleryIntro },
   { label: "Разделы", to: routes.gallerySections },
+  { label: "Материалы", to: routes.galleryMaterials },
 ] as const;
 
 /** The text above the works, the sections and the materials are saved independently. */

@@ -8,6 +8,7 @@ export const routes = {
   contacts: "/admin/contacts",
   gallery: "/admin/gallery",
   galleryIntro: "/admin/gallery/intro",
+  galleryMaterials: "/admin/gallery/materials",
   gallerySectionNew: "/admin/gallery/sections/new",
   gallerySections: "/admin/gallery/sections",
   login: "/admin/login",

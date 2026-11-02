@@ -1,6 +1,11 @@
 import type { LoaderFunctionArgs } from "react-router";
 
-import { galleryIntroQuery, gallerySectionQuery, gallerySectionsQuery } from "@/entities/gallery";
+import {
+  galleryIntroQuery,
+  galleryMaterialsQuery,
+  gallerySectionQuery,
+  gallerySectionsQuery,
+} from "@/entities/gallery";
 import { queryClient } from "@/shared/api/queryClient";
 
 // Each section loads its own resources afresh on entering it, even when they are cached: a form,
@@ -20,6 +25,12 @@ export async function gallerySectionsLoader() {
 
 export async function gallerySectionLoader({ params }: LoaderFunctionArgs) {
   await queryClient.fetchQuery({ ...gallerySectionQuery(params.id ?? ""), staleTime: 0 });
+
+  return null;
+}
+
+export async function galleryMaterialsLoader() {
+  await queryClient.fetchQuery({ ...galleryMaterialsQuery, staleTime: 0 });
 
   return null;
 }

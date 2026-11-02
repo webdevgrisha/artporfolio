@@ -1,0 +1,90 @@
+/* A readable line length for the titles. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-6);
+  max-inline-size: 48rem;
+}
+
+/* The plus fills the end adornment slot of the input, as the clear button of a field does. */
+.addTooltip,
+.addButton {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.addIcon {
+  inline-size: 1.25rem;
+  block-size: auto;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* As the label of a field. */
+.heading {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: normal;
+  line-height: 1.375;
+}
+
+.rows {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* A line between the rows, as in the other lists of the admin. */
+.row {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  min-block-size: var(--min-tap-target-size);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3) 0;
+  font-size: var(--font-size-lg);
+  border-block-end: 1px solid var(--color-divider);
+}
+
+.row:last-child {
+  border-block-end: 0;
+}
+
+/* A material added or renamed since the save: the mark of a modified field. */
+.rowModified {
+  box-shadow: inset 2px 0 0 var(--color-border-modified);
+}
+
+.rowTitle {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.rowNote {
+  color: var(--color-text-muted);
+}
+
+.rowField {
+  flex: 1;
+}
+
+.rowActions {
+  display: flex;
+  flex: none;
+}
+
+/* The icon sizes of the projects table. */
+.actionIcon {
+  inline-size: auto;
+  block-size: 1.625rem;
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-text-muted);
+}

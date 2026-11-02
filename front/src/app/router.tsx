@@ -109,6 +109,19 @@ export const router = createBrowserRouter([
                           };
                         },
                       },
+                      {
+                        path: routes.galleryMaterials,
+                        lazy: async () => {
+                          const { GalleryMaterialsSection, galleryMaterialsLoader } = await import(
+                            "@/pages/gallery"
+                          );
+
+                          return {
+                            Component: GalleryMaterialsSection,
+                            loader: galleryMaterialsLoader,
+                          };
+                        },
+                      },
                     ],
                   },
                   {

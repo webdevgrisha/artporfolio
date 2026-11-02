@@ -33,3 +33,14 @@ export function getDeleteSectionErrorMessage(error: unknown): string {
     fallback: "Не удалось удалить раздел. Попробуйте ещё раз",
   });
 }
+
+export function getSaveMaterialsErrorMessage(error: unknown): string {
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      400: "Сервер не принял материалы. Проверьте их и попробуйте ещё раз",
+      // The materials were changed since this page loaded them, for example in another tab.
+      412: "Материалы уже изменили в другой вкладке",
+    },
+    fallback: "Не удалось сохранить материалы. Попробуйте ещё раз",
+  });
+}
