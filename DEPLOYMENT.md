@@ -71,7 +71,16 @@ The Firebase CLI does not deploy it; apply it once, and again after changing it,
 name shown in **Storage** of the Firebase console:
 
 ```sh
-gcloud storage buckets update gs://BUCKET_NAME --lifecycle-file=storage.lifecycle.json
+STORAGE_BUCKET=BUCKET_NAME pnpm deploy:storage-lifecycle
+```
+
+## Everything the CI workflow does not deploy
+
+The Firestore rules, the Storage rules and the lifecycle rule of the bucket are applied by one
+command; run it after setting up the project and after changing any of them:
+
+```sh
+STORAGE_BUCKET=BUCKET_NAME pnpm deploy:infra
 ```
 
 The Storage Emulator ignores lifecycle rules, so local uploads stay until the emulator data is

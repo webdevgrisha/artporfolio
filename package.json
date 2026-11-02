@@ -14,6 +14,8 @@
     "deploy:hosting": "firebase deploy --only hosting",
     "deploy:firestore-rules": "firebase deploy --only firestore:rules",
     "deploy:storage-rules": "firebase deploy --only storage",
+    "deploy:storage-lifecycle": "gcloud storage buckets update gs://${STORAGE_BUCKET:?Set STORAGE_BUCKET to the name of the bucket} --lifecycle-file=storage.lifecycle.json",
+    "deploy:infra": "pnpm deploy:firestore-rules && pnpm deploy:storage-rules && pnpm deploy:storage-lifecycle",
     "build": "pnpm -r build",
     "type-check": "pnpm -r type-check",
     "test": "pnpm -r --if-present test",
