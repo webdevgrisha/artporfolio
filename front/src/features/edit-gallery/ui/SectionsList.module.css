@@ -35,6 +35,11 @@
   font-weight: normal;
 }
 
+/* As the column «№» of the projects table. */
+.positionColumn {
+  inline-size: 4.75rem;
+}
+
 .titleColumn {
   inline-size: 35%;
 }

@@ -28,8 +28,8 @@ function deletionDescription({ subsections }: GallerySection): string {
 }
 
 /**
- * Every section with its subsections, by title as on the site. A section opens for editing by the
- * pencil and is deleted after a confirmation.
+ * Every section with its subsections, by title as on the site; the numbers show how many there
+ * are. A section opens for editing by the pencil and is deleted after a confirmation.
  */
 export function SectionsList({ className, sections }: SectionsListProps) {
   const deletion = useDeleteSection();
@@ -47,6 +47,9 @@ export function SectionsList({ className, sections }: SectionsListProps) {
             </caption>
             <thead>
               <tr>
+                <th className={styles.positionColumn} scope="col">
+                  №
+                </th>
                 <th className={styles.titleColumn} scope="col">
                   Раздел
                 </th>
@@ -57,8 +60,9 @@ export function SectionsList({ className, sections }: SectionsListProps) {
               </tr>
             </thead>
             <tbody>
-              {sections.map((section) => (
+              {sections.map((section, index) => (
                 <tr key={section.id} className={styles.row}>
+                  <td className={clsx(styles.positionColumn, styles.muted)}>{index + 1}</td>
                   <td className={styles.titleColumn}>{section.title}</td>
                   <td>
                     {section.subsections.length > 0 ? (
