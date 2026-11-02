@@ -1,16 +1,15 @@
 import type { DocumentSnapshot, QuerySnapshot } from "firebase-admin/firestore";
 
 import {
-  byTitle,
   type Section,
   type SectionBody,
   type StoredSection,
   storedSectionSchema,
-  titleKey,
 } from "#modules/gallery-sections/schema";
 import { firestore } from "#shared/firebase/firestore";
 import { ConflictError, NotFoundError, PreconditionFailedError } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import { byTitle, titleKey } from "#shared/text/titles";
 
 /** A saved section with the id it is known by. */
 export interface SavedSection extends Tagged<Section> {

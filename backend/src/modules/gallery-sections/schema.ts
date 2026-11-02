@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { findRepeats } from "#shared/text/titles";
+
 /** The most subsections one section may have; raise it when the artist needs more. */
 export const maxSubsections = 30;
 
@@ -12,21 +14,6 @@ const sectionTitleSchema = z.string().trim().min(1).max(50);
 export const sectionParamsSchema = z.object({
   id: sectionIdSchema,
 });
-
-/**
- * The key two titles are compared by: the visitor reads "Графика" and "графика" as the same
- * section, so they may not both be there.
- */
-export function titleKey(title: string): string {
-  return title.toLocaleLowerCase("ru");
-}
-
-const titleCollator = new Intl.Collator("ru");
-
-/** Sorts by title in the Russian alphabet, as the site and the admin list sections. */
-export function byTitle(a: { title: string }, b: { title: string }): number {
-  return titleCollator.compare(a.title, b.title);
-}
 
 /**
  * A section as the client sends it, to create one or to replace a saved one. The subsections are
@@ -46,29 +33,13 @@ export const sectionBodySchema = z
       .max(maxSubsections),
   })
   .superRefine(({ subsections }, context) => {
-    const ids = new Set<string>();
-    const titles = new Set<string>();
-
-    subsections.forEach(({ id, title }, index) => {
-      if (ids.has(id)) {
-        context.addIssue({
-          code: "custom",
-          message: "Each id must appear once",
-          path: ["subsections", index, "id"],
-        });
-      }
-
-      if (titles.has(titleKey(title))) {
-        context.addIssue({
-          code: "custom",
-          message: "Another subsection has this title",
-          path: ["subsections", index, "title"],
-        });
-      }
-
-      ids.add(id);
-      titles.add(titleKey(title));
-    });
+    for (const { field, index } of findRepeats(subsections)) {
+      context.addIssue({
+        code: "custom",
+        message: field === "id" ? "Each id must appear once" : "Another subsection has this title",
+        path: ["subsections", index, field],
+      });
+    }
   });
 
 const subsectionSchema = z.object({
