@@ -26,6 +26,11 @@
   transition: color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
+.link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
 @media (hover: hover) {
   .link:hover {
     color: var(--color-text);

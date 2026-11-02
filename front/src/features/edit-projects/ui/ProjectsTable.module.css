@@ -121,6 +121,11 @@
   text-decoration: underline;
 }
 
+.externalLink:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .externalHost {
   overflow: hidden;
   text-overflow: ellipsis;
