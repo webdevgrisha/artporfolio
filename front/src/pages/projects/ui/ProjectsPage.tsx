@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Outlet, useMatch } from "react-router";
 
 import { routes } from "@/shared/config/routes";
 import { ButtonLink } from "@/shared/ui/button";
@@ -14,14 +14,18 @@ const sections = [
 
 /** The text above the projects, the projects and their order on the site are saved independently. */
 export function ProjectsPage() {
+  const isListTab = useMatch(routes.projectsAll) !== null;
+
   return (
     <div className={styles.root}>
-      {/* Adding is an action, not a section: it sits at the end of the tabs and opens a new page. */}
+      {/* Adding is an action of the list: it sits at the end of the tabs while the list is open. */}
       <div className={styles.sectionsBar}>
         <TabNav label="Разделы страницы «Проекты»" items={sections} />
-        <ButtonLink className={styles.addLink} to={routes.projectNew}>
-          Добавить проект
-        </ButtonLink>
+        {isListTab ? (
+          <ButtonLink className={styles.addLink} to={routes.projectNew}>
+            Добавить проект
+          </ButtonLink>
+        ) : null}
       </div>
       <Outlet />
     </div>
