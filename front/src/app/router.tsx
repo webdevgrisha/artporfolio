@@ -79,6 +79,23 @@ export const router = createBrowserRouter([
                     lazy: async () => ({
                       Component: (await import("@/pages/gallery")).GalleryPage,
                     }),
+                    // The text, the sections and the materials are saved independently.
+                    children: [
+                      {
+                        index: true,
+                        element: <Navigate to={routes.galleryIntro} replace />,
+                      },
+                      {
+                        path: routes.galleryIntro,
+                        lazy: async () => {
+                          const { GalleryIntroSection, galleryIntroLoader } = await import(
+                            "@/pages/gallery"
+                          );
+
+                          return { Component: GalleryIntroSection, loader: galleryIntroLoader };
+                        },
+                      },
+                    ],
                   },
                   {
                     path: routes.projects,

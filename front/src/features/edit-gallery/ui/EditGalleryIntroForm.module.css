@@ -1,0 +1,4 @@
+/* A readable line length for one long text. */
+.text {
+  max-inline-size: 48rem;
+}

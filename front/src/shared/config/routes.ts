@@ -7,6 +7,7 @@ export const routes = {
   contactPhoto: "/admin/contacts/photo",
   contacts: "/admin/contacts",
   gallery: "/admin/gallery",
+  galleryIntro: "/admin/gallery/intro",
   login: "/admin/login",
   logout: "/admin/logout",
   personalization: "/admin/personalization",
