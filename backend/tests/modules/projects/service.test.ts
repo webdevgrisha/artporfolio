@@ -82,6 +82,7 @@ const elephantId = "11111111-1111-4111-8111-111111111111";
 const tigerId = "22222222-2222-4222-8222-222222222222";
 const photoId = "33333333-3333-4333-8333-333333333333";
 const uploadId = "44444444-4444-4444-8444-444444444444";
+const newId = "55555555-5555-4555-8555-555555555555";
 
 function storedPhoto(projectId: string) {
   const folder = `projects/${projectId}/photos/${photoId}/old-version`;
@@ -197,21 +198,21 @@ describe("getProject", () => {
 
 describe("createProject", () => {
   it("puts the new project at the top of the list, with its photos in its own folder", async () => {
-    const { data, etag, id } = await createProject(body);
+    const { data, etag } = await createProject(newId, body);
 
-    expect((await getProjectsOrder()).data).toEqual([id, elephantId, tigerId]);
+    expect((await getProjectsOrder()).data).toEqual([newId, elephantId, tigerId]);
     expect(uploads.publishUpload).toHaveBeenCalledWith(
       uploadId,
-      `projects/${id}/photos/${String(data.photos[0]?.id)}`,
+      `projects/${newId}/photos/${String(data.photos[0]?.id)}`,
     );
     expect(data).toMatchObject({ description: body.description, link: body.link, title: "Слон" });
-    expect(etag).toBe(await readTag(id));
+    expect(etag).toBe(await readTag(newId));
     // The upload stays for a save repeated after a lost response.
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
   it("dates the new project by the server clock", async () => {
-    const { data } = await createProject(body);
+    const { data } = await createProject(newId, body);
 
     expect(data.createdAt).toBe(data.updatedAt);
     expect(Date.parse(data.createdAt)).toBeGreaterThan(seededAt.toMillis());
@@ -220,19 +221,30 @@ describe("createProject", () => {
   it("creates the first project at position 0", async () => {
     projects.clear();
 
-    const { id } = await createProject(body);
+    await createProject(newId, body);
 
-    expect(projects.get(id)?.position).toBe(0);
+    expect(projects.get(newId)?.position).toBe(0);
+  });
+
+  it("returns 412 for an id a project already has, such as an earlier try, and removes the copies", async () => {
+    const saved = projects.get(elephantId);
+
+    await expect(createProject(elephantId, body)).rejects.toBeInstanceOf(PreconditionFailedError);
+
+    expect(projects.get(elephantId)).toBe(saved);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(
+      expect.stringMatching(new RegExp(`^projects/${elephantId}/photos/.+/new-version$`)),
+    );
   });
 
   it("returns 422 for a photo id, which no new project has, and removes the copies", async () => {
     await expect(
-      createProject({ ...body, photos: [{ alt: "Старое", id: photoId, uploadId }] }),
+      createProject(newId, { ...body, photos: [{ alt: "Старое", id: photoId, uploadId }] }),
     ).rejects.toBeInstanceOf(UnprocessableContentError);
 
     expect(projects.size).toBe(2);
     expect(storage.deleteFolder).toHaveBeenCalledWith(
-      expect.stringMatching(/^projects\/[0-9a-f-]{36}\/photos\/.+\/new-version$/),
+      expect.stringMatching(new RegExp(`^projects/${newId}/photos/.+/new-version$`)),
     );
   });
 });

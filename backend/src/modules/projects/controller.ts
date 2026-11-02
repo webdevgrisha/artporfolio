@@ -16,7 +16,7 @@ import {
   replaceProject,
   replaceProjectsOrder,
 } from "#modules/projects/service";
-import { ifMatchHeader } from "#shared/middleware/preconditions";
+import { ifMatchHeader, isCreateOnly } from "#shared/middleware/preconditions";
 
 export const readProjects: RequestHandler<object, ProjectsResponse> = async (
   _request,
@@ -36,28 +36,21 @@ export const readProject: RequestHandler<ProjectParams, ProjectResponse> = async
   response.status(200).set("ETag", etag).json({ project: data });
 };
 
-export const postProject: RequestHandler<object, ProjectResponse, ProjectBody> = async (
-  request,
-  response,
-) => {
-  const { data, etag, id } = await createProject(request.body);
-
-  response
-    .status(201)
-    .location(`${request.baseUrl}/${id}`)
-    .set("ETag", etag)
-    .json({ project: data });
-};
-
+/** Creates the project with If-None-Match: *, or replaces the version named in If-Match. */
 export const putProject: RequestHandler<ProjectParams, ProjectResponse, ProjectBody> = async (
   request,
   response,
 ) => {
-  const { data, etag } = await replaceProject(
-    request.params.id,
-    request.body,
-    ifMatchHeader(request),
-  );
+  const { id } = request.params;
+
+  if (isCreateOnly(request)) {
+    const { data, etag } = await createProject(id, request.body);
+
+    response.status(201).set("ETag", etag).json({ project: data });
+    return;
+  }
+
+  const { data, etag } = await replaceProject(id, request.body, ifMatchHeader(request));
 
   response.status(200).set("ETag", etag).json({ project: data });
 };

@@ -2,7 +2,6 @@ import { Router } from "express";
 
 import { requireAuth } from "#modules/auth/middleware";
 import {
-  postProject,
   putOrder,
   putProject,
   readOrder,
@@ -17,22 +16,15 @@ import {
 } from "#modules/projects/schema";
 import { requireContentType } from "#shared/middleware/content-type";
 import { requireCsrfToken } from "#shared/middleware/csrf";
-import { requireIfMatch } from "#shared/middleware/preconditions";
+import { requireIfMatch, requireIfMatchOrCreateOnly } from "#shared/middleware/preconditions";
 import { validateBody, validateParams } from "#shared/middleware/validation";
 
 export const projectsRouter = Router();
 
 // Projects are public: the site shows them to every visitor. A change applies only to the project,
-// or the order, the client read: it sends its ETag in If-Match. A new project needs none.
+// or the order, the client read: it sends its ETag in If-Match. The client names a new project
+// itself and creates it with PUT and If-None-Match: *, so repeating the request is safe.
 projectsRouter.get("/", readProjects);
-projectsRouter.post(
-  "/",
-  requireAuth,
-  requireCsrfToken,
-  requireContentType("application/json"),
-  validateBody(projectBodySchema),
-  postProject,
-);
 
 // Registered before "/:id", which takes only UUIDs anyway.
 projectsRouter.get("/order", readOrder);
@@ -53,7 +45,7 @@ projectsRouter.put(
   requireCsrfToken,
   validateParams(projectParamsSchema),
   requireContentType("application/json"),
-  requireIfMatch,
+  requireIfMatchOrCreateOnly,
   validateBody(projectBodySchema),
   putProject,
 );

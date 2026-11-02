@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 import { type DocumentSnapshot, type QuerySnapshot, Timestamp } from "firebase-admin/firestore";
 
 import {
@@ -9,7 +7,11 @@ import {
   storedProjectSchema,
 } from "#modules/projects/schema";
 import { firestore } from "#shared/firebase/firestore";
-import { NotFoundError, UnprocessableContentError } from "#shared/http/errors";
+import {
+  NotFoundError,
+  PreconditionFailedError,
+  UnprocessableContentError,
+} from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { preparePhotoList, type StoredListPhoto, toListPhoto } from "#shared/images/photo-list";
 import { deleteImageFilesOrWarn } from "#shared/images/storage";
@@ -93,17 +95,21 @@ export async function getProject(id: string): Promise<SavedProject> {
 }
 
 /**
- * Creates a project at the top of the list. The photo files are copied from their uploads first;
- * if saving fails, the copies are removed. Every photo of a new project is new: a photo `id`
- * refers to nothing, so it is rejected with 422.
+ * Creates the project `id`, which the client chose, at the top of the list; rejects it with 412
+ * once a project has that id, such as one an earlier try of the same request created. The photo
+ * files are copied from their uploads first; if saving fails, the copies are removed. Every photo
+ * of a new project is new: a photo `id` refers to nothing, so it is rejected with 422.
  */
-export async function createProject(body: ProjectBody): Promise<SavedProject> {
-  const id = randomUUID();
+export async function createProject(id: string, body: ProjectBody): Promise<SavedProject> {
   const draft = await preparePhotoList(body.photos, photosFolder(id));
   let project: StoredProject;
 
   try {
     project = await firestore().runTransaction(async (transaction) => {
+      if ((await transaction.get(projectDocument(id))).exists) {
+        throw new PreconditionFailedError("The project already exists");
+      }
+
       const { docs } = await transaction.get(orderedProjects().limit(1));
       const first = docs[0];
       const position = first ? readProject(first).position - 1 : 0;

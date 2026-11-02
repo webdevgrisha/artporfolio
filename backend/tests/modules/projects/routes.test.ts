@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { adminHeaders, adminSessionCookie } from "../../support/adminSession.js";
+import { adminHeaders } from "../../support/adminSession.js";
 import { apiImage } from "../../support/images.js";
 import { routeApp } from "../../support/routeApp.js";
 import { startTestServer, type TestServer } from "../../support/testServer.js";
@@ -119,32 +119,39 @@ describe("reading the projects", () => {
 });
 
 describe("creating a project", () => {
-  it("creates the project and returns 201 with its location and ETag", async () => {
-    const headers = await adminHeaders(server.baseUrl);
+  async function createHeaders(): Promise<Record<string, string>> {
+    const { "If-Match": _, ...headers } = await changeHeaders();
 
-    const response = await send(
-      "POST",
-      "",
-      { ...headers, "Content-Type": "application/json" },
-      { ...body, title: "  Слон  " },
-    );
+    return { ...headers, "If-None-Match": "*" };
+  }
+
+  it("creates the project with If-None-Match: * and returns 201 with its ETag", async () => {
+    const response = await send("PUT", `/${id}`, await createHeaders(), {
+      ...body,
+      title: "  Слон  ",
+    });
 
     expect(response.status).toBe(201);
-    expect(response.headers.get("Location")).toBe(`/api/projects/${id}`);
     expect(response.headers.get("ETag")).toBe(savedEtag);
     await expect(response.json()).resolves.toEqual({ project });
-    expect(service.createProject).toHaveBeenCalledWith(body);
+    expect(service.createProject).toHaveBeenCalledWith(id, body);
+    expect(service.replaceProject).not.toHaveBeenCalled();
+  });
+
+  it("returns 412 for a project that exists, such as one an earlier try created", async () => {
+    service.createProject.mockRejectedValue(new PreconditionFailedError());
+
+    const response = await send("PUT", `/${id}`, await createHeaders(), body);
+
+    expect(response.status).toBe(412);
   });
 
   it("reports every invalid field", async () => {
-    const headers = await adminHeaders(server.baseUrl);
-
-    const response = await send(
-      "POST",
-      "",
-      { ...headers, "Content-Type": "application/json" },
-      { ...body, link: "javascript:alert(1)", title: "" },
-    );
+    const response = await send("PUT", `/${id}`, await createHeaders(), {
+      ...body,
+      link: "javascript:alert(1)",
+      title: "",
+    });
 
     expect(response.status).toBe(400);
     const problem = (await response.json()) as { errors: { pointer: string }[] };
@@ -153,20 +160,11 @@ describe("creating a project", () => {
   });
 
   it("rejects creating without a session or a CSRF token", async () => {
-    const withoutCsrf = await send(
-      "POST",
-      "",
-      { Cookie: adminSessionCookie, "Content-Type": "application/json" },
-      body,
-    );
-    const headers = await adminHeaders(server.baseUrl);
+    const { "X-CSRF-Token": _, ...withoutCsrfHeaders } = await createHeaders();
+    const withoutCsrf = await send("PUT", `/${id}`, withoutCsrfHeaders, body);
+    const headers = await createHeaders();
     auth.verifySession.mockRejectedValue(new UnauthorizedError());
-    const withoutSession = await send(
-      "POST",
-      "",
-      { ...headers, "Content-Type": "application/json" },
-      body,
-    );
+    const withoutSession = await send("PUT", `/${id}`, headers, body);
 
     expect(withoutCsrf.status).toBe(403);
     expect(withoutSession.status).toBe(401);
@@ -184,13 +182,14 @@ describe("replacing a project", () => {
     expect(service.replaceProject).toHaveBeenCalledWith(id, body, etag);
   });
 
-  it("returns 428 without If-Match", async () => {
+  it("returns 428 without If-Match or If-None-Match: *", async () => {
     const { "If-Match": _, ...headers } = await changeHeaders();
 
     const response = await send("PUT", `/${id}`, headers, body);
 
     expect(response.status).toBe(428);
     expect(service.replaceProject).not.toHaveBeenCalled();
+    expect(service.createProject).not.toHaveBeenCalled();
   });
 
   it.each([
