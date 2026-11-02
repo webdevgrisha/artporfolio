@@ -37,6 +37,13 @@
   opacity: 1;
 }
 
+.summary {
+  flex: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
 /* The field has its own clear button. */
 .control::-webkit-search-cancel-button {
   appearance: none;

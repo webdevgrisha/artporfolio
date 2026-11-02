@@ -198,19 +198,17 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
 
   return (
     <div className={clsx(styles.root, className)}>
-      <div className={styles.search}>
-        <SearchInput
-          label="Поиск по названию и ссылке"
-          clearLabel="Очистить поиск"
-          value={view.query}
-          onChange={(query) => changeView({ query })}
-        />
-        <p className={styles.found} aria-live="polite">
-          {view.query && shownRows.length > 0
+      <SearchInput
+        label="Поиск по названию и ссылке"
+        clearLabel="Очистить поиск"
+        value={view.query}
+        summary={
+          view.query && shownRows.length > 0
             ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}`
-            : ""}
-        </p>
-      </div>
+            : ""
+        }
+        onChange={(query) => changeView({ query })}
+      />
 
       {projects.length === 0 ? (
         <p className={styles.empty}>Проектов пока нет</p>

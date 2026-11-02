@@ -15,6 +15,8 @@ interface SearchInputProps
   /** The accessible name; the field shows only its placeholder, as a search field usually does. */
   label: string;
   onChange: (value: string) => void;
+  /** A short result of the search, shown at the end of the field and read out by screen readers. */
+  summary?: string;
   value: string;
 }
 
@@ -28,6 +30,7 @@ export function SearchInput({
   label,
   onChange,
   placeholder = "Поиск…",
+  summary = "",
   value,
   ...inputProps
 }: SearchInputProps) {
@@ -62,6 +65,10 @@ export function SearchInput({
           }
         }}
       />
+      {/* Always rendered, so screen readers announce each new summary. */}
+      <span className={styles.summary} aria-live="polite">
+        {summary}
+      </span>
       {value ? (
         <Tooltip content={clearLabel}>
           <IconButton label={clearLabel} onClick={clear}>
