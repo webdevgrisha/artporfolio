@@ -1,8 +1,9 @@
-/* The line under the field spans its whole width, as in the design. */
+/* The line under the field spans its whole width and sits well below the text, as in the design. */
 .root {
   display: flex;
   gap: var(--space-4);
   align-items: center;
+  padding-block-end: var(--space-3);
   font-size: var(--font-size-lg);
   border-block-end: 1px solid var(--color-border-disabled);
 }
