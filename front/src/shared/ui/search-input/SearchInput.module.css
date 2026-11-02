@@ -1,9 +1,12 @@
-/* The line under the field spans its whole width and sits well below the text, as in the design. */
+/*
+ * The line under the field spans its whole width. The field is already as tall as a tap target, so
+ * a small padding is enough to keep the line close under the query.
+ */
 .root {
   display: flex;
   gap: var(--space-4);
   align-items: center;
-  padding-block-end: var(--space-3);
+  padding-block-end: var(--space-1);
   font-size: var(--font-size-lg);
   border-block-end: 1px solid var(--color-border-disabled);
 }
