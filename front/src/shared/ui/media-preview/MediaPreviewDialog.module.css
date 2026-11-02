@@ -1,11 +1,12 @@
 /*
- * The whole image, as large as the dialog allows, leaving room for its header. Centred: a small
- * or narrow image is narrower than the header.
+ * The whole image, as large as the space the dialog leaves under its header. Centred: a small or
+ * narrow image is narrower than the header.
  */
 .image {
   display: block;
+  flex: 0 1 auto;
   max-inline-size: 100%;
-  max-block-size: calc(100dvh - 8rem);
+  min-block-size: 0;
   margin-inline: auto;
   object-fit: contain;
 }

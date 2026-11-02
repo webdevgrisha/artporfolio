@@ -8,14 +8,25 @@
   border: 1px solid var(--color-border);
 }
 
+/*
+ * A column that its maximum height shrinks, so the content gets exactly the height left in the
+ * viewport. Only while open: a closed dialog must stay hidden.
+ */
+.root[open] {
+  display: flex;
+  flex-direction: column;
+}
+
 .root::backdrop {
   background: var(--color-backdrop);
 }
 
+/* Shrinks with the dialog, so children that may shrink fit it instead of scrolling. */
 .content {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  min-block-size: 0;
   padding: var(--space-4);
 }
 
