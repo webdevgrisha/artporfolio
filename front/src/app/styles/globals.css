@@ -25,6 +25,8 @@
     --color-border: #000;
     --color-border-disabled: #777;
     --color-border-modified: #1d4ed8;
+    /* A decorative line between the rows of a list; it marks no control, so it may be pale. */
+    --color-divider: #e6e6e6;
     --color-focus: #000;
     --color-danger: #b00020;
     --color-backdrop: rgb(0 0 0 / 31%);

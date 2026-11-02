@@ -13,7 +13,7 @@
   align-items: center;
   padding: var(--space-2);
   background: var(--color-surface);
-  border-block-end: 1px solid var(--color-border-disabled);
+  border-block-end: 1px solid var(--color-divider);
 }
 
 /* A moved row is marked by a bar at its start, so the rows keep their size. */
