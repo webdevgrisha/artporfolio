@@ -34,9 +34,8 @@
   inline-size: 4.75rem;
 }
 
-/* Wider than the cover, so the title keeps the same distance from it as the cover from «№». */
 .photoColumn {
-  inline-size: 7.5rem;
+  inline-size: 6rem;
 }
 
 .titleColumn {
