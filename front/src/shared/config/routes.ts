@@ -22,7 +22,7 @@ export const routes = {
   sitePages: "/admin/pages",
 } as const;
 
-export const adminHomePath = routes.projects;
+export const adminHomePath = routes.gallery;
 
 /** The edit page of one section of the gallery. */
 export function gallerySectionPath(id: string): string {
@@ -45,12 +45,15 @@ export function toAdminPath(value: FormDataEntryValue | null): string {
 /** Id of the admin layout route. Its loader provides the signed-in user. */
 export const adminRouteId = "admin";
 
-/** Admin navigation in display order; the titles are also used as page headings. */
+/**
+ * Admin navigation in display order, the most used pages first; the titles are also used as page
+ * headings.
+ */
 export const adminNavigation = [
   { title: "Галерея", to: routes.gallery },
   { title: "Проекты", to: routes.projects },
   { title: "О сайте", to: routes.about },
   { title: "Контакты", to: routes.contacts },
-  { title: "Персонализация", to: routes.personalization },
   { title: "Страницы", to: routes.sitePages },
+  { title: "Персонализация", to: routes.personalization },
 ] as const;

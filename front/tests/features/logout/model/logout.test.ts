@@ -119,7 +119,7 @@ describe("logoutAction", () => {
 
       const response = await logout(returnTo);
 
-      expect(response.headers.get("Location")).toBe("/admin/projects");
+      expect(response.headers.get("Location")).toBe("/admin/gallery");
     },
   );
 });

@@ -44,7 +44,7 @@ describe("loginLoader", () => {
         loginLoader(routeArgs(`/admin/login?${new URLSearchParams({ redirectTo }).toString()}`)),
       );
 
-      expect(response.headers.get("Location")).toBe("/admin/projects");
+      expect(response.headers.get("Location")).toBe("/admin/gallery");
     },
   );
 });
@@ -65,7 +65,7 @@ describe("loginAction", () => {
       formActionArgs("/admin/login", { ...credentials, redirectTo: "https://example.com" }),
     );
 
-    expect((response as Response).headers.get("Location")).toBe("/admin/projects");
+    expect((response as Response).headers.get("Location")).toBe("/admin/gallery");
   });
 
   // The form checks the fields before it is sent; the action does not trust it.
