@@ -128,6 +128,7 @@ backend/src/
 │   │   ├── links/      ссылки для связи, подключается роутером contacts
 │   │   └── photo.ts    фото для контактов, место для фото, подключается роутером contacts
 │   ├── gallery-intro/  текст над работами в галерее
+│   ├── gallery-materials/ материалы галереи, один список по алфавиту
 │   ├── gallery-sections/ разделы галереи, каждый в своём документе Firestore вместе с подразделами
 │   ├── health/
 │   ├── pages/          страницы публичного сайта и их главные фото (hero)
@@ -140,7 +141,8 @@ backend/src/
     ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
     ├── http/           HttpError, entity tags, работа с cookies, типы запроса Express
     ├── images/         обработка изображений через sharp, загрузки, файлы изображений в Cloud Storage, места для фото, списки фото
-    └── middleware/     csrf, content-type, preconditions (If-Match), validation, upload, error
+    ├── middleware/     csrf, content-type, preconditions (If-Match), validation, upload, error
+    └── text/           названия: сравнение без учёта регистра, сортировка по русскому алфавиту
 ```
 
 - В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.

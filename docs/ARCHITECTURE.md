@@ -127,6 +127,7 @@ backend/src/
 │   │   ├── links/      the contact links, mounted by the contacts router
 │   │   └── photo.ts    the contact photo, a photo slot mounted by the contacts router
 │   ├── gallery-intro/  the text above the works in the gallery
+│   ├── gallery-materials/ the materials of the gallery, one list sorted by title
 │   ├── gallery-sections/ the sections of the gallery, each a Firestore document with its subsections
 │   ├── health/
 │   ├── pages/          the pages of the public site and their main photos (heroes)
@@ -139,7 +140,8 @@ backend/src/
     ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
     ├── http/           HttpError, entity tags, cookie helpers, Express request typing
     ├── images/         image processing with sharp, uploads, image files in Cloud Storage, photo slots, photo lists
-    └── middleware/     csrf, content-type, preconditions (If-Match), validation, upload, error
+    ├── middleware/     csrf, content-type, preconditions (If-Match), validation, upload, error
+    └── text/           titles: compared whatever the case, sorted in the Russian alphabet
 ```
 
 - A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. The request flow is route → middleware → controller → service.
