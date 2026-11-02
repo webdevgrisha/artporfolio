@@ -5,7 +5,7 @@ import { z } from "zod";
 import { UnprocessableContentError } from "#shared/http/errors";
 import { altSchema, photoSchema, storedPhotoSchema, toPhoto } from "#shared/images/photo";
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
-import { deleteUploadsOrWarn, publishUpload, uploadIdSchema } from "#shared/images/uploads";
+import { publishUpload, uploadIdSchema } from "#shared/images/uploads";
 
 /** Stays the same when the file is replaced. */
 const listPhotoIdSchema = z.uuid();
@@ -77,8 +77,9 @@ export interface PhotoListDraft {
   /** Removes the copied files, when the new list was not saved. */
   discard(): Promise<void>;
   /**
-   * Once the new list is saved, removes the files it no longer uses (the deleted photos and the
-   * replaced versions) and the used uploads.
+   * Once the new list is saved, removes the files it no longer uses: the deleted photos and the
+   * replaced versions. The uploads stay until the bucket deletes them, so a save repeated after a
+   * lost response can still refer to them.
    */
   finish(saved: StoredListPhoto[], photos: StoredListPhoto[]): Promise<void>;
 }
@@ -145,10 +146,7 @@ export async function preparePhotoList(
       return images.has(photo.id) ? [versionFolder(photo.id, photo.version)] : [];
     });
 
-    await Promise.all([
-      ...unusedFolders.map(deleteImageFilesOrWarn),
-      deleteUploadsOrWarn(planned.flatMap((photo) => photo.uploadId ?? [])),
-    ]);
+    await Promise.all(unusedFolders.map(deleteImageFilesOrWarn));
   }
 
   try {

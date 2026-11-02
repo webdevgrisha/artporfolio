@@ -43,7 +43,6 @@ const storage = vi.hoisted(() => ({
 }));
 
 const uploads = vi.hoisted(() => ({
-  deleteUploadsOrWarn: vi.fn(),
   publishUpload: vi.fn(),
 }));
 
@@ -100,7 +99,6 @@ beforeEach(() => {
   );
   transaction.get.mockImplementation((document: FakeDocument) => document.get());
   storage.deleteFolder.mockResolvedValue(undefined);
-  uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
   uploads.publishUpload.mockResolvedValue(published);
 });
 
@@ -172,7 +170,6 @@ describe("page service", () => {
     expect(hero.sources.webp[0]?.url).toBe(
       "https://storage.test/pages/about/hero/new/640.webp?token=token",
     );
-    expect(uploads.deleteUploadsOrWarn).toHaveBeenCalledWith([uploadId]);
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
@@ -204,7 +201,6 @@ describe("page service", () => {
     );
 
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/new");
-    expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
   });
 
   it("records nothing when the upload cannot be published", async () => {

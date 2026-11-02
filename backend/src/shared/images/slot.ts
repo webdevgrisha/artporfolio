@@ -8,7 +8,7 @@ import type { ZodType } from "zod";
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
-import { deleteUploadsOrWarn, publishUpload } from "#shared/images/uploads";
+import { publishUpload } from "#shared/images/uploads";
 
 /** How a field of a document stores its image: the image alone, or with more, such as an alt text. */
 export interface SlotField<TStored extends StoredImage> {
@@ -92,7 +92,7 @@ export function changeSlot<TStored extends StoredImage, TNext extends TStored | 
 /**
  * Puts the uploaded image in the slot, before removing the previous one, so the site never links
  * to missing files. `toStored` adds what the field keeps besides the image. If the image cannot be
- * saved, its copy is removed and the upload is kept.
+ * saved, its copy is removed. The upload is kept either way, see uploads.ts.
  */
 export async function fillSlot<TStored extends StoredImage>(
   slot: ImageSlot<TStored>,
@@ -113,8 +113,6 @@ export async function fillSlot<TStored extends StoredImage>(
   if (changed.previous) {
     await deleteImageFilesOrWarn(versionFolder(slot, changed.previous.version));
   }
-
-  await deleteUploadsOrWarn([uploadId]);
 
   return { created: changed.previous === null, data: stored, etag: changed.etag };
 }

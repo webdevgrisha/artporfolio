@@ -63,8 +63,10 @@ pnpm deploy:storage-rules --project artportfolio-b2ef4
 ```
 
 A photo is first uploaded to `uploads/`, and a later request copies it into the content. The
-uploads that were never used are deleted by the bucket's lifecycle rule in
+server does not delete an upload once it is used, so a request repeated after a lost response can
+still refer to it; every upload is deleted by the bucket's lifecycle rule in
 [`storage.lifecycle.json`](storage.lifecycle.json): every file under `uploads/` older than a day.
+Without the rule, uploads would pile up.
 The Firebase CLI does not deploy it; apply it once, and again after changing it, with the bucket
 name shown in **Storage** of the Firebase console:
 

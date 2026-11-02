@@ -10,7 +10,6 @@ const storage = vi.hoisted(() => ({
 }));
 
 const uploads = vi.hoisted(() => ({
-  deleteUploadsOrWarn: vi.fn(),
   publishUpload: vi.fn(),
 }));
 
@@ -150,7 +149,6 @@ beforeEach(() => {
   projects.set(elephantId, storedProject(elephantId, "Слон", 0));
   projects.set(tigerId, storedProject(tigerId, "Тигр", 1));
   storage.deleteFolder.mockResolvedValue(undefined);
-  uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
   uploads.publishUpload.mockImplementation(async (_uploadId: string, folder: string) =>
     publishedImage(folder),
   );
@@ -208,7 +206,8 @@ describe("createProject", () => {
     );
     expect(data).toMatchObject({ description: body.description, link: body.link, title: "Слон" });
     expect(etag).toBe(await readTag(id));
-    expect(uploads.deleteUploadsOrWarn).toHaveBeenCalledWith([uploadId]);
+    // The upload stays for a save repeated after a lost response.
+    expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
   it("dates the new project by the server clock", async () => {

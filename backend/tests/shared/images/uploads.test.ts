@@ -18,7 +18,7 @@ vi.mock("#shared/images/processing", async (importOriginal) => ({
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import { UnprocessableContentError } from "#shared/http/errors";
-import { deleteUploadsOrWarn, publishUpload, saveUpload } from "#shared/images/uploads";
+import { publishUpload, saveUpload } from "#shared/images/uploads";
 
 const file = { data: Buffer.from("original"), name: "sketch.png", size: 8 };
 
@@ -182,15 +182,5 @@ describe("publishUpload", () => {
     expect(storage.deleteFolder).toHaveBeenCalledWith(
       expect.stringMatching(/^folder\/[0-9a-f-]{36}$/),
     );
-  });
-});
-
-describe("deleteUploadsOrWarn", () => {
-  it("deletes the folder of every upload and survives a failure", async () => {
-    storage.deleteFolder.mockRejectedValueOnce(new Error("Storage is down"));
-
-    await expect(deleteUploadsOrWarn(["a", "b"])).resolves.toBeUndefined();
-
-    expect(storage.deleteFolder.mock.calls).toEqual([["uploads/a"], ["uploads/b"]]);
   });
 });
