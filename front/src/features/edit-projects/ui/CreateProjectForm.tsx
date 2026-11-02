@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -22,6 +23,9 @@ interface CreateProjectFormProps {
 export function CreateProjectForm({ className }: CreateProjectFormProps) {
   const navigate = useNavigate();
   const allowNextNavigation = useAllowNextNavigation();
+  // Every try of this form creates the same project, so a retry after a lost response never
+  // creates a second one.
+  const [id] = React.useState(() => crypto.randomUUID());
   const form = useForm<ProjectFormValues>({
     defaultValues: emptyProjectFormValues,
     resolver: zodResolver(projectFormSchema),
@@ -36,17 +40,20 @@ export function CreateProjectForm({ className }: CreateProjectFormProps) {
 
   function create(values: ProjectFormValues) {
     // On failure the mutation shows the error and the values stay for another try.
-    createProject.mutate(values, {
-      // Called only while this form is open: once the user has left it, perhaps for another new
-      // project, the created one just appears in the list.
-      onSuccess: (project) => {
-        const path = projectPath(project.id);
+    createProject.mutate(
+      { id, values },
+      {
+        // Called only while this form is open: once the user has left it, perhaps for another new
+        // project, the created one just appears in the list.
+        onSuccess: (project) => {
+          const path = projectPath(project.id);
 
-        allowNextNavigation(path);
-        // Back from the edit page leads to the list, not to an empty form again.
-        void navigate(path, { replace: true });
+          allowNextNavigation(path);
+          // Back from the edit page leads to the list, not to an empty form again.
+          void navigate(path, { replace: true });
+        },
       },
-    });
+    );
   }
 
   return (

@@ -145,6 +145,31 @@ class Http {
   }
 
   /**
+   * A PUT that creates the resource only while there is none at `path` (If-None-Match: *, RFC 9110
+   * §13.1.2); the server rejects it with 412 otherwise, so repeating it never makes a second one.
+   * Returns the new representation and its tag.
+   */
+  async putIfNoneMatch<TBody extends object, TSchema extends ZodType>({
+    body,
+    headers,
+    path,
+    schema,
+    ...options
+  }: BodyOptions<TBody, TSchema>): Promise<Tagged<z.output<TSchema>>> {
+    const requestHeaders = new Headers(headers);
+    requestHeaders.set("If-None-Match", "*");
+
+    const response = await this.request(path, {
+      ...options,
+      body,
+      headers: requestHeaders,
+      method: "PUT",
+    });
+
+    return { data: schema.parse(await response.json()), etag: readETag(response) };
+  }
+
+  /**
    * A PATCH that changes the representation only while it still has the tag `etag`; the server
    * rejects it with 412 otherwise. The body is a JSON Merge Patch (RFC 7396): the fields it sends
    * replace those of the representation. Returns the new representation and its tag.

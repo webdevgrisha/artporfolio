@@ -14,6 +14,12 @@ export interface ProjectBody {
   photos: readonly ListPhotoItem[];
 }
 
+interface CreateProjectParams {
+  body: ProjectBody;
+  /** A new UUID, which the client picks, so that a repeated request names the same project. */
+  id: string;
+}
+
 interface ReplaceProjectParams {
   body: ProjectBody;
   /** The ETag of the project the new one was made from. */
@@ -61,13 +67,18 @@ export function projectQuery(id: string) {
 }
 
 /**
- * Creates a project at the top of the list and returns it as saved. Rejected with 422 when an
- * upload has expired.
+ * Creates the project `id` at the top of the list and returns it as saved with its ETag. Rejected
+ * with 412 when the project exists, for example created by an earlier try whose response was lost,
+ * and with 422 when an upload has expired.
  */
-export async function createProject(body: ProjectBody): Promise<Project> {
-  const { project } = await http.post({ path: "/projects", body, schema: projectResponseSchema });
+export async function createProject({ body, id }: CreateProjectParams): Promise<Tagged<Project>> {
+  const { data, etag } = await http.putIfNoneMatch({
+    path: `/projects/${encodeURIComponent(id)}`,
+    body,
+    schema: projectResponseSchema,
+  });
 
-  return project;
+  return { data: data.project, etag };
 }
 
 /**
