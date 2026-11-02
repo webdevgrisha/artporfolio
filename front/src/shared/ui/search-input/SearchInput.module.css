@@ -17,10 +17,11 @@
   box-shadow: 0 1px 0 0 var(--color-focus);
 }
 
+/* About 1.2 times the text, so the magnifier marks the field without outweighing the query. */
 .searchIcon {
   flex: none;
-  inline-size: 2rem;
-  block-size: 2rem;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
   color: var(--color-text-muted);
 }
 
