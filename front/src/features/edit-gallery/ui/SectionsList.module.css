@@ -30,6 +30,11 @@
   overflow-wrap: anywhere;
 }
 
+/* A dark line under the names of the columns; the rows are divided by light ones. */
+.table thead tr {
+  border-block-end: 1px solid var(--color-border);
+}
+
 /* Muted, as the labels of the admin, so the names of the columns never read as a row of data. */
 .table thead th {
   padding-block-start: 0;

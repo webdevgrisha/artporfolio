@@ -84,6 +84,11 @@
   }
 }
 
+/* A dark line under the names of the columns; the rows are divided by light ones. */
+.table thead tr {
+  border-block-end: 1px solid var(--color-border);
+}
+
 /* The column the table is sorted by stands out from the muted ones, together with its arrow. */
 .table thead th[aria-sort="ascending"],
 .table thead th[aria-sort="descending"] {
