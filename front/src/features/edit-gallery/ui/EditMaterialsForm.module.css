@@ -40,6 +40,7 @@
 
 /* A line between the rows, as in the other lists of the admin. */
 .row {
+  position: relative;
   display: flex;
   gap: var(--space-4);
   align-items: center;
@@ -54,9 +55,21 @@
   border-block-end: 0;
 }
 
-/* A material added or renamed since the save: the mark of a modified field. */
-.rowModified {
-  box-shadow: inset 2px 0 0 var(--color-border-modified);
+/* A material added or renamed since the save: a bar at its start, as in the photo lists. */
+.rowModified::before {
+  position: absolute;
+  inset-block: var(--space-2);
+  inset-inline-start: 0;
+  inline-size: 2px;
+  content: "";
+  background: var(--color-border-modified);
+}
+
+/* The row the pointer is over, so its actions are easy to match with it. */
+@media (hover: hover) {
+  .row:hover {
+    background: var(--color-surface-disabled);
+  }
 }
 
 .rowTitle {

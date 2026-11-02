@@ -26,6 +26,13 @@
   background: var(--color-border-modified);
 }
 
+/* The row the pointer is over, so its actions are easy to match with it. */
+@media (hover: hover) {
+  .row:hover {
+    background: var(--color-surface-disabled);
+  }
+}
+
 /* Lifted above the rows it passes over. */
 .rowDragging {
   z-index: 1;
