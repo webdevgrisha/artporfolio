@@ -111,4 +111,16 @@
     min-inline-size: 320px;
     min-block-size: 100dvh;
   }
+
+  /*
+   * A modal dialog doesn't stop the page under it from scrolling, so the page stops itself. The
+   * gutter keeps the room of the scrollbar, so the page doesn't shift when it goes away.
+   */
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  html:has(dialog:modal) {
+    overflow: hidden;
+  }
 }
