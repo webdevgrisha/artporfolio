@@ -7,8 +7,11 @@
 /*
  * A narrow screen scrolls the table instead of squeezing its columns. The scroll clips vertically too,
  * so the padding keeps room for the focus ring of the sort buttons, which have none above them.
+ * Positioned, so the visually hidden texts of the cells stay inside the scroll instead of widening
+ * the page.
  */
 .scroller {
+  position: relative;
   padding-block-start: var(--space-1);
   overflow-x: auto;
 }

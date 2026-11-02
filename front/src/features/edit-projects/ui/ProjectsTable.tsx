@@ -14,24 +14,16 @@ import React from "react";
 import { useSearchParams } from "react-router";
 
 import { type Project, ProjectCover } from "@/entities/project";
-import { projectPath } from "@/shared/config/routes";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  EditIcon,
-  ExternalLinkIcon,
-  SortIcon,
-  TrashIcon,
-} from "@/shared/ui/icon";
-import { IconButton, IconButtonLink } from "@/shared/ui/icon-button";
+import { ArrowDownIcon, ArrowUpIcon, ExternalLinkIcon, SortIcon } from "@/shared/ui/icon";
 import { SearchInput } from "@/shared/ui/search-input";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import { linkHost, matchesQuery, readTableView, writeTableView } from "../model/projectsTableView";
 import { useDeleteProject } from "../model/useDeleteProject";
+import { ProjectActions } from "./ProjectActions";
 import styles from "./ProjectsTable.module.css";
 
 declare module "@tanstack/react-table" {
@@ -142,26 +134,9 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         header: () => <VisuallyHidden>Действия</VisuallyHidden>,
         meta: { className: styles.actionsColumn },
         enableSorting: false,
-        cell: ({ row: { original } }) => {
-          const { project } = original;
-          const editLabel = `Изменить ${project.title}`;
-          const deleteLabel = `Удалить ${project.title}`;
-
-          return (
-            <div className={styles.actions}>
-              <Tooltip content={editLabel}>
-                <IconButtonLink label={editLabel} to={projectPath(project.id)}>
-                  <EditIcon className={styles.editIcon} />
-                </IconButtonLink>
-              </Tooltip>
-              <Tooltip content={deleteLabel}>
-                <IconButton label={deleteLabel} onClick={() => setDeleted(project)}>
-                  <TrashIcon className={styles.removeIcon} />
-                </IconButton>
-              </Tooltip>
-            </div>
-          );
-        },
+        cell: ({ row: { original } }) => (
+          <ProjectActions project={original.project} onDelete={setDeleted} />
+        ),
       },
     ],
     [],
@@ -196,9 +171,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         clearLabel="Очистить поиск"
         value={view.query}
         summary={
-          view.query && shownRows.length > 0
-            ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}`
-            : ""
+          view.query ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}` : ""
         }
         onChange={(query) => changeView({ query })}
       />

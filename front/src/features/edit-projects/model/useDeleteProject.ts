@@ -1,8 +1,10 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
 
 import { deleteProject, type Project, projectsQueryKey } from "@/entities/project";
 
 import { getDeleteProjectErrorMessage } from "../lib/saveErrorMessages";
+
+const deleteProjectMutationKey = [...projectsQueryKey, "delete"] as const;
 
 /**
  * Deletes a project with its photos, then loads the projects and their order again. The table
@@ -20,6 +22,20 @@ export function useDeleteProject() {
       },
     },
     mutationFn: ({ id }: Project) => deleteProject({ etag: "*", id }),
+    mutationKey: deleteProjectMutationKey,
     onSettled: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey }),
   });
+}
+
+/** Whether the project is being deleted, so that it is not deleted twice meanwhile. */
+export function useIsDeletingProject(id: string): boolean {
+  const deletions = useMutationState({
+    filters: {
+      mutationKey: deleteProjectMutationKey,
+      predicate: (mutation) => (mutation.state.variables as Project | undefined)?.id === id,
+      status: "pending",
+    },
+  });
+
+  return deletions.length > 0;
 }
