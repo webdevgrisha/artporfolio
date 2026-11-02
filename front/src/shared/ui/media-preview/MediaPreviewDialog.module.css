@@ -1,12 +1,17 @@
 /*
  * The whole image, as large as the space the dialog leaves under its header. Centred: a small or
  * narrow image is narrower than the header.
+ *
+ * The dialog takes its width from the image before the column shrinks it, so the maximum height,
+ * about what the header and the margins leave, keeps a tall image from widening the dialog. The
+ * shrink then fits the height exactly, whatever the header turns out to be.
  */
 .image {
   display: block;
   flex: 0 1 auto;
   max-inline-size: 100%;
   min-block-size: 0;
+  max-block-size: calc(100dvh - 8rem);
   margin-inline: auto;
   object-fit: contain;
 }
