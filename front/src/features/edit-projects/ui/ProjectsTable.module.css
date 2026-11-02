@@ -57,10 +57,14 @@
   inline-size: 7.5rem;
 }
 
-/* The sort buttons are tall enough to tap; the row needs no padding above them. */
+/*
+ * The sort buttons are tall enough to tap; the row needs no padding above them. Muted, as the
+ * labels of the admin, so the names of the columns never read as a row of data.
+ */
 .table thead th {
   padding-block-start: 0;
   font-weight: normal;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
@@ -78,6 +82,12 @@
   .row:hover {
     background: var(--color-surface-disabled);
   }
+}
+
+/* The column the table is sorted by stands out from the muted ones, together with its arrow. */
+.table thead th[aria-sort="ascending"],
+.table thead th[aria-sort="descending"] {
+  color: var(--color-text);
 }
 
 .sortButton {

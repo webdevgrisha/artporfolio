@@ -30,9 +30,11 @@
   overflow-wrap: anywhere;
 }
 
+/* Muted, as the labels of the admin, so the names of the columns never read as a row of data. */
 .table thead th {
   padding-block-start: 0;
   font-weight: normal;
+  color: var(--color-text-muted);
 }
 
 /* As the column «№» of the projects table. */
