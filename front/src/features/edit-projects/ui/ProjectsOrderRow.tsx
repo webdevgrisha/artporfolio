@@ -2,10 +2,9 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
 
-import type { Project } from "@/entities/project";
+import { type Project, ProjectCover } from "@/entities/project";
 import { ArrowDownIcon, ArrowUpIcon, DragHandleIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
-import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./EditProjectsOrderForm.module.css";
@@ -49,7 +48,6 @@ export function ProjectsOrderRow({
     disabled: disabled || isAlone,
     id: project.id,
   });
-  const [cover] = project.photos;
   const dragLabel = `Переместить ${project.title}`;
   const moveUpLabel = `Поднять ${project.title}`;
   const moveDownLabel = `Опустить ${project.title}`;
@@ -79,11 +77,7 @@ export function ProjectsOrderRow({
         </IconButton>
       </Tooltip>
 
-      {cover ? (
-        <MediaImage className={styles.cover} source={imageToMediaItem(cover).source} />
-      ) : (
-        <span className={styles.cover} />
-      )}
+      <ProjectCover className={styles.cover} project={project} />
       <span className={styles.title}>{project.title}</span>
 
       <div className={styles.arrows}>

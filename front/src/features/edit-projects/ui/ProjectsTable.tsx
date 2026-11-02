@@ -13,7 +13,7 @@ import clsx from "clsx";
 import React from "react";
 import { useSearchParams } from "react-router";
 
-import type { Project } from "@/entities/project";
+import { type Project, ProjectCover } from "@/entities/project";
 import { projectPath } from "@/shared/config/routes";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
@@ -26,7 +26,6 @@ import {
   TrashIcon,
 } from "@/shared/ui/icon";
 import { IconButton, IconButtonLink } from "@/shared/ui/icon-button";
-import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
 import { SearchInput } from "@/shared/ui/search-input";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
@@ -103,15 +102,9 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         header: "Фото",
         meta: { className: styles.photoColumn },
         enableSorting: false,
-        cell: ({ row: { original } }) => {
-          const [cover] = original.project.photos;
-
-          return cover ? (
-            <MediaImage className={styles.cover} source={imageToMediaItem(cover).source} />
-          ) : (
-            <span className={styles.cover} />
-          );
-        },
+        cell: ({ row: { original } }) => (
+          <ProjectCover className={styles.cover} project={original.project} />
+        ),
       },
       {
         id: "title",
