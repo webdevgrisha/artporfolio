@@ -8,6 +8,8 @@ export const routes = {
   contacts: "/admin/contacts",
   gallery: "/admin/gallery",
   galleryIntro: "/admin/gallery/intro",
+  gallerySectionNew: "/admin/gallery/sections/new",
+  gallerySections: "/admin/gallery/sections",
   login: "/admin/login",
   logout: "/admin/logout",
   personalization: "/admin/personalization",
@@ -20,6 +22,11 @@ export const routes = {
 } as const;
 
 export const adminHomePath = routes.projects;
+
+/** The edit page of one section of the gallery. */
+export function gallerySectionPath(id: string): string {
+  return `${routes.gallerySections}/${encodeURIComponent(id)}`;
+}
 
 /** The edit page of one project. */
 export function projectPath(id: string): string {

@@ -17,3 +17,8 @@
   gap: var(--space-4) var(--layout-space-8);
   align-items: flex-start;
 }
+
+/* At the end of the tabs, and at the end of its own line when there is no room beside them. */
+.addLink {
+  margin-inline-start: auto;
+}

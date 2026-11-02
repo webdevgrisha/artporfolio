@@ -1,0 +1,42 @@
+/* A readable line length for the titles. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-6);
+  max-inline-size: 48rem;
+}
+
+.subsections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+/* As the label of a field. */
+.legend {
+  padding: 0;
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-md);
+  line-height: 1.375;
+}
+
+.legend::after {
+  content: ":";
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.addButton {
+  align-self: flex-start;
+}

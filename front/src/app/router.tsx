@@ -79,11 +79,12 @@ export const router = createBrowserRouter([
                     lazy: async () => ({
                       Component: (await import("@/pages/gallery")).GalleryPage,
                     }),
-                    // The text, the sections and the materials are saved independently.
+                    // The text, the sections and the materials are saved independently; the page
+                    // opens the sections.
                     children: [
                       {
                         index: true,
-                        element: <Navigate to={routes.galleryIntro} replace />,
+                        element: <Navigate to={routes.gallerySections} replace />,
                       },
                       {
                         path: routes.galleryIntro,
@@ -95,7 +96,41 @@ export const router = createBrowserRouter([
                           return { Component: GalleryIntroSection, loader: galleryIntroLoader };
                         },
                       },
+                      {
+                        path: routes.gallerySections,
+                        lazy: async () => {
+                          const { GallerySectionsSection, gallerySectionsLoader } = await import(
+                            "@/pages/gallery"
+                          );
+
+                          return {
+                            Component: GallerySectionsSection,
+                            loader: gallerySectionsLoader,
+                          };
+                        },
+                      },
                     ],
+                  },
+                  {
+                    path: routes.gallerySectionNew,
+                    lazy: async () => {
+                      const { NewSectionPage, newSectionHandle } = await import("@/pages/gallery");
+
+                      return { Component: NewSectionPage, handle: newSectionHandle };
+                    },
+                  },
+                  {
+                    path: `${routes.gallerySections}/:id`,
+                    lazy: async () => {
+                      const { EditSectionPage, editSectionHandle, gallerySectionLoader } =
+                        await import("@/pages/gallery");
+
+                      return {
+                        Component: EditSectionPage,
+                        handle: editSectionHandle,
+                        loader: gallerySectionLoader,
+                      };
+                    },
                   },
                   {
                     path: routes.projects,
