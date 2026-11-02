@@ -1,9 +1,10 @@
 import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import { useForm, useWatch } from "react-hook-form";
 
-import { type Project, projectsOrderQuery } from "@/entities/project";
+import { type Project, projectsOrderQuery, projectsQuery } from "@/entities/project";
 import type { Tagged } from "@/shared/api/http";
 import {
   formatPosition,
@@ -43,6 +44,7 @@ function toFormValues(ids: string[]): ProjectsOrderFormValues {
  * «Сохранить», all at once.
  */
 export function EditProjectsOrderForm({ className, order, projects }: EditProjectsOrderFormProps) {
+  const queryClient = useQueryClient();
   const form = useForm<ProjectsOrderFormValues>({ defaultValues: toFormValues(order.data) });
   const saveOrder = useSaveProjectsOrder();
   const { editForm, saved } = useSavedForm({
@@ -59,8 +61,21 @@ export function EditProjectsOrderForm({ className, order, projects }: EditProjec
   // Announces a move made with the arrow buttons; dnd-kit announces the dragged ones.
   const [moveAnnouncement, setMoveAnnouncement] = React.useState("");
   const projectsById = new Map(projects.map((project) => [project.id, project]));
-  // The order lists every project; one created after the list was read has no title here yet.
-  const rows = ids.flatMap((id) => projectsById.get(id) ?? []);
+  // Each row keeps its index in `ids`, which the moves change: a project created after the list
+  // was read has no row yet, so the indexes of the rows may skip it.
+  const rows = ids.flatMap((id, index) => {
+    const project = projectsById.get(id);
+
+    return project ? [{ index, project }] : [];
+  });
+  const hasProjectsWithoutRows = rows.length < ids.length;
+
+  // Taking the latest order after a conflict may bring such a project; the list is read again for it.
+  React.useEffect(() => {
+    if (hasProjectsWithoutRows) {
+      void queryClient.invalidateQueries({ queryKey: projectsQuery.queryKey });
+    }
+  }, [hasProjectsWithoutRows, queryClient]);
 
   function getIndex(id: string): number {
     return ids.indexOf(id);
@@ -106,13 +121,13 @@ export function EditProjectsOrderForm({ className, order, projects }: EditProjec
         >
           <SortableContext items={ids} strategy={verticalListSortingStrategy}>
             <ol ref={listRef} className={styles.rows} aria-label="Порядок проектов на сайте">
-              {rows.map((project, index) => (
+              {rows.map(({ index, project }) => (
                 <ProjectsOrderRow
                   key={project.id}
                   project={project}
                   disabled={editForm.isSaving}
                   isFirst={index === 0}
-                  isLast={index === rows.length - 1}
+                  isLast={index === ids.length - 1}
                   isModified={saved.data[index] !== project.id}
                   onMoveUp={() => moveProject(index, index - 1, "moveUp")}
                   onMoveDown={() => moveProject(index, index + 1, "moveDown")}
