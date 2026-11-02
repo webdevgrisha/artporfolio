@@ -20,8 +20,9 @@ import {
 import type { UploadedFile } from "#shared/middleware/upload";
 
 /**
- * Uploads wait here until a request puts them into the content. The bucket deletes them a day
- * after they were made (storage.lifecycle.json), so an upload that is never used leaves nothing.
+ * Uploads wait here for the requests that put them into the content. The bucket deletes them a day
+ * after they were made (storage.lifecycle.json), used or not: a used one is kept, so a request
+ * repeated after its response was lost can still refer to it.
  */
 const uploadsFolder = "uploads";
 
@@ -138,8 +139,8 @@ function filesIn(format: OutputFormat, published: PublishedImageFile[]): StoredI
 /**
  * Copies the upload into a new version folder under `folder`, where the site reads it: the web
  * images become readable through download URLs, the original stays private. The upload itself is
- * kept, so a request that fails afterwards can be repeated; see deleteUploadsOrWarn. If copying
- * fails halfway, the copies made so far are removed.
+ * kept, so the request can be repeated; see uploadsFolder. If copying fails halfway, the copies
+ * made so far are removed.
  */
 export async function publishUpload(id: string, folder: string): Promise<StoredImage> {
   const manifest = await readManifest(id);
@@ -181,9 +182,4 @@ export async function publishUpload(id: string, folder: string): Promise<StoredI
     version,
     width: manifest.width,
   };
-}
-
-/** Uploads only take space until the bucket deletes them, so a failed cleanup is only logged. */
-export async function deleteUploadsOrWarn(ids: readonly string[]): Promise<void> {
-  await Promise.all(ids.map((id) => deleteImageFilesOrWarn(uploadFolder(id))));
 }

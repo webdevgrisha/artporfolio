@@ -145,6 +145,31 @@ class Http {
   }
 
   /**
+   * A PUT that creates the resource only while there is none at `path` (If-None-Match: *, RFC 9110
+   * §13.1.2); the server rejects it with 412 otherwise, so repeating it never makes a second one.
+   * Returns the new representation and its tag.
+   */
+  async putIfNoneMatch<TBody extends object, TSchema extends ZodType>({
+    body,
+    headers,
+    path,
+    schema,
+    ...options
+  }: BodyOptions<TBody, TSchema>): Promise<Tagged<z.output<TSchema>>> {
+    const requestHeaders = new Headers(headers);
+    requestHeaders.set("If-None-Match", "*");
+
+    const response = await this.request(path, {
+      ...options,
+      body,
+      headers: requestHeaders,
+      method: "PUT",
+    });
+
+    return { data: schema.parse(await response.json()), etag: readETag(response) };
+  }
+
+  /**
    * A PATCH that changes the representation only while it still has the tag `etag`; the server
    * rejects it with 412 otherwise. The body is a JSON Merge Patch (RFC 7396): the fields it sends
    * replace those of the representation. Returns the new representation and its tag.
@@ -179,9 +204,9 @@ class Http {
   }
 
   /**
-   * A DELETE that applies only while the representation still has the tag `etag`; the server
-   * rejects it with 412 otherwise. The response has no content; returns the tag of the resource
-   * after the deletion, for the next change.
+   * A DELETE that empties a resource, such as a photo slot, only while it still has the tag
+   * `etag`; the server rejects it with 412 otherwise. The response has no content; returns the
+   * tag of the emptied resource, for the next change.
    */
   async deleteIfMatch({ etag, headers, path, ...options }: ConditionalOptions): Promise<string> {
     const response = await this.request(path, {
@@ -191,6 +216,24 @@ class Http {
     });
 
     return readETag(response);
+  }
+
+  /**
+   * A DELETE of the resource itself, such as a project, that applies only while it still has the
+   * tag `etag`; the server rejects it with 412 otherwise. The resource is gone afterwards, so the
+   * response has neither content nor a tag.
+   */
+  async deleteResourceIfMatch({
+    etag,
+    headers,
+    path,
+    ...options
+  }: ConditionalOptions): Promise<void> {
+    await this.request(path, {
+      ...options,
+      headers: withIfMatch(headers, etag),
+      method: "DELETE",
+    });
   }
 
   /** Forgets the CSRF token, e.g. once its session has ended. */

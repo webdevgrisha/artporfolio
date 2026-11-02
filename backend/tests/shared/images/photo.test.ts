@@ -17,7 +17,6 @@ const storage = vi.hoisted(() => ({
 }));
 
 const uploads = vi.hoisted(() => ({
-  deleteUploadsOrWarn: vi.fn(),
   publishUpload: vi.fn(),
 }));
 
@@ -112,7 +111,6 @@ function returned(photo: unknown) {
 beforeEach(() => {
   vi.resetAllMocks();
   storage.deleteFolder.mockResolvedValue(undefined);
-  uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
   uploads.publishUpload.mockResolvedValue(published);
   storedAs(undefined);
 });
@@ -137,7 +135,7 @@ describe("photo", () => {
     await expect(getPhoto(slot)).resolves.toEqual({ data: null, etag: emptyTag });
   });
 
-  it("puts the upload into a new version folder of the slot and uses it up", async () => {
+  it("puts the upload into a new version folder of the slot and keeps the upload", async () => {
     const { created, data, etag } = await savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag);
     const stored = { ...published, alt: "Portrait" };
 
@@ -149,7 +147,6 @@ describe("photo", () => {
       url: "https://storage.test/contacts/photo/new-version/960.avif?token=token",
       width: 960,
     });
-    expect(uploads.deleteUploadsOrWarn).toHaveBeenCalledWith([uploadId]);
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
@@ -201,7 +198,6 @@ describe("photo", () => {
     );
 
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/new-version");
-    expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
   });
 
   it("refuses a photo saved against an outdated read and removes its copy", async () => {
@@ -213,7 +209,6 @@ describe("photo", () => {
 
     expect(transaction.set).not.toHaveBeenCalled();
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/new-version");
-    expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
   });
 
   it("reads a saved alt text longer than today's limit", () => {

@@ -16,7 +16,6 @@ const storage = vi.hoisted(() => ({
 }));
 
 const uploads = vi.hoisted(() => ({
-  deleteUploadsOrWarn: vi.fn(),
   publishUpload: vi.fn(),
 }));
 
@@ -99,7 +98,6 @@ beforeEach(() => {
   vi.clearAllMocks();
   storage.deleteFolder.mockResolvedValue(undefined);
   storedAs([storedPhoto(firstId), storedPhoto(secondId)]);
-  uploads.deleteUploadsOrWarn.mockResolvedValue(undefined);
   uploads.publishUpload.mockImplementation(async (_uploadId: string, folder: string) =>
     publishedImage(folder),
   );
@@ -163,7 +161,6 @@ describe("replaceProcessPhotos", () => {
       `about/process-photos/${String(added?.id)}`,
     );
     expect(writtenPhotos()[2]).toMatchObject({ alt: "New", id: added?.id, version: "new-version" });
-    expect(uploads.deleteUploadsOrWarn).toHaveBeenCalledWith([uploadId]);
   });
 
   it("replaces the file of a saved photo in place and deletes its previous version", async () => {
@@ -198,7 +195,6 @@ describe("replaceProcessPhotos", () => {
     expect(storage.deleteFolder).toHaveBeenCalledWith(
       expect.stringMatching(/^about\/process-photos\/[0-9a-f-]{36}\/new-version$/),
     );
-    expect(uploads.deleteUploadsOrWarn).not.toHaveBeenCalled();
   });
 
   it("accepts any list for If-Match: *", async () => {

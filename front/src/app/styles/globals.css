@@ -25,6 +25,8 @@
     --color-border: #000;
     --color-border-disabled: #777;
     --color-border-modified: #1d4ed8;
+    /* A decorative line between the rows of a list; it marks no control, so it may be pale. */
+    --color-divider: #e6e6e6;
     --color-focus: #000;
     --color-danger: #b00020;
     --color-backdrop: rgb(0 0 0 / 31%);
@@ -108,5 +110,17 @@
   body {
     min-inline-size: 320px;
     min-block-size: 100dvh;
+  }
+
+  /*
+   * A modal dialog doesn't stop the page under it from scrolling, so the page stops itself. The
+   * gutter keeps the room of the scrollbar, so the page doesn't shift when it goes away.
+   */
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  html:has(dialog:modal) {
+    overflow: hidden;
   }
 }

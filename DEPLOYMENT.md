@@ -63,13 +63,24 @@ pnpm deploy:storage-rules --project artportfolio-b2ef4
 ```
 
 A photo is first uploaded to `uploads/`, and a later request copies it into the content. The
-uploads that were never used are deleted by the bucket's lifecycle rule in
+server does not delete an upload once it is used, so a request repeated after a lost response can
+still refer to it; every upload is deleted by the bucket's lifecycle rule in
 [`storage.lifecycle.json`](storage.lifecycle.json): every file under `uploads/` older than a day.
+Without the rule, uploads would pile up.
 The Firebase CLI does not deploy it; apply it once, and again after changing it, with the bucket
 name shown in **Storage** of the Firebase console:
 
 ```sh
-gcloud storage buckets update gs://BUCKET_NAME --lifecycle-file=storage.lifecycle.json
+STORAGE_BUCKET=BUCKET_NAME pnpm deploy:storage-lifecycle
+```
+
+## Everything the CI workflow does not deploy
+
+The Firestore rules, the Storage rules and the lifecycle rule of the bucket are applied by one
+command; run it after setting up the project and after changing any of them:
+
+```sh
+STORAGE_BUCKET=BUCKET_NAME pnpm deploy:infra
 ```
 
 The Storage Emulator ignores lifecycle rules, so local uploads stay until the emulator data is
@@ -88,3 +99,14 @@ pnpm dev:front
 Vite proxies `/api` requests to the `api` function running in the local Functions Emulator. The
 Functions Emulator connects the Admin SDK to the Firestore and Storage emulators automatically. The
 Firestore Emulator needs Java 21 or later.
+
+The emulators start empty. Once they are ready, create the admin and fill the admin panel with demo
+content (page heroes, About, contacts, projects with photos), through the API as the admin would:
+
+```sh
+pnpm emulators:seed            # admin@example.com / admin123
+pnpm emulators:admin [email] [password]   # only the admin
+```
+
+Every run of `emulators:seed` first empties the Firestore emulator, then fills it again. Its images are drawn by the script
+(`scripts/seed-emulators.mjs`), so the content is the same on every machine and needs no network.

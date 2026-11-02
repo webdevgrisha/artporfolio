@@ -16,6 +16,24 @@ export const photoSchema = imageSchema.extend({
 
 export type Photo = z.infer<typeof photoSchema>;
 
+/**
+ * A photo of an ordered list, such as the process photos or the photos of a project
+ * (backend/src/shared/images/photo-list.ts). The id stays the same when the file is replaced.
+ */
+export const listPhotoSchema = photoSchema.extend({
+  id: z.string(),
+});
+
+export type ListPhoto = z.infer<typeof listPhotoSchema>;
+
+/**
+ * One photo of a new list: a saved one by its id, a new file by its upload (see `uploadImage`),
+ * or both to replace the file of a saved photo. A saved photo left out of the list is deleted.
+ */
+export type ListPhotoItem =
+  | { alt: string; id: string; uploadId?: string }
+  | { alt: string; uploadId: string };
+
 /** The shape of every API response that returns a saved photo. */
 export const photoResponseSchema = z.object({
   photo: photoSchema,

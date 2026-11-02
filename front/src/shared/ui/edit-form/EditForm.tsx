@@ -20,7 +20,8 @@ export interface EditFormProps {
   /** The fields. */
   children: ReactNode;
   className?: string;
-  conflict: EditFormConflict;
+  /** Left out by a form whose save cannot conflict, such as one that creates the data. */
+  conflict?: EditFormConflict;
   hasUnsavedChanges: boolean;
   isSaving: boolean;
   /** Brings back the saved values. */
@@ -54,15 +55,17 @@ export function EditForm({
         isSaving={isSaving}
         onRevert={onRevert}
       />
-      <ConfirmDialog
-        isOpen={conflict.isOpen}
-        title="Данные изменили в другой вкладке"
-        description="Загрузить актуальную версию? Несохранённые изменения на этой странице пропадут."
-        cancelLabel="Оставить мои"
-        confirmLabel="Загрузить"
-        onCancel={conflict.onKeep}
-        onConfirm={conflict.onTakeLatest}
-      />
+      {conflict && (
+        <ConfirmDialog
+          isOpen={conflict.isOpen}
+          title="Данные изменили в другой вкладке"
+          description="Загрузить актуальную версию? Несохранённые изменения на этой странице пропадут."
+          cancelLabel="Оставить мои"
+          confirmLabel="Загрузить"
+          onCancel={conflict.onKeep}
+          onConfirm={conflict.onTakeLatest}
+        />
+      )}
     </form>
   );
 }

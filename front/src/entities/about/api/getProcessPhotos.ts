@@ -1,6 +1,7 @@
 import { http, type Tagged } from "@/shared/api/http";
+import type { ListPhoto } from "@/shared/api/photo";
 
-import { type ProcessPhoto, processPhotosResponseSchema } from "../model/processPhoto";
+import { processPhotosResponseSchema } from "../model/processPhoto";
 
 interface GetProcessPhotosParams {
   /** Cancels the request, e.g. when its query is cancelled. */
@@ -10,7 +11,7 @@ interface GetProcessPhotosParams {
 /** The process photos in their order, with the ETag that a replacement of the list sends back. */
 export async function getProcessPhotos({
   signal,
-}: GetProcessPhotosParams): Promise<Tagged<ProcessPhoto[]>> {
+}: GetProcessPhotosParams): Promise<Tagged<ListPhoto[]>> {
   const { data, etag } = await http.getWithETag({
     path: "/about/process-photos",
     schema: processPhotosResponseSchema,

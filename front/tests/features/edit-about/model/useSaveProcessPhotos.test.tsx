@@ -13,11 +13,11 @@ import { HttpError } from "@/shared/api/httpError";
 import { UploadError } from "@/shared/api/upload";
 
 import { csrfHandler, problem } from "../../../support/handlers";
-import { apiProcessPhoto } from "../../../support/images";
+import { apiListPhoto } from "../../../support/images";
 import { server } from "../../../support/server";
 
-const a = apiProcessPhoto("a");
-const b = apiProcessPhoto("b");
+const a = apiListPhoto("a");
+const b = apiListPhoto("b");
 const etag = '"list-tag"';
 
 function setUp() {

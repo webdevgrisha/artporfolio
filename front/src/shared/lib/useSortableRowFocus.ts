@@ -1,18 +1,20 @@
 import React from "react";
 
-import type { RowControl } from "./SortableMediaRow";
-
-/** Where the focus goes once the items are updated: a control of a row, or the add button. */
-export type FocusTarget = { control: RowControl; itemId: string } | "add";
+/**
+ * Where the focus goes once the items are updated: a button of a row, named in its `data-control`
+ * inside the element with `data-item-id`, or another element, such as an add button.
+ */
+export type SortableFocusTarget =
+  | { control: string; itemId: string }
+  | { element: HTMLElement | null };
 
 /**
  * Keeps the focus on a moved or removed row. The focused button can move or disappear with its
  * item, so it is focused again once the owner has updated the items.
  */
-export function useRowFocus() {
-  const listRef = React.useRef<HTMLUListElement>(null);
-  const addButtonRef = React.useRef<HTMLButtonElement>(null);
-  const targetRef = React.useRef<FocusTarget>(undefined);
+export function useSortableRowFocus<TList extends HTMLElement>() {
+  const listRef = React.useRef<TList>(null);
+  const targetRef = React.useRef<SortableFocusTarget>(undefined);
 
   // Runs after every render: the owner's update is the next one.
   React.useLayoutEffect(() => {
@@ -20,8 +22,8 @@ export function useRowFocus() {
     if (!target) return;
 
     targetRef.current = undefined;
-    if (target === "add") {
-      addButtonRef.current?.focus();
+    if ("element" in target) {
+      target.element?.focus();
       return;
     }
 
@@ -34,9 +36,9 @@ export function useRowFocus() {
     (button ?? fallback)?.focus();
   });
 
-  function focusAfterUpdate(target: FocusTarget) {
+  function focusAfterUpdate(target: SortableFocusTarget) {
     targetRef.current = target;
   }
 
-  return { addButtonRef, focusAfterUpdate, listRef };
+  return { focusAfterUpdate, listRef };
 }

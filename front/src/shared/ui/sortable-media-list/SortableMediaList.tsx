@@ -1,24 +1,18 @@
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  type Modifier,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import React, { type ReactNode } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { joinMessages } from "@/shared/lib/joinMessages";
+import {
+  formatPosition,
+  getAnnouncements,
+  getScreenReaderInstructions,
+} from "@/shared/lib/sortableAnnouncements";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
+import { useSortableRowFocus } from "@/shared/lib/useSortableRowFocus";
+import { restrictToVerticalAxis, useVerticalSortableSensors } from "@/shared/lib/verticalSortable";
 import { Button } from "@/shared/ui/button";
 import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
 import { MediaPreviewDialog } from "@/shared/ui/media-preview";
@@ -26,13 +20,8 @@ import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./SortableMediaList.module.css";
 import { type RowControl, SortableMediaRow } from "./SortableMediaRow";
-import {
-  formatPosition,
-  getAnnouncements,
-  screenReaderInstructions,
-} from "./sortableAnnouncements";
+import { photoSortableMessages } from "./sortableAnnouncements";
 import type { SortableMediaItem } from "./sortableMediaItem";
-import { useRowFocus } from "./useRowFocus";
 
 interface SortableMediaListProps {
   className?: string;
@@ -61,9 +50,6 @@ interface SortableMediaListProps {
   rules: FileRules;
 }
 
-// Rows only move up and down.
-const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
-
 /**
  * An ordered list of files: adds them with the button or by dropping them onto the list, and
  * moves them by dragging the handle or with the arrow buttons, which also work without a
@@ -89,7 +75,8 @@ export function SortableMediaList({
   const addInputRef = React.useRef<HTMLInputElement>(null);
   const replaceInputRef = React.useRef<HTMLInputElement>(null);
   const replacedItemIdRef = React.useRef<string>(undefined);
-  const { addButtonRef, focusAfterUpdate, listRef } = useRowFocus();
+  const addButtonRef = React.useRef<HTMLButtonElement>(null);
+  const { focusAfterUpdate, listRef } = useSortableRowFocus<HTMLUListElement>();
   const [viewedItemId, setViewedItemId] = React.useState<string>();
   // Announces a move made with the arrow buttons; dnd-kit announces the dragged ones.
   const [moveAnnouncement, setMoveAnnouncement] = React.useState("");
@@ -98,10 +85,7 @@ export function SortableMediaList({
     disabled: disabled || isFull,
     onDrop: addFiles,
   });
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const sensors = useVerticalSortableSensors();
 
   function getItemIndex(itemId: string): number {
     return items.findIndex((item) => item.id === itemId);
@@ -156,9 +140,7 @@ export function SortableMediaList({
     onRejectionChange(undefined);
     if (control) {
       focusAfterUpdate({ control, itemId: item.id });
-      setMoveAnnouncement(
-        `Фото «${item.name}» перемещено на место ${formatPosition(to, items.length)}`,
-      );
+      setMoveAnnouncement(photoSortableMessages.moved(item.name, formatPosition(to, items.length)));
     }
     onMove(from, to);
   }
@@ -169,7 +151,11 @@ export function SortableMediaList({
 
     // The focus goes to the next item, or the previous one at the end of the list.
     const nextItem = items[index + 1] ?? items[index - 1];
-    focusAfterUpdate(nextItem ? { control: "remove", itemId: nextItem.id } : "add");
+    focusAfterUpdate(
+      nextItem
+        ? { control: "remove" satisfies RowControl, itemId: nextItem.id }
+        : { element: addButtonRef.current },
+    );
     onRejectionChange(undefined);
     onRemove(item.id);
   }
@@ -199,10 +185,10 @@ export function SortableMediaList({
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
             accessibility={{
-              announcements: getAnnouncements(getItemName, (itemId) =>
+              announcements: getAnnouncements(photoSortableMessages, getItemName, (itemId) =>
                 formatPosition(getItemIndex(itemId), items.length),
               ),
-              screenReaderInstructions,
+              screenReaderInstructions: getScreenReaderInstructions(photoSortableMessages),
             }}
             onDragEnd={handleDragEnd}
           >

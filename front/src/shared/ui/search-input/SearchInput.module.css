@@ -1,0 +1,59 @@
+/* The line under the field spans its whole width and sits well below the text, as in the design. */
+.root {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  padding-block-end: var(--space-3);
+  font-size: var(--font-size-lg);
+  border-block-end: 1px solid var(--color-border-disabled);
+}
+
+/*
+ * The field has no box to ring, so its line shows the focus: it turns the focus color and twice as
+ * thick. The shadow adds the second pixel without moving the content.
+ */
+.root:has(.control:focus-visible) {
+  border-block-end-color: var(--color-focus);
+  box-shadow: 0 1px 0 0 var(--color-focus);
+}
+
+.searchIcon {
+  flex: none;
+  inline-size: 2rem;
+  block-size: 2rem;
+  color: var(--color-text-muted);
+}
+
+.control {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--min-tap-target-size);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  outline: none;
+  background: none;
+  border: 0;
+}
+
+.control::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.summary {
+  flex: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* The field has its own clear button. */
+.control::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.clearIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}

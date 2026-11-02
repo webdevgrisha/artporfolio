@@ -1,6 +1,5 @@
-import type { ProcessPhoto } from "@/entities/about";
 import type { Image } from "@/shared/api/image";
-import type { Photo } from "@/shared/api/photo";
+import type { ListPhoto, Photo } from "@/shared/api/photo";
 
 /** An image as the API returns it. */
 export function apiImage(fileName = "photo.jpg"): Image {
@@ -22,8 +21,8 @@ export function apiPhoto(alt = "Портрет", fileName = "photo.jpg"): Photo 
   return { ...apiImage(fileName), alt };
 }
 
-/** A process photo as the API returns it; its file is named after the id. */
-export function apiProcessPhoto(id: string, alt = `Этап ${id}`): ProcessPhoto {
+/** A photo of an ordered list as the API returns it; its file is named after the id. */
+export function apiListPhoto(id: string, alt = `Этап ${id}`): ListPhoto {
   return { ...apiPhoto(alt, `${id}.jpg`), id };
 }
 
