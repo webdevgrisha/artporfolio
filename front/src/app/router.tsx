@@ -106,6 +106,8 @@ export const router = createBrowserRouter([
                           return {
                             Component: GallerySectionsSection,
                             loader: gallerySectionsLoader,
+                            shouldRevalidate: (args) =>
+                              !changesOnlySearch(args) && args.defaultShouldRevalidate,
                           };
                         },
                       },
