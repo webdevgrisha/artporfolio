@@ -1,5 +1,6 @@
 // Fills the running emulators with demo content through the API, as the admin would: page heroes,
-// the About page, the contacts, and the projects with their photos. Every run first empties the
+// the About page, the contacts, the projects with their photos, and the gallery text, sections
+// and materials. Every run first empties the
 // Firestore emulator, so the admin always starts from the same content. The images are drawn here,
 // so the result is the same on every machine and needs no network.
 //
@@ -7,6 +8,7 @@
 //
 // The admin must exist (pnpm emulators:admin); `emulators:seed` creates it first.
 
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
@@ -223,6 +225,20 @@ const projectsIntro =
   "начинается с одного героя и вырастает в целый мир.\n\nЗдесь собраны работы последних лет — " +
   "от первых набросков до напечатанных страниц.";
 
+const galleryIntro =
+  "Живопись, графика и постеры разных лет. Работы можно выбрать по разделу и материалу, " +
+  "а понравившуюся — купить.";
+
+/** The site lists sections, subsections and materials by title, so the order here is free. */
+const gallerySections = [
+  { title: "Живопись", subsections: ["Пейзаж", "Портрет", "Натюрморт"] },
+  { title: "Графика", subsections: [] },
+  { title: "Постеры", subsections: ["Рекламные", "Социальные", "Театральные"] },
+  { title: "Рисунок", subsections: [] },
+];
+
+const galleryMaterials = ["Акварель", "Гуашь", "Карандаш", "Масло", "Тушь", "Холст", "Бумага"];
+
 /** In the order the site shows them. */
 const projects = [
   {
@@ -330,8 +346,9 @@ class Api {
     return this.#send("PUT", path, { ifMatch: "*", json });
   }
 
-  async post(path, json) {
-    return (await this.#send("POST", path, { json })).json();
+  /** Creates the resource the client names in `path`, as the admin creates a project. */
+  async create(path, json) {
+    return this.#send("PUT", path, { ifNoneMatch: "*", json });
   }
 
   /** Uploads a JPEG and returns the id that the content refers to it by. */
@@ -343,12 +360,13 @@ class Api {
     return upload.id;
   }
 
-  async #send(method, path, { form, ifMatch, json } = {}) {
+  async #send(method, path, { form, ifMatch, ifNoneMatch, json } = {}) {
     const headers = {};
 
     if (this.#cookie) headers.Cookie = this.#cookie;
     if (method !== "GET" && this.#csrfToken) headers["X-CSRF-Token"] = this.#csrfToken;
     if (ifMatch) headers["If-Match"] = ifMatch;
+    if (ifNoneMatch) headers["If-None-Match"] = ifNoneMatch;
     if (json) headers["Content-Type"] = "application/json";
 
     const response = await fetch(`${apiUrl}${path}`, {
@@ -454,7 +472,7 @@ async function seedProjects(api) {
       photos.push({ alt, uploadId });
     }
 
-    await api.post("/projects", {
+    await api.create(`/projects/${randomUUID()}`, {
       description: project.description,
       link: project.link,
       photos,
@@ -462,6 +480,24 @@ async function seedProjects(api) {
     });
     console.log(`  project: ${project.title} (${String(photos.length)} photos)`);
   }
+}
+
+async function seedGallery(api) {
+  await api.put("/gallery-intro", { text: galleryIntro });
+
+  for (const section of gallerySections) {
+    await api.create(`/gallery-sections/${randomUUID()}`, {
+      title: section.title,
+      subsections: section.subsections.map((title) => ({ id: randomUUID(), title })),
+    });
+  }
+
+  await api.put("/gallery-materials", {
+    materials: galleryMaterials.map((title) => ({ id: randomUUID(), title })),
+  });
+  console.log(
+    `  gallery: text, ${String(gallerySections.length)} sections, ${String(galleryMaterials.length)} materials`,
+  );
 }
 
 /**
@@ -490,4 +526,5 @@ await seedHeroes(api);
 await seedAbout(api);
 await seedContacts(api);
 await seedProjects(api);
+await seedGallery(api);
 console.log(`Done in ${String(Math.round((Date.now() - startedAt) / 1000))} s`);
