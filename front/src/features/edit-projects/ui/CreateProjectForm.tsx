@@ -2,10 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import type { Project } from "@/entities/project";
 import { projectPath } from "@/shared/config/routes";
-import { afterSaveState } from "@/shared/lib/useUnsavedChangesGuard";
 import { EditForm } from "@/shared/ui/edit-form";
+import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 
 import {
   emptyProjectFormValues,
@@ -22,29 +21,32 @@ interface CreateProjectFormProps {
 /** A new project; once it is created, its edit page opens in place of this one. */
 export function CreateProjectForm({ className }: CreateProjectFormProps) {
   const navigate = useNavigate();
+  const allowNextNavigation = useAllowNextNavigation();
   const form = useForm<ProjectFormValues>({
     defaultValues: emptyProjectFormValues,
     resolver: zodResolver(projectFormSchema),
   });
   const createProject = useCreateProject();
   const {
-    formState: { isDirty, isSubmitting },
+    formState: { isDirty },
     handleSubmit,
     reset,
   } = form;
+  const isSaving = createProject.isPending;
 
-  async function create(values: ProjectFormValues) {
-    let project: Project;
+  function create(values: ProjectFormValues) {
+    // On failure the mutation shows the error and the values stay for another try.
+    createProject.mutate(values, {
+      // Called only while this form is open: once the user has left it, perhaps for another new
+      // project, the created one just appears in the list.
+      onSuccess: (project) => {
+        const path = projectPath(project.id);
 
-    try {
-      project = await createProject.mutateAsync(values);
-    } catch {
-      // The mutation has shown the error; the values stay for another try.
-      return;
-    }
-
-    // Back from the edit page leads to the list, not to an empty form again.
-    await navigate(projectPath(project.id), { replace: true, state: afterSaveState });
+        allowNextNavigation(path);
+        // Back from the edit page leads to the list, not to an empty form again.
+        void navigate(path, { replace: true });
+      },
+    });
   }
 
   return (
@@ -52,14 +54,12 @@ export function CreateProjectForm({ className }: CreateProjectFormProps) {
     <FormProvider {...form}>
       <EditForm
         className={className}
-        // A new project never conflicts with another version.
-        conflict={{ isOpen: false, onKeep: () => {}, onTakeLatest: () => {} }}
         hasUnsavedChanges={isDirty}
-        isSaving={isSubmitting}
+        isSaving={isSaving}
         onRevert={() => reset()}
         onSubmit={handleSubmit(create)}
       >
-        <ProjectFields isSaving={isSubmitting} savedPhotos={[]} />
+        <ProjectFields isSaving={isSaving} savedPhotos={[]} />
       </EditForm>
     </FormProvider>
   );

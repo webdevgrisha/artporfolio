@@ -3,7 +3,7 @@ import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, expect, it } from "vitest";
 
-import { afterSaveState, useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
+import { useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
 
 type Guard = ReturnType<typeof useUnsavedChangesGuard>;
 
@@ -22,6 +22,7 @@ function renderGuardedPage(hasUnsavedChanges: boolean) {
     [
       { element: <GuardedPage />, path: "/admin/about" },
       { element: null, path: "/admin/contacts" },
+      { element: null, path: "/admin/projects" },
     ],
     { initialEntries: ["/admin/about"] },
   );
@@ -33,7 +34,7 @@ function renderGuardedPage(hasUnsavedChanges: boolean) {
       return page.guard;
     },
     pathname: () => router.state.location.pathname,
-    navigate: (to: string, state?: unknown) => act(() => router.navigate(to, { state })),
+    navigate: (to: string) => act(() => router.navigate(to)),
     setHasUnsavedChanges: (value: boolean) => act(() => page.setHasUnsavedChanges?.(value)),
   };
 }
@@ -59,10 +60,24 @@ describe("useUnsavedChangesGuard", () => {
   it("lets through the navigation a save makes itself", async () => {
     const page = renderGuardedPage(true);
 
-    await page.navigate("/admin/contacts", afterSaveState);
+    page.guard.allowNextNavigation("/admin/contacts");
+    await page.navigate("/admin/contacts");
 
     expect(page.pathname()).toBe("/admin/contacts");
     expect(page.guard.isBlocked).toBe(false);
+  });
+
+  it("lets through only the next navigation, and only to the allowed path", async () => {
+    const page = renderGuardedPage(true);
+
+    page.guard.allowNextNavigation("/admin/contacts");
+    await page.navigate("/admin/projects");
+    expect(page.guard.isBlocked).toBe(true);
+
+    await act(() => page.guard.stay());
+    await page.navigate("/admin/contacts");
+    expect(page.guard.isBlocked).toBe(true);
+    expect(page.pathname()).toBe("/admin/about");
   });
 
   it("holds the navigation away from unsaved changes until the user leaves", async () => {

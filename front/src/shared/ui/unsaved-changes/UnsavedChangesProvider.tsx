@@ -1,5 +1,8 @@
 import React, { type ReactNode } from "react";
-import { UnsavedChangesDialog } from "./UnsavedChangesDialog";
+
+import { useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
+import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+
 import { UnsavedChangesContext } from "./unsavedChangesContext";
 
 interface UnsavedChangesProviderProps {
@@ -13,6 +16,8 @@ interface UnsavedChangesProviderProps {
  */
 export function UnsavedChangesProvider({ children }: UnsavedChangesProviderProps) {
   const [formsWithChanges, setFormsWithChanges] = React.useState<ReadonlySet<string>>(new Set());
+  const guard = useUnsavedChangesGuard(formsWithChanges.size > 0);
+  const { allowNextNavigation } = guard;
 
   const setHasUnsavedChanges = React.useCallback((formId: string, hasUnsavedChanges: boolean) => {
     setFormsWithChanges((forms) => {
@@ -28,12 +33,23 @@ export function UnsavedChangesProvider({ children }: UnsavedChangesProviderProps
       return nextForms;
     });
   }, []);
-  const contextValue = React.useMemo(() => ({ setHasUnsavedChanges }), [setHasUnsavedChanges]);
+  const contextValue = React.useMemo(
+    () => ({ allowNextNavigation, setHasUnsavedChanges }),
+    [allowNextNavigation, setHasUnsavedChanges],
+  );
 
   return (
     <UnsavedChangesContext value={contextValue}>
       {children}
-      <UnsavedChangesDialog hasUnsavedChanges={formsWithChanges.size > 0} />
+      <ConfirmDialog
+        isOpen={guard.isBlocked}
+        title="Уйти без сохранения?"
+        description="Несохранённые изменения будут потеряны."
+        cancelLabel="Остаться"
+        confirmLabel="Уйти"
+        onCancel={guard.stay}
+        onConfirm={guard.leave}
+      />
     </UnsavedChangesContext>
   );
 }

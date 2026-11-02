@@ -89,7 +89,8 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
     startFrom(next);
   }
 
-  const editForm: Omit<EditFormProps, "children" | "className"> = {
+  const editForm: Omit<EditFormProps, "children" | "className"> &
+    Required<Pick<EditFormProps, "conflict">> = {
     conflict: {
       isOpen: latest !== undefined,
       onKeep: () => setLatest(undefined),
