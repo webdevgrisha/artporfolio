@@ -32,6 +32,10 @@
   line-height: 1.375;
 }
 
+.heading::after {
+  content: ":";
+}
+
 .rows {
   padding: 0;
   margin: 0;

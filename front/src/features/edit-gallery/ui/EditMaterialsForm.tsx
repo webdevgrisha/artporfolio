@@ -1,11 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import clsx from "clsx";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
-import { type GalleryMaterials, galleryMaterialsQuery } from "@/entities/gallery";
+import { type GalleryMaterials, galleryMaterialsQuery, maxMaterials } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { FieldError } from "@/shared/ui/field";
+import { FieldError, FieldHint } from "@/shared/ui/field";
 
 import {
   type MaterialsFormValues,
@@ -60,6 +61,7 @@ export function EditMaterialsForm({ className, materials }: EditMaterialsFormPro
   const [editing, setEditing] = React.useState<Editing>();
   const addFieldRef = React.useRef<HTMLInputElement>(null);
   const headingId = React.useId();
+  const hintId = React.useId();
   const errorId = React.useId();
   const savedTitles = new Map(saved.data.materials.map(({ id, title }) => [id, title]));
   const listError = errors.materials?.message ?? errors.materials?.root?.message;
@@ -101,11 +103,14 @@ export function EditMaterialsForm({ className, materials }: EditMaterialsFormPro
           <section
             className={styles.list}
             aria-labelledby={headingId}
-            aria-describedby={listError ? errorId : undefined}
+            aria-describedby={clsx(hintId, listError && errorId)}
           >
             <h2 id={headingId} className={styles.heading}>
-              {`Материалы: ${String(fields.length)}`}
+              Материалы
             </h2>
+            <FieldHint id={hintId}>
+              {`${String(fields.length)} из ${String(maxMaterials)}. На сайте идут по алфавиту`}
+            </FieldHint>
             {fields.length === 0 ? (
               <p className={styles.empty}>Материалов пока нет</p>
             ) : (
