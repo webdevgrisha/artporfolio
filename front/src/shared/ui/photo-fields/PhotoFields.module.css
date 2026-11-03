@@ -1,13 +1,17 @@
-/* The photo and its description side by side, in the columns of the other form fields. */
+/*
+ * The photo and its description side by side, in the columns of the other form fields: together
+ * they are as wide as the texts (48rem), so their right edges line up.
+ */
 .root {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--layout-space-6) var(--layout-space-8);
   align-items: start;
+  max-inline-size: 48rem;
 }
 
 @media (width >= 40rem) {
   .root {
-    grid-template-columns: repeat(2, minmax(0, 24rem));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
