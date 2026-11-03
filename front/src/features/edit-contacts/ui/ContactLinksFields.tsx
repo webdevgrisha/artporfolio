@@ -31,6 +31,7 @@ export function ContactLinksFields({ className, isSaving }: ContactLinksFieldsPr
         <ClearableInput
           key={field.name}
           label={field.label}
+          hint={field.hint}
           type={field.type}
           autoComplete={field.autoComplete}
           placeholder={field.placeholder}

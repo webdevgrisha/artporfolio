@@ -45,7 +45,7 @@ export function EditGalleryIntroForm({ className, intro }: EditGalleryIntroFormP
       <Textarea
         className={styles.text}
         label="Основной текст"
-        hint={`До ${String(maxIntroLength)} символов. Абзацы разделяйте пустой строкой`}
+        hint={`Необязательно. До ${String(maxIntroLength)} символов. Абзацы разделяйте пустой строкой`}
         placeholder="Например: какие работы собраны в галерее"
         rows={12}
         disabled={editForm.isSaving}

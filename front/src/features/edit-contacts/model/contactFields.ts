@@ -4,6 +4,8 @@ import type { ContactLinks } from "@/entities/contacts";
 
 interface ContactField {
   autoComplete: HTMLInputAutoCompleteAttribute;
+  /** Marks an optional contact: an empty one is not shown on the site. */
+  hint?: string;
   label: string;
   name: keyof ContactLinks;
   placeholder: string;
@@ -14,6 +16,7 @@ interface ContactField {
 export const contactFields: readonly ContactField[] = [
   {
     autoComplete: "off",
+    hint: "Необязательно",
     label: "Instagram",
     name: "instagram",
     placeholder: "Ссылка Instagram",
@@ -28,6 +31,7 @@ export const contactFields: readonly ContactField[] = [
   },
   {
     autoComplete: "off",
+    hint: "Необязательно",
     label: "LinkedIn",
     name: "linkedin",
     placeholder: "Ссылка LinkedIn",
@@ -35,6 +39,7 @@ export const contactFields: readonly ContactField[] = [
   },
   {
     autoComplete: "off",
+    hint: "Необязательно",
     label: "YouTube",
     name: "youtube",
     placeholder: "Ссылка YouTube",
