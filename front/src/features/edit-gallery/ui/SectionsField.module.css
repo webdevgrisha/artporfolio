@@ -19,8 +19,9 @@
 }
 
 /* The frame of the list, as in the mockup; its invalid state as in MediaFieldset.module.css. */
+/* The rows reach the sides of the frame, so the one under the pointer is highlighted whole. */
 .frame {
-  padding: var(--space-2) var(--space-6);
+  padding-block: var(--space-2);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
 }
@@ -36,7 +37,7 @@
 }
 
 .empty {
-  padding-block: var(--space-3);
+  padding: var(--space-3) var(--space-6);
   margin: 0;
   color: var(--color-text-muted);
 }
@@ -48,21 +49,36 @@
   list-style: none;
 }
 
-/* Sections are divided by lines; their subsections stay with them. */
-.section + .section {
+/* Sections are divided by lines within the padding; their subsections stay with them. */
+.section + .section::before {
+  display: block;
+  margin-inline: var(--space-6);
+  content: "";
   border-block-start: 1px solid var(--color-divider);
 }
 
 .subsections {
   padding-block-end: var(--space-2);
-  padding-inline-start: var(--space-6);
 }
 
 .row {
+  position: relative;
   display: flex;
   gap: var(--space-2);
   align-items: center;
   min-block-size: var(--min-tap-target-size);
+  padding-inline: var(--space-6);
+}
+
+/* A subsection starts under the title of its section. */
+.subsections .row {
+  padding-inline-start: calc(2 * var(--space-6));
+}
+
+@media (hover: hover) {
+  .row:hover:not(:has(:disabled)) {
+    background: var(--color-surface-disabled);
+  }
 }
 
 .section > .row {
@@ -75,11 +91,20 @@
   cursor: pointer;
 }
 
+/* The label covers the whole row, so a click anywhere in it toggles the checkbox. */
+.title::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
 .frameDisabled .title {
   cursor: not-allowed;
 }
 
+/* Over the label, so it only opens the subsections. */
 .toggle {
+  position: relative;
   display: inline-flex;
   flex: none;
   align-items: center;
