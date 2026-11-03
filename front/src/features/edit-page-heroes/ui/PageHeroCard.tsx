@@ -33,8 +33,8 @@ function toMediaItem(uploadingFile: File | undefined, hero: Image | null): Media
  * without one.
  */
 export function PageHeroCard({ field }: PageHeroCardProps) {
-  // The route loader has fetched every hero, so this never suspends. The card reads its own hero:
-  // an upload changes this one alone.
+  // The page shows the cards once every hero is loaded, so this never suspends. The card reads
+  // its own hero: an upload changes this one alone.
   const { data: hero } = useSuspenseQuery(pageHeroQuery(field.page));
   const uploadHero = useUploadPageHero(field);
   const [rejection, setRejection] = React.useState<string>();

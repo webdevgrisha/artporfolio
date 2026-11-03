@@ -1,0 +1,1 @@
+export { AwaitPageData } from "./AwaitPageData";

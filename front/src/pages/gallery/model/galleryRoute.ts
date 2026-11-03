@@ -8,43 +8,30 @@ import {
   gallerySectionQuery,
   gallerySectionsQuery,
 } from "@/entities/gallery";
-import { queryClient } from "@/shared/api/queryClient";
+import { fetchFresh, loadPageData } from "@/shared/api/pageData";
 
-// Each section loads its own resources afresh on entering it, even when they are cached: a form,
-// or the list, takes its saved values and their ETag from them once, so they must not be outdated.
+// Each section loads its own resources afresh on entering it, and shows its skeleton meanwhile.
 
-export async function galleryIntroLoader() {
-  await queryClient.fetchQuery({ ...galleryIntroQuery, staleTime: 0 });
-
-  return null;
+export function galleryIntroLoader() {
+  return loadPageData(fetchFresh(galleryIntroQuery));
 }
 
-export async function gallerySectionsLoader() {
-  await queryClient.fetchQuery({ ...gallerySectionsQuery, staleTime: 0 });
-
-  return null;
+export function gallerySectionsLoader() {
+  return loadPageData(fetchFresh(gallerySectionsQuery));
 }
 
-export async function gallerySectionLoader({ params }: LoaderFunctionArgs) {
-  await queryClient.fetchQuery({ ...gallerySectionQuery(params.id ?? ""), staleTime: 0 });
-
-  return null;
+export function gallerySectionLoader({ params }: LoaderFunctionArgs) {
+  return loadPageData(fetchFresh(gallerySectionQuery(params.id ?? "")));
 }
 
-export async function galleryMaterialsLoader() {
-  await queryClient.fetchQuery({ ...galleryMaterialsQuery, staleTime: 0 });
-
-  return null;
+export function galleryMaterialsLoader() {
+  return loadPageData(fetchFresh(galleryMaterialsQuery));
 }
 
-export async function galleryColorsLoader() {
-  await queryClient.fetchQuery({ ...galleryColorsQuery, staleTime: 0 });
-
-  return null;
+export function galleryColorsLoader() {
+  return loadPageData(fetchFresh(galleryColorsQuery));
 }
 
-export async function galleryPalettesLoader() {
-  await queryClient.fetchQuery({ ...galleryPalettesQuery, staleTime: 0 });
-
-  return null;
+export function galleryPalettesLoader() {
+  return loadPageData(fetchFresh(galleryPalettesQuery));
 }

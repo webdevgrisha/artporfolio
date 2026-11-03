@@ -2,9 +2,19 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { projectsQuery } from "@/entities/project";
 import { ProjectsTable } from "@/features/edit-projects";
+import { AwaitPageData } from "@/shared/ui/page-data";
+import { TableSkeleton } from "@/shared/ui/skeleton";
 
 export function ProjectsTableSection() {
-  // The loader of the section has fetched the data, so this never suspends.
+  return (
+    <AwaitPageData fallback={<TableSkeleton rows={6} />}>
+      <Projects />
+    </AwaitPageData>
+  );
+}
+
+function Projects() {
+  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: projects } = useSuspenseQuery(projectsQuery);
 
   return <ProjectsTable projects={projects} />;

@@ -1,17 +1,12 @@
 import { contactLinksQuery, contactPhoto } from "@/entities/contacts";
-import { queryClient } from "@/shared/api/queryClient";
+import { fetchFresh, loadPageData } from "@/shared/api/pageData";
 
-// Each section loads its own resource afresh on entering it, even when it is cached: the form
-// takes its saved values and their ETag from it once, so they must not be outdated.
+// Each section loads its own resource afresh on entering it, and shows its skeleton meanwhile.
 
-export async function contactLinksLoader() {
-  await queryClient.fetchQuery({ ...contactLinksQuery, staleTime: 0 });
-
-  return null;
+export function contactLinksLoader() {
+  return loadPageData(fetchFresh(contactLinksQuery));
 }
 
-export async function contactPhotoLoader() {
-  await queryClient.fetchQuery({ ...contactPhoto.query, staleTime: 0 });
-
-  return null;
+export function contactPhotoLoader() {
+  return loadPageData(fetchFresh(contactPhoto.query));
 }

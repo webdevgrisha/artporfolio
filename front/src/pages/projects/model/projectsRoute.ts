@@ -6,34 +6,22 @@ import {
   projectsOrderQuery,
   projectsQuery,
 } from "@/entities/project";
-import { queryClient } from "@/shared/api/queryClient";
+import { fetchFresh, loadPageData } from "@/shared/api/pageData";
 
-// Each section loads its own resources afresh on entering it, even when they are cached: a form,
-// or the table, takes its saved values and their ETag from them once, so they must not be outdated.
+// Each section loads its own resources afresh on entering it, and shows its skeleton meanwhile.
 
-export async function projectsIntroLoader() {
-  await queryClient.fetchQuery({ ...projectsIntroQuery, staleTime: 0 });
-
-  return null;
+export function projectsIntroLoader() {
+  return loadPageData(fetchFresh(projectsIntroQuery));
 }
 
-export async function projectsTableLoader() {
-  await queryClient.fetchQuery({ ...projectsQuery, staleTime: 0 });
-
-  return null;
+export function projectsTableLoader() {
+  return loadPageData(fetchFresh(projectsQuery));
 }
 
-export async function projectsOrderLoader() {
-  await Promise.all([
-    queryClient.fetchQuery({ ...projectsQuery, staleTime: 0 }),
-    queryClient.fetchQuery({ ...projectsOrderQuery, staleTime: 0 }),
-  ]);
-
-  return null;
+export function projectsOrderLoader() {
+  return loadPageData(fetchFresh(projectsQuery), fetchFresh(projectsOrderQuery));
 }
 
-export async function projectLoader({ params }: LoaderFunctionArgs) {
-  await queryClient.fetchQuery({ ...projectQuery(params.id ?? ""), staleTime: 0 });
-
-  return null;
+export function projectLoader({ params }: LoaderFunctionArgs) {
+  return loadPageData(fetchFresh(projectQuery(params.id ?? "")));
 }

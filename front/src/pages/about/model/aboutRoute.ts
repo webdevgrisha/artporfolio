@@ -1,23 +1,16 @@
 import { aboutPhoto, aboutTextQuery, processPhotosQuery } from "@/entities/about";
-import { queryClient } from "@/shared/api/queryClient";
+import { fetchFresh, loadPageData } from "@/shared/api/pageData";
 
-// Each section loads its own resource afresh on entering it, even when it is cached: the form
-// takes its saved values and their ETag from it once, so they must not be outdated.
+// Each section loads its own resource afresh on entering it, and shows its skeleton meanwhile.
 
-export async function aboutTextLoader() {
-  await queryClient.fetchQuery({ ...aboutTextQuery, staleTime: 0 });
-
-  return null;
+export function aboutTextLoader() {
+  return loadPageData(fetchFresh(aboutTextQuery));
 }
 
-export async function aboutPhotoLoader() {
-  await queryClient.fetchQuery({ ...aboutPhoto.query, staleTime: 0 });
-
-  return null;
+export function aboutPhotoLoader() {
+  return loadPageData(fetchFresh(aboutPhoto.query));
 }
 
-export async function aboutProcessLoader() {
-  await queryClient.fetchQuery({ ...processPhotosQuery, staleTime: 0 });
-
-  return null;
+export function aboutProcessLoader() {
+  return loadPageData(fetchFresh(processPhotosQuery));
 }
