@@ -242,6 +242,13 @@ const workSections = ["Пейзаж", "Графика", "Портрет", "На�
 
 const galleryMaterials = ["Акварель", "Гуашь", "Карандаш", "Масло", "Тушь", "Холст", "Бумага"];
 
+/** The materials of the seeded works by title: a painting gets one of the pairs. */
+const workPaintingMaterials = [
+  ["Масло", "Холст"],
+  ["Акварель", "Бумага"],
+];
+const workEtchingMaterials = ["Тушь", "Бумага"];
+
 /** A black-and-white work gets both «Чёрный» and «Белый»: a color is one swatch. */
 const galleryColors = [
   { title: "Синий", hex: "#1f4e9c" },
@@ -536,9 +543,11 @@ async function seedGallery(api) {
     for (const subsection of subsections) sectionIds.set(subsection.title, subsection.id);
   }
 
-  await api.put("/gallery-materials", {
-    materials: galleryMaterials.map((title) => ({ id: randomUUID(), title })),
-  });
+  const materials = galleryMaterials.map((title) => ({ id: randomUUID(), title }));
+  // The ids of the materials by title, for the works to refer to.
+  const materialIds = new Map(materials.map(({ id, title }) => [title, id]));
+
+  await api.put("/gallery-materials", { materials });
   await api.put("/gallery-colors", {
     colors: galleryColors.map((color) => ({ id: randomUUID(), ...color })),
   });
@@ -548,8 +557,9 @@ async function seedGallery(api) {
 
   for (const [index, work] of galleryWorks.entries()) {
     const [width, height] = work.size;
+    const kind = index % 3 === 2 ? "etching" : "painting";
     const uploadId = await uploadArtwork(api, {
-      kind: index % 3 === 2 ? "etching" : "painting",
+      kind,
       name: work.title,
       palette: work.palette,
       seed: 3000 + index,
@@ -588,6 +598,11 @@ async function seedGallery(api) {
         workSections[index % workSections.length],
         ...(index % 4 === 0 ? ["Рисунок"] : []),
       ].map((title) => sectionIds.get(title)),
+      // An etching is ink on paper; the paintings alternate oil on canvas and watercolour on paper.
+      materialIds: (kind === "etching"
+        ? workEtchingMaterials
+        : workPaintingMaterials[index % workPaintingMaterials.length]
+      ).map((title) => materialIds.get(title)),
     });
   }
 

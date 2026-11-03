@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
 import {
+  maxWorkMaterials,
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSide,
@@ -19,6 +20,7 @@ const work = {
   photo: { alt: "Слон на закате", uploadId: randomUUID() },
   processPhotos: [],
   sectionIds: [randomUUID()],
+  materialIds: [randomUUID()],
 };
 
 function isValid(body: unknown): boolean {
@@ -117,6 +119,20 @@ describe("work body", () => {
     ).toBe(true);
     expect(
       isValid({ ...work, sectionIds: Array.from({ length: maxWorkSections + 1 }, randomUUID) }),
+    ).toBe(false);
+  });
+
+  it("needs at least one material, each named once", () => {
+    const id = randomUUID();
+
+    expect(isValid({ ...work, materialIds: [] })).toBe(false);
+    expect(isValid({ ...work, materialIds: [id, id] })).toBe(false);
+    expect(isValid({ ...work, materialIds: ["oil"] })).toBe(false);
+    expect(
+      isValid({ ...work, materialIds: Array.from({ length: maxWorkMaterials }, randomUUID) }),
+    ).toBe(true);
+    expect(
+      isValid({ ...work, materialIds: Array.from({ length: maxWorkMaterials + 1 }, randomUUID) }),
     ).toBe(false);
   });
 

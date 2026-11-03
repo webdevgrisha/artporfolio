@@ -6,6 +6,9 @@ const works = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 /** The `gallerySections` collection, which the works refer to. */
 const sections = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 
+/** The `site/galleryMaterials` document, which the works refer to. */
+const materials = vi.hoisted(() => ({ data: undefined as Record<string, unknown> | undefined }));
+
 const storage = vi.hoisted(() => ({
   deleteFolder: vi.fn(),
   downloadUrl: ({ path, token }: { path: string; token: string }) =>
@@ -43,9 +46,20 @@ vi.mock("#shared/firebase/firestore", () => {
     set: (ref: { id: string }, data: Record<string, unknown>) => works.set(ref.id, data),
   };
 
+  const materialsDocument = {
+    get: async () => ({ data: () => materials.data, exists: materials.data !== undefined }),
+  };
+
   return {
     firestore: () => ({
       collection: collectionNamed,
+      doc: (path: string) => {
+        if (path !== "site/galleryMaterials") {
+          throw new Error(`Unexpected document ${path}`);
+        }
+
+        return materialsDocument;
+      },
       runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
     }),
   };
@@ -82,6 +96,9 @@ const processPhotoId = "66666666-6666-4666-8666-666666666666";
 const animalsId = "88888888-8888-4888-8888-888888888888";
 const birdsId = "99999999-9999-4999-8999-999999999999";
 const deletedSectionId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const oilId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+const canvasId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const deletedMaterialId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 
 function storedPhoto(workId: string) {
   const folder = `galleryWorks/${workId}/photo/old-version`;
@@ -129,6 +146,7 @@ function storedWork(id: string, title: string, year: number, month: number, crea
     photo: storedPhoto(id),
     processPhotos: [storedProcessPhoto(id)],
     sectionIds: [animalsId, deletedSectionId],
+    materialIds: [oilId, deletedMaterialId],
     size: { width: 50, height: 70 },
     title,
     updatedAt: createdAt,
@@ -156,6 +174,7 @@ const body: WorkBody = {
   photo: { alt: "Новое фото", uploadId },
   processPhotos: [],
   sectionIds: [birdsId],
+  materialIds: [canvasId],
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
@@ -172,6 +191,12 @@ beforeEach(() => {
   works.clear();
   sections.clear();
   sections.set(animalsId, { subsections: [{ id: birdsId, title: "Птицы" }], title: "Животные" });
+  materials.data = {
+    materials: [
+      { id: canvasId, title: "Холст" },
+      { id: oilId, title: "Масло" },
+    ],
+  };
   works.set(elephantId, storedWork(elephantId, "Слон", 2023, 5));
   works.set(tigerId, storedWork(tigerId, "Тигр", 2024, 2));
   storage.deleteFolder.mockResolvedValue(undefined);
@@ -246,6 +271,52 @@ describe("the sections of a work", () => {
 
     expect(works.has(newId)).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
+  });
+});
+
+describe("the materials of a work", () => {
+  it("leaves out a material deleted since the work was saved", async () => {
+    const { data } = await getWork(elephantId);
+
+    expect(data.materialIds).toEqual([oilId]);
+    expect((await listWorks()).data[0]?.materialIds).toEqual([oilId]);
+  });
+
+  it("saves the materials named by id", async () => {
+    const { data } = await replaceWork(
+      elephantId,
+      {
+        ...body,
+        processPhotos: [{ alt: "Набросок", id: processPhotoId }],
+        materialIds: [oilId, canvasId],
+      },
+      await readTag(elephantId),
+    );
+
+    expect(data.materialIds).toEqual([oilId, canvasId]);
+  });
+
+  it("returns 422 for a material that does not exist, and removes the copies", async () => {
+    await expect(
+      createWork(newId, { ...body, materialIds: [deletedMaterialId] }),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+    await expect(
+      replaceWork(
+        elephantId,
+        { ...body, materialIds: [deletedMaterialId] },
+        await readTag(elephantId),
+      ),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+
+    expect(works.has(newId)).toBe(false);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
+  });
+
+  it("knows no material before the materials are first saved", async () => {
+    materials.data = undefined;
+
+    expect((await getWork(elephantId)).data.materialIds).toEqual([]);
+    await expect(createWork(newId, body)).rejects.toBeInstanceOf(UnprocessableContentError);
   });
 });
 

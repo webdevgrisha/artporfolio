@@ -1,5 +1,6 @@
 import { type DocumentSnapshot, Timestamp, type Transaction } from "firebase-admin/firestore";
 
+import { materialIdsIn, materialsDocument } from "#modules/gallery-materials/service";
 import { sectionIdsIn, sectionsCollection } from "#modules/gallery-sections/service";
 
 import {
@@ -28,6 +29,13 @@ import { publishUpload } from "#shared/images/uploads";
 /** A saved work with the id it is known by. */
 export interface SavedWork extends Tagged<Work> {
   id: string;
+}
+
+/** The ids of the saved items of each gallery list a work refers to. */
+interface KnownIds {
+  /** Every section and subsection. */
+  sections: Set<string>;
+  materials: Set<string>;
 }
 
 function worksCollection() {
@@ -68,6 +76,7 @@ function readWork(snapshot: DocumentSnapshot): StoredWork {
 /** What the client edits, which the entity tag of a work follows. */
 function editedContent({
   description,
+  materialIds,
   month,
   photo,
   processPhotos,
@@ -76,7 +85,7 @@ function editedContent({
   title,
   year,
 }: StoredWork) {
-  return { description, month, photo, processPhotos, sectionIds, size, title, year };
+  return { description, materialIds, month, photo, processPhotos, sectionIds, size, title, year };
 }
 
 const centimetresPerInch = 2.54;
@@ -90,14 +99,15 @@ function toInches(centimetres: number): number {
 }
 
 /**
- * The stored work as the API returns it, with download URLs and ISO 8601 dates. A section deleted
- * since the work was saved is left out of its sections (`sectionIds`, the ids that exist).
+ * The stored work as the API returns it, with download URLs and ISO 8601 dates. A section or a
+ * material deleted since the work was saved is left out (`known`, the ids that exist).
  */
 function toWork(
   id: string,
   {
     createdAt,
     description,
+    materialIds,
     month,
     photo,
     processPhotos,
@@ -107,16 +117,17 @@ function toWork(
     updatedAt,
     year,
   }: StoredWork,
-  knownSectionIds: Set<string>,
+  known: KnownIds,
 ): Work {
   return {
     createdAt: createdAt.toDate().toISOString(),
     description,
     id,
+    materialIds: materialIds.filter((materialId) => known.materials.has(materialId)),
     month,
     photo: toPhoto(photo),
     processPhotos: processPhotos.map(toListPhoto),
-    sectionIds: sectionIds.filter((sectionId) => knownSectionIds.has(sectionId)),
+    sectionIds: sectionIds.filter((sectionId) => known.sections.has(sectionId)),
     size,
     sizeInches: { width: toInches(size.width), height: toInches(size.height) },
     title,
@@ -125,26 +136,42 @@ function toWork(
   };
 }
 
-function toSavedWork(id: string, work: StoredWork, knownSectionIds: Set<string>): SavedWork {
-  return { data: toWork(id, work, knownSectionIds), etag: entityTag(editedContent(work)), id };
+function toSavedWork(id: string, work: StoredWork, known: KnownIds): SavedWork {
+  return { data: toWork(id, work, known), etag: entityTag(editedContent(work)), id };
 }
 
-/** The ids of every section and subsection, which a work may refer to. */
-async function readSectionIds(): Promise<Set<string>> {
-  return sectionIdsIn(await sectionsCollection().get());
+/** The ids of everything a work may refer to. */
+async function readKnownIds(): Promise<KnownIds> {
+  const [sections, materials] = await Promise.all([
+    sectionsCollection().get(),
+    materialsDocument().get(),
+  ]);
+
+  return { materials: materialIdsIn(materials), sections: sectionIdsIn(sections) };
 }
 
-/**
- * Rejects with 422 a section the work names that does not exist, such as one deleted while the
- * form was open. Read in the transaction, so a section deleted meanwhile is caught too.
- */
-async function assertSectionsExist(transaction: Transaction, ids: string[]): Promise<Set<string>> {
-  const known = sectionIdsIn(await transaction.get(sectionsCollection()));
+/** Rejects with 422 an id the work names that is not one of `known`, saying what it should be. */
+function assertKnown(ids: string[], known: Set<string>, kind: string): void {
   const unknown = ids.find((id) => !known.has(id));
 
   if (unknown !== undefined) {
-    throw new UnprocessableContentError(`There is no section ${unknown}`);
+    throw new UnprocessableContentError(`There is no ${kind} ${unknown}`);
   }
+}
+
+/**
+ * Rejects with 422 a section or a material the work names that does not exist, such as one deleted
+ * while the form was open. Read in the transaction, so one deleted meanwhile is caught too.
+ */
+async function assertReferencesExist(transaction: Transaction, body: WorkBody): Promise<KnownIds> {
+  const [sections, materials] = await Promise.all([
+    transaction.get(sectionsCollection()),
+    transaction.get(materialsDocument()),
+  ]);
+  const known: KnownIds = { materials: materialIdsIn(materials), sections: sectionIdsIn(sections) };
+
+  assertKnown(body.sectionIds, known.sections, "section");
+  assertKnown(body.materialIds, known.materials, "material");
 
   return known;
 }
@@ -156,23 +183,21 @@ function compareWorks(a: StoredWork, b: StoredWork): number {
 
 /** Every work in the order the site shows them, tagged by the stored list. */
 export async function listWorks(): Promise<Tagged<Work[]>> {
-  const [{ docs }, knownSectionIds] = await Promise.all([
-    worksCollection().get(),
-    readSectionIds(),
-  ]);
+  const [{ docs }, known] = await Promise.all([worksCollection().get(), readKnownIds()]);
   const works = docs
     .map((snapshot) => ({ id: snapshot.id, work: readWork(snapshot) }))
     .sort((a, b) => compareWorks(a.work, b.work));
-  const data = works.map(({ id, work }) => toWork(id, work, knownSectionIds));
+  const data = works.map(({ id, work }) => toWork(id, work, known));
 
-  // Tagged by what is returned: deleting a section changes the list without changing a work.
+  // Tagged by what is returned: deleting a section or a material changes the list without changing
+  // a work.
   return { data, etag: entityTag(data) };
 }
 
 export async function getWork(id: string): Promise<SavedWork> {
-  const [snapshot, knownSectionIds] = await Promise.all([workDocument(id).get(), readSectionIds()]);
+  const [snapshot, known] = await Promise.all([workDocument(id).get(), readKnownIds()]);
 
-  return toSavedWork(id, readWork(snapshot), knownSectionIds);
+  return toSavedWork(id, readWork(snapshot), known);
 }
 
 /**
@@ -197,7 +222,7 @@ async function discardPhoto(id: string, image: StoredImage | undefined): Promise
  * Creates the work `id`, which the client chose; rejects it with 412 once a work has that id, such
  * as one an earlier try of the same request created. A new work has no saved photos, so its photo
  * needs an upload and a process photo cannot name an id, or it is rejected with 422, as it is for a
- * section that does not exist. The files are copied from their uploads first; if saving fails, the
+ * section or a material that does not exist. The files are copied from their uploads first; if saving fails, the
  * copies are removed.
  */
 export async function createWork(id: string, body: WorkBody): Promise<SavedWork> {
@@ -218,15 +243,15 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
   }
 
   let work: StoredWork;
-  let knownSectionIds: Set<string>;
+  let known: KnownIds;
 
   try {
-    [work, knownSectionIds] = await firestore().runTransaction(async (transaction) => {
+    [work, known] = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(workDocument(id))).exists) {
         throw new PreconditionFailedError("The work already exists");
       }
 
-      const known = await assertSectionsExist(transaction, body.sectionIds);
+      const references = await assertReferencesExist(transaction, body);
 
       const now = Timestamp.now();
       const created: StoredWork = {
@@ -238,7 +263,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
       };
 
       transaction.create(workDocument(id), created);
-      return [created, known];
+      return [created, references];
     });
   } catch (error) {
     await Promise.all([discardPhoto(id, image), draft.discard()]);
@@ -248,7 +273,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
   // A new work has no older files, so this removes only the used uploads.
   await draft.finish([], work.processPhotos);
 
-  return toSavedWork(id, work, knownSectionIds);
+  return toSavedWork(id, work, known);
 }
 
 /**
@@ -256,7 +281,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
  * from their uploads first and the replaced ones are removed once the work is saved, so the site
  * never links to missing files; if saving fails, the copies are removed and the work stays as it
  * was. The process photos are saved as one list: a saved photo left out is deleted, see
- * preparePhotoList. A section that does not exist is rejected with 422.
+ * preparePhotoList. A section or a material that does not exist is rejected with 422.
  */
 export async function replaceWork(id: string, body: WorkBody, ifMatch: string): Promise<SavedWork> {
   const image = await publishPhoto(id, body.photo.uploadId);
@@ -271,16 +296,16 @@ export async function replaceWork(id: string, body: WorkBody, ifMatch: string): 
 
   let previous: { photo: StoredPhoto; processPhotos: StoredListPhoto[] };
   let work: StoredWork;
-  let knownSectionIds: Set<string>;
+  let known: KnownIds;
 
   try {
-    [previous, work, knownSectionIds] = await firestore().runTransaction(async (transaction) => {
+    [previous, work, known] = await firestore().runTransaction(async (transaction) => {
       const document = workDocument(id);
       const current = readWork(await transaction.get(document));
 
       assertIfMatch(ifMatch, editedContent(current));
 
-      const known = await assertSectionsExist(transaction, body.sectionIds);
+      const references = await assertReferencesExist(transaction, body);
 
       const next: StoredWork = {
         ...current,
@@ -291,7 +316,7 @@ export async function replaceWork(id: string, body: WorkBody, ifMatch: string): 
       };
 
       transaction.set(document, next);
-      return [current, next, known];
+      return [current, next, references];
     });
   } catch (error) {
     await Promise.all([discardPhoto(id, image), draft.discard()]);
@@ -304,7 +329,7 @@ export async function replaceWork(id: string, body: WorkBody, ifMatch: string): 
 
   await draft.finish(previous.processPhotos, work.processPhotos);
 
-  return toSavedWork(id, work, knownSectionIds);
+  return toSavedWork(id, work, known);
 }
 
 /** Deletes the work while it is still the one the client read, and then all its files. */

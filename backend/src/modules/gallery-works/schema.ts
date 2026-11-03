@@ -15,6 +15,9 @@ export const minWorkYear = 1900;
 /** The most sections and subsections one work may be in. */
 export const maxWorkSections = 30;
 
+/** The most materials one work may be made of. */
+export const maxWorkMaterials = 10;
+
 /** The most process photos one work may have; raise it when the artist needs more. */
 export const maxWorkProcessPhotos = 20;
 
@@ -46,6 +49,15 @@ const workPhotoBodySchema = z.strictObject({
   uploadId: uploadIdSchema.optional(),
 });
 
+/** Ids of the items of a gallery list a work refers to, at least one, each named once. */
+function referenceIdsSchema(max: number) {
+  return z
+    .array(z.uuid())
+    .min(1)
+    .max(max)
+    .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once");
+}
+
 /** Whether the month of the year has not come yet, by the server clock. */
 function isFutureMonth(year: number, month: number): boolean {
   const now = new Date();
@@ -75,11 +87,9 @@ export const workBodySchema = z
      * The sections and subsections the work is shown in, by id; at least one, so a visitor finds
      * it. A subsection is named alone: the site shows its works in its section too.
      */
-    sectionIds: z
-      .array(z.uuid())
-      .min(1)
-      .max(maxWorkSections)
-      .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once"),
+    sectionIds: referenceIdsSchema(maxWorkSections),
+    /** What the work is made of, by the ids of the gallery materials; at least one. */
+    materialIds: referenceIdsSchema(maxWorkMaterials),
   })
   .refine(({ month, year }) => !isFutureMonth(year, month), {
     message: "The month cannot be in the future",
@@ -101,6 +111,8 @@ export const storedWorkSchema = z.object({
   processPhotos: z.array(storedListPhotoSchema),
   /** May name a section deleted since; the API leaves such ids out. */
   sectionIds: z.array(z.string()),
+  /** May name a material deleted since; the API leaves such ids out. */
+  materialIds: z.array(z.string()),
   /** Set by the server when the work is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the work. */
@@ -124,6 +136,8 @@ export const workSchema = z.object({
   processPhotos: z.array(listPhotoSchema),
   /** The sections and subsections the work is shown in; a deleted one is left out. */
   sectionIds: z.array(z.uuid()),
+  /** The materials the work is made of; a deleted one is left out. */
+  materialIds: z.array(z.uuid()),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

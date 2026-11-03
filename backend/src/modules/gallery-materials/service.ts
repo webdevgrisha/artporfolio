@@ -8,12 +8,17 @@ import { byTitle } from "#shared/text/titles";
 const noMaterials: GalleryMaterials = { materials: [] };
 
 /** The document that holds every material of the gallery, and nothing else. */
-function materialsDocument() {
+export function materialsDocument() {
   return firestore().doc("site/galleryMaterials");
 }
 
 function readMaterials(snapshot: DocumentSnapshot): GalleryMaterials {
   return snapshot.exists ? galleryMaterialsSchema.parse(snapshot.data()) : noMaterials;
+}
+
+/** The ids of every saved material, which a work may refer to. */
+export function materialIdsIn(snapshot: DocumentSnapshot): Set<string> {
+  return new Set(readMaterials(snapshot).materials.map((material) => material.id));
 }
 
 /** The materials with the entity tag for If-Match; there are none until they are first saved. */
