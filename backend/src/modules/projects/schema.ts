@@ -32,8 +32,11 @@ export const projectBodySchema = z.strictObject({
     .trim()
     .max(2_048)
     .pipe(z.union([z.literal(""), z.httpUrl()])),
-  /** In the order the site shows them; a saved photo left out is deleted. */
-  photos: photoListBodySchema(maxProjectPhotos),
+  /**
+   * In the order the site shows them; a saved photo left out is deleted. The site opens a project
+   * into its photos, so it needs at least one.
+   */
+  photos: photoListBodySchema(maxProjectPhotos).min(1),
 });
 
 /**

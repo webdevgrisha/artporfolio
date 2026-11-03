@@ -30,8 +30,8 @@ export const projectFormSchema = z.object({
     .trim()
     .max(projectMaxLengths.link, `Не длиннее ${String(projectMaxLengths.link)} символов`)
     .pipe(z.union([z.literal(""), z.httpUrl("Введите ссылку вида https://…")])),
-  /** In the order the site shows them. */
-  photos: photoListRowsSchema(maxProjectPhotos),
+  /** In the order the site shows them; the site opens a project into its photos. */
+  photos: photoListRowsSchema(maxProjectPhotos).min(1, "Добавьте хотя бы одно фото"),
 });
 
 export type ProjectFormValues = z.infer<typeof projectFormSchema>;
