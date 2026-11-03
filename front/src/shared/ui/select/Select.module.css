@@ -1,0 +1,26 @@
+.controlWrapper {
+  position: relative;
+}
+
+/* As tall as a text field; the native arrow gives way to the chevron, which leaves it room. */
+.control {
+  min-block-size: var(--control-size);
+  padding-inline: var(--space-4) var(--control-size);
+  appearance: none;
+  cursor: pointer;
+}
+
+.control:disabled {
+  cursor: not-allowed;
+}
+
+/* The chevron points down into the list; the clicks go through it to the control. */
+.chevron {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-4);
+  inline-size: 0.5rem;
+  block-size: auto;
+  pointer-events: none;
+  transform: translateY(-50%) rotate(90deg);
+}
