@@ -71,7 +71,7 @@ export function AddTitleField({
     <Input
       ref={ref}
       label={labels.field}
-      hint={isFull ? labels.full : "Введите название и нажмите Enter"}
+      hint={isFull ? labels.full : "Введите название и нажмите +"}
       placeholder={labels.placeholder}
       value={title}
       disabled={disabled || isFull}
