@@ -13,6 +13,7 @@ import { AdminHeader } from "./AdminHeader";
 import styles from "./AdminLayout.module.css";
 import { AdminSidebar } from "./AdminSidebar";
 import { MobileMenuButton } from "./MobileMenuButton";
+import { NavigationProgress } from "./NavigationProgress";
 
 const sidebarId = "admin-sidebar";
 
@@ -24,6 +25,7 @@ export function AdminLayout() {
 
   return (
     <div className={styles.layout}>
+      <NavigationProgress />
       <AdminSidebar
         ref={mobileMenu.drawerRef}
         id={sidebarId}
