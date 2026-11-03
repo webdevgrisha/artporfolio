@@ -1,8 +1,8 @@
 // Fills the running emulators with demo content through the API, as the admin would: page heroes,
 // the About page, the contacts, the projects with their photos, and the gallery text, sections,
-// materials and colors. Every run first empties the
-// Firestore emulator, so the admin always starts from the same content. The images are drawn here,
-// so the result is the same on every machine and needs no network.
+// materials, colors and palettes. Every run first empties the Firestore emulator, so the admin
+// always starts from the same content. The images are drawn here, so the result is the same on
+// every machine and needs no network.
 //
 //   pnpm emulators:seed [email] [password]
 //
@@ -229,7 +229,7 @@ const galleryIntro =
   "Живопись, графика и постеры разных лет. Работы можно выбрать по разделу и материалу, " +
   "а понравившуюся — купить.";
 
-/** The site lists sections, subsections, materials and colors by title, so the order here is free. */
+/** The site lists sections, subsections, materials, colors and palettes by title, so the order here is free. */
 const gallerySections = [
   { title: "Живопись", subsections: ["Пейзаж", "Портрет", "Натюрморт"] },
   { title: "Графика", subsections: [] },
@@ -248,6 +248,16 @@ const galleryColors = [
   { title: "Чёрный", hex: "#1a1a1a" },
   { title: "Белый", hex: "#ffffff" },
   { title: "Охра", hex: "#c8913a" },
+];
+
+/** The coloring of a work as a whole, apart from the colors it has. */
+const galleryPalettes = [
+  "Пастельная",
+  "Яркая",
+  "Приглушённая",
+  "Тёплая",
+  "Холодная",
+  "Монохромная",
 ];
 
 /** In the order the site shows them. */
@@ -509,8 +519,11 @@ async function seedGallery(api) {
   await api.put("/gallery-colors", {
     colors: galleryColors.map((color) => ({ id: randomUUID(), ...color })),
   });
+  await api.put("/gallery-palettes", {
+    palettes: galleryPalettes.map((title) => ({ id: randomUUID(), title })),
+  });
   console.log(
-    `  gallery: text, ${String(gallerySections.length)} sections, ${String(galleryMaterials.length)} materials, ${String(galleryColors.length)} colors`,
+    `  gallery: text, ${String(gallerySections.length)} sections, ${String(galleryMaterials.length)} materials, ${String(galleryColors.length)} colors, ${String(galleryPalettes.length)} palettes`,
   );
 }
 
