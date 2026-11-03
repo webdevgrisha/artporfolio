@@ -43,6 +43,7 @@ function apiWork(title: string): GalleryWork {
       version: "version",
       width: 960,
     },
+    processPhotos: [],
     size: { height: 27.9, width: 21.6 },
     title,
     updatedAt: "2026-01-15T10:00:00.000Z",
@@ -101,6 +102,7 @@ describe("useCreateWork", () => {
         body: {
           description: "",
           photo: { alt: "Стрекоза", uploadId },
+          processPhotos: [],
           size: { height: 27.9, width: 21.6 },
           title: "Стрекоза",
           year: 2025,

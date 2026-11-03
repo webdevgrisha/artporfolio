@@ -24,6 +24,7 @@ export function EditWorkPage() {
             <FieldSkeleton />
             <FieldSkeleton />
             <MediaSkeleton />
+            <MediaSkeleton />
           </FormSkeleton>
         }
       >

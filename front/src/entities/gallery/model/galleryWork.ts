@@ -1,9 +1,12 @@
 import { z } from "zod";
 
-import { photoSchema } from "@/shared/api/photo";
+import { listPhotoSchema, photoSchema } from "@/shared/api/photo";
 
 /** The earliest year a work can be dated (backend/src/modules/gallery-works/schema.ts). */
 export const minWorkYear = 1900;
+
+/** The most process photos one work may have. */
+export const maxWorkProcessPhotos = 20;
 
 /** The largest side of a work in centimetres. */
 export const maxWorkSide = 10_000;
@@ -25,6 +28,8 @@ export const galleryWorkSchema = z.object({
   /** The year the work was finished. */
   year: z.number(),
   photo: photoSchema,
+  /** How the work was made, in the order the site shows them. */
+  processPhotos: z.array(listPhotoSchema),
   /** When the work was created, ISO 8601. */
   createdAt: z.iso.datetime(),
   /** When the admin last saved the work, ISO 8601. */

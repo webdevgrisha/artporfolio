@@ -2,10 +2,18 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { altSchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
+import {
+  listPhotoSchema,
+  photoListBodySchema,
+  storedListPhotoSchema,
+} from "#shared/images/photo-list";
 import { uploadIdSchema } from "#shared/images/uploads";
 
 /** The earliest year a work can be dated. */
 export const minWorkYear = 1900;
+
+/** The most process photos one work may have; raise it when the artist needs more. */
+export const maxWorkProcessPhotos = 20;
 
 /** The largest side in centimetres: well above any painting, low enough to catch a typo. */
 export const maxWorkSide = 10_000;
@@ -52,6 +60,8 @@ export const workBodySchema = z.strictObject({
     .min(minWorkYear)
     .refine((year) => year <= new Date().getFullYear(), "The year cannot be in the future"),
   photo: workPhotoBodySchema,
+  /** How the work was made, in the order the site shows them; a saved photo left out is deleted. */
+  processPhotos: photoListBodySchema(maxWorkProcessPhotos),
 });
 
 /**
@@ -65,6 +75,7 @@ export const storedWorkSchema = z.object({
   size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
   photo: storedPhotoSchema,
+  processPhotos: z.array(storedListPhotoSchema),
   /** Set by the server when the work is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the work. */
@@ -80,6 +91,8 @@ export const workSchema = z.object({
   size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
   photo: photoSchema,
+  /** In the order the site shows them. */
+  processPhotos: z.array(listPhotoSchema),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

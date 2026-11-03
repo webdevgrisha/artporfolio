@@ -120,7 +120,7 @@ export function WorksList({ className, works }: WorksListProps) {
       <ConfirmDialog
         isOpen={deleted !== undefined}
         title={`Удалить работу «${deleted?.title ?? ""}»?`}
-        description="Работа и её фото пропадут с сайта. Это нельзя отменить."
+        description="Работа и все её фото пропадут с сайта. Это нельзя отменить."
         cancelLabel="Отмена"
         confirmLabel="Удалить"
         onCancel={() => setDeleted(undefined)}

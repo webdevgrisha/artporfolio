@@ -2,7 +2,12 @@ import { randomUUID } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
-import { maxWorkSide, minWorkYear, workBodySchema } from "#modules/gallery-works/schema";
+import {
+  maxWorkProcessPhotos,
+  maxWorkSide,
+  minWorkYear,
+  workBodySchema,
+} from "#modules/gallery-works/schema";
 
 const work = {
   title: "Слон",
@@ -10,6 +15,7 @@ const work = {
   size: { width: 50, height: 70 },
   year: 2024,
   photo: { alt: "Слон на закате", uploadId: randomUUID() },
+  processPhotos: [],
 };
 
 function isValid(body: unknown): boolean {
@@ -62,6 +68,26 @@ describe("work body", () => {
     expect(isValid({ ...work, photo: { alt: "Слон" } })).toBe(true);
     expect(isValid({ ...work, photo: { alt: " ", uploadId: randomUUID() } })).toBe(false);
     expect(isValid({ ...work, photo: undefined })).toBe(false);
+  });
+
+  it("takes up to the limit of process photos, each with its alt text", () => {
+    const processPhoto = () => ({ alt: "Набросок", uploadId: randomUUID() });
+
+    expect(isValid({ ...work, processPhotos: [processPhoto()] })).toBe(true);
+    expect(
+      isValid({
+        ...work,
+        processPhotos: Array.from({ length: maxWorkProcessPhotos }, processPhoto),
+      }),
+    ).toBe(true);
+    expect(
+      isValid({
+        ...work,
+        processPhotos: Array.from({ length: maxWorkProcessPhotos + 1 }, processPhoto),
+      }),
+    ).toBe(false);
+    expect(isValid({ ...work, processPhotos: [{ ...processPhoto(), alt: "" }] })).toBe(false);
+    expect(isValid({ ...work, processPhotos: undefined })).toBe(false);
   });
 
   it("rejects unknown fields", () => {

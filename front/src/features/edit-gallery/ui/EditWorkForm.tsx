@@ -24,7 +24,7 @@ export function EditWorkForm({ className, work }: EditWorkFormProps) {
     form,
     initial: work,
     query: galleryWorkQuery(work.data.id),
-    // The server replaces the whole work, its photo included, at once.
+    // The server replaces the whole work, its photos included, at once.
     save: (values, etag) => saveWork.mutateAsync({ etag, values }),
     toValues: toWorkFormValues,
     toastId: saveWorkToastId,
@@ -34,7 +34,11 @@ export function EditWorkForm({ className, work }: EditWorkFormProps) {
     // The fields read the form from the context.
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <WorkFields isSaving={editForm.isSaving} savedPhoto={saved.data.photo} />
+        <WorkFields
+          isSaving={editForm.isSaving}
+          savedPhoto={saved.data.photo}
+          savedProcessPhotos={saved.data.processPhotos}
+        />
       </EditForm>
     </FormProvider>
   );

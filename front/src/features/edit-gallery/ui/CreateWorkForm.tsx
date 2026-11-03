@@ -61,7 +61,7 @@ export function CreateWorkForm({ className }: CreateWorkFormProps) {
         onRevert={() => reset()}
         onSubmit={handleSubmit(create)}
       >
-        <WorkFields isSaving={isSaving} savedPhoto={null} />
+        <WorkFields isSaving={isSaving} savedPhoto={null} savedProcessPhotos={[]} />
       </EditForm>
     </FormProvider>
   );

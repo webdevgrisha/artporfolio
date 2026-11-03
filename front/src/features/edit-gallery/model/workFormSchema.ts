@@ -1,7 +1,14 @@
 import { z } from "zod";
 
-import { type GalleryWork, maxWorkSide, minWorkYear, type WorkSize } from "@/entities/gallery";
+import {
+  type GalleryWork,
+  maxWorkProcessPhotos,
+  maxWorkSide,
+  minWorkYear,
+  type WorkSize,
+} from "@/entities/gallery";
 import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
+import { photoListRowsSchema, toPhotoListRows } from "@/shared/lib/photoListForm";
 
 // Mirror the server rules in backend/src/modules/gallery-works/schema.ts.
 export const workMaxLengths = {
@@ -67,6 +74,11 @@ export const workFormSchema = z
     height: sideSchema,
     year: yearSchema,
     ...photoFieldsShape,
+    /**
+     * The process photos, in the order the site shows them. `PhotoListField` edits the list in the
+     * `photos` field.
+     */
+    photos: photoListRowsSchema(maxWorkProcessPhotos),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto);
@@ -81,12 +93,14 @@ export const emptyWorkFormValues: WorkFormValues = {
   width: "",
   year: "",
   ...toPhotoFormValues(null),
+  photos: [],
 };
 
 /** The values of a work as stored on the server. */
 export function toWorkFormValues({
   description,
   photo,
+  processPhotos,
   size,
   title,
   year,
@@ -98,6 +112,7 @@ export function toWorkFormValues({
     width: formatSide(size.width),
     year: String(year),
     ...toPhotoFormValues(photo),
+    photos: toPhotoListRows(processPhotos),
   };
 }
 

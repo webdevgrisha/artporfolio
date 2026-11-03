@@ -549,12 +549,30 @@ async function seedGallery(api) {
       size: [width, height].map((side) => Math.round(side * 20)),
     });
 
+    // Every other work shows how it was made: sketches, then the colours of the work.
+    const processPhotos = [];
+
+    if (index % 2 === 0) {
+      for (const [photoIndex, alt] of ["Наброски карандашом", "Цветовые пробы"].entries()) {
+        processPhotos.push({
+          alt,
+          uploadId: await uploadArtwork(api, {
+            kind: photoIndex === 0 ? "etching" : "painting",
+            name: `${work.title}-${alt}`,
+            palette: work.palette,
+            seed: 3100 + index * 10 + photoIndex,
+          }),
+        });
+      }
+    }
+
     await api.create(`/gallery-works/${randomUUID()}`, {
       title: work.title,
       description: index % 2 === 0 ? `${work.title}. Работа из серии о животных.` : "",
       size: { width, height },
       year: work.year,
       photo: { alt: work.title, uploadId },
+      processPhotos,
     });
   }
 

@@ -10,6 +10,7 @@ import {
 } from "@/entities/gallery";
 import { HttpError } from "@/shared/api/httpError";
 import { uploadImage } from "@/shared/api/upload";
+import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
 import { getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
 import { toWorkSize, type WorkFormValues } from "./workFormSchema";
@@ -27,11 +28,11 @@ interface SaveWorkParams {
 }
 
 /**
- * Uploads a newly picked photo, then gives the work as the server takes it; a saved photo keeps its
- * file and sends its description alone. Rejects with `UploadError`.
+ * Uploads the newly picked files, then gives the work as the server takes it; a saved photo keeps
+ * its file and sends its description alone. Rejects with `UploadError`.
  */
 async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
-  const { description, photo, photoAlt, title, year } = values;
+  const { description, photo, photoAlt, photos, title, year } = values;
 
   return {
     description,
@@ -39,6 +40,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
       photo instanceof File
         ? { alt: photoAlt, uploadId: await uploadImage(photo) }
         : { alt: photoAlt },
+    processPhotos: await toPhotoListItems(photos),
     size: toWorkSize(values),
     title,
     year: Number(year),
@@ -49,7 +51,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
 export const saveWorkToastId = "gallery-work-save";
 
 /**
- * Creates a work from the form: uploads its photo, then sends the work in one request, which the
+ * Creates a work from the form: uploads its photos, then sends the work in one request, which the
  * server saves all or nothing.
  *
  * A try may create the work even though its response is lost. The next try then finds the work

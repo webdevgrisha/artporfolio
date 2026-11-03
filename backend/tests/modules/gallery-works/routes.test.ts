@@ -38,6 +38,7 @@ const work = {
   description: "Масло, холст.",
   id,
   photo: { ...apiImage("elephant.png"), alt: "Слон на закате" },
+  processPhotos: [{ ...apiImage("sketch.png"), alt: "Набросок", id: otherId }],
   size: { height: 70, width: 50 },
   title: "Слон",
   updatedAt: "2026-02-01T12:30:00.000Z",
@@ -46,6 +47,7 @@ const work = {
 const body = {
   description: "Масло, холст.",
   photo: { alt: "Слон на закате", uploadId },
+  processPhotos: [{ alt: "Набросок", id: otherId }],
   size: { height: 70, width: 50 },
   title: "Слон",
   year: 2024,

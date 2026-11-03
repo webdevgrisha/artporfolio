@@ -1,10 +1,12 @@
 import clsx from "clsx";
 import { useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import type { Photo } from "@/shared/api/photo";
+import { maxWorkProcessPhotos } from "@/entities/gallery";
+import type { ListPhoto, Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
 import { PhotoFields } from "@/shared/ui/photo-fields";
+import { PhotoListField } from "@/shared/ui/photo-list-field";
 import { Textarea } from "@/shared/ui/textarea";
 
 import { type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
@@ -15,10 +17,17 @@ interface WorkFieldsProps {
   isSaving: boolean;
   /** The photo of the saved work, shown while the photo field keeps it; none for a new work. */
   savedPhoto: Photo | null;
+  /** The process photos of the saved work, to show that some were removed or moved. */
+  savedProcessPhotos: readonly ListPhoto[];
 }
 
 /** The fields of a work form; they read the form from its context. */
-export function WorkFields({ className, isSaving, savedPhoto }: WorkFieldsProps) {
+export function WorkFields({
+  className,
+  isSaving,
+  savedPhoto,
+  savedProcessPhotos,
+}: WorkFieldsProps) {
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
   const { dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
@@ -94,6 +103,14 @@ export function WorkFields({ className, isSaving, savedPhoto }: WorkFieldsProps)
       </div>
 
       <PhotoFields label="Фото работы" isSaving={isSaving} serverPhoto={savedPhoto} />
+
+      <PhotoListField
+        label="Фото процесса"
+        altPlaceholder="Например: первые наброски карандашом"
+        maxPhotos={maxWorkProcessPhotos}
+        isSaving={isSaving}
+        savedPhotos={savedProcessPhotos}
+      />
     </div>
   );
 }

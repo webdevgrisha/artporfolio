@@ -63,6 +63,24 @@ describe("workFormSchema", () => {
     });
   });
 
+  it("takes up to 20 process photos, each with its description", () => {
+    const row = () => ({
+      alt: "Набросок",
+      file: new File([""], "sketch.png"),
+      status: "new" as const,
+    });
+
+    expect(
+      fieldErrors(workFormSchema, { ...work, photos: Array.from({ length: 20 }, row) }),
+    ).toEqual({});
+    expect(
+      fieldErrors(workFormSchema, { ...work, photos: Array.from({ length: 21 }, row) }),
+    ).toEqual({ photos: ["Не больше 20 фото"] });
+    expect(fieldErrors(workFormSchema, { ...work, photos: [{ ...row(), alt: "" }] })).toEqual({
+      "photos.0.alt": ["Опишите, что на фото"],
+    });
+  });
+
   it("limits the texts", () => {
     expect(
       fieldErrors(workFormSchema, {
@@ -82,6 +100,7 @@ describe("the size in the form", () => {
     const saved = {
       description: "",
       photo: { alt: "Стрекоза" },
+      processPhotos: [],
       size: { height: 27.9, width: 21.6 },
       title: "Стрекоза",
       year: 2025,

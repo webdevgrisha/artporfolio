@@ -14,6 +14,12 @@ import {
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { type StoredPhoto, toPhoto } from "#shared/images/photo";
+import {
+  type PhotoListDraft,
+  preparePhotoList,
+  type StoredListPhoto,
+  toListPhoto,
+} from "#shared/images/photo-list";
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
 import { publishUpload } from "#shared/images/uploads";
 
@@ -44,6 +50,11 @@ function photoVersionFolder(id: string, version: string): string {
   return `${photoFolder(id)}/${version}`;
 }
 
+/** Each process photo keeps its versions in a subfolder of its own. */
+function processPhotosFolder(id: string): string {
+  return `${workFolder(id)}/process`;
+}
+
 function readWork(snapshot: DocumentSnapshot): StoredWork {
   if (!snapshot.exists) {
     throw new NotFoundError("There is no work");
@@ -53,20 +64,21 @@ function readWork(snapshot: DocumentSnapshot): StoredWork {
 }
 
 /** What the client edits, which the entity tag of a work follows. */
-function editedContent({ description, photo, size, title, year }: StoredWork) {
-  return { description, photo, size, title, year };
+function editedContent({ description, photo, processPhotos, size, title, year }: StoredWork) {
+  return { description, photo, processPhotos, size, title, year };
 }
 
 /** The stored work as the API returns it, with download URLs and ISO 8601 dates. */
 function toWork(
   id: string,
-  { createdAt, description, photo, size, title, updatedAt, year }: StoredWork,
+  { createdAt, description, photo, processPhotos, size, title, updatedAt, year }: StoredWork,
 ): Work {
   return {
     createdAt: createdAt.toDate().toISOString(),
     description,
     id,
     photo: toPhoto(photo),
+    processPhotos: processPhotos.map(toListPhoto),
     size,
     title,
     updatedAt: updatedAt.toDate().toISOString(),
@@ -120,9 +132,9 @@ async function discardPhoto(id: string, image: StoredImage | undefined): Promise
 
 /**
  * Creates the work `id`, which the client chose; rejects it with 412 once a work has that id, such
- * as one an earlier try of the same request created. A new work has no saved photo, so its photo
- * needs an upload, or it is rejected with 422. The photo file is copied from its upload first; if
- * saving fails, the copy is removed.
+ * as one an earlier try of the same request created. A new work has no saved photos, so its photo
+ * needs an upload and a process photo cannot name an id, or it is rejected with 422. The files are
+ * copied from their uploads first; if saving fails, the copies are removed.
  */
 export async function createWork(id: string, body: WorkBody): Promise<SavedWork> {
   const { alt, uploadId } = body.photo;
@@ -132,6 +144,15 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
   }
 
   const image = await publishUpload(uploadId, photoFolder(id));
+  let draft: PhotoListDraft;
+
+  try {
+    draft = await preparePhotoList(body.processPhotos, processPhotosFolder(id));
+  } catch (error) {
+    await discardPhoto(id, image);
+    throw error;
+  }
+
   let work: StoredWork;
 
   try {
@@ -145,6 +166,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
         ...body,
         createdAt: now,
         photo: { ...image, alt },
+        processPhotos: draft.build([]),
         updatedAt: now,
       };
 
@@ -152,25 +174,39 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
       return created;
     });
   } catch (error) {
-    await discardPhoto(id, image);
+    await Promise.all([discardPhoto(id, image), draft.discard()]);
     throw error;
   }
+
+  // A new work has no older files, so this removes only the used uploads.
+  await draft.finish([], work.processPhotos);
 
   return toSavedWork(id, work);
 }
 
 /**
- * Replaces the work while it is still the one the client read (`ifMatch`). A new photo file is
- * copied from its upload first and the replaced one is removed once the work is saved, so the site
- * never links to missing files; if saving fails, the copy is removed and the work stays as it was.
+ * Replaces the work while it is still the one the client read (`ifMatch`). New files are copied
+ * from their uploads first and the replaced ones are removed once the work is saved, so the site
+ * never links to missing files; if saving fails, the copies are removed and the work stays as it
+ * was. The process photos are saved as one list: a saved photo left out is deleted, see
+ * preparePhotoList.
  */
 export async function replaceWork(id: string, body: WorkBody, ifMatch: string): Promise<SavedWork> {
   const image = await publishPhoto(id, body.photo.uploadId);
-  let previousPhoto: StoredPhoto;
+  let draft: PhotoListDraft;
+
+  try {
+    draft = await preparePhotoList(body.processPhotos, processPhotosFolder(id));
+  } catch (error) {
+    await discardPhoto(id, image);
+    throw error;
+  }
+
+  let previous: { photo: StoredPhoto; processPhotos: StoredListPhoto[] };
   let work: StoredWork;
 
   try {
-    [previousPhoto, work] = await firestore().runTransaction(async (transaction) => {
+    [previous, work] = await firestore().runTransaction(async (transaction) => {
       const document = workDocument(id);
       const current = readWork(await transaction.get(document));
 
@@ -180,20 +216,23 @@ export async function replaceWork(id: string, body: WorkBody, ifMatch: string): 
         ...current,
         ...body,
         photo: { ...(image ?? current.photo), alt: body.photo.alt },
+        processPhotos: draft.build(current.processPhotos),
         updatedAt: Timestamp.now(),
       };
 
       transaction.set(document, next);
-      return [current.photo, next];
+      return [current, next];
     });
   } catch (error) {
-    await discardPhoto(id, image);
+    await Promise.all([discardPhoto(id, image), draft.discard()]);
     throw error;
   }
 
   if (image) {
-    await deleteImageFilesOrWarn(photoVersionFolder(id, previousPhoto.version));
+    await deleteImageFilesOrWarn(photoVersionFolder(id, previous.photo.version));
   }
+
+  await draft.finish(previous.processPhotos, work.processPhotos);
 
   return toSavedWork(id, work);
 }

@@ -67,7 +67,9 @@ import {
 const elephantId = "11111111-1111-4111-8111-111111111111";
 const tigerId = "22222222-2222-4222-8222-222222222222";
 const uploadId = "44444444-4444-4444-8444-444444444444";
+const processUploadId = "77777777-7777-4777-8777-777777777777";
 const newId = "55555555-5555-4555-8555-555555555555";
+const processPhotoId = "66666666-6666-4666-8666-666666666666";
 
 function storedPhoto(workId: string) {
   const folder = `galleryWorks/${workId}/photo/old-version`;
@@ -86,6 +88,24 @@ function storedPhoto(workId: string) {
   };
 }
 
+function storedProcessPhoto(workId: string) {
+  const folder = `galleryWorks/${workId}/process/${processPhotoId}/old-version`;
+
+  return {
+    alt: "Набросок",
+    fileName: "sketch.png",
+    fileSize: 100,
+    height: 320,
+    id: processPhotoId,
+    sources: {
+      avif: [{ path: `${folder}/640.avif`, token: "token", width: 640 }],
+      webp: [{ path: `${folder}/640.webp`, token: "token", width: 640 }],
+    },
+    version: "old-version",
+    width: 640,
+  };
+}
+
 /** When the seeded works were made and last saved. */
 const seededAt = Timestamp.fromDate(new Date("2026-01-15T10:00:00.000Z"));
 
@@ -94,6 +114,7 @@ function storedWork(id: string, title: string, year: number, createdAt = seededA
     createdAt,
     description: "",
     photo: storedPhoto(id),
+    processPhotos: [storedProcessPhoto(id)],
     size: { width: 50, height: 70 },
     title,
     updatedAt: createdAt,
@@ -119,6 +140,7 @@ function publishedImage(folder: string) {
 const body: WorkBody = {
   description: "Масло, холст.",
   photo: { alt: "Новое фото", uploadId },
+  processPhotos: [],
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
@@ -200,6 +222,30 @@ describe("createWork", () => {
     expect(Date.parse(data.createdAt)).toBeGreaterThan(seededAt.toMillis());
   });
 
+  it("copies the process photos into their own folders", async () => {
+    const { data } = await createWork(newId, {
+      ...body,
+      processPhotos: [{ alt: "Набросок", uploadId: processUploadId }],
+    });
+
+    expect(data.processPhotos).toEqual([
+      expect.objectContaining({ alt: "Набросок", version: "new-version" }),
+    ]);
+    expect(uploads.publishUpload).toHaveBeenCalledWith(
+      processUploadId,
+      `galleryWorks/${newId}/process/${String(data.processPhotos[0]?.id)}`,
+    );
+  });
+
+  it("returns 422 for a process photo id, which no new work has, and removes the copies", async () => {
+    await expect(
+      createWork(newId, { ...body, processPhotos: [{ alt: "Набросок", id: processPhotoId }] }),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+
+    expect(works.has(newId)).toBe(false);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
+  });
+
   it("returns 422 for a photo without an upload, which no new work has", async () => {
     await expect(createWork(newId, { ...body, photo: { alt: "Фото" } })).rejects.toBeInstanceOf(
       UnprocessableContentError,
@@ -225,7 +271,11 @@ describe("replaceWork", () => {
   it("replaces the fields and keeps the saved photo file when there is no upload", async () => {
     const { data } = await replaceWork(
       elephantId,
-      { ...body, photo: { alt: "Другой alt" } },
+      {
+        ...body,
+        photo: { alt: "Другой alt" },
+        processPhotos: [{ alt: "Набросок", id: processPhotoId }],
+      },
       await readTag(elephantId),
     );
 
@@ -244,6 +294,28 @@ describe("replaceWork", () => {
     expect(data.photo).toMatchObject({ alt: "Новое фото", version: "new-version" });
     expect(storage.deleteFolder).toHaveBeenCalledWith(
       `galleryWorks/${elephantId}/photo/old-version`,
+    );
+  });
+
+  it("keeps the process photos named by id and deletes those left out", async () => {
+    const kept = await replaceWork(
+      elephantId,
+      { ...body, processPhotos: [{ alt: "Новый alt", id: processPhotoId }] },
+      await readTag(elephantId),
+    );
+
+    expect(kept.data.processPhotos).toEqual([
+      expect.objectContaining({ alt: "Новый alt", id: processPhotoId, version: "old-version" }),
+    ]);
+    expect(storage.deleteFolder).not.toHaveBeenCalledWith(
+      expect.stringContaining(`/process/${processPhotoId}`),
+    );
+
+    await replaceWork(elephantId, body, kept.etag);
+
+    expect(works.get(elephantId)?.processPhotos).toEqual([]);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(
+      `galleryWorks/${elephantId}/process/${processPhotoId}`,
     );
   });
 

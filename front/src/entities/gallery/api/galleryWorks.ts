@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { http, type Tagged } from "@/shared/api/http";
+import type { ListPhotoItem } from "@/shared/api/photo";
 
 import {
   type GalleryWork,
@@ -17,6 +18,8 @@ export interface GalleryWorkBody {
   year: number;
   /** A new file by its upload (see `uploadImage`), or the saved file when `uploadId` is left out. */
   photo: { alt: string; uploadId?: string };
+  /** In the order the site shows them; a saved photo left out is deleted. */
+  processPhotos: readonly ListPhotoItem[];
 }
 
 interface CreateGalleryWorkParams {
@@ -96,7 +99,7 @@ export async function createGalleryWork({
 /**
  * Replaces the work, all its fields at once, and returns it as saved with its new ETag. Rejected
  * with 412 when the work has changed since `etag` was read, with 404 when it was deleted, and with
- * 422 when the upload of its new photo has expired.
+ * 422 when it names a process photo or an upload that no longer exists.
  */
 export async function replaceGalleryWork({
   body,
@@ -113,7 +116,7 @@ export async function replaceGalleryWork({
   return { data: data.work, etag: savedEtag };
 }
 
-/** Deletes the work with its photo. Rejected with 412 when it has changed since `etag` was read. */
+/** Deletes the work with its photos. Rejected with 412 when it has changed since `etag` was read. */
 export async function deleteGalleryWork({ etag, id }: DeleteGalleryWorkParams): Promise<void> {
   await http.deleteResourceIfMatch({ path: workPath(id), etag });
 }
