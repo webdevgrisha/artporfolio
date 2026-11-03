@@ -7,6 +7,7 @@ export const routes = {
   contactPhoto: "/admin/contacts/photo",
   contacts: "/admin/contacts",
   gallery: "/admin/gallery",
+  galleryColors: "/admin/gallery/colors",
   galleryIntro: "/admin/gallery/intro",
   galleryMaterials: "/admin/gallery/materials",
   gallerySectionNew: "/admin/gallery/sections/new",

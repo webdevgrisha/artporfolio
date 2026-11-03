@@ -1,0 +1,37 @@
+/* The control is a tap target; the swatch is a circle in its middle. */
+.root {
+  --swatch-size: 1.75rem;
+
+  flex: none;
+  inline-size: var(--min-tap-target-size);
+  block-size: var(--min-tap-target-size);
+  padding: calc((var(--min-tap-target-size) - var(--swatch-size)) / 2);
+  appearance: none;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.root::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+/* The line keeps a white swatch visible on the white page. */
+.root::-webkit-color-swatch {
+  border: 1px solid var(--color-divider);
+  border-radius: 50%;
+}
+
+.root::-moz-color-swatch {
+  border: 1px solid var(--color-divider);
+  border-radius: 50%;
+}
+
+.root:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: -4px;
+}
+
+.root:disabled {
+  cursor: not-allowed;
+}

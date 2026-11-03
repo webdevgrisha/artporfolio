@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 
 import {
+  galleryColorsQuery,
   galleryIntroQuery,
   galleryMaterialsQuery,
   gallerySectionQuery,
@@ -31,6 +32,12 @@ export async function gallerySectionLoader({ params }: LoaderFunctionArgs) {
 
 export async function galleryMaterialsLoader() {
   await queryClient.fetchQuery({ ...galleryMaterialsQuery, staleTime: 0 });
+
+  return null;
+}
+
+export async function galleryColorsLoader() {
+  await queryClient.fetchQuery({ ...galleryColorsQuery, staleTime: 0 });
 
   return null;
 }

@@ -1,3 +1,4 @@
+export { galleryColorsQuery, replaceGalleryColors } from "./api/galleryColors";
 export { galleryIntroQuery, replaceGalleryIntro } from "./api/galleryIntro";
 export { galleryMaterialsQuery, replaceGalleryMaterials } from "./api/galleryMaterials";
 export {
@@ -9,6 +10,7 @@ export {
   gallerySectionsQueryKey,
   replaceGallerySection,
 } from "./api/gallerySections";
+export { type GalleryColor, type GalleryColors, maxColors } from "./model/galleryColors";
 export type { GalleryIntro } from "./model/galleryIntro";
 export {
   type GalleryMaterial,

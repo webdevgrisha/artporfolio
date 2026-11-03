@@ -10,9 +10,10 @@ const sections = [
   { label: "Основной текст", to: routes.galleryIntro },
   { label: "Разделы", to: routes.gallerySections },
   { label: "Материалы", to: routes.galleryMaterials },
+  { label: "Цвета", to: routes.galleryColors },
 ] as const;
 
-/** The text above the works, the sections and the materials are saved independently. */
+/** The text above the works, the sections, the materials and the colors are saved independently. */
 export function GalleryPage() {
   const isSectionsTab = useMatch(routes.gallerySections) !== null;
 

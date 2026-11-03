@@ -7,6 +7,10 @@
   padding-inline: var(--space-4);
 }
 
+.controlWithStartAdornment {
+  padding-inline-start: var(--control-size);
+}
+
 .controlWithAdornment {
   padding-inline-end: var(--control-size);
 }
@@ -16,5 +20,16 @@
   position: absolute;
   inset-block: 0;
   inset-inline-end: 0;
+  inline-size: var(--control-size);
+}
+
+/* A square slot at the start of the control, its content in the middle. */
+.startAdornment {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   inline-size: var(--control-size);
 }

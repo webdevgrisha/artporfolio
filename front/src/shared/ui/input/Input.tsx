@@ -15,6 +15,8 @@ export interface InputProps extends ComponentPropsWithRef<"input"> {
   /** Highlights a value that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
   label: string;
+  /** A control before the text, for example the swatch of a color, centred in a square slot. */
+  startAdornment?: ReactNode;
 }
 
 export function Input({
@@ -28,6 +30,7 @@ export function Input({
   isModified = false,
   label,
   ref,
+  startAdornment,
   ...inputProps
 }: InputProps) {
   const { controlId, describedBy, errorId, hintId } = useFieldIds({
@@ -54,12 +57,14 @@ export function Input({
           className={clsx(
             getFieldControlClassName(isModified),
             styles.control,
+            Boolean(startAdornment) && styles.controlWithStartAdornment,
             Boolean(endAdornment) && styles.controlWithAdornment,
           )}
           aria-describedby={describedBy}
           aria-invalid={ariaInvalid ?? Boolean(error)}
           {...inputProps}
         />
+        {startAdornment ? <div className={styles.startAdornment}>{startAdornment}</div> : null}
         {endAdornment ? <div className={styles.endAdornment}>{endAdornment}</div> : null}
       </div>
     </Field>

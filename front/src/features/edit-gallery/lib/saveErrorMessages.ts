@@ -44,3 +44,14 @@ export function getSaveMaterialsErrorMessage(error: unknown): string {
     fallback: "Не удалось сохранить материалы. Попробуйте ещё раз",
   });
 }
+
+export function getSaveColorsErrorMessage(error: unknown): string {
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      400: "Сервер не принял цвета. Проверьте их и попробуйте ещё раз",
+      // The colors were changed since this page loaded them, for example in another tab.
+      412: "Цвета уже изменили в другой вкладке",
+    },
+    fallback: "Не удалось сохранить цвета. Попробуйте ещё раз",
+  });
+}

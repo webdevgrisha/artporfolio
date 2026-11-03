@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type ReactNode } from "react";
 
 import { PlusIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
@@ -28,6 +28,8 @@ interface AddTitleFieldProps {
   max: number;
   onAdd: (title: string) => void;
   ref?: React.Ref<HTMLInputElement>;
+  /** Before the title, for example the swatch of the new color. */
+  startAdornment?: ReactNode;
 }
 
 /**
@@ -41,6 +43,7 @@ export function AddTitleField({
   max,
   onAdd,
   ref,
+  startAdornment,
 }: AddTitleFieldProps) {
   const [title, setTitle] = React.useState("");
   const [error, setError] = React.useState<string>();
@@ -77,6 +80,7 @@ export function AddTitleField({
         setTitle(event.target.value);
         setError(undefined);
       }}
+      startAdornment={startAdornment}
       onKeyDown={(event) => {
         // Enter adds the row instead of submitting the whole form.
         if (event.key === "Enter") {
