@@ -49,6 +49,16 @@ export class UnsupportedMediaTypeError extends HttpError {
   }
 }
 
+/** The resource does not take this method; `allow` lists the ones it takes, for the Allow header. */
+export class MethodNotAllowedError extends HttpError {
+  constructor(
+    readonly allow: readonly string[],
+    message = "The resource does not support this method",
+  ) {
+    super(405, message);
+  }
+}
+
 /** The request clashes with other stored data, such as a title another resource already has. */
 export class ConflictError extends HttpError {
   constructor(message = "The request conflicts with the current state") {

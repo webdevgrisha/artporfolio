@@ -21,7 +21,11 @@ vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/pages/service", () => pageService);
 
 import { pagesRouter } from "#modules/pages/routes";
-import { PreconditionFailedError, UnauthorizedError } from "#shared/http/errors";
+import {
+  MethodNotAllowedError,
+  PreconditionFailedError,
+  UnauthorizedError,
+} from "#shared/http/errors";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const hero = apiImage("painting.jpg");
@@ -176,6 +180,15 @@ describe("page routes", () => {
     expect(response.status).toBe(204);
     expect(response.headers.get("ETag")).toBe(savedEtag);
     expect(pageService.deletePageHero).toHaveBeenCalledWith("about", etag);
+  });
+
+  it("lists the allowed methods when the hero cannot be deleted", async () => {
+    pageService.deletePageHero.mockRejectedValue(new MethodNotAllowedError(["GET", "PUT"]));
+
+    const response = await sendHero("DELETE", "home", await ifMatchHeaders());
+
+    expect(response.status).toBe(405);
+    expect(response.headers.get("Allow")).toBe("GET, PUT");
   });
 
   it("returns 404 when deleting the hero of an unknown page", async () => {

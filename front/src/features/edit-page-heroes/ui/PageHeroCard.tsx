@@ -56,7 +56,7 @@ export function PageHeroCard({ field }: PageHeroCardProps) {
         isBusy={uploadHero.isPending || deleteHero.isPending}
         onPick={(file) => uploadHero.mutate({ etag: hero.etag, file })}
         onRejectionChange={setRejection}
-        onRemove={() => setIsDeleteConfirmOpen(true)}
+        onRemove={field.isRequired ? undefined : () => setIsDeleteConfirmOpen(true)}
       />
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}

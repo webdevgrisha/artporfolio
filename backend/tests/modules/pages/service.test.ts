@@ -238,6 +238,17 @@ describe("page service", () => {
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
+  it("keeps the hero of the home page: it can only be replaced", async () => {
+    storedHeroes.set("pages/home", storedHero);
+
+    await expect(deletePageHero("home", storedTag)).rejects.toMatchObject({
+      allow: ["GET", "PUT"],
+      status: 405,
+    });
+    expect(transaction.update).not.toHaveBeenCalled();
+    expect(storage.deleteFolder).not.toHaveBeenCalled();
+  });
+
   it("refuses to delete a hero replaced since it was read", async () => {
     storedHeroes.set("pages/about", { ...storedHero, version: "newer" });
 

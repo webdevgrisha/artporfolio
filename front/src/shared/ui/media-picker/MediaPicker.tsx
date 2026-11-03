@@ -39,7 +39,8 @@ interface MediaPickerProps {
    * message outdated. The owner shows it in `error` until the form is saved or reverted.
    */
   onRejectionChange: (message: string | undefined) => void;
-  onRemove: () => void;
+  /** Without it the file can only be replaced: there is no remove button. */
+  onRemove?: () => void;
   rules: FileRules;
 }
 
@@ -81,7 +82,7 @@ export function MediaPicker({
 
   function removeItem() {
     onRejectionChange(undefined);
-    onRemove();
+    onRemove?.();
     // The remove button disappears together with the file.
     selectButtonRef.current?.focus();
   }
@@ -108,11 +109,13 @@ export function MediaPicker({
                   <Spinner label="Сохранение" />
                 </span>
               ) : (
-                <Tooltip className={styles.removeTooltip} content={`Удалить ${item.name}`}>
-                  <IconButton label={`Удалить ${item.name}`} onClick={removeItem}>
-                    <TrashIcon className={styles.removeIcon} />
-                  </IconButton>
-                </Tooltip>
+                onRemove && (
+                  <Tooltip className={styles.removeTooltip} content={`Удалить ${item.name}`}>
+                    <IconButton label={`Удалить ${item.name}`} onClick={removeItem}>
+                      <TrashIcon className={styles.removeIcon} />
+                    </IconButton>
+                  </Tooltip>
+                )
               )}
             </div>
             <MediaThumbnailButton
