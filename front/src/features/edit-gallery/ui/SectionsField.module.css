@@ -19,9 +19,16 @@
 }
 
 /* The frame of the list, as in the mockup; its invalid state as in MediaFieldset.module.css. */
-/* The rows reach the sides of the frame, so the one under the pointer is highlighted whole. */
+/*
+ * The rows reach the sides of the frame, so the one under the pointer is highlighted whole. A long
+ * list scrolls inside the frame, so the fields after it stay close; the scroll stops at its ends
+ * instead of moving the page.
+ */
 .frame {
+  max-block-size: 24rem;
   padding-block: var(--space-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
 }
