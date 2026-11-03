@@ -6,14 +6,13 @@ import { type GallerySection, maxWorkProcessPhotos } from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
-import { MultiSelect } from "@/shared/ui/multi-select";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 import { PhotoListField } from "@/shared/ui/photo-list-field";
 import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 
 import { monthOptions, type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
-import { toSectionOptions } from "../model/workSections";
+import { SectionsField } from "./SectionsField";
 import styles from "./WorkFields.module.css";
 
 interface WorkFieldsProps {
@@ -36,13 +35,16 @@ export function WorkFields({
   sections,
 }: WorkFieldsProps) {
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
-  const { dirtyFields, errors, isSubmitted } = useFormState({ control });
+  const { defaultValues, dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
   // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
   // for a change, so a controller keeps the value in the form's state instead (see the colours).
   const { field: monthField } = useController({ control, name: "month" });
   const { field: sectionsField } = useController({ control, name: "sectionIds" });
-  const sectionOptions = React.useMemo(() => toSectionOptions(sections), [sections]);
+  const savedSectionIds = React.useMemo(
+    () => defaultValues?.sectionIds?.filter((id) => id !== undefined) ?? [],
+    [defaultValues],
+  );
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -75,15 +77,13 @@ export function WorkFields({
           isModified={Boolean(dirtyFields.description)}
           {...register("description")}
         />
-        <MultiSelect
-          label="Разделы"
-          hint="Начните вводить название. Работа в подразделе видна и в его разделе"
-          placeholder="Например: Пейзаж"
-          options={sectionOptions}
+        <SectionsField
+          sections={sections}
           value={sectionsField.value}
+          savedIds={savedSectionIds}
           disabled={isSaving}
           error={errors.sectionIds?.message}
-          isModified={Boolean(dirtyFields.sectionIds)}
+          inputRef={sectionsField.ref}
           onBlur={sectionsField.onBlur}
           onChange={sectionsField.onChange}
         />
