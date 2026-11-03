@@ -19,7 +19,11 @@ describe("contact links body", () => {
   });
 
   it("accepts empty links", () => {
-    expect(isValid({ email: "", instagram: "", linkedin: "", youtube: "" })).toBe(true);
+    expect(isValid({ ...links, instagram: "", linkedin: "", youtube: "" })).toBe(true);
+  });
+
+  it("needs an email", () => {
+    expect(isValid({ ...links, email: "  " })).toBe(false);
   });
 
   it("trims surrounding spaces", () => {

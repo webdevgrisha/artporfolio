@@ -14,9 +14,12 @@ function optionalContact(format: z.ZodType<string, string>) {
 // Unlike z.url(), rejects "javascript:" links, which would run code when a visitor clicks them.
 const webLink = optionalContact(z.httpUrl());
 
-/** All contact links. Every link is sent, empty when the site does not show it. */
+/**
+ * All contact links. Every link is sent, empty when the site does not show it; the email is
+ * required, so the Contacts page always has a way to write to the artist.
+ */
 export const contactLinksBodySchema = z.strictObject({
-  email: optionalContact(z.email()),
+  email: z.string().trim().max(maxLength).pipe(z.email()),
   instagram: webLink,
   linkedin: webLink,
   youtube: webLink,
