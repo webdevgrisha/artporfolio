@@ -1,6 +1,7 @@
 export { galleryColorsQuery, replaceGalleryColors } from "./api/galleryColors";
 export { galleryIntroQuery, replaceGalleryIntro } from "./api/galleryIntro";
 export { galleryMaterialsQuery, replaceGalleryMaterials } from "./api/galleryMaterials";
+export { galleryPalettesQuery, replaceGalleryPalettes } from "./api/galleryPalettes";
 export {
   createGallerySection,
   deleteGallerySection,
@@ -17,6 +18,11 @@ export {
   type GalleryMaterials,
   maxMaterials,
 } from "./model/galleryMaterials";
+export {
+  type GalleryPalette,
+  type GalleryPalettes,
+  maxPalettes,
+} from "./model/galleryPalettes";
 export {
   type GallerySection,
   maxSubsections,

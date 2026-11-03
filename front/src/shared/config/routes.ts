@@ -10,6 +10,7 @@ export const routes = {
   galleryColors: "/admin/gallery/colors",
   galleryIntro: "/admin/gallery/intro",
   galleryMaterials: "/admin/gallery/materials",
+  galleryPalettes: "/admin/gallery/palettes",
   gallerySectionNew: "/admin/gallery/sections/new",
   gallerySections: "/admin/gallery/sections",
   login: "/admin/login",

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { colorsFormSchema } from "@/features/edit-gallery/model/colorsFormSchema";
 import { materialsFormSchema } from "@/features/edit-gallery/model/materialsFormSchema";
+import { palettesFormSchema } from "@/features/edit-gallery/model/palettesFormSchema";
 import { sectionFormSchema } from "@/features/edit-gallery/model/sectionFormSchema";
 
 function row(title: string, index: number) {
@@ -77,6 +78,25 @@ describe("colors form", () => {
 
     expect(issuesOf(colorsFormSchema.safeParse({ colors }))).toEqual([
       { message: "Выберите цвет", path: ["colors", 0, "hex"] },
+    ]);
+  });
+});
+
+describe("palettes form", () => {
+  it("points at a palette used twice and at an empty title", () => {
+    const palettes = ["Пастельная", "", "пастельная "].map(row);
+
+    expect(issuesOf(palettesFormSchema.safeParse({ palettes }))).toEqual([
+      { message: "Введите название", path: ["palettes", 1, "title"] },
+      { message: "Такая палитра уже есть", path: ["palettes", 2, "title"] },
+    ]);
+  });
+
+  it("takes up to 30 palettes", () => {
+    const palettes = Array.from({ length: 31 }, (_, index) => row(String(index), index));
+
+    expect(issuesOf(palettesFormSchema.safeParse({ palettes }))).toEqual([
+      { message: "Не больше 30 палитр", path: ["palettes"] },
     ]);
   });
 });

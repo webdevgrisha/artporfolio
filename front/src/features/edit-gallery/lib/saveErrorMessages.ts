@@ -55,3 +55,14 @@ export function getSaveColorsErrorMessage(error: unknown): string {
     fallback: "Не удалось сохранить цвета. Попробуйте ещё раз",
   });
 }
+
+export function getSavePalettesErrorMessage(error: unknown): string {
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      400: "Сервер не принял палитры. Проверьте их и попробуйте ещё раз",
+      // The palettes were changed since this page loaded them, for example in another tab.
+      412: "Палитры уже изменили в другой вкладке",
+    },
+    fallback: "Не удалось сохранить палитры. Попробуйте ещё раз",
+  });
+}

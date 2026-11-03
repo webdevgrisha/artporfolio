@@ -4,6 +4,7 @@ import {
   galleryColorsQuery,
   galleryIntroQuery,
   galleryMaterialsQuery,
+  galleryPalettesQuery,
   gallerySectionQuery,
   gallerySectionsQuery,
 } from "@/entities/gallery";
@@ -38,6 +39,12 @@ export async function galleryMaterialsLoader() {
 
 export async function galleryColorsLoader() {
   await queryClient.fetchQuery({ ...galleryColorsQuery, staleTime: 0 });
+
+  return null;
+}
+
+export async function galleryPalettesLoader() {
+  await queryClient.fetchQuery({ ...galleryPalettesQuery, staleTime: 0 });
 
   return null;
 }
