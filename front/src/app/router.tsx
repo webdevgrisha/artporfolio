@@ -1,9 +1,12 @@
 import { createBrowserRouter, Navigate, type ShouldRevalidateFunctionArgs } from "react-router";
 
+import { requireSession } from "@/entities/user";
+import { logoutAction } from "@/features/logout";
 import { ErrorPage } from "@/pages/error";
 import { NotFoundPage } from "@/pages/not-found";
 import { adminHomePath, adminRouteId, routes } from "@/shared/config/routes";
 import { PageLoading } from "@/shared/ui/page-loading";
+import { AdminLayout, AdminLayoutSkeleton, AdminPageError } from "@/widgets/admin-layout";
 
 /**
  * A change of the search parameters alone, such as the search of a table, is a view of the same
@@ -25,7 +28,8 @@ export const router = createBrowserRouter([
       },
       {
         path: "/admin",
-        // Shown on the first load while the session is being checked.
+        // Shown on the first load of the login page while the session is being checked; an admin
+        // page shows the skeleton of its layout instead.
         HydrateFallback: PageLoading,
         children: [
           {
@@ -44,31 +48,24 @@ export const router = createBrowserRouter([
           },
           {
             path: routes.logout,
-            lazy: async () => ({ action: (await import("@/features/logout")).logoutAction }),
+            // In the main bundle with the layout, whose sidebar holds the logout button.
+            action: logoutAction,
           },
           {
             id: adminRouteId,
-            lazy: async () => {
-              const [{ AdminLayout }, { requireSession }] = await Promise.all([
-                import("@/widgets/admin-layout"),
-                import("@/entities/user"),
-              ]);
-
-              return {
-                Component: AdminLayout,
-                loader: requireSession,
-                // The session is checked once, on entering the admin, so moving between its pages
-                // waits for no extra request. A session that expires later is found by the next
-                // page load, which then sends the user to the login page (AdminPageError).
-                shouldRevalidate: () => false,
-              };
-            },
+            // Not lazy, as small as it is: the skeleton of the layout shows on the first load of an
+            // admin page while the session is checked, and the layout follows without loading.
+            Component: AdminLayout,
+            HydrateFallback: AdminLayoutSkeleton,
+            loader: requireSession,
+            // The session is checked once, on entering the admin, so moving between its pages
+            // waits for no extra request. A session that expires later is found by the next page
+            // load, which then sends the user to the login page (AdminPageError).
+            shouldRevalidate: () => false,
             children: [
               {
                 // A pathless route: a failed page is replaced inside the layout, the navigation stays.
-                lazy: async () => ({
-                  ErrorBoundary: (await import("@/widgets/admin-layout")).AdminPageError,
-                }),
+                ErrorBoundary: AdminPageError,
                 children: [
                   {
                     index: true,

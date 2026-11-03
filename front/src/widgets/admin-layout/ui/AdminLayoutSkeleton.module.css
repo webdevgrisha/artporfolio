@@ -1,0 +1,41 @@
+/* The sizes of the parts of the layout they stand for. */
+
+.avatar {
+  border-radius: 50%;
+}
+
+.name {
+  inline-size: 7rem;
+  block-size: 3rem;
+}
+
+/* As AdminNavigation: an item per page, as high as its links. */
+.navigation {
+  padding: 0;
+  list-style: none;
+}
+
+.navigationItem {
+  display: flex;
+  align-items: center;
+  block-size: 3.5rem;
+  padding-inline: var(--sidebar-gutter);
+}
+
+.navigationLink {
+  inline-size: 9rem;
+  block-size: 1.25rem;
+}
+
+.account {
+  inline-size: 16rem;
+  max-inline-size: 100%;
+  block-size: 1.25rem;
+  margin-inline-start: auto;
+}
+
+/* As the title of a page. */
+.title {
+  inline-size: 10rem;
+  block-size: 2rem;
+}
