@@ -3,7 +3,7 @@ import { STATUS_CODES } from "node:http";
 import type { ErrorRequestHandler, Response } from "express";
 import { error as logError } from "firebase-functions/logger";
 
-import { BadRequestError, HttpError, MethodNotAllowedError } from "#shared/http/errors";
+import { BadRequestError, HttpError } from "#shared/http/errors";
 import type { InvalidField, ProblemDetails } from "#shared/http/problem";
 
 interface Problem {
@@ -58,11 +58,6 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, nex
   }
 
   if (error instanceof HttpError) {
-    // RFC 9110 requires a 405 response to list the methods the resource takes.
-    if (error instanceof MethodNotAllowedError) {
-      response.set("Allow", error.allow.join(", "));
-    }
-
     const errors = error instanceof BadRequestError ? error.errors : [];
 
     sendProblem(response, { detail: error.message, errors, status: error.status });

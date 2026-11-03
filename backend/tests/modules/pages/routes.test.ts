@@ -11,7 +11,6 @@ const auth = vi.hoisted(() => ({
 }));
 
 const pageService = vi.hoisted(() => ({
-  deletePageHero: vi.fn(),
   getPageHero: vi.fn(),
   getPages: vi.fn(),
   savePageHero: vi.fn(),
@@ -21,11 +20,7 @@ vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/pages/service", () => pageService);
 
 import { pagesRouter } from "#modules/pages/routes";
-import {
-  MethodNotAllowedError,
-  PreconditionFailedError,
-  UnauthorizedError,
-} from "#shared/http/errors";
+import { PreconditionFailedError, UnauthorizedError } from "#shared/http/errors";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const hero = apiImage("painting.jpg");
@@ -67,7 +62,6 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  pageService.deletePageHero.mockResolvedValue(savedEtag);
   pageService.getPages.mockResolvedValue(pages);
   pageService.getPageHero.mockResolvedValue({ data: hero, etag });
   pageService.savePageHero.mockResolvedValue({ created: false, data: hero, etag: savedEtag });
@@ -98,21 +92,21 @@ describe("page routes", () => {
     expect(response.status).toBe(404);
   });
 
-  it.each(["PUT", "DELETE"])("requires the ETag of the hero for %s", async (method) => {
+  it("requires the ETag of the hero", async () => {
     const response = await sendHero(
-      method,
+      "PUT",
       "about",
       { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
-      method === "PUT" ? { uploadId } : undefined,
+      { uploadId },
     );
 
     expect(response.status).toBe(428);
   });
 
   it("refuses a hero changed since it was read", async () => {
-    pageService.deletePageHero.mockRejectedValue(new PreconditionFailedError());
+    pageService.savePageHero.mockRejectedValue(new PreconditionFailedError());
 
-    const response = await sendHero("DELETE", "about", await ifMatchHeaders());
+    const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(412);
   });
@@ -174,27 +168,9 @@ describe("page routes", () => {
     expect(pageService.savePageHero).not.toHaveBeenCalled();
   });
 
-  it("deletes the hero of a page", async () => {
+  it("has no DELETE: a hero can be replaced, not removed", async () => {
     const response = await sendHero("DELETE", "about", await ifMatchHeaders());
 
-    expect(response.status).toBe(204);
-    expect(response.headers.get("ETag")).toBe(savedEtag);
-    expect(pageService.deletePageHero).toHaveBeenCalledWith("about", etag);
-  });
-
-  it("lists the allowed methods when the hero cannot be deleted", async () => {
-    pageService.deletePageHero.mockRejectedValue(new MethodNotAllowedError(["GET", "PUT"]));
-
-    const response = await sendHero("DELETE", "home", await ifMatchHeaders());
-
-    expect(response.status).toBe(405);
-    expect(response.headers.get("Allow")).toBe("GET, PUT");
-  });
-
-  it("returns 404 when deleting the hero of an unknown page", async () => {
-    const response = await sendHero("DELETE", "contact", await adminHeaders(server.baseUrl));
-
     expect(response.status).toBe(404);
-    expect(pageService.deletePageHero).not.toHaveBeenCalled();
   });
 });

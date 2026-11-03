@@ -17,12 +17,3 @@ export function getSaveHeroErrorMessage(error: unknown, pageLabel: string): stri
     fallback: `Не удалось сохранить фото страницы «${pageLabel}». Попробуйте ещё раз`,
   });
 }
-
-export function getDeleteHeroErrorMessage(error: unknown, pageLabel: string): string {
-  return getSaveErrorMessage(error, {
-    byStatus: {
-      412: `Фото страницы «${pageLabel}» уже изменили в другой вкладке. Проверьте его и повторите`,
-    },
-    fallback: `Не удалось удалить фото страницы «${pageLabel}». Попробуйте ещё раз`,
-  });
-}

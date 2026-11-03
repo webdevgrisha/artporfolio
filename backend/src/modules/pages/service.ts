@@ -1,15 +1,7 @@
-import { type Page, type PageId, pageIds, requiredHeroPages } from "#modules/pages/schema";
+import { type Page, type PageId, pageIds } from "#modules/pages/schema";
 import { firestore } from "#shared/firebase/firestore";
-import { MethodNotAllowedError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
-import {
-  clearSlot,
-  fillSlot,
-  getSlot,
-  type ImageSlot,
-  readSlot,
-  type SlotField,
-} from "#shared/images/slot";
+import { fillSlot, getSlot, type ImageSlot, readSlot, type SlotField } from "#shared/images/slot";
 import { type Image, type StoredImage, storedImageSchema, toImage } from "#shared/images/storage";
 
 /** A hero is the image alone: a background under the page title, so it has no alt text. */
@@ -62,16 +54,4 @@ export async function savePageHero(
   );
 
   return { created, data: toImage(data), etag };
-}
-
-/**
- * Removes the hero and its files; returns the entity tag of the empty hero. The hero of a page in
- * `requiredHeroPages` can only be replaced.
- */
-export function deletePageHero(page: PageId, ifMatch: string): Promise<string> {
-  if (requiredHeroPages.includes(page)) {
-    return Promise.reject(new MethodNotAllowedError(["GET", "PUT"]));
-  }
-
-  return clearSlot(heroSlot(page), ifMatch);
 }

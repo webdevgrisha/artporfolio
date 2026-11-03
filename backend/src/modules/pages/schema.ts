@@ -22,9 +22,6 @@ const pageIdSchema = pagesSchema.keyof();
 
 export const pageIds = pageIdSchema.options;
 
-/** Pages the site does not show without a hero: their hero can be replaced, not removed. */
-export const requiredHeroPages: readonly PageId[] = ["home"];
-
 /** The path parameters of a request about one page. */
 export const pageParamsSchema = z.object({
   page: pageIdSchema,

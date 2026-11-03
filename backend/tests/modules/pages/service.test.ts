@@ -54,7 +54,7 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 }));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
-import { deletePageHero, getPageHero, getPages, savePageHero } from "#modules/pages/service";
+import { getPageHero, getPages, savePageHero } from "#modules/pages/service";
 import { PreconditionFailedError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
 
@@ -220,41 +220,5 @@ describe("page service", () => {
 
     expect(transaction.set).not.toHaveBeenCalled();
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/new");
-  });
-
-  it("deletes the hero and its files", async () => {
-    storedHeroes.set("pages/about", storedHero);
-
-    await expect(deletePageHero("about", storedTag)).resolves.toBe(emptyTag);
-
-    expect(transaction.update).toHaveBeenCalledWith(aboutDocument, { hero: expect.anything() });
-    expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/old");
-  });
-
-  it("does nothing when deleting a missing hero", async () => {
-    await expect(deletePageHero("about", emptyTag)).resolves.toBe(emptyTag);
-
-    expect(transaction.update).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
-  });
-
-  it("keeps the hero of the home page: it can only be replaced", async () => {
-    storedHeroes.set("pages/home", storedHero);
-
-    await expect(deletePageHero("home", storedTag)).rejects.toMatchObject({
-      allow: ["GET", "PUT"],
-      status: 405,
-    });
-    expect(transaction.update).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
-  });
-
-  it("refuses to delete a hero replaced since it was read", async () => {
-    storedHeroes.set("pages/about", { ...storedHero, version: "newer" });
-
-    await expect(deletePageHero("about", storedTag)).rejects.toBeInstanceOf(
-      PreconditionFailedError,
-    );
-    expect(transaction.update).not.toHaveBeenCalled();
   });
 });

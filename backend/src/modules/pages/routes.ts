@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { requireAuth } from "#modules/auth/middleware";
-import { deleteHero, putHero, readHero, readPages } from "#modules/pages/controller";
+import { putHero, readHero, readPages } from "#modules/pages/controller";
 import { heroBodySchema, pageParamsSchema } from "#modules/pages/schema";
 import { requireContentType } from "#shared/middleware/content-type";
 import { requireCsrfToken } from "#shared/middleware/csrf";
@@ -11,7 +11,8 @@ import { validateBody, validateParams } from "#shared/middleware/validation";
 export const pagesRouter = Router();
 
 // Pages are public: the site shows their heroes to every visitor. A change applies only to the
-// hero the client read: it sends its ETag in If-Match.
+// hero the client read: it sends its ETag in If-Match. A hero can be replaced, never removed: the
+// site does not show a page without one.
 pagesRouter.get("/", readPages);
 pagesRouter.get("/:page/hero", validateParams(pageParamsSchema), readHero);
 
@@ -24,12 +25,4 @@ pagesRouter.put(
   requireIfMatch,
   validateBody(heroBodySchema),
   putHero,
-);
-pagesRouter.delete(
-  "/:page/hero",
-  requireAuth,
-  requireCsrfToken,
-  validateParams(pageParamsSchema),
-  requireIfMatch,
-  deleteHero,
 );

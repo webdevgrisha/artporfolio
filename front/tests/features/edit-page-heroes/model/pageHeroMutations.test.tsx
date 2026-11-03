@@ -5,12 +5,9 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { pageHeroQuery } from "@/entities/site-page";
-import {
-  useDeletePageHero,
-  useUploadPageHero,
-} from "@/features/edit-page-heroes/model/pageHeroMutations";
+import { useUploadPageHero } from "@/features/edit-page-heroes/model/pageHeroMutations";
 
-import { csrfHandler, noContent, problem, uploadsHandler } from "../../../support/handlers";
+import { csrfHandler, problem, uploadsHandler } from "../../../support/handlers";
 import { apiImage, imageFile } from "../../../support/images";
 import { recordRequests, server } from "../../../support/server";
 
@@ -30,7 +27,6 @@ function setUp() {
   }
 
   return {
-    deleteHero: renderHook(() => useDeletePageHero(home), { wrapper }).result.current,
     queryClient,
     uploadHero: renderHook(() => useUploadPageHero(home), { wrapper }).result.current,
   };
@@ -57,7 +53,6 @@ beforeEach(() => {
     mswHttp.put("/api/pages/home/hero", () =>
       HttpResponse.json({ hero: apiImage("new.jpg") }, { headers: { ETag: savedEtag } }),
     ),
-    mswHttp.delete("/api/pages/home/hero", () => noContent({ ETag: savedEtag })),
   );
 });
 
@@ -87,29 +82,6 @@ describe("useUploadPageHero", () => {
     const { queryClient, uploadHero } = setUp();
 
     await expect(uploadHero.mutateAsync({ etag, file: imageFile() })).rejects.toThrow();
-
-    expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true);
-  });
-});
-
-describe("useDeletePageHero", () => {
-  it("puts the empty hero with its ETag into the cache without loading it again", async () => {
-    const { deleteHero, queryClient } = setUp();
-    const requests = recordRequests();
-    const ifMatch = recordIfMatch();
-
-    await deleteHero.mutateAsync({ etag });
-
-    expect(requests).toEqual(["GET /api/auth/csrf", "DELETE /api/pages/home/hero"]);
-    expect(ifMatch).toEqual([etag]);
-    expect(queryClient.getQueryData(queryKey)).toEqual({ data: null, etag: savedEtag });
-  });
-
-  it("invalidates the hero after a failure, as it may be deleted anyway", async () => {
-    server.use(mswHttp.delete("/api/pages/home/hero", () => problem(502)));
-    const { deleteHero, queryClient } = setUp();
-
-    await expect(deleteHero.mutateAsync({ etag })).rejects.toThrow();
 
     expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true);
   });
