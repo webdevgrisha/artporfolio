@@ -39,6 +39,8 @@ export function getSaveProjectErrorMessage(error: unknown): string {
     byStatus: {
       400: "Сервер не принял проект. Проверьте поля и попробуйте ещё раз",
       404: "Проект уже удалён",
+      // Another project has this title, whatever the case.
+      409: "Проект с таким названием уже есть",
       // The project was changed since this page loaded it, for example in another tab.
       412: "Проект уже изменили в другой вкладке",
       422: "Фото на сервере изменились. Обновите страницу и внесите изменения заново",

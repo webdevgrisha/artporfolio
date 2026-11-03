@@ -8,6 +8,7 @@ import {
 } from "#modules/projects/schema";
 import { firestore } from "#shared/firebase/firestore";
 import {
+  ConflictError,
   NotFoundError,
   PreconditionFailedError,
   UnprocessableContentError,
@@ -15,6 +16,7 @@ import {
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { preparePhotoList, type StoredListPhoto, toListPhoto } from "#shared/images/photo-list";
 import { deleteImageFilesOrWarn } from "#shared/images/storage";
+import { titleKey } from "#shared/text/titles";
 
 /** A saved project with the id it is known by. */
 export interface SavedProject extends Tagged<Project> {
@@ -59,6 +61,20 @@ function editedContent({ description, link, photos, title }: StoredProject) {
   return { description, link, photos, title };
 }
 
+/**
+ * Rejects with 409 a title that another project has, whatever the case: the visitor tells the
+ * projects apart by their titles.
+ */
+function assertTitleIsFree(id: string, title: string, { docs }: QuerySnapshot): void {
+  const isTaken = docs.some(
+    (snapshot) => snapshot.id !== id && titleKey(readProject(snapshot).title) === titleKey(title),
+  );
+
+  if (isTaken) {
+    throw new ConflictError("Another project has this title");
+  }
+}
+
 /** The stored project as the API returns it, with download URLs and ISO 8601 dates. */
 function toProject(
   id: string,
@@ -96,7 +112,8 @@ export async function getProject(id: string): Promise<SavedProject> {
 
 /**
  * Creates the project `id`, which the client chose, at the top of the list; rejects it with 412
- * once a project has that id, such as one an earlier try of the same request created. The photo
+ * once a project has that id, such as one an earlier try of the same request created, and with 409
+ * when another project has its title. The photo
  * files are copied from their uploads first; if saving fails, the copies are removed. Every photo
  * of a new project is new: a photo `id` refers to nothing, so it is rejected with 422.
  */
@@ -110,8 +127,10 @@ export async function createProject(id: string, body: ProjectBody): Promise<Save
         throw new PreconditionFailedError("The project already exists");
       }
 
-      const { docs } = await transaction.get(orderedProjects().limit(1));
-      const first = docs[0];
+      const saved = await transaction.get(orderedProjects());
+      assertTitleIsFree(id, body.title, saved);
+
+      const first = saved.docs[0];
       const position = first ? readProject(first).position - 1 : 0;
       const now = Timestamp.now();
       const created: StoredProject = {
@@ -156,6 +175,7 @@ export async function replaceProject(
       const current = readProject(await transaction.get(document));
 
       assertIfMatch(ifMatch, editedContent(current));
+      assertTitleIsFree(id, body.title, await transaction.get(orderedProjects()));
 
       const next: StoredProject = {
         ...current,

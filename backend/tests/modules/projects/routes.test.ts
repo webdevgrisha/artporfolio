@@ -25,6 +25,7 @@ vi.mock("#modules/projects/service", () => service);
 
 import { projectsRouter } from "#modules/projects/routes";
 import {
+  ConflictError,
   NotFoundError,
   PreconditionFailedError,
   UnauthorizedError,
@@ -138,12 +139,15 @@ describe("creating a project", () => {
     expect(service.replaceProject).not.toHaveBeenCalled();
   });
 
-  it("returns 412 for a project that exists, such as one an earlier try created", async () => {
-    service.createProject.mockRejectedValue(new PreconditionFailedError());
+  it.each([
+    [new PreconditionFailedError(), 412],
+    [new ConflictError(), 409],
+  ])("passes on %o as %i when creating", async (error, status) => {
+    service.createProject.mockRejectedValue(error);
 
     const response = await send("PUT", `/${id}`, await createHeaders(), body);
 
-    expect(response.status).toBe(412);
+    expect(response.status).toBe(status);
   });
 
   it("reports every invalid field", async () => {
@@ -196,6 +200,7 @@ describe("replacing a project", () => {
     [new PreconditionFailedError(), 412],
     [new NotFoundError(), 404],
     [new UnprocessableContentError(), 422],
+    [new ConflictError(), 409],
   ])("passes on %o as %i", async (error, status) => {
     service.replaceProject.mockRejectedValue(error);
 

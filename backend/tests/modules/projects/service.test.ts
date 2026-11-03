@@ -72,6 +72,7 @@ import {
   replaceProjectsOrder,
 } from "#modules/projects/service";
 import {
+  ConflictError,
   NotFoundError,
   PreconditionFailedError,
   UnprocessableContentError,
@@ -198,8 +199,10 @@ describe("getProject", () => {
 });
 
 describe("createProject", () => {
+  const newProject = { ...body, title: "Жираф" };
+
   it("puts the new project at the top of the list, with its photos in its own folder", async () => {
-    const { data, etag } = await createProject(newId, body);
+    const { data, etag } = await createProject(newId, newProject);
 
     expect((await getProjectsOrder()).data).toEqual([newId, elephantId, tigerId]);
     expect(uploads.publishUpload).toHaveBeenCalledWith(
@@ -207,14 +210,14 @@ describe("createProject", () => {
       `projects/${newId}/photos/${String(data.photos[0]?.id)}`,
       minPhotoSize,
     );
-    expect(data).toMatchObject({ description: body.description, link: body.link, title: "Слон" });
+    expect(data).toMatchObject({ description: body.description, link: body.link, title: "Жираф" });
     expect(etag).toBe(await readTag(newId));
     // The upload stays for a save repeated after a lost response.
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
   it("dates the new project by the server clock", async () => {
-    const { data } = await createProject(newId, body);
+    const { data } = await createProject(newId, newProject);
 
     expect(data.createdAt).toBe(data.updatedAt);
     expect(Date.parse(data.createdAt)).toBeGreaterThan(seededAt.toMillis());
@@ -223,7 +226,7 @@ describe("createProject", () => {
   it("creates the first project at position 0", async () => {
     projects.clear();
 
-    await createProject(newId, body);
+    await createProject(newId, newProject);
 
     expect(projects.get(newId)?.position).toBe(0);
   });
@@ -241,10 +244,21 @@ describe("createProject", () => {
 
   it("returns 422 for a photo id, which no new project has, and removes the copies", async () => {
     await expect(
-      createProject(newId, { ...body, photos: [{ alt: "Старое", id: photoId, uploadId }] }),
+      createProject(newId, { ...newProject, photos: [{ alt: "Старое", id: photoId, uploadId }] }),
     ).rejects.toBeInstanceOf(UnprocessableContentError);
 
     expect(projects.size).toBe(2);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(
+      expect.stringMatching(new RegExp(`^projects/${newId}/photos/.+/new-version$`)),
+    );
+  });
+
+  it("returns 409 for a title another project has, in any case, and removes the copies", async () => {
+    await expect(createProject(newId, { ...newProject, title: "тигр" })).rejects.toBeInstanceOf(
+      ConflictError,
+    );
+
+    expect(projects.has(newId)).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`^projects/${newId}/photos/.+/new-version$`)),
     );
@@ -259,6 +273,25 @@ describe("replaceProject", () => {
     expect(data.photos.map((photo) => photo.alt)).toEqual(["Новое фото"]);
     expect(projects.get(elephantId)?.position).toBe(0);
     expect(storage.deleteFolder).toHaveBeenCalledWith(`projects/${elephantId}/photos/${photoId}`);
+  });
+
+  it("keeps its own title, in another case too", async () => {
+    const { data } = await replaceProject(
+      elephantId,
+      { ...body, title: "СЛОН" },
+      await readTag(elephantId),
+    );
+
+    expect(data.title).toBe("СЛОН");
+  });
+
+  it("returns 409 for a title another project has, and keeps the project", async () => {
+    const saved = projects.get(elephantId);
+
+    await expect(
+      replaceProject(elephantId, { ...body, title: "Тигр" }, await readTag(elephantId)),
+    ).rejects.toBeInstanceOf(ConflictError);
+    expect(projects.get(elephantId)).toBe(saved);
   });
 
   it("keeps the creation date and moves the update date", async () => {
