@@ -3,7 +3,12 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import type { GalleryColor, GalleryMaterial, GallerySection } from "@/entities/gallery";
+import type {
+  GalleryColor,
+  GalleryMaterial,
+  GalleryPalette,
+  GallerySection,
+} from "@/entities/gallery";
 import { galleryWorkPath } from "@/shared/config/routes";
 import { EditForm } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
@@ -19,10 +24,18 @@ interface CreateWorkFormProps {
   materials: readonly GalleryMaterial[];
   /** The colors of the gallery, to choose from. */
   colors: readonly GalleryColor[];
+  /** The palettes of the gallery, to choose from. */
+  palettes: readonly GalleryPalette[];
 }
 
 /** A new work; once it is created, its edit page opens in place of this one. */
-export function CreateWorkForm({ className, colors, materials, sections }: CreateWorkFormProps) {
+export function CreateWorkForm({
+  className,
+  colors,
+  materials,
+  palettes,
+  sections,
+}: CreateWorkFormProps) {
   const navigate = useNavigate();
   const allowNextNavigation = useAllowNextNavigation();
   // Every try of this form creates the same work, so a retry after a lost response never creates
@@ -75,6 +88,7 @@ export function CreateWorkForm({ className, colors, materials, sections }: Creat
           sections={sections}
           materials={materials}
           colors={colors}
+          palettes={palettes}
         />
       </EditForm>
     </FormProvider>

@@ -4,6 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import {
   type GalleryColor,
   type GalleryMaterial,
+  type GalleryPalette,
   type GallerySection,
   type GalleryWork,
   galleryWorkQuery,
@@ -24,9 +25,18 @@ interface EditWorkFormProps {
   materials: readonly GalleryMaterial[];
   /** The colors of the gallery, to choose from. */
   colors: readonly GalleryColor[];
+  /** The palettes of the gallery, to choose from. */
+  palettes: readonly GalleryPalette[];
 }
 
-export function EditWorkForm({ className, colors, materials, sections, work }: EditWorkFormProps) {
+export function EditWorkForm({
+  className,
+  colors,
+  materials,
+  palettes,
+  sections,
+  work,
+}: EditWorkFormProps) {
   const form = useForm<WorkFormValues>({
     defaultValues: toWorkFormValues(work.data),
     resolver: zodResolver(workFormSchema),
@@ -53,6 +63,7 @@ export function EditWorkForm({ className, colors, materials, sections, work }: E
           sections={sections}
           materials={materials}
           colors={colors}
+          palettes={palettes}
         />
       </EditForm>
     </FormProvider>

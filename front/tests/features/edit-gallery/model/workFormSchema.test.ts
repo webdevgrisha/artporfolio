@@ -22,6 +22,7 @@ const work = {
   sectionIds: ["section-1"],
   materialIds: ["material-1"],
   colorIds: ["color-1"],
+  paletteIds: ["palette-1"],
   photoAlt: "Слон на закате",
   title: "Слон",
   width: "50",
@@ -29,7 +30,7 @@ const work = {
 };
 
 describe("workFormSchema", () => {
-  it("needs a title, a description, a size, a date, a photo, a section, a material and a color", () => {
+  it("needs every field but the process photos", () => {
     expect(fieldErrors(workFormSchema, work)).toEqual({});
     expect(fieldErrors(workFormSchema, emptyWorkFormValues)).toEqual({
       description: ["Введите описание"],
@@ -37,6 +38,7 @@ describe("workFormSchema", () => {
       colorIds: ["Выберите хотя бы один цвет"],
       materialIds: ["Выберите хотя бы один материал"],
       month: ["Выберите месяц"],
+      paletteIds: ["Выберите хотя бы одну палитру"],
       photo: ["Выберите фото"],
       sectionIds: ["Выберите хотя бы один раздел"],
       title: ["Введите название"],
@@ -143,6 +145,17 @@ describe("the colors in the form", () => {
   });
 });
 
+describe("the palettes in the form", () => {
+  it("takes up to five palettes", () => {
+    const ids = (count: number) => Array.from({ length: count }, (_, index) => `p${String(index)}`);
+
+    expect(fieldErrors(workFormSchema, { ...work, paletteIds: ids(5) })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...work, paletteIds: ids(6) })).toEqual({
+      paletteIds: ["Не больше 5 палитр"],
+    });
+  });
+});
+
 describe("the size in the form", () => {
   it("shows a saved size with a comma and reads it back as numbers", () => {
     const saved = {
@@ -153,6 +166,7 @@ describe("the size in the form", () => {
       sectionIds: [],
       materialIds: [],
       colorIds: [],
+      paletteIds: [],
       size: { height: 27.9, width: 21.6 },
       title: "Стрекоза",
       year: 2025,

@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   galleryColorsQuery,
   galleryMaterialsQuery,
+  galleryPalettesQuery,
   gallerySectionsQuery,
 } from "@/entities/gallery";
 import { CreateWorkForm } from "@/features/edit-gallery";
@@ -24,6 +25,7 @@ export function NewWorkPage() {
             <FieldSkeleton />
             <FieldSkeleton />
             <FieldSkeleton />
+            <FieldSkeleton />
             <MediaSkeleton />
             <MediaSkeleton />
           </FormSkeleton>
@@ -40,6 +42,7 @@ function NewWork() {
   const { data: sections } = useSuspenseQuery(gallerySectionsQuery);
   const { data: materials } = useSuspenseQuery(galleryMaterialsQuery);
   const { data: colors } = useSuspenseQuery(galleryColorsQuery);
+  const { data: palettes } = useSuspenseQuery(galleryPalettesQuery);
 
   return (
     <CreateWorkForm
@@ -47,6 +50,7 @@ function NewWork() {
       sections={sections}
       materials={materials.data.materials}
       colors={colors.data.colors}
+      palettes={palettes.data.palettes}
     />
   );
 }

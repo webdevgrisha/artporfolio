@@ -28,6 +28,8 @@ export interface GalleryWorkBody {
   materialIds: readonly string[];
   /** The colors a visitor finds the work by, at least one. */
   colorIds: readonly string[];
+  /** The coloring of the work as a whole, at least one palette. */
+  paletteIds: readonly string[];
 }
 
 interface CreateGalleryWorkParams {

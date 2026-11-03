@@ -41,6 +41,7 @@ export {
   type GalleryWork,
   maxWorkColors,
   maxWorkMaterials,
+  maxWorkPalettes,
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSide,

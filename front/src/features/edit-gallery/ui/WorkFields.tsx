@@ -5,9 +5,11 @@ import { useController, useFormContext, useFormState, useWatch } from "react-hoo
 import {
   type GalleryColor,
   type GalleryMaterial,
+  type GalleryPalette,
   type GallerySection,
   maxWorkColors,
   maxWorkMaterials,
+  maxWorkPalettes,
   maxWorkProcessPhotos,
 } from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
@@ -38,6 +40,8 @@ interface WorkFieldsProps {
   materials: readonly GalleryMaterial[];
   /** The colors of the gallery, sorted by title, to choose from. */
   colors: readonly GalleryColor[];
+  /** The palettes of the gallery, sorted by title, to choose from. */
+  palettes: readonly GalleryPalette[];
 }
 
 /** The fields of a work form; they read the form from its context. */
@@ -46,6 +50,7 @@ export function WorkFields({
   colors,
   isSaving,
   materials,
+  palettes,
   savedPhoto,
   savedProcessPhotos,
   sections,
@@ -61,6 +66,7 @@ export function WorkFields({
   const { field: sectionsField } = useController({ control, name: "sectionIds" });
   const { field: materialsField } = useController({ control, name: "materialIds" });
   const { field: colorsField } = useController({ control, name: "colorIds" });
+  const { field: palettesField } = useController({ control, name: "paletteIds" });
   const widthField = register("width");
   const heightField = register("height");
   // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
@@ -81,6 +87,7 @@ export function WorkFields({
       })),
     [colors],
   );
+  const paletteOptions = React.useMemo(() => toTitleOptions(palettes), [palettes]);
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -148,6 +155,19 @@ export function WorkFields({
           inputRef={colorsField.ref}
           onBlur={colorsField.onBlur}
           onChange={colorsField.onChange}
+        />
+        <MultiSelect
+          label="Палитры"
+          hint={`До ${String(maxWorkPalettes)}. Как работа окрашена в целом`}
+          placeholder="Например: пастельная"
+          options={paletteOptions}
+          value={palettesField.value}
+          disabled={isSaving}
+          error={errors.paletteIds?.message}
+          isModified={Boolean(dirtyFields.paletteIds)}
+          inputRef={palettesField.ref}
+          onBlur={palettesField.onBlur}
+          onChange={palettesField.onChange}
         />
         <div className={styles.size}>
           <Input

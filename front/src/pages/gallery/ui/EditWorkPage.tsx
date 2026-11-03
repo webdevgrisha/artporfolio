@@ -4,6 +4,7 @@ import { useParams } from "react-router";
 import {
   galleryColorsQuery,
   galleryMaterialsQuery,
+  galleryPalettesQuery,
   gallerySectionsQuery,
   galleryWorkQuery,
 } from "@/entities/gallery";
@@ -31,6 +32,7 @@ export function EditWorkPage() {
             <FieldSkeleton />
             <FieldSkeleton />
             <FieldSkeleton />
+            <FieldSkeleton />
             <MediaSkeleton />
             <MediaSkeleton />
           </FormSkeleton>
@@ -52,6 +54,7 @@ function EditWork({ id }: EditWorkProps) {
   const { data: sections } = useSuspenseQuery(gallerySectionsQuery);
   const { data: materials } = useSuspenseQuery(galleryMaterialsQuery);
   const { data: colors } = useSuspenseQuery(galleryColorsQuery);
+  const { data: palettes } = useSuspenseQuery(galleryPalettesQuery);
 
   return (
     <EditWorkForm
@@ -60,6 +63,7 @@ function EditWork({ id }: EditWorkProps) {
       sections={sections}
       materials={materials.data.materials}
       colors={colors.data.colors}
+      palettes={palettes.data.palettes}
     />
   );
 }

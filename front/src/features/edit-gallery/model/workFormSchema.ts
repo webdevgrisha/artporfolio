@@ -4,6 +4,7 @@ import {
   type GalleryWork,
   maxWorkColors,
   maxWorkMaterials,
+  maxWorkPalettes,
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSide,
@@ -119,6 +120,11 @@ export const workFormSchema = z
       .array(z.string())
       .min(1, "Выберите хотя бы один цвет")
       .max(maxWorkColors, `Не больше ${String(maxWorkColors)} цветов`),
+    /** The palettes, by id, in the order they were chosen. */
+    paletteIds: z
+      .array(z.string())
+      .min(1, "Выберите хотя бы одну палитру")
+      .max(maxWorkPalettes, `Не больше ${String(maxWorkPalettes)} палитр`),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)
@@ -139,6 +145,7 @@ export const emptyWorkFormValues: WorkFormValues = {
   sectionIds: [],
   materialIds: [],
   colorIds: [],
+  paletteIds: [],
 };
 
 /** The values of a work as stored on the server. */
@@ -147,6 +154,7 @@ export function toWorkFormValues({
   description,
   materialIds,
   month,
+  paletteIds,
   photo,
   processPhotos,
   sectionIds,
@@ -166,6 +174,7 @@ export function toWorkFormValues({
     sectionIds,
     materialIds,
     colorIds,
+    paletteIds,
   };
 }
 
