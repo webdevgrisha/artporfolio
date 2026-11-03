@@ -27,6 +27,8 @@ export const galleryWorkSchema = z.object({
   size: workSizeSchema,
   /** The year the work was finished. */
   year: z.number(),
+  /** The month the work was finished, 1 for January. */
+  month: z.number(),
   photo: photoSchema,
   /** How the work was made, in the order the site shows them. */
   processPhotos: z.array(listPhotoSchema),
@@ -44,6 +46,6 @@ export const galleryWorkResponseSchema = z.object({
 });
 
 export const galleryWorksResponseSchema = z.object({
-  /** In the order the site shows them: the latest year first. */
+  /** In the order the site shows them: the latest first. */
   works: z.array(galleryWorkSchema),
 });

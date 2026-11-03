@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import type { GalleryWork } from "@/entities/gallery";
 import {
   emptyWorkFormValues,
+  formatWorkDate,
   formatWorkSize,
+  monthOptions,
   toWorkFormValues,
   toWorkSize,
   workFormSchema,
@@ -15,6 +17,7 @@ const work = {
   ...emptyWorkFormValues,
   description: "Масло, холст.",
   height: "70",
+  month: "3",
   photo: new File([""], "elephant.png"),
   photoAlt: "Слон на закате",
   title: "Слон",
@@ -28,6 +31,7 @@ describe("workFormSchema", () => {
     expect(fieldErrors(workFormSchema, emptyWorkFormValues)).toEqual({
       description: ["Введите описание"],
       height: ["Введите размер"],
+      month: ["Выберите месяц"],
       photo: ["Выберите фото"],
       title: ["Введите название"],
       width: ["Введите размер"],
@@ -83,6 +87,20 @@ describe("workFormSchema", () => {
     });
   });
 
+  it("takes this month, but not a month to come", () => {
+    const now = new Date();
+    const year = String(now.getFullYear());
+    const month = now.getMonth() + 1;
+
+    expect(fieldErrors(workFormSchema, { ...work, month: String(month), year })).toEqual({});
+
+    if (month < 12) {
+      expect(fieldErrors(workFormSchema, { ...work, month: String(month + 1), year })).toEqual({
+        month: ["Этот месяц ещё не наступил"],
+      });
+    }
+  });
+
   it("limits the texts", () => {
     expect(
       fieldErrors(workFormSchema, {
@@ -101,6 +119,7 @@ describe("the size in the form", () => {
   it("shows a saved size with a comma and reads it back as numbers", () => {
     const saved = {
       description: "",
+      month: 3,
       photo: { alt: "Стрекоза" },
       processPhotos: [],
       size: { height: 27.9, width: 21.6 },
@@ -117,5 +136,13 @@ describe("the size in the form", () => {
 describe("formatWorkSize", () => {
   it("shows the width first, in centimetres with a comma", () => {
     expect(formatWorkSize({ height: 42, width: 29.7 })).toBe("29,7 × 42 см");
+  });
+});
+
+describe("the date of a work", () => {
+  it("names the months for the list and the table", () => {
+    expect(monthOptions[0]).toEqual({ label: "Январь", value: "1" });
+    expect(monthOptions[11]).toEqual({ label: "Декабрь", value: "12" });
+    expect(formatWorkDate({ month: 3, year: 2024 })).toBe("март 2024");
   });
 });

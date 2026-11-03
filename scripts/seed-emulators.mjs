@@ -571,6 +571,8 @@ async function seedGallery(api) {
       description: `${work.title}. Работа из серии о животных.`,
       size: { width, height },
       year: work.year,
+      // Spread over the year, so works of one year have different months.
+      month: (index % 12) + 1,
       photo: { alt: work.title, uploadId },
       processPhotos,
     });

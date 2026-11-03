@@ -23,6 +23,7 @@ const values = () => ({
   title: "Стрекоза",
   width: "21,6",
   year: "2025",
+  month: "4",
 });
 const savedEtag = '"saved"';
 
@@ -48,6 +49,7 @@ function apiWork(title: string): GalleryWork {
     title,
     updatedAt: "2026-01-15T10:00:00.000Z",
     year: 2025,
+    month: 4,
   };
 }
 
@@ -106,6 +108,7 @@ describe("useCreateWork", () => {
           size: { height: 27.9, width: 21.6 },
           title: "Стрекоза",
           year: 2025,
+          month: 4,
         },
         ifMatch: null,
         ifNoneMatch: "*",

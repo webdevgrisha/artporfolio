@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useFormContext, useFormState, useWatch } from "react-hook-form";
+import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import { maxWorkProcessPhotos } from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
@@ -7,9 +7,10 @@ import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 import { PhotoListField } from "@/shared/ui/photo-list-field";
+import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 
-import { type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
+import { monthOptions, type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
 import styles from "./WorkFields.module.css";
 
 interface WorkFieldsProps {
@@ -31,6 +32,9 @@ export function WorkFields({
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
   const { dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
+  // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
+  // for a change, so a controller keeps the value in the form's state instead (see the colours).
+  const { field: monthField } = useController({ control, name: "month" });
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -87,19 +91,35 @@ export function WorkFields({
             {...register("height")}
           />
         </div>
-        <Input
-          className={styles.year}
-          label="Год"
-          hint="Когда работа закончена"
-          inputMode="numeric"
-          autoComplete="off"
-          maxLength={4}
-          placeholder={String(new Date().getFullYear())}
-          disabled={isSaving}
-          error={errors.year?.message}
-          isModified={Boolean(dirtyFields.year)}
-          {...register("year")}
-        />
+        {/* When the work was finished, as it is read: the month, then the year. */}
+        <div className={styles.date}>
+          <Select
+            className={styles.month}
+            label="Месяц"
+            placeholder="Выберите"
+            options={monthOptions}
+            disabled={isSaving}
+            error={errors.month?.message}
+            isModified={Boolean(dirtyFields.month)}
+            ref={monthField.ref}
+            name={monthField.name}
+            value={monthField.value}
+            onBlur={monthField.onBlur}
+            onChange={monthField.onChange}
+          />
+          <Input
+            className={styles.year}
+            label="Год"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={4}
+            placeholder={String(new Date().getFullYear())}
+            disabled={isSaving}
+            error={errors.year?.message}
+            isModified={Boolean(dirtyFields.year)}
+            {...register("year")}
+          />
+        </div>
       </div>
 
       <PhotoFields label="Фото работы" isSaving={isSaving} serverPhoto={savedPhoto} />

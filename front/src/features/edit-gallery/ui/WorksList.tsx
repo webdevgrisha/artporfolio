@@ -11,14 +11,14 @@ import { SearchInput } from "@/shared/ui/search-input";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import { useDeleteWork } from "../model/useDeleteWork";
-import { formatWorkSize } from "../model/workFormSchema";
+import { formatWorkDate, formatWorkSize } from "../model/workFormSchema";
 import { matchesWorkQuery, worksSearchParam } from "../model/worksSearch";
 import { WorkActions } from "./WorkActions";
 import styles from "./WorksList.module.css";
 
 interface WorksListProps {
   className?: string;
-  /** In the order the site shows them: the latest year first. */
+  /** In the order the site shows them: the latest first. */
   works: readonly GalleryWork[];
 }
 
@@ -86,8 +86,8 @@ export function WorksList({ className, works }: WorksListProps) {
                 <th className={styles.sizeColumn} scope="col">
                   Размер
                 </th>
-                <th className={styles.yearColumn} scope="col">
-                  Год
+                <th className={styles.dateColumn} scope="col">
+                  Дата
                 </th>
                 <th className={styles.actionsColumn} scope="col">
                   <VisuallyHidden>Действия</VisuallyHidden>
@@ -106,7 +106,7 @@ export function WorksList({ className, works }: WorksListProps) {
                   </td>
                   <td>{work.title}</td>
                   <td className={styles.sizeColumn}>{formatWorkSize(work.size)}</td>
-                  <td className={styles.yearColumn}>{work.year}</td>
+                  <td className={styles.dateColumn}>{formatWorkDate(work)}</td>
                   <td className={styles.actionsColumn}>
                     <WorkActions work={work} onDelete={setDeleted} />
                   </td>

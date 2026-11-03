@@ -43,26 +43,36 @@ const workPhotoBodySchema = z.strictObject({
   uploadId: uploadIdSchema.optional(),
 });
 
+/** Whether the month of the year has not come yet, by the server clock. */
+function isFutureMonth(year: number, month: number): boolean {
+  const now = new Date();
+
+  return year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth() + 1);
+}
+
 /** A work as the client sends it, to create one or to replace a saved one. Every field is sent. */
-export const workBodySchema = z.strictObject({
-  /** The name in the gallery, so it cannot be empty. */
-  title: z.string().trim().min(1).max(100),
-  /**
-   * What the work is about, which the visitor reads beside it. Plain text: no HTML or Markdown.
-   * Paragraphs are separated by a blank line.
-   */
-  description: z.string().trim().min(1).max(2_000),
-  size: workSizeSchema,
-  /** A work is dated by the year it was finished, which cannot be in the future. */
-  year: z
-    .number()
-    .int()
-    .min(minWorkYear)
-    .refine((year) => year <= new Date().getFullYear(), "The year cannot be in the future"),
-  photo: workPhotoBodySchema,
-  /** How the work was made, in the order the site shows them; a saved photo left out is deleted. */
-  processPhotos: photoListBodySchema(maxWorkProcessPhotos),
-});
+export const workBodySchema = z
+  .strictObject({
+    /** The name in the gallery, so it cannot be empty. */
+    title: z.string().trim().min(1).max(100),
+    /**
+     * What the work is about, which the visitor reads beside it. Plain text: no HTML or Markdown.
+     * Paragraphs are separated by a blank line.
+     */
+    description: z.string().trim().min(1).max(2_000),
+    size: workSizeSchema,
+    /** A work is dated by the month it was finished, which cannot be in the future. */
+    year: z.number().int().min(minWorkYear),
+    /** 1 for January. */
+    month: z.number().int().min(1).max(12),
+    photo: workPhotoBodySchema,
+    /** How the work was made, in the order the site shows them; a saved photo left out is deleted. */
+    processPhotos: photoListBodySchema(maxWorkProcessPhotos),
+  })
+  .refine(({ month, year }) => !isFutureMonth(year, month), {
+    message: "The month cannot be in the future",
+    path: ["month"],
+  });
 
 /**
  * A work as stored in Firestore, in its own document of the `galleryWorks` collection. Only the
@@ -74,6 +84,7 @@ export const storedWorkSchema = z.object({
   description: z.string(),
   size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
+  month: z.number(),
   photo: storedPhotoSchema,
   processPhotos: z.array(storedListPhotoSchema),
   /** Set by the server when the work is created. */
@@ -90,6 +101,8 @@ export const workSchema = z.object({
   /** In centimetres. */
   size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
+  /** 1 for January. */
+  month: z.number(),
   photo: photoSchema,
   /** In the order the site shows them. */
   processPhotos: z.array(listPhotoSchema),
@@ -100,7 +113,7 @@ export const workSchema = z.object({
 export const workResponseSchema = z.object({ work: workSchema });
 
 export const worksResponseSchema = z.object({
-  /** In the order the site shows them: the latest year first. */
+  /** In the order the site shows them: the latest first. */
   works: z.array(workSchema),
 });
 

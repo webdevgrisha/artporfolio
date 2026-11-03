@@ -33,7 +33,7 @@
 /* As the table of the sections; the widths are set, so a long title never moves the columns. */
 .table {
   inline-size: 100%;
-  min-inline-size: 44rem;
+  min-inline-size: 50rem;
   font-size: var(--font-size-lg);
   table-layout: fixed;
   border-collapse: collapse;
@@ -74,8 +74,9 @@
   inline-size: 11rem;
 }
 
-.yearColumn {
-  inline-size: 5.5rem;
+/* Room for «сентябрь 2024». */
+.dateColumn {
+  inline-size: 10.5rem;
 }
 
 .actionsColumn {

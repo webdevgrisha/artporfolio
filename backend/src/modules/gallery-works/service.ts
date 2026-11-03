@@ -64,19 +64,28 @@ function readWork(snapshot: DocumentSnapshot): StoredWork {
 }
 
 /** What the client edits, which the entity tag of a work follows. */
-function editedContent({ description, photo, processPhotos, size, title, year }: StoredWork) {
-  return { description, photo, processPhotos, size, title, year };
+function editedContent({
+  description,
+  month,
+  photo,
+  processPhotos,
+  size,
+  title,
+  year,
+}: StoredWork) {
+  return { description, month, photo, processPhotos, size, title, year };
 }
 
 /** The stored work as the API returns it, with download URLs and ISO 8601 dates. */
 function toWork(
   id: string,
-  { createdAt, description, photo, processPhotos, size, title, updatedAt, year }: StoredWork,
+  { createdAt, description, month, photo, processPhotos, size, title, updatedAt, year }: StoredWork,
 ): Work {
   return {
     createdAt: createdAt.toDate().toISOString(),
     description,
     id,
+    month,
     photo: toPhoto(photo),
     processPhotos: processPhotos.map(toListPhoto),
     size,
@@ -90,9 +99,9 @@ function toSavedWork(id: string, work: StoredWork): SavedWork {
   return { data: toWork(id, work), etag: entityTag(editedContent(work)), id };
 }
 
-/** The latest year first; works of one year, the latest created first. */
+/** The latest month first; works of one month, the latest created first. */
 function compareWorks(a: StoredWork, b: StoredWork): number {
-  return b.year - a.year || b.createdAt.toMillis() - a.createdAt.toMillis();
+  return b.year - a.year || b.month - a.month || b.createdAt.toMillis() - a.createdAt.toMillis();
 }
 
 /** Every work in the order the site shows them, tagged by the stored list. */

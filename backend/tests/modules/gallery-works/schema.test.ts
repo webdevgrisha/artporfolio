@@ -14,6 +14,7 @@ const work = {
   description: "Масло, холст.",
   size: { width: 50, height: 70 },
   year: 2024,
+  month: 3,
   photo: { alt: "Слон на закате", uploadId: randomUUID() },
   processPhotos: [],
 };
@@ -54,14 +55,27 @@ describe("work body", () => {
     expect(isValid({ ...work, size: { width: maxWorkSide + 1, height: 70 } })).toBe(false);
   });
 
-  it("takes a whole year from the earliest one up to this year", () => {
-    const thisYear = new Date().getFullYear();
-
+  it("takes a whole year from the earliest one", () => {
     expect(isValid({ ...work, year: minWorkYear })).toBe(true);
-    expect(isValid({ ...work, year: thisYear })).toBe(true);
     expect(isValid({ ...work, year: minWorkYear - 1 })).toBe(false);
-    expect(isValid({ ...work, year: thisYear + 1 })).toBe(false);
     expect(isValid({ ...work, year: 2024.5 })).toBe(false);
+  });
+
+  it("takes a month from 1 to 12", () => {
+    expect(isValid({ ...work, month: 1 })).toBe(true);
+    expect(isValid({ ...work, month: 12 })).toBe(true);
+    expect(isValid({ ...work, month: 0 })).toBe(false);
+    expect(isValid({ ...work, month: 13 })).toBe(false);
+    expect(isValid({ ...work, month: undefined })).toBe(false);
+  });
+
+  it("takes this month, but not a month to come", () => {
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth() + 1);
+
+    expect(isValid({ ...work, year: now.getFullYear(), month: now.getMonth() + 1 })).toBe(true);
+    expect(isValid({ ...work, year: next.getFullYear(), month: next.getMonth() + 1 })).toBe(false);
+    expect(isValid({ ...work, year: now.getFullYear() + 1, month: 1 })).toBe(false);
   });
 
   it("needs a photo with its alt text; the upload may be left out to keep the saved file", () => {

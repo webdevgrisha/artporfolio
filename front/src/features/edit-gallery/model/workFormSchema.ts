@@ -58,6 +58,26 @@ const yearSchema = z
       .refine((text) => Number(text) <= new Date().getFullYear(), "Год ещё не наступил"),
   );
 
+/** Whether the month has not come yet; read when the form is checked. */
+function isFutureMonth(year: number, month: number): boolean {
+  const now = new Date();
+
+  return year === now.getFullYear() && month > now.getMonth() + 1;
+}
+
+/**
+ * Rejects a month to come in this year. A year to come has its own error, and the month is checked
+ * only once both fields hold a value.
+ */
+function refineMonth(
+  { month, year }: { month: string; year: string },
+  context: z.RefinementCtx,
+): void {
+  if (/^\d{4}$/.test(year.trim()) && month && isFutureMonth(Number(year), Number(month))) {
+    context.addIssue({ code: "custom", message: "Этот месяц ещё не наступил", path: ["month"] });
+  }
+}
+
 export const workFormSchema = z
   .object({
     title: z
@@ -72,6 +92,8 @@ export const workFormSchema = z
       .max(workMaxLengths.description, `Не длиннее ${String(workMaxLengths.description)} символов`),
     width: sideSchema,
     height: sideSchema,
+    /** The number of the month, «1» for January; empty until one is chosen. */
+    month: z.string().min(1, "Выберите месяц"),
     year: yearSchema,
     ...photoFieldsShape,
     /**
@@ -81,7 +103,8 @@ export const workFormSchema = z
     photos: photoListRowsSchema(maxWorkProcessPhotos),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
-  .superRefine(refinePhoto);
+  .superRefine(refinePhoto)
+  .superRefine(refineMonth);
 
 export type WorkFormValues = z.infer<typeof workFormSchema>;
 
@@ -89,6 +112,7 @@ export type WorkFormValues = z.infer<typeof workFormSchema>;
 export const emptyWorkFormValues: WorkFormValues = {
   description: "",
   height: "",
+  month: "",
   title: "",
   width: "",
   year: "",
@@ -99,6 +123,7 @@ export const emptyWorkFormValues: WorkFormValues = {
 /** The values of a work as stored on the server. */
 export function toWorkFormValues({
   description,
+  month,
   photo,
   processPhotos,
   size,
@@ -108,6 +133,7 @@ export function toWorkFormValues({
   return {
     description,
     height: formatSide(size.height),
+    month: String(month),
     title,
     width: formatSide(size.width),
     year: String(year),
@@ -124,4 +150,23 @@ export function toWorkSize({ height, width }: WorkFormValues): WorkSize {
 /** The size as the admin reads it: «29,7 × 42 см», the width first. */
 export function formatWorkSize({ height, width }: WorkSize): string {
   return `${formatSide(width)} × ${formatSide(height)} см`;
+}
+
+const monthNames = new Intl.DateTimeFormat("ru", { month: "long" });
+
+/** The name of the month on its own, as in a list: «март» for 3. */
+function monthName(month: number): string {
+  return monthNames.format(new Date(2000, month - 1, 1));
+}
+
+/** The months to choose from, «Январь» to «Декабрь». */
+export const monthOptions = Array.from({ length: 12 }, (_, index) => {
+  const name = monthName(index + 1);
+
+  return { label: name.charAt(0).toUpperCase() + name.slice(1), value: String(index + 1) };
+});
+
+/** When the work was finished, as the admin reads it: «март 2024». */
+export function formatWorkDate({ month, year }: { month: number; year: number }): string {
+  return `${monthName(month)} ${String(year)}`;
 }

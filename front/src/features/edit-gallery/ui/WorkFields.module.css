@@ -12,8 +12,9 @@
   max-inline-size: 48rem;
 }
 
-/* The sides in one row, as the size reads: the width first. */
-.size {
+/* The sides in one row, as the size reads: the width first; the date, the month first. */
+.size,
+.date {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4) var(--space-6);
@@ -23,6 +24,11 @@
 /* Room for «10 000,00»; both sides fit in one row on a phone. */
 .side {
   inline-size: 8rem;
+}
+
+/* Room for «Сентябрь» and the chevron. */
+.month {
+  inline-size: 12rem;
 }
 
 .year {

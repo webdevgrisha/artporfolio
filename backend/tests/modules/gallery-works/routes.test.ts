@@ -43,6 +43,7 @@ const work = {
   title: "Слон",
   updatedAt: "2026-02-01T12:30:00.000Z",
   year: 2024,
+  month: 3,
 };
 const body = {
   description: "Масло, холст.",
@@ -51,6 +52,7 @@ const body = {
   size: { height: 70, width: 50 },
   title: "Слон",
   year: 2024,
+  month: 3,
 };
 const etag = '"read"';
 const savedEtag = '"saved"';

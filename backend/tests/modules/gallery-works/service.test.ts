@@ -109,10 +109,11 @@ function storedProcessPhoto(workId: string) {
 /** When the seeded works were made and last saved. */
 const seededAt = Timestamp.fromDate(new Date("2026-01-15T10:00:00.000Z"));
 
-function storedWork(id: string, title: string, year: number, createdAt = seededAt) {
+function storedWork(id: string, title: string, year: number, month: number, createdAt = seededAt) {
   return {
     createdAt,
     description: "",
+    month,
     photo: storedPhoto(id),
     processPhotos: [storedProcessPhoto(id)],
     size: { width: 50, height: 70 },
@@ -144,6 +145,7 @@ const body: WorkBody = {
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
+  month: 4,
 };
 
 /** The If-Match of a client that read the work. */
@@ -154,8 +156,8 @@ async function readTag(id: string): Promise<string> {
 beforeEach(() => {
   vi.clearAllMocks();
   works.clear();
-  works.set(elephantId, storedWork(elephantId, "Слон", 2023));
-  works.set(tigerId, storedWork(tigerId, "Тигр", 2024));
+  works.set(elephantId, storedWork(elephantId, "Слон", 2023, 5));
+  works.set(tigerId, storedWork(tigerId, "Тигр", 2024, 2));
   storage.deleteFolder.mockResolvedValue(undefined);
   uploads.publishUpload.mockImplementation(async (_uploadId: string, folder: string) =>
     publishedImage(folder),
@@ -172,10 +174,18 @@ describe("listWorks", () => {
     );
   });
 
-  it("lists the works of one year by creation, the latest first", async () => {
+  it("lists the works of one year by month, the latest first", async () => {
+    works.set(newId, storedWork(newId, "Жираф", 2024, 7));
+
+    const { data } = await listWorks();
+
+    expect(data.map((work) => work.title)).toEqual(["Жираф", "Тигр", "Слон"]);
+  });
+
+  it("lists the works of one month by creation, the latest first", async () => {
     works.set(
       newId,
-      storedWork(newId, "Жираф", 2024, Timestamp.fromMillis(seededAt.toMillis() + 1)),
+      storedWork(newId, "Жираф", 2024, 2, Timestamp.fromMillis(seededAt.toMillis() + 1)),
     );
 
     const { data } = await listWorks();
