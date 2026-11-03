@@ -42,6 +42,4 @@ export {
   maxWorkSide,
   minWorkYear,
   type WorkSize,
-  type WorkSizeUnit,
-  workSizeUnits,
 } from "./model/galleryWork";

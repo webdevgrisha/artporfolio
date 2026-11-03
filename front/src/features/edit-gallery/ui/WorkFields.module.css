@@ -12,7 +12,7 @@
   max-inline-size: 48rem;
 }
 
-/* The sides and their unit in one row; on a narrow screen the unit goes under the sides. */
+/* The sides in one row, as the size reads: the width first. */
 .size {
   display: flex;
   flex-wrap: wrap;

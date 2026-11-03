@@ -5,19 +5,13 @@ import { photoSchema } from "@/shared/api/photo";
 /** The earliest year a work can be dated (backend/src/modules/gallery-works/schema.ts). */
 export const minWorkYear = 1900;
 
-/** The largest side of a work, in either unit. */
+/** The largest side of a work in centimetres. */
 export const maxWorkSide = 10_000;
 
-/** The units the artist measures a work in; the site converts them for the visitor. */
-export const workSizeUnits = ["cm", "in"] as const;
-
-export type WorkSizeUnit = (typeof workSizeUnits)[number];
-
-/** The size of a work as the artist measured it. */
+/** The size of a work in centimetres; the site converts it for visitors who read inches. */
 export const workSizeSchema = z.object({
   width: z.number(),
   height: z.number(),
-  unit: z.enum(workSizeUnits),
 });
 
 export type WorkSize = z.infer<typeof workSizeSchema>;

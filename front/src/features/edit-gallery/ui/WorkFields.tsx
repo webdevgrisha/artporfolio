@@ -1,15 +1,13 @@
 import clsx from "clsx";
-import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
+import { useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import { workSizeUnits } from "@/entities/gallery";
 import type { Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
 import { PhotoFields } from "@/shared/ui/photo-fields";
-import { RadioGroup } from "@/shared/ui/radio-group";
 import { Textarea } from "@/shared/ui/textarea";
 
-import { type WorkFormValues, workMaxLengths, workSizeUnitLabels } from "../model/workFormSchema";
+import { type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
 import styles from "./WorkFields.module.css";
 
 interface WorkFieldsProps {
@@ -19,16 +17,11 @@ interface WorkFieldsProps {
   savedPhoto: Photo | null;
 }
 
-const unitOptions = workSizeUnits.map((unit) => ({ label: workSizeUnitLabels[unit], value: unit }));
-
 /** The fields of a work form; they read the form from its context. */
 export function WorkFields({ className, isSaving, savedPhoto }: WorkFieldsProps) {
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
   const { dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
-  // A native radio group is not a text input: a controller keeps its value in the form's state
-  // instead of the DOM, see the colours form.
-  const { field: unitField } = useController({ control, name: "unit" });
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -64,7 +57,7 @@ export function WorkFields({ className, isSaving, savedPhoto }: WorkFieldsProps)
         <div className={styles.size}>
           <Input
             className={styles.side}
-            label="Ширина"
+            label="Ширина, см"
             inputMode="decimal"
             autoComplete="off"
             placeholder="50"
@@ -75,7 +68,7 @@ export function WorkFields({ className, isSaving, savedPhoto }: WorkFieldsProps)
           />
           <Input
             className={styles.side}
-            label="Высота"
+            label="Высота, см"
             inputMode="decimal"
             autoComplete="off"
             placeholder="70"
@@ -83,15 +76,6 @@ export function WorkFields({ className, isSaving, savedPhoto }: WorkFieldsProps)
             error={errors.height?.message}
             isModified={Boolean(dirtyFields.height)}
             {...register("height")}
-          />
-          <RadioGroup
-            label="Единицы"
-            name={unitField.name}
-            options={unitOptions}
-            value={unitField.value}
-            disabled={isSaving}
-            isModified={Boolean(dirtyFields.unit)}
-            onChange={unitField.onChange}
           />
         </div>
         <Input

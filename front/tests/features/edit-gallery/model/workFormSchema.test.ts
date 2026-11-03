@@ -82,20 +82,19 @@ describe("the size in the form", () => {
     const saved = {
       description: "",
       photo: { alt: "Стрекоза" },
-      size: { height: 11, unit: "in", width: 8.5 },
+      size: { height: 27.9, width: 21.6 },
       title: "Стрекоза",
       year: 2025,
     } as unknown as GalleryWork;
     const values = toWorkFormValues(saved);
 
-    expect(values).toMatchObject({ height: "11", unit: "in", width: "8,5", year: "2025" });
-    expect(toWorkSize(values)).toEqual({ height: 11, unit: "in", width: 8.5 });
+    expect(values).toMatchObject({ height: "27,9", width: "21,6", year: "2025" });
+    expect(toWorkSize(values)).toEqual({ height: 27.9, width: 21.6 });
   });
 });
 
 describe("formatWorkSize", () => {
-  it("shows the width first, with a comma and the short unit", () => {
-    expect(formatWorkSize({ height: 42, unit: "cm", width: 29.7 })).toBe("29,7 × 42 см");
-    expect(formatWorkSize({ height: 11, unit: "in", width: 8.5 })).toBe("8,5 × 11 дюйм.");
+  it("shows the width first, in centimetres with a comma", () => {
+    expect(formatWorkSize({ height: 42, width: 29.7 })).toBe("29,7 × 42 см");
   });
 });

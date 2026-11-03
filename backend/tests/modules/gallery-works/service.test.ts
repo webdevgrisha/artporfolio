@@ -94,7 +94,7 @@ function storedWork(id: string, title: string, year: number, createdAt = seededA
     createdAt,
     description: "",
     photo: storedPhoto(id),
-    size: { width: 50, height: 70, unit: "cm" },
+    size: { width: 50, height: 70 },
     title,
     updatedAt: createdAt,
     year,
@@ -119,7 +119,7 @@ function publishedImage(folder: string) {
 const body: WorkBody = {
   description: "Масло, холст.",
   photo: { alt: "Новое фото", uploadId },
-  size: { width: 8.5, height: 11, unit: "in" },
+  size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
 };

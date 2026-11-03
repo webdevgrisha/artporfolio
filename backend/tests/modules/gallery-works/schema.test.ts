@@ -7,7 +7,7 @@ import { maxWorkSide, minWorkYear, workBodySchema } from "#modules/gallery-works
 const work = {
   title: "Слон",
   description: "Масло, холст.",
-  size: { width: 50, height: 70, unit: "cm" },
+  size: { width: 50, height: 70 },
   year: 2024,
   photo: { alt: "Слон на закате", uploadId: randomUUID() },
 };
@@ -35,20 +35,17 @@ describe("work body", () => {
     expect(isValid({ ...work, description: "a".repeat(2_001) })).toBe(false);
   });
 
-  it("takes a size in centimetres or inches, with up to two decimals", () => {
-    expect(isValid({ ...work, size: { width: 8.5, height: 11, unit: "in" } })).toBe(true);
-    expect(isValid({ ...work, size: { width: 29.75, height: 42, unit: "cm" } })).toBe(true);
-    expect(isValid({ ...work, size: { width: 29.755, height: 42, unit: "cm" } })).toBe(false);
-    expect(isValid({ ...work, size: { width: 50, height: 70, unit: "mm" } })).toBe(false);
+  it("takes a size in centimetres, with up to two decimals", () => {
+    expect(isValid({ ...work, size: { width: 29.75, height: 42 } })).toBe(true);
+    expect(isValid({ ...work, size: { width: 29.755, height: 42 } })).toBe(false);
+    expect(isValid({ ...work, size: { width: 8.5, height: 11, unit: "in" } })).toBe(false);
   });
 
   it("needs both sides, above zero and within the limit", () => {
-    expect(isValid({ ...work, size: { width: 50, unit: "cm" } })).toBe(false);
-    expect(isValid({ ...work, size: { width: 0, height: 70, unit: "cm" } })).toBe(false);
-    expect(isValid({ ...work, size: { width: maxWorkSide, height: 70, unit: "cm" } })).toBe(true);
-    expect(isValid({ ...work, size: { width: maxWorkSide + 1, height: 70, unit: "cm" } })).toBe(
-      false,
-    );
+    expect(isValid({ ...work, size: { width: 50 } })).toBe(false);
+    expect(isValid({ ...work, size: { width: 0, height: 70 } })).toBe(false);
+    expect(isValid({ ...work, size: { width: maxWorkSide, height: 70 } })).toBe(true);
+    expect(isValid({ ...work, size: { width: maxWorkSide + 1, height: 70 } })).toBe(false);
   });
 
   it("takes a whole year from the earliest one up to this year", () => {

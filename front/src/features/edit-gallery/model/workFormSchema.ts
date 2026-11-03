@@ -1,13 +1,6 @@
 import { z } from "zod";
 
-import {
-  type GalleryWork,
-  maxWorkSide,
-  minWorkYear,
-  type WorkSize,
-  type WorkSizeUnit,
-  workSizeUnits,
-} from "@/entities/gallery";
+import { type GalleryWork, maxWorkSide, minWorkYear, type WorkSize } from "@/entities/gallery";
 import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
 
 // Mirror the server rules in backend/src/modules/gallery-works/schema.ts.
@@ -72,7 +65,6 @@ export const workFormSchema = z
       .max(workMaxLengths.description, `Не длиннее ${String(workMaxLengths.description)} символов`),
     width: sideSchema,
     height: sideSchema,
-    unit: z.enum(workSizeUnits),
     year: yearSchema,
     ...photoFieldsShape,
   })
@@ -81,12 +73,11 @@ export const workFormSchema = z
 
 export type WorkFormValues = z.infer<typeof workFormSchema>;
 
-/** The values of a new work: every field empty, the size in centimetres. */
+/** The values of a new work: every field empty. */
 export const emptyWorkFormValues: WorkFormValues = {
   description: "",
   height: "",
   title: "",
-  unit: "cm",
   width: "",
   year: "",
   ...toPhotoFormValues(null),
@@ -104,7 +95,6 @@ export function toWorkFormValues({
     description,
     height: formatSide(size.height),
     title,
-    unit: size.unit,
     width: formatSide(size.width),
     year: String(year),
     ...toPhotoFormValues(photo),
@@ -112,23 +102,11 @@ export function toWorkFormValues({
 }
 
 /** The size the form holds, once it has been checked. */
-export function toWorkSize({ height, unit, width }: WorkFormValues): WorkSize {
-  return { height: parseSide(height), unit, width: parseSide(width) };
+export function toWorkSize({ height, width }: WorkFormValues): WorkSize {
+  return { height: parseSide(height), width: parseSide(width) };
 }
 
-/** The names of the units in the form. */
-export const workSizeUnitLabels = {
-  cm: "Сантиметры",
-  in: "Дюймы",
-} as const satisfies Record<WorkSizeUnit, string>;
-
-/** The short names of the units, after a size. */
-const workSizeUnitAbbreviations = {
-  cm: "см",
-  in: "дюйм.",
-} as const satisfies Record<WorkSizeUnit, string>;
-
 /** The size as the admin reads it: «29,7 × 42 см», the width first. */
-export function formatWorkSize({ height, unit, width }: WorkSize): string {
-  return `${formatSide(width)} × ${formatSide(height)} ${workSizeUnitAbbreviations[unit]}`;
+export function formatWorkSize({ height, width }: WorkSize): string {
+  return `${formatSide(width)} × ${formatSide(height)} см`;
 }

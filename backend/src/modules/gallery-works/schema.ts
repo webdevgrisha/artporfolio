@@ -7,11 +7,8 @@ import { uploadIdSchema } from "#shared/images/uploads";
 /** The earliest year a work can be dated. */
 export const minWorkYear = 1900;
 
-/** The largest side, in either unit: well above any painting, low enough to catch a typo. */
+/** The largest side in centimetres: well above any painting, low enough to catch a typo. */
 export const maxWorkSide = 10_000;
-
-/** The units the artist measures a work in; the site converts them for the visitor. */
-export const workSizeUnits = ["cm", "in"] as const;
 
 const workIdSchema = z.uuid();
 
@@ -20,14 +17,13 @@ export const workParamsSchema = z.object({
   id: workIdSchema,
 });
 
-/** A side of a work, with at most two decimals, such as 8.5 inches. */
+/** A side of a work in centimetres, with at most two decimals, such as 29.7. */
 const workSideSchema = z.number().positive().max(maxWorkSide).multipleOf(0.01);
 
-/** The size of a work as the artist measured it. */
+/** The size of a work in centimetres; the site converts it for visitors who read inches. */
 const workSizeSchema = z.strictObject({
   width: workSideSchema,
   height: workSideSchema,
-  unit: z.enum(workSizeUnits),
 });
 
 /**
@@ -66,7 +62,7 @@ export const workBodySchema = z.strictObject({
 export const storedWorkSchema = z.object({
   title: z.string(),
   description: z.string(),
-  size: z.object({ width: z.number(), height: z.number(), unit: z.string() }),
+  size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
   photo: storedPhotoSchema,
   /** Set by the server when the work is created. */
@@ -80,7 +76,8 @@ export const workSchema = z.object({
   id: workIdSchema,
   title: z.string(),
   description: z.string(),
-  size: z.object({ width: z.number(), height: z.number(), unit: z.string() }),
+  /** In centimetres. */
+  size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
   photo: photoSchema,
   createdAt: z.iso.datetime(),

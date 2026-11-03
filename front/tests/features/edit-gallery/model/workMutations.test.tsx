@@ -17,12 +17,11 @@ const path = `/api/gallery-works/${id}`;
 /** The values of the form, with a new file each time: a file once uploaded is not sent again. */
 const values = () => ({
   ...emptyWorkFormValues,
-  height: "11",
+  height: "27,9",
   photo: new File(["png"], "dragonfly.png", { type: "image/png" }),
   photoAlt: "Стрекоза",
   title: "Стрекоза",
-  unit: "in" as const,
-  width: "8,5",
+  width: "21,6",
   year: "2025",
 });
 const savedEtag = '"saved"';
@@ -44,7 +43,7 @@ function apiWork(title: string): GalleryWork {
       version: "version",
       width: 960,
     },
-    size: { height: 11, unit: "in", width: 8.5 },
+    size: { height: 27.9, width: 21.6 },
     title,
     updatedAt: "2026-01-15T10:00:00.000Z",
     year: 2025,
@@ -102,7 +101,7 @@ describe("useCreateWork", () => {
         body: {
           description: "",
           photo: { alt: "Стрекоза", uploadId },
-          size: { height: 11, unit: "in", width: 8.5 },
+          size: { height: 27.9, width: 21.6 },
           title: "Стрекоза",
           year: 2025,
         },
