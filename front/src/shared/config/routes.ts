@@ -13,6 +13,8 @@ export const routes = {
   galleryPalettes: "/admin/gallery/palettes",
   gallerySectionNew: "/admin/gallery/sections/new",
   gallerySections: "/admin/gallery/sections",
+  galleryWorkNew: "/admin/gallery/works/new",
+  galleryWorks: "/admin/gallery/works",
   login: "/admin/login",
   logout: "/admin/logout",
   personalization: "/admin/personalization",
@@ -29,6 +31,11 @@ export const adminHomePath = routes.gallery;
 /** The edit page of one section of the gallery. */
 export function gallerySectionPath(id: string): string {
   return `${routes.gallerySections}/${encodeURIComponent(id)}`;
+}
+
+/** The edit page of one work of the gallery. */
+export function galleryWorkPath(id: string): string {
+  return `${routes.galleryWorks}/${encodeURIComponent(id)}`;
 }
 
 /** The edit page of one project. */

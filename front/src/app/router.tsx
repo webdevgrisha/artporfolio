@@ -168,6 +168,28 @@ export const router = createBrowserRouter([
                     },
                   },
                   {
+                    path: routes.galleryWorkNew,
+                    lazy: async () => {
+                      const { NewWorkPage, newWorkHandle } = await import("@/pages/gallery");
+
+                      return { Component: NewWorkPage, handle: newWorkHandle };
+                    },
+                  },
+                  {
+                    path: `${routes.galleryWorks}/:id`,
+                    lazy: async () => {
+                      const { EditWorkPage, editWorkHandle, galleryWorkLoader } = await import(
+                        "@/pages/gallery"
+                      );
+
+                      return {
+                        Component: EditWorkPage,
+                        handle: editWorkHandle,
+                        loader: galleryWorkLoader,
+                      };
+                    },
+                  },
+                  {
                     path: routes.projects,
                     lazy: async () => ({
                       Component: (await import("@/pages/projects")).ProjectsPage,

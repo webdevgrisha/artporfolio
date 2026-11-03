@@ -1,4 +1,5 @@
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
+import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
 export function getSaveIntroErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
@@ -64,5 +65,30 @@ export function getSavePalettesErrorMessage(error: unknown): string {
       412: "Палитры уже изменили в другой вкладке",
     },
     fallback: "Не удалось сохранить палитры. Попробуйте ещё раз",
+  });
+}
+
+export function getSaveWorkErrorMessage(error: unknown): string {
+  if (error instanceof UploadError) return getUploadErrorMessage(error);
+
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      400: "Сервер не принял работу. Проверьте поля и попробуйте ещё раз",
+      404: "Работа уже удалена",
+      // The work was changed since this page loaded it, for example in another tab.
+      412: "Работу уже изменили в другой вкладке",
+      // The upload is kept for a day; the work is sent right after it, so this is rare.
+      422: "Загрузка фото устарела. Выберите фото ещё раз",
+    },
+    fallback: "Не удалось сохранить работу. Попробуйте ещё раз",
+  });
+}
+
+export function getDeleteWorkErrorMessage(error: unknown): string {
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      404: "Работа уже удалена",
+    },
+    fallback: "Не удалось удалить работу. Попробуйте ещё раз",
   });
 }

@@ -1,7 +1,9 @@
 export { CreateSectionForm } from "./ui/CreateSectionForm";
+export { CreateWorkForm } from "./ui/CreateWorkForm";
 export { EditColorsForm } from "./ui/EditColorsForm";
 export { EditGalleryIntroForm } from "./ui/EditGalleryIntroForm";
 export { EditMaterialsForm } from "./ui/EditMaterialsForm";
 export { EditPalettesForm } from "./ui/EditPalettesForm";
 export { EditSectionForm } from "./ui/EditSectionForm";
+export { EditWorkForm } from "./ui/EditWorkForm";
 export { SectionsList } from "./ui/SectionsList";

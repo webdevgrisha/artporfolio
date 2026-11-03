@@ -1,0 +1,166 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook } from "@testing-library/react";
+import { HttpResponse, http as mswHttp } from "msw/http";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it } from "vitest";
+
+import type { GalleryWork } from "@/entities/gallery";
+import { emptyWorkFormValues } from "@/features/edit-gallery/model/workFormSchema";
+import { useCreateWork, useSaveWork } from "@/features/edit-gallery/model/workMutations";
+import { savedImage } from "@/shared/lib/imageFieldValue";
+
+import { csrfHandler, problem, uploadId, uploadsHandler } from "../../../support/handlers";
+import { recordRequests, server } from "../../../support/server";
+
+const id = "11111111-1111-4111-8111-111111111111";
+const path = `/api/gallery-works/${id}`;
+/** The values of the form, with a new file each time: a file once uploaded is not sent again. */
+const values = () => ({
+  ...emptyWorkFormValues,
+  height: "11",
+  photo: new File(["png"], "dragonfly.png", { type: "image/png" }),
+  photoAlt: "Стрекоза",
+  title: "Стрекоза",
+  unit: "in" as const,
+  width: "8,5",
+  year: "2025",
+});
+const savedEtag = '"saved"';
+
+function apiWork(title: string): GalleryWork {
+  return {
+    createdAt: "2026-01-15T10:00:00.000Z",
+    description: "",
+    id,
+    photo: {
+      alt: "Стрекоза",
+      fileName: "dragonfly.png",
+      fileSize: 100,
+      height: 640,
+      sources: {
+        avif: [{ url: "https://storage.test/dragonfly/960.avif", width: 960 }],
+        webp: [{ url: "https://storage.test/dragonfly/960.webp", width: 960 }],
+      },
+      version: "version",
+      width: 960,
+    },
+    size: { height: 11, unit: "in", width: 8.5 },
+    title,
+    updatedAt: "2026-01-15T10:00:00.000Z",
+    year: 2025,
+  };
+}
+
+function wrapper({ children }: { children: ReactNode }) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}
+
+interface RecordedPut {
+  body: unknown;
+  ifMatch: string | null;
+  ifNoneMatch: string | null;
+}
+
+/** Answers each PUT of the work with `respond`, and records its body and conditional headers. */
+function handlePuts(respond: (put: RecordedPut) => Response) {
+  const puts: RecordedPut[] = [];
+  server.use(
+    mswHttp.put(path, async ({ request }) => {
+      const put = {
+        body: await request.json(),
+        ifMatch: request.headers.get("If-Match"),
+        ifNoneMatch: request.headers.get("If-None-Match"),
+      };
+      puts.push(put);
+      return respond(put);
+    }),
+  );
+  return puts;
+}
+
+beforeEach(() => {
+  server.use(csrfHandler, uploadsHandler);
+});
+
+describe("useCreateWork", () => {
+  it("uploads the photo and creates the work with its size and year as numbers", async () => {
+    const puts = handlePuts(() =>
+      HttpResponse.json(
+        { work: apiWork("Стрекоза") },
+        { headers: { ETag: savedEtag }, status: 201 },
+      ),
+    );
+    const createWork = renderHook(() => useCreateWork(), { wrapper }).result.current;
+
+    const work = await createWork.mutateAsync({ id, values: values() });
+
+    expect(work.title).toBe("Стрекоза");
+    expect(puts).toEqual([
+      {
+        body: {
+          description: "",
+          photo: { alt: "Стрекоза", uploadId },
+          size: { height: 11, unit: "in", width: 8.5 },
+          title: "Стрекоза",
+          year: 2025,
+        },
+        ifMatch: null,
+        ifNoneMatch: "*",
+      },
+    ]);
+  });
+
+  it("saves the values into the work an earlier try created", async () => {
+    const createdEtag = '"created"';
+    const puts = handlePuts(({ ifNoneMatch }) =>
+      ifNoneMatch === "*"
+        ? problem(412)
+        : HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+    );
+    server.use(
+      mswHttp.get(path, () =>
+        HttpResponse.json({ work: apiWork("Стркоза") }, { headers: { ETag: createdEtag } }),
+      ),
+    );
+    const createWork = renderHook(() => useCreateWork(), { wrapper }).result.current;
+    const requests = recordRequests();
+
+    await createWork.mutateAsync({ id, values: values() });
+
+    expect(requests.filter((request) => request !== "GET /api/auth/csrf")).toEqual([
+      "POST /api/uploads",
+      `PUT ${path}`,
+      `GET ${path}`,
+      `PUT ${path}`,
+    ]);
+    expect(puts.map(({ ifMatch, ifNoneMatch }) => ({ ifMatch, ifNoneMatch }))).toEqual([
+      { ifMatch: null, ifNoneMatch: "*" },
+      { ifMatch: createdEtag, ifNoneMatch: null },
+    ]);
+  });
+});
+
+describe("useSaveWork", () => {
+  it("keeps the saved photo file and sends its description alone", async () => {
+    const puts = handlePuts(() =>
+      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+    );
+    const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
+    const requests = recordRequests();
+
+    await saveWork.mutateAsync({
+      etag: '"read"',
+      values: { ...values(), photo: savedImage, photoAlt: "Новое описание" },
+    });
+
+    expect(requests).not.toContain("POST /api/uploads");
+    expect(puts).toEqual([
+      expect.objectContaining({
+        body: expect.objectContaining({ photo: { alt: "Новое описание" } }),
+        ifMatch: '"read"',
+      }),
+    ]);
+  });
+});

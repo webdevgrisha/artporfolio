@@ -7,6 +7,8 @@ import {
   galleryPalettesQuery,
   gallerySectionQuery,
   gallerySectionsQuery,
+  galleryWorkQuery,
+  galleryWorksQuery,
 } from "@/entities/gallery";
 import { fetchFresh, loadPageData } from "@/shared/api/pageData";
 
@@ -22,6 +24,14 @@ export function gallerySectionsLoader() {
 
 export function gallerySectionLoader({ params }: LoaderFunctionArgs) {
   return loadPageData(fetchFresh(gallerySectionQuery(params.id ?? "")));
+}
+
+export function galleryWorksLoader() {
+  return loadPageData(fetchFresh(galleryWorksQuery));
+}
+
+export function galleryWorkLoader({ params }: LoaderFunctionArgs) {
+  return loadPageData(fetchFresh(galleryWorkQuery(params.id ?? "")));
 }
 
 export function galleryMaterialsLoader() {
