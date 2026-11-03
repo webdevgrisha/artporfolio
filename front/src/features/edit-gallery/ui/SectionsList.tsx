@@ -4,7 +4,8 @@ import React from "react";
 import { useSearchParams } from "react-router";
 
 import type { GallerySection } from "@/entities/gallery";
-import { Button } from "@/shared/ui/button";
+import { routes } from "@/shared/config/routes";
+import { Button, ButtonLink } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { SearchInput } from "@/shared/ui/search-input";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
@@ -35,8 +36,8 @@ function deletionDescription({ subsections }: GallerySection): string {
 /**
  * Every section with its subsections, by title as on the site; the numbers show how many there
  * are and stay with their rows while searching. The search, in the titles of the sections and
- * their subsections, is kept in the address. A section opens for editing by the pencil and is
- * deleted after a confirmation.
+ * their subsections, is kept in the address; a new section is added from beside it. A section
+ * opens for editing by the pencil and is deleted after a confirmation.
  */
 export function SectionsList({ className, sections }: SectionsListProps) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -58,13 +59,19 @@ export function SectionsList({ className, sections }: SectionsListProps) {
 
   return (
     <div className={clsx(styles.root, className)}>
-      <SearchInput
-        label="Поиск по разделам и подразделам"
-        clearLabel="Очистить поиск"
-        value={query}
-        summary={query ? `Найдено: ${String(shownRows.length)} из ${String(sections.length)}` : ""}
-        onChange={changeQuery}
-      />
+      <div className={styles.toolbar}>
+        <SearchInput
+          className={styles.search}
+          label="Поиск по разделам и подразделам"
+          clearLabel="Очистить поиск"
+          value={query}
+          summary={
+            query ? `Найдено: ${String(shownRows.length)} из ${String(sections.length)}` : ""
+          }
+          onChange={changeQuery}
+        />
+        <ButtonLink to={routes.gallerySectionNew}>Добавить раздел</ButtonLink>
+      </div>
 
       {sections.length === 0 ? (
         <p className={styles.empty}>Разделов пока нет</p>

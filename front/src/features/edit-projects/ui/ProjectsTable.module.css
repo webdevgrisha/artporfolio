@@ -6,6 +6,22 @@
 }
 
 /*
+ * The actions of the list over its table: the search takes the room, the adding keeps its end. On
+ * a narrow screen the button goes under the search, still at the end.
+ */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.search {
+  flex: 1 1 20rem;
+}
+
+/*
  * A narrow screen scrolls the table instead of squeezing its columns. The scroll clips vertically too,
  * so the padding keeps room for the focus ring of the sort buttons, which have none above them.
  * Positioned, so the visually hidden texts of the cells stay inside the scroll instead of widening

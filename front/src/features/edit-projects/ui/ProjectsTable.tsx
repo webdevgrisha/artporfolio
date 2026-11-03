@@ -14,7 +14,8 @@ import React from "react";
 import { useSearchParams } from "react-router";
 
 import { type Project, ProjectCover } from "@/entities/project";
-import { Button } from "@/shared/ui/button";
+import { routes } from "@/shared/config/routes";
+import { Button, ButtonLink } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { ArrowDownIcon, ArrowUpIcon, ExternalLinkIcon, SortIcon } from "@/shared/ui/icon";
 import { SearchInput } from "@/shared/ui/search-input";
@@ -166,15 +167,19 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
 
   return (
     <div className={clsx(styles.root, className)}>
-      <SearchInput
-        label="Поиск по названию и ссылке"
-        clearLabel="Очистить поиск"
-        value={view.query}
-        summary={
-          view.query ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}` : ""
-        }
-        onChange={(query) => changeView({ query })}
-      />
+      <div className={styles.toolbar}>
+        <SearchInput
+          className={styles.search}
+          label="Поиск по названию и ссылке"
+          clearLabel="Очистить поиск"
+          value={view.query}
+          summary={
+            view.query ? `Найдено: ${String(shownRows.length)} из ${String(projects.length)}` : ""
+          }
+          onChange={(query) => changeView({ query })}
+        />
+        <ButtonLink to={routes.projectNew}>Добавить проект</ButtonLink>
+      </div>
 
       {projects.length === 0 ? (
         <p className={styles.empty}>Проектов пока нет</p>
