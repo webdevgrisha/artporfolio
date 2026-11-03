@@ -7,11 +7,8 @@ import { Button } from "@/shared/ui/button";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { FieldError, FieldHint } from "@/shared/ui/field";
 
-import {
-  maxSectionTitleLength,
-  newSubsection,
-  type SectionFormValues,
-} from "../model/sectionFormSchema";
+import { newSubsection, type SectionFormValues } from "../model/sectionFormSchema";
+import { maxTitleLength } from "../model/titles";
 import styles from "./SectionFields.module.css";
 
 interface SectionFieldsProps {
@@ -67,7 +64,7 @@ export function SectionFields({ className, isSaving, savedSubsections }: Section
     <div className={clsx(styles.root, className)}>
       <ClearableInput
         label="Название раздела"
-        hint={`До ${String(maxSectionTitleLength)} символов`}
+        hint={`До ${String(maxTitleLength)} символов`}
         placeholder="Например: Постеры"
         disabled={isSaving}
         error={errors.title?.message}

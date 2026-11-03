@@ -59,7 +59,7 @@
   border-block-end: 0;
 }
 
-/* A material added or renamed since the save: a bar at its start, as in the photo lists. */
+/* A row added or changed since the save: a bar at its start, as in the photo lists. */
 .rowModified::before {
   position: absolute;
   inset-block: var(--space-2);

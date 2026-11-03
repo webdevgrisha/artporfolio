@@ -1,12 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import clsx from "clsx";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { type GalleryMaterials, galleryMaterialsQuery, maxMaterials } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { FieldError, FieldHint } from "@/shared/ui/field";
 
 import {
   type MaterialsFormValues,
@@ -14,9 +12,10 @@ import {
   toMaterialsFormValues,
 } from "../model/materialsFormSchema";
 import { saveMaterialsFeedback, useSaveMaterials } from "../model/useSaveMaterials";
-import { AddMaterialField } from "./AddMaterialField";
-import styles from "./EditMaterialsForm.module.css";
-import { MaterialRow } from "./MaterialRow";
+import { AddTitleField } from "./AddTitleField";
+import { TitleList } from "./TitleList";
+import styles from "./TitleList.module.css";
+import { TitleListRow } from "./TitleListRow";
 
 interface EditMaterialsFormProps {
   className?: string;
@@ -52,6 +51,7 @@ export function EditMaterialsForm({ className, materials }: EditMaterialsFormPro
   const {
     control,
     formState: { errors, isSubmitted },
+    register,
     setValue,
     trigger,
   } = form;
@@ -60,11 +60,7 @@ export function EditMaterialsForm({ className, materials }: EditMaterialsFormPro
   const rows = useWatch({ control, name: "materials" });
   const [editing, setEditing] = React.useState<Editing>();
   const addFieldRef = React.useRef<HTMLInputElement>(null);
-  const headingId = React.useId();
-  const hintId = React.useId();
-  const errorId = React.useId();
   const savedTitles = new Map(saved.data.materials.map(({ id, title }) => [id, title]));
-  const listError = errors.materials?.message ?? errors.materials?.root?.message;
 
   function finishEdit(index: number) {
     setEditing(undefined);
@@ -93,51 +89,58 @@ export function EditMaterialsForm({ className, materials }: EditMaterialsFormPro
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
         <div className={styles.root}>
-          <AddMaterialField
+          <AddTitleField
             ref={addFieldRef}
             disabled={editForm.isSaving}
             existingTitles={rows.map((row) => row.title)}
+            labels={{
+              add: "Добавить материал",
+              duplicate: "Такой материал уже есть",
+              field: "Новый материал",
+              full: `Материалов уже ${String(maxMaterials)}, больше добавить нельзя`,
+              placeholder: "Например: Акварель",
+            }}
+            max={maxMaterials}
             onAdd={(title) => append({ id: crypto.randomUUID(), title }, { shouldFocus: false })}
           />
 
-          <section
-            className={styles.list}
-            aria-labelledby={headingId}
-            aria-describedby={clsx(hintId, listError && errorId)}
+          <TitleList
+            heading="Материалы"
+            hint={`${String(fields.length)} из ${String(maxMaterials)}. На сайте идут по алфавиту`}
+            empty="Материалов пока нет"
+            error={errors.materials?.message ?? errors.materials?.root?.message}
+            isEmpty={fields.length === 0}
           >
-            <h2 id={headingId} className={styles.heading}>
-              Материалы
-            </h2>
-            <FieldHint id={hintId}>
-              {`${String(fields.length)} из ${String(maxMaterials)}. На сайте идут по алфавиту`}
-            </FieldHint>
-            {fields.length === 0 ? (
-              <p className={styles.empty}>Материалов пока нет</p>
-            ) : (
-              <ul className={styles.rows}>
-                {fields.map((field, index) => {
-                  const row = rows[index] ?? field;
+            {fields.map((field, index) => {
+              const row = rows[index] ?? field;
+              const savedTitle = savedTitles.get(row.id);
+              const isTitleModified = savedTitle !== row.title;
+              const titleError = errors.materials?.[index]?.title?.message;
 
-                  return (
-                    <MaterialRow
-                      key={field.id}
-                      index={index}
-                      isEditing={
-                        editing?.key === field.id || Boolean(errors.materials?.[index]?.title)
-                      }
-                      isSaving={editForm.isSaving}
-                      savedTitle={savedTitles.get(row.id)}
-                      onStartEdit={() => setEditing({ key: field.id, startTitle: row.title })}
-                      onFinishEdit={() => finishEdit(index)}
-                      onCancelEdit={() => cancelEdit(index)}
-                      onRemove={() => removeRow(index)}
-                    />
-                  );
-                })}
-              </ul>
-            )}
-            {listError ? <FieldError id={errorId}>{listError}</FieldError> : null}
-          </section>
+              return (
+                <TitleListRow
+                  key={field.id}
+                  title={row.title}
+                  titleField={register(`materials.${index}.title`)}
+                  labels={{
+                    field: `Название материала ${savedTitle ?? row.title}`,
+                    remove: `Удалить ${row.title || "материал"}`,
+                    rename: `Переименовать ${row.title}`,
+                  }}
+                  error={titleError}
+                  isEditing={editing?.key === field.id || Boolean(titleError)}
+                  isNew={savedTitle === undefined}
+                  isModified={isTitleModified}
+                  isTitleModified={isTitleModified}
+                  isSaving={editForm.isSaving}
+                  onStartEdit={() => setEditing({ key: field.id, startTitle: row.title })}
+                  onFinishEdit={() => finishEdit(index)}
+                  onCancelEdit={() => cancelEdit(index)}
+                  onRemove={() => removeRow(index)}
+                />
+              );
+            })}
+          </TitleList>
         </div>
       </EditForm>
     </FormProvider>

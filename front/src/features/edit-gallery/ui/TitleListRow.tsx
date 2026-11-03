@@ -1,51 +1,66 @@
 import clsx from "clsx";
-import React from "react";
-import { useFormContext, useFormState, useWatch } from "react-hook-form";
+import React, { type ReactNode } from "react";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
 import { EditIcon, TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Input } from "@/shared/ui/input";
 import { Tooltip } from "@/shared/ui/tooltip";
 
-import type { MaterialsFormValues } from "../model/materialsFormSchema";
-import styles from "./EditMaterialsForm.module.css";
+import styles from "./TitleList.module.css";
 
-interface MaterialRowProps {
-  index: number;
+interface TitleListRowProps {
+  /** Names the actions and the title field of the row for the reader. */
+  labels: {
+    /** E.g. «Название материала Акварель». */
+    field: string;
+    /** E.g. «Переименовать Акварель». */
+    rename: string;
+    /** E.g. «Удалить Акварель». */
+    remove: string;
+  };
+  error: string | undefined;
   isEditing: boolean;
+  /** Added since the save: none of it is on the server yet. */
+  isNew: boolean;
+  /** Anything of the row differs from the saved one, for the mark at its start. */
+  isModified: boolean;
   isSaving: boolean;
+  /** The title differs from the saved one, for the mark of the field. */
+  isTitleModified: boolean;
   /** Keeps the new title. */
   onFinishEdit: () => void;
   /** Brings back the title the editing started from. */
   onCancelEdit: () => void;
   onRemove: () => void;
   onStartEdit: () => void;
-  /** The title as saved on the server; none for a material added since. */
-  savedTitle: string | undefined;
+  /** Before the title, for example the swatch of a color. */
+  start?: ReactNode;
+  title: string;
+  /** The title field of the row, as the form registers it. */
+  titleField: UseFormRegisterReturn;
 }
 
-/** A material of the list: its title, or a field while it is renamed, and its actions. */
-export function MaterialRow({
-  index,
+/** A row of a list of titles: the title, or a field while it is renamed, and its actions. */
+export function TitleListRow({
+  error,
   isEditing,
+  isModified,
+  isNew,
   isSaving,
+  isTitleModified,
+  labels,
   onCancelEdit,
   onFinishEdit,
   onRemove,
   onStartEdit,
-  savedTitle,
-}: MaterialRowProps) {
-  const { control, register } = useFormContext<MaterialsFormValues>();
-  const { errors } = useFormState({ control, name: `materials.${index}.title` });
-  const title = useWatch({ control, name: `materials.${index}.title` });
+  start,
+  title,
+  titleField,
+}: TitleListRowProps) {
   const editButtonRef = React.useRef<HTMLButtonElement>(null);
   // Set when Enter or Escape ends the editing: the field goes, so the focus returns to the pencil.
   const focusEditButton = React.useRef(false);
-  const field = register(`materials.${index}.title`);
-  const isNew = savedTitle === undefined;
-  const isModified = isNew || savedTitle !== title;
-  const editLabel = `Переименовать ${title}`;
-  const removeLabel = `Удалить ${title || "материал"}`;
 
   React.useEffect(() => {
     if (!isEditing && focusEditButton.current) {
@@ -56,19 +71,21 @@ export function MaterialRow({
 
   return (
     <li className={clsx(styles.row, isModified && styles.rowModified)}>
+      {start}
+
       {isEditing ? (
         <Input
-          {...field}
+          {...titleField}
           className={styles.rowField}
           label="Название"
-          aria-label={`Название материала ${savedTitle ?? title}`}
+          aria-label={labels.field}
           disabled={isSaving}
-          error={errors.materials?.[index]?.title?.message}
-          isModified={isModified}
+          error={error}
+          isModified={isTitleModified}
           // The field opens on the pencil, which goes away; the focus moves into the field.
           autoFocus
           onBlur={(event) => {
-            void field.onBlur(event);
+            void titleField.onBlur(event);
             onFinishEdit();
           }}
           onKeyDown={(event) => {
@@ -92,10 +109,10 @@ export function MaterialRow({
 
       <div className={styles.rowActions}>
         {isEditing ? null : (
-          <Tooltip content={editLabel}>
+          <Tooltip content={labels.rename}>
             <IconButton
               ref={editButtonRef}
-              label={editLabel}
+              label={labels.rename}
               disabled={isSaving}
               onClick={onStartEdit}
             >
@@ -103,9 +120,9 @@ export function MaterialRow({
             </IconButton>
           </Tooltip>
         )}
-        <Tooltip content={removeLabel}>
+        <Tooltip content={labels.remove}>
           <IconButton
-            label={removeLabel}
+            label={labels.remove}
             disabled={isSaving}
             // Keeps the field from ending the renaming first, which would move the focus.
             onMouseDown={(event) => event.preventDefault()}

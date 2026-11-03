@@ -2,19 +2,7 @@ import { z } from "zod";
 
 import { type GallerySection, maxSubsections } from "@/entities/gallery";
 
-// Mirrors the server rules in backend/src/modules/gallery-sections/schema.ts.
-export const maxSectionTitleLength = 50;
-
-const titleSchema = z
-  .string()
-  .trim()
-  .min(1, "Введите название")
-  .max(maxSectionTitleLength, `Не длиннее ${String(maxSectionTitleLength)} символов`);
-
-/** The visitor reads "Графика" and "графика" as the same title. */
-function titleKey(title: string): string {
-  return title.trim().toLocaleLowerCase("ru");
-}
+import { refineUniqueTitles, titleSchema } from "./titles";
 
 export const sectionFormSchema = z.object({
   title: titleSchema,
@@ -27,23 +15,7 @@ export const sectionFormSchema = z.object({
       }),
     )
     .max(maxSubsections, `Не больше ${String(maxSubsections)} подразделов`)
-    .superRefine((subsections, context) => {
-      const seen = new Set<string>();
-
-      subsections.forEach(({ title }, index) => {
-        const key = titleKey(title);
-
-        if (key && seen.has(key)) {
-          context.addIssue({
-            code: "custom",
-            message: "Такой подраздел уже есть",
-            path: [index, "title"],
-          });
-        }
-
-        seen.add(key);
-      });
-    }),
+    .superRefine(refineUniqueTitles("Такой подраздел уже есть")),
 });
 
 export type SectionFormValues = z.infer<typeof sectionFormSchema>;
