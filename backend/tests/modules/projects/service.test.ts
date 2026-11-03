@@ -78,7 +78,6 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
-import { minPhotoSize } from "#shared/images/processing";
 
 const elephantId = "11111111-1111-4111-8111-111111111111";
 const tigerId = "22222222-2222-4222-8222-222222222222";
@@ -208,7 +207,6 @@ describe("createProject", () => {
     expect(uploads.publishUpload).toHaveBeenCalledWith(
       uploadId,
       `projects/${newId}/photos/${String(data.photos[0]?.id)}`,
-      minPhotoSize,
     );
     expect(data).toMatchObject({ description: body.description, link: body.link, title: "Жираф" });
     expect(etag).toBe(await readTag(newId));

@@ -2,7 +2,8 @@ import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import React, { type ReactNode } from "react";
 
-import { describeFileRules, type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
+import { formatFileSize } from "@/shared/lib/formatFileSize";
+import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { joinMessages } from "@/shared/lib/joinMessages";
 import {
   formatPosition,
@@ -94,15 +95,12 @@ export function SortableMediaList({
     return items[getItemIndex(itemId)]?.name ?? "";
   }
 
-  async function addFiles(fileList: FileList) {
-    // Copied before the first await: the file input empties its list once this call returns.
-    const files = Array.from(fileList);
-    const fileRejections = await Promise.all(files.map((file) => getFileRejection(file, rules)));
+  function addFiles(fileList: FileList) {
     const rejections = new Set<string>();
     const accepted: File[] = [];
 
-    for (const [index, file] of files.entries()) {
-      const fileRejection = fileRejections[index];
+    for (const file of Array.from(fileList)) {
+      const fileRejection = getFileRejection(file, rules);
       if (fileRejection) {
         rejections.add(fileRejection);
       } else {
@@ -120,13 +118,12 @@ export function SortableMediaList({
     if (accepted.length > 0) onAdd(accepted);
   }
 
-  async function replaceFile(fileList: FileList) {
-    // Read before the first await: the file input empties its list once this call returns.
+  function replaceFile(fileList: FileList) {
     const [file] = Array.from(fileList);
     const itemId = replacedItemIdRef.current;
     if (!file || !itemId) return;
 
-    const fileRejection = await getFileRejection(file, rules);
+    const fileRejection = getFileRejection(file, rules);
     onRejectionChange(fileRejection);
     if (!fileRejection) onReplace(itemId, file);
   }
@@ -175,7 +172,7 @@ export function SortableMediaList({
         className={className}
         frameClassName={styles.frame}
         label={label}
-        hint={`${describeFileRules(rules)}. Фото: ${String(items.length)} из ${String(maxItems)}`}
+        hint={`${rules.acceptLabel}, до ${formatFileSize(rules.maxFileSize)}. Фото: ${String(items.length)} из ${String(maxItems)}`}
         error={error}
         disabled={disabled}
         isModified={isModified}

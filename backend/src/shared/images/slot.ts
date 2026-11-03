@@ -7,7 +7,6 @@ import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import type { MinImageSize } from "#shared/images/processing";
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
 import { publishUpload } from "#shared/images/uploads";
 
@@ -25,8 +24,6 @@ export interface SlotField<TStored extends StoredImage> {
 export interface ImageSlot<TStored extends StoredImage> extends SlotField<TStored> {
   document: () => DocumentReference;
   folder: string;
-  /** The smallest image the slot takes. */
-  minSize: MinImageSize;
 }
 
 /** What the slot stores after a change, with its tag, and what it stored before. */
@@ -103,7 +100,7 @@ export async function fillSlot<TStored extends StoredImage>(
   ifMatch: string,
   toStored: (image: StoredImage) => TStored,
 ): Promise<FilledSlot<TStored>> {
-  const stored = toStored(await publishUpload(uploadId, slot.folder, slot.minSize));
+  const stored = toStored(await publishUpload(uploadId, slot.folder));
   let changed: ChangedSlot<TStored, TStored>;
 
   try {

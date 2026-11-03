@@ -4,7 +4,7 @@ import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
 import { BadRequestError } from "#shared/http/errors";
-import { isLargeEnough, minHeroSize, minPhotoSize, processImage } from "#shared/images/processing";
+import { processImage } from "#shared/images/processing";
 
 function solidImage(width: number, height: number) {
   return sharp({ create: { background: "#a33", channels: 3, height, width } });
@@ -104,18 +104,5 @@ describe("image processing", () => {
     await expect(processImage(pngClaimingSize(10_000, 10_000))).rejects.toThrow(
       "The image is too large",
     );
-  });
-});
-
-describe("isLargeEnough", () => {
-  it("measures a hero by its width", () => {
-    expect(isLargeEnough({ height: 1_080, width: 1_920 }, minHeroSize)).toBe(true);
-    expect(isLargeEnough({ height: 2_400, width: 1_919 }, minHeroSize)).toBe(false);
-  });
-
-  it("measures other photos by their longer side, so a portrait is not held to the width", () => {
-    expect(isLargeEnough({ height: 1_500, width: 1_200 }, minPhotoSize)).toBe(true);
-    expect(isLargeEnough({ height: 900, width: 1_280 }, minPhotoSize)).toBe(true);
-    expect(isLargeEnough({ height: 1_000, width: 1_279 }, minPhotoSize)).toBe(false);
   });
 });

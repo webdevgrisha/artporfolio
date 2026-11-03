@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import type { FileRules } from "@/shared/lib/getFileRejection";
-
 /** One encoded file of an image, for a srcset. */
 const imageSourceSchema = z.object({
   url: z.string(),
@@ -27,19 +25,9 @@ export const imageSchema = z.object({
 
 export type Image = z.infer<typeof imageSchema>;
 
-/**
- * The rules of a photo upload, other than a hero; mirrors `minPhotoSize` and the other rules in
- * backend/src/shared/images/processing.ts.
- */
+/** Mirrors the rules of every photo upload in backend/src/shared/images/processing.ts. */
 export const imageUploadRules = {
   accept: ["image/jpeg", "image/png", ".jpg", ".jpeg", ".png"],
   acceptLabel: "JPEG или PNG",
   maxFileSize: 15 * 1024 * 1024,
-  minImageSize: { pixels: 1_280, side: "longer" },
-} as const satisfies FileRules;
-
-/** A hero fills the width of the screen; mirrors `minHeroSize` on the server. */
-export const heroUploadRules = {
-  ...imageUploadRules,
-  minImageSize: { pixels: 1_920, side: "width" },
-} as const satisfies FileRules;
+} as const;

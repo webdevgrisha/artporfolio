@@ -124,11 +124,9 @@ describe("saveUpload", () => {
 
 describe("publishUpload", () => {
   const uploadId = "11111111-1111-4111-8111-111111111111";
-  /** Takes the 960 × 480 upload of the manifest. */
-  const anySize = { pixels: 1, side: "width" } as const;
 
   it("copies the upload into a new version folder, the web images with download tokens", async () => {
-    const image = await publishUpload(uploadId, "about/process-photos/photo-id", anySize);
+    const image = await publishUpload(uploadId, "about/process-photos/photo-id");
     const target = `about/process-photos/photo-id/${image.version}`;
 
     expect(storage.readFile).toHaveBeenCalledWith(`uploads/${uploadId}/upload.json`);
@@ -162,7 +160,7 @@ describe("publishUpload", () => {
   });
 
   it("keeps the upload, so a request that fails later can be repeated", async () => {
-    await publishUpload(uploadId, "folder", anySize);
+    await publishUpload(uploadId, "folder");
 
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
@@ -170,7 +168,7 @@ describe("publishUpload", () => {
   it("returns 422 for an upload that does not exist or has expired", async () => {
     storage.readFile.mockResolvedValue(undefined);
 
-    await expect(publishUpload(uploadId, "folder", anySize)).rejects.toBeInstanceOf(
+    await expect(publishUpload(uploadId, "folder")).rejects.toBeInstanceOf(
       UnprocessableContentError,
     );
     expect(storage.copyFile).not.toHaveBeenCalled();
@@ -179,26 +177,10 @@ describe("publishUpload", () => {
   it("removes the copies made so far when a copy fails", async () => {
     storage.copyToDownloadableFile.mockRejectedValueOnce(new Error("Storage is down"));
 
-    await expect(publishUpload(uploadId, "folder", anySize)).rejects.toThrow("Storage is down");
+    await expect(publishUpload(uploadId, "folder")).rejects.toThrow("Storage is down");
 
     expect(storage.deleteFolder).toHaveBeenCalledWith(
       expect.stringMatching(/^folder\/[0-9a-f-]{36}$/),
     );
-  });
-
-  it("returns 422 for an image smaller than the place takes, before copying it", async () => {
-    await expect(
-      publishUpload(uploadId, "folder", { pixels: 961, side: "width" }),
-    ).rejects.toBeInstanceOf(UnprocessableContentError);
-    await expect(
-      publishUpload(uploadId, "folder", { pixels: 961, side: "longer" }),
-    ).rejects.toThrow("The image must be at least 961 px on its longer side");
-    expect(storage.copyFile).not.toHaveBeenCalled();
-  });
-
-  it("takes an image exactly as large as the place takes", async () => {
-    await expect(
-      publishUpload(uploadId, "folder", { pixels: 960, side: "width" }),
-    ).resolves.toMatchObject({ width: 960 });
   });
 });

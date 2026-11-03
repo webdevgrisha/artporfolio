@@ -5,30 +5,6 @@ import { BadRequestError } from "#shared/http/errors";
 /** Widths for the srcset: phones, tablets and 1x desktops, up to 2x desktops. */
 const targetWidths = [640, 960, 1_280, 1_920];
 
-/**
- * The smallest image a place takes, by its width or by its longer side, so a portrait photo is
- * not held to the width of a landscape one. It is checked on the widest web image, which is the
- * original size up to the widest target width, so `pixels` is at most that width.
- */
-export interface MinImageSize {
-  pixels: number;
-  side: "longer" | "width";
-}
-
-/** A hero fills the width of the screen. */
-export const minHeroSize: MinImageSize = { pixels: 1_920, side: "width" };
-
-/** Other photos are shown in columns and in a full-screen preview, where a portrait fills the height. */
-export const minPhotoSize: MinImageSize = { pixels: 1_280, side: "longer" };
-
-/** Whether an image of this size is large enough for `minSize`. */
-export function isLargeEnough(
-  { height, width }: { height: number; width: number },
-  { pixels, side }: MinImageSize,
-): boolean {
-  return (side === "width" ? width : Math.max(width, height)) >= pixels;
-}
-
 export const outputFormats = ["avif", "webp"] as const;
 
 // Source photos only: WebP and AVIF are already compressed for the web, and compressing them

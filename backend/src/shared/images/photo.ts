@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { NotFoundError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
-import { minPhotoSize } from "#shared/images/processing";
 import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
 import { imageSchema, storedImageSchema, toImage } from "#shared/images/storage";
 import { uploadIdSchema } from "#shared/images/uploads";
@@ -62,7 +61,7 @@ export function photoSlot(place: {
   field: string;
   folder: string;
 }): PhotoSlot {
-  return { ...place, minSize: minPhotoSize, schema: storedPhotoSchema };
+  return { ...place, schema: storedPhotoSchema };
 }
 
 export function readPhoto(slot: PhotoSlot, snapshot: DocumentSnapshot): StoredPhoto | null {

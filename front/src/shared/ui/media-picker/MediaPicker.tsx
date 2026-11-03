@@ -1,6 +1,7 @@
 import React from "react";
 
-import { describeFileRules, type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
+import { formatFileSize } from "@/shared/lib/formatFileSize";
+import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
@@ -68,13 +69,12 @@ export function MediaPicker({
   const isDisabled = disabled || isBusy;
   const { dropTargetProps, isDragOver } = useFileDrop({ disabled: isDisabled, onDrop: pickFile });
 
-  async function pickFile(fileList: FileList) {
-    // Read before the first await: the file input empties its list once this call returns.
+  function pickFile(fileList: FileList) {
     const [file] = Array.from(fileList);
     if (!file) return;
 
     const fileRejection =
-      fileList.length > 1 ? "Можно выбрать только один файл" : await getFileRejection(file, rules);
+      fileList.length > 1 ? "Можно выбрать только один файл" : getFileRejection(file, rules);
 
     onRejectionChange(fileRejection);
     if (!fileRejection) onPick(file);
@@ -93,7 +93,7 @@ export function MediaPicker({
         className={className}
         frameClassName={styles.frame}
         label={label}
-        hint={describeFileRules(rules)}
+        hint={`${rules.acceptLabel}, до ${formatFileSize(rules.maxFileSize)}`}
         error={error}
         disabled={isDisabled}
         isModified={isModified}

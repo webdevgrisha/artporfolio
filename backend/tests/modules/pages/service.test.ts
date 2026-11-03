@@ -57,7 +57,6 @@ vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 import { getPageHero, getPages, savePageHero } from "#modules/pages/service";
 import { PreconditionFailedError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
-import { minHeroSize } from "#shared/images/processing";
 
 const uploadId = "11111111-1111-4111-8111-111111111111";
 
@@ -161,7 +160,7 @@ describe("page service", () => {
     const { created, data: hero, etag } = await savePageHero("about", uploadId, emptyTag);
 
     expect(created).toBe(true);
-    expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "pages/about/hero", minHeroSize);
+    expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "pages/about/hero");
     expect(transaction.set).toHaveBeenCalledWith(
       aboutDocument,
       { hero: published },

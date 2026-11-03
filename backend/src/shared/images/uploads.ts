@@ -5,8 +5,6 @@ import { z } from "zod";
 import { copyFile, copyToDownloadableFile, readFile, saveFile } from "#shared/firebase/storage";
 import { UnprocessableContentError } from "#shared/http/errors";
 import {
-  isLargeEnough,
-  type MinImageSize,
   type OutputFormat,
   outputFormats,
   processImage,
@@ -142,23 +140,10 @@ function filesIn(format: OutputFormat, published: PublishedImageFile[]): StoredI
  * Copies the upload into a new version folder under `folder`, where the site reads it: the web
  * images become readable through download URLs, the original stays private. The upload itself is
  * kept, so the request can be repeated; see uploadsFolder. If copying fails halfway, the copies
- * made so far are removed. An image smaller than `minSize` is refused with 422: the place it goes
- * to would show it blurred.
+ * made so far are removed.
  */
-export async function publishUpload(
-  id: string,
-  folder: string,
-  minSize: MinImageSize,
-): Promise<StoredImage> {
+export async function publishUpload(id: string, folder: string): Promise<StoredImage> {
   const manifest = await readManifest(id);
-
-  if (!isLargeEnough(manifest, minSize)) {
-    const side = minSize.side === "width" ? "wide" : "on its longer side";
-    throw new UnprocessableContentError(
-      `The image must be at least ${String(minSize.pixels)} px ${side}`,
-    );
-  }
-
   const source = uploadFolder(id);
   const version = randomUUID();
   const target = `${folder}/${version}`;

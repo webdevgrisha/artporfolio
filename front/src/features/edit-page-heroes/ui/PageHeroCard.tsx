@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import React from "react";
 
 import { pageHeroQuery } from "@/entities/site-page";
-import { heroUploadRules, type Image } from "@/shared/api/image";
+import { type Image, imageUploadRules } from "@/shared/api/image";
 import { MediaPicker } from "@/shared/ui/media-picker";
 import { imageToMediaItem, type MediaItem } from "@/shared/ui/media-preview";
 
@@ -42,7 +42,7 @@ export function PageHeroCard({ field }: PageHeroCardProps) {
   return (
     <MediaPicker
       label={field.label}
-      rules={heroUploadRules}
+      rules={imageUploadRules}
       item={toMediaItem(uploadHero.isPending ? uploadHero.variables.file : undefined, hero.data)}
       error={rejection}
       isBusy={uploadHero.isPending}
