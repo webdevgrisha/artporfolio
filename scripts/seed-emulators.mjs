@@ -1,6 +1,6 @@
 // Fills the running emulators with demo content through the API, as the admin would: page heroes,
 // the About page, the contacts, the projects with their photos, and the gallery text, sections,
-// materials, colors and palettes. Every run first empties the Firestore emulator, so the admin
+// materials, colors, palettes and works. Every run first empties the Firestore emulator, so the admin
 // always starts from the same content. The images are drawn here, so the result is the same on
 // every machine and needs no network.
 //
@@ -261,6 +261,21 @@ const galleryPalettes = [
 ];
 
 /** In the order the site shows them. */
+const galleryWorks = [
+  { title: "Слон на закате", palette: "elephant", size: [50, 70, "cm"], year: 2025 },
+  { title: "Тигр в зарослях", palette: "tiger", size: [60, 80, "cm"], year: 2025 },
+  { title: "Стрекоза", palette: "dragonfly", size: [8.5, 11, "in"], year: 2025 },
+  { title: "Лев", palette: "lion", size: [40, 50, "cm"], year: 2024 },
+  { title: "Лягушка на листе", palette: "frog", size: [29.7, 42, "cm"], year: 2024 },
+  { title: "Сова", palette: "owl", size: [30, 40, "cm"], year: 2024 },
+  { title: "Слонёнок", palette: "elephant", size: [12, 16, "in"], year: 2023 },
+  { title: "Полосы", palette: "tiger", size: [100, 70, "cm"], year: 2023 },
+  { title: "Пруд", palette: "dragonfly", size: [70, 50, "cm"], year: 2022 },
+  { title: "Грива", palette: "lion", size: [24, 30, "in"], year: 2021 },
+  { title: "Ночная сова", palette: "owl", size: [21, 29.7, "cm"], year: 2020 },
+  { title: "Болото", palette: "frog", size: [80, 60, "cm"], year: 2019 },
+];
+
 const projects = [
   {
     description:
@@ -522,8 +537,29 @@ async function seedGallery(api) {
   await api.put("/gallery-palettes", {
     palettes: galleryPalettes.map((title) => ({ id: randomUUID(), title })),
   });
+
+  for (const [index, work] of galleryWorks.entries()) {
+    const [width, height, unit] = work.size;
+    const uploadId = await uploadArtwork(api, {
+      kind: index % 3 === 2 ? "etching" : "painting",
+      name: work.title,
+      palette: work.palette,
+      seed: 3000 + index,
+      // The drawing keeps the proportions of the work: 20 px per centimetre.
+      size: [width, height].map((side) => Math.round(side * (unit === "in" ? 2.54 : 1) * 20)),
+    });
+
+    await api.create(`/gallery-works/${randomUUID()}`, {
+      title: work.title,
+      description: index % 2 === 0 ? `${work.title}. Работа из серии о животных.` : "",
+      size: { width, height, unit },
+      year: work.year,
+      photo: { alt: work.title, uploadId },
+    });
+  }
+
   console.log(
-    `  gallery: text, ${String(gallerySections.length)} sections, ${String(galleryMaterials.length)} materials, ${String(galleryColors.length)} colors, ${String(galleryPalettes.length)} palettes`,
+    `  gallery: text, ${String(gallerySections.length)} sections, ${String(galleryMaterials.length)} materials, ${String(galleryColors.length)} colors, ${String(galleryPalettes.length)} palettes, ${String(galleryWorks.length)} works`,
   );
 }
 
