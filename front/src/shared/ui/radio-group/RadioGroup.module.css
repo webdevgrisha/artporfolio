@@ -1,0 +1,61 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+/* As the label of a text field. */
+.legend {
+  padding: 0;
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-md);
+  line-height: 1.375;
+}
+
+.legend::after {
+  content: ":";
+}
+
+/* As tall as a text field, so the group lines up with the fields beside it. */
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  align-items: center;
+  min-block-size: var(--control-size);
+}
+
+/* A changed choice is underlined as a changed field is framed: in the colour of the change. */
+.modified {
+  box-shadow: inset 0 -2px 0 var(--color-border-modified);
+}
+
+.option {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-block-size: var(--min-tap-target-size);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+}
+
+.radio {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  margin: 0;
+  accent-color: var(--color-text);
+  cursor: inherit;
+}
+
+.radio:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.root:disabled .option {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
