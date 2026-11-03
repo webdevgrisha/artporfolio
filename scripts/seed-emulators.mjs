@@ -260,6 +260,17 @@ const galleryColors = [
   { title: "Охра", hex: "#c8913a" },
 ];
 
+/** The colors of the seeded paintings by the palette of their drawing; an etching is black and white. */
+const workPaintingColors = {
+  dragonfly: ["Синий", "Зелёный"],
+  elephant: ["Охра", "Красный"],
+  frog: ["Зелёный", "Жёлтый"],
+  lion: ["Жёлтый", "Охра"],
+  owl: ["Охра", "Чёрный"],
+  tiger: ["Охра", "Зелёный"],
+};
+const workEtchingColors = ["Чёрный", "Белый"];
+
 /** The coloring of a work as a whole, apart from the colors it has. */
 const galleryPalettes = [
   "Пастельная",
@@ -548,9 +559,11 @@ async function seedGallery(api) {
   const materialIds = new Map(materials.map(({ id, title }) => [title, id]));
 
   await api.put("/gallery-materials", { materials });
-  await api.put("/gallery-colors", {
-    colors: galleryColors.map((color) => ({ id: randomUUID(), ...color })),
-  });
+  const colors = galleryColors.map((color) => ({ id: randomUUID(), ...color }));
+  // The ids of the colors by title, for the works to refer to.
+  const colorIds = new Map(colors.map(({ id, title }) => [title, id]));
+
+  await api.put("/gallery-colors", { colors });
   await api.put("/gallery-palettes", {
     palettes: galleryPalettes.map((title) => ({ id: randomUUID(), title })),
   });
@@ -603,6 +616,9 @@ async function seedGallery(api) {
         ? workEtchingMaterials
         : workPaintingMaterials[index % workPaintingMaterials.length]
       ).map((title) => materialIds.get(title)),
+      colorIds: (kind === "etching" ? workEtchingColors : workPaintingColors[work.palette]).map(
+        (title) => colorIds.get(title),
+      ),
     });
   }
 

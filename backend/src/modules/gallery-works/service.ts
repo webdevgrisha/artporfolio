@@ -1,5 +1,6 @@
 import { type DocumentSnapshot, Timestamp, type Transaction } from "firebase-admin/firestore";
 
+import { colorIdsIn, colorsDocument } from "#modules/gallery-colors/service";
 import { materialIdsIn, materialsDocument } from "#modules/gallery-materials/service";
 import { sectionIdsIn, sectionsCollection } from "#modules/gallery-sections/service";
 
@@ -36,6 +37,7 @@ interface KnownIds {
   /** Every section and subsection. */
   sections: Set<string>;
   materials: Set<string>;
+  colors: Set<string>;
 }
 
 function worksCollection() {
@@ -75,6 +77,7 @@ function readWork(snapshot: DocumentSnapshot): StoredWork {
 
 /** What the client edits, which the entity tag of a work follows. */
 function editedContent({
+  colorIds,
   description,
   materialIds,
   month,
@@ -85,7 +88,18 @@ function editedContent({
   title,
   year,
 }: StoredWork) {
-  return { description, materialIds, month, photo, processPhotos, sectionIds, size, title, year };
+  return {
+    colorIds,
+    description,
+    materialIds,
+    month,
+    photo,
+    processPhotos,
+    sectionIds,
+    size,
+    title,
+    year,
+  };
 }
 
 const centimetresPerInch = 2.54;
@@ -99,12 +113,13 @@ function toInches(centimetres: number): number {
 }
 
 /**
- * The stored work as the API returns it, with download URLs and ISO 8601 dates. A section or a
- * material deleted since the work was saved is left out (`known`, the ids that exist).
+ * The stored work as the API returns it, with download URLs and ISO 8601 dates. A section, a
+ * material or a color deleted since the work was saved is left out (`known`, the ids that exist).
  */
 function toWork(
   id: string,
   {
+    colorIds,
     createdAt,
     description,
     materialIds,
@@ -120,6 +135,7 @@ function toWork(
   known: KnownIds,
 ): Work {
   return {
+    colorIds: colorIds.filter((colorId) => known.colors.has(colorId)),
     createdAt: createdAt.toDate().toISOString(),
     description,
     id,
@@ -142,12 +158,17 @@ function toSavedWork(id: string, work: StoredWork, known: KnownIds): SavedWork {
 
 /** The ids of everything a work may refer to. */
 async function readKnownIds(): Promise<KnownIds> {
-  const [sections, materials] = await Promise.all([
+  const [sections, materials, colors] = await Promise.all([
     sectionsCollection().get(),
     materialsDocument().get(),
+    colorsDocument().get(),
   ]);
 
-  return { materials: materialIdsIn(materials), sections: sectionIdsIn(sections) };
+  return {
+    colors: colorIdsIn(colors),
+    materials: materialIdsIn(materials),
+    sections: sectionIdsIn(sections),
+  };
 }
 
 /** Rejects with 422 an id the work names that is not one of `known`, saying what it should be. */
@@ -160,18 +181,24 @@ function assertKnown(ids: string[], known: Set<string>, kind: string): void {
 }
 
 /**
- * Rejects with 422 a section or a material the work names that does not exist, such as one deleted
- * while the form was open. Read in the transaction, so one deleted meanwhile is caught too.
+ * Rejects with 422 a section, a material or a color the work names that does not exist, such as one
+ * deleted while the form was open. Read in the transaction, so one deleted meanwhile is caught too.
  */
 async function assertReferencesExist(transaction: Transaction, body: WorkBody): Promise<KnownIds> {
-  const [sections, materials] = await Promise.all([
+  const [sections, materials, colors] = await Promise.all([
     transaction.get(sectionsCollection()),
     transaction.get(materialsDocument()),
+    transaction.get(colorsDocument()),
   ]);
-  const known: KnownIds = { materials: materialIdsIn(materials), sections: sectionIdsIn(sections) };
+  const known: KnownIds = {
+    colors: colorIdsIn(colors),
+    materials: materialIdsIn(materials),
+    sections: sectionIdsIn(sections),
+  };
 
   assertKnown(body.sectionIds, known.sections, "section");
   assertKnown(body.materialIds, known.materials, "material");
+  assertKnown(body.colorIds, known.colors, "color");
 
   return known;
 }
@@ -189,8 +216,8 @@ export async function listWorks(): Promise<Tagged<Work[]>> {
     .sort((a, b) => compareWorks(a.work, b.work));
   const data = works.map(({ id, work }) => toWork(id, work, known));
 
-  // Tagged by what is returned: deleting a section or a material changes the list without changing
-  // a work.
+  // Tagged by what is returned: deleting a section, a material or a color changes the list without
+  // changing a work.
   return { data, etag: entityTag(data) };
 }
 
@@ -222,7 +249,7 @@ async function discardPhoto(id: string, image: StoredImage | undefined): Promise
  * Creates the work `id`, which the client chose; rejects it with 412 once a work has that id, such
  * as one an earlier try of the same request created. A new work has no saved photos, so its photo
  * needs an upload and a process photo cannot name an id, or it is rejected with 422, as it is for a
- * section or a material that does not exist. The files are copied from their uploads first; if saving fails, the
+ * section, a material or a color that does not exist. The files are copied from their uploads first; if saving fails, the
  * copies are removed.
  */
 export async function createWork(id: string, body: WorkBody): Promise<SavedWork> {
@@ -281,7 +308,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
  * from their uploads first and the replaced ones are removed once the work is saved, so the site
  * never links to missing files; if saving fails, the copies are removed and the work stays as it
  * was. The process photos are saved as one list: a saved photo left out is deleted, see
- * preparePhotoList. A section or a material that does not exist is rejected with 422.
+ * preparePhotoList. A section, a material or a color that does not exist is rejected with 422.
  */
 export async function replaceWork(id: string, body: WorkBody, ifMatch: string): Promise<SavedWork> {
   const image = await publishPhoto(id, body.photo.uploadId);

@@ -18,6 +18,9 @@ export const maxWorkSections = 30;
 /** The most materials one work may be made of. */
 export const maxWorkMaterials = 10;
 
+/** The most colors one work may have. */
+export const maxWorkColors = 10;
+
 /** The most process photos one work may have; raise it when the artist needs more. */
 export const maxWorkProcessPhotos = 20;
 
@@ -90,6 +93,11 @@ export const workBodySchema = z
     sectionIds: referenceIdsSchema(maxWorkSections),
     /** What the work is made of, by the ids of the gallery materials; at least one. */
     materialIds: referenceIdsSchema(maxWorkMaterials),
+    /**
+     * The colors a visitor finds the work by, by the ids of the gallery colors; at least one. A
+     * black-and-white work has both black and white.
+     */
+    colorIds: referenceIdsSchema(maxWorkColors),
   })
   .refine(({ month, year }) => !isFutureMonth(year, month), {
     message: "The month cannot be in the future",
@@ -113,6 +121,8 @@ export const storedWorkSchema = z.object({
   sectionIds: z.array(z.string()),
   /** May name a material deleted since; the API leaves such ids out. */
   materialIds: z.array(z.string()),
+  /** May name a color deleted since; the API leaves such ids out. */
+  colorIds: z.array(z.string()),
   /** Set by the server when the work is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the work. */
@@ -138,6 +148,8 @@ export const workSchema = z.object({
   sectionIds: z.array(z.uuid()),
   /** The materials the work is made of; a deleted one is left out. */
   materialIds: z.array(z.uuid()),
+  /** The colors of the work; a deleted one is left out. */
+  colorIds: z.array(z.uuid()),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

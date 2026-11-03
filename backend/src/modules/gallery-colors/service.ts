@@ -8,12 +8,17 @@ import { byTitle } from "#shared/text/titles";
 const noColors: GalleryColors = { colors: [] };
 
 /** The document that holds every color of the gallery, and nothing else. */
-function colorsDocument() {
+export function colorsDocument() {
   return firestore().doc("site/galleryColors");
 }
 
 function readColors(snapshot: DocumentSnapshot): GalleryColors {
   return snapshot.exists ? galleryColorsSchema.parse(snapshot.data()) : noColors;
+}
+
+/** The ids of every saved color, which a work may refer to. */
+export function colorIdsIn(snapshot: DocumentSnapshot): Set<string> {
+  return new Set(readColors(snapshot).colors.map((color) => color.id));
 }
 
 /** The colors with the entity tag for If-Match; there are none until they are first saved. */
