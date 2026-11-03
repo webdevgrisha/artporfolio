@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
-import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { type GalleryColors, galleryColorsQuery, maxColors } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
@@ -144,10 +144,18 @@ export function EditColorsForm({ className, colors }: EditColorsFormProps) {
                   titleField={register(`colors.${index}.title`)}
                   start={
                     <Tooltip content={swatchLabel}>
-                      <ColorSwatchInput
-                        {...register(`colors.${index}.hex`)}
-                        label={swatchLabel}
-                        disabled={editForm.isSaving}
+                      {/* Controlled: an uncontrolled color input shows #000000 before the form
+                          fills it, and the form would take that for a value the user picked. */}
+                      <Controller
+                        control={control}
+                        name={`colors.${index}.hex`}
+                        render={({ field: swatch }) => (
+                          <ColorSwatchInput
+                            {...swatch}
+                            label={swatchLabel}
+                            disabled={editForm.isSaving}
+                          />
+                        )}
                       />
                     </Tooltip>
                   }
