@@ -45,6 +45,17 @@ describe("contactLinksFormSchema", () => {
     });
   });
 
+  it("takes only a link to the network of the field", () => {
+    expect(errors({ instagram: "https://www.instagram.com/artist" })).toEqual({});
+    expect(errors({ youtube: "https://youtu.be/abc" })).toEqual({});
+    expect(errors({ instagram: "https://youtube.com/@artist" })).toEqual({
+      instagram: ["Введите ссылку на Instagram"],
+    });
+    expect(errors({ linkedin: "https://notlinkedin.com/in/artist" })).toEqual({
+      linkedin: ["Введите ссылку на LinkedIn"],
+    });
+  });
+
   it("takes only a valid email", () => {
     expect(errors({ email: "artist@example.com" })).toEqual({});
     expect(errors({ email: "artist@" })).toEqual({ email: ["Введите корректный email"] });

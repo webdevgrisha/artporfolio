@@ -39,9 +39,27 @@ describe("contact links body", () => {
     "javascript:alert(1)",
     "ftp://example.com",
     "instagram.com/artist",
-    `https://example.com/${"a".repeat(2_048)}`,
+    `https://instagram.com/${"a".repeat(2_048)}`,
   ])("rejects the link %s", (link) => {
     expect(isValid({ ...links, instagram: link })).toBe(false);
+  });
+
+  it.each([
+    ["instagram", "https://www.instagram.com/artist"],
+    ["linkedin", "https://pl.linkedin.com/in/artist"],
+    ["youtube", "https://m.youtube.com/@artist"],
+    ["youtube", "https://youtu.be/abc"],
+  ])("accepts a %s link on its network: %s", (field, link) => {
+    expect(isValid({ ...links, [field]: link })).toBe(true);
+  });
+
+  it.each([
+    ["instagram", "https://youtube.com/@artist"],
+    ["instagram", "https://notinstagram.com/artist"],
+    ["linkedin", "https://linkedin.com.example.com/in/artist"],
+    ["youtube", "https://instagram.com/artist"],
+  ])("rejects a %s link to another site: %s", (field, link) => {
+    expect(isValid({ ...links, [field]: link })).toBe(false);
   });
 
   it("rejects an invalid email", () => {

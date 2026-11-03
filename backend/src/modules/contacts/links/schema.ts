@@ -11,8 +11,26 @@ function optionalContact(format: z.ZodType<string, string>) {
     .pipe(z.union([z.literal(""), format]));
 }
 
-// Unlike z.url(), rejects "javascript:" links, which would run code when a visitor clicks them.
-const webLink = optionalContact(z.httpUrl());
+/** Whether the link goes to one of `domains` or to a subdomain of one, such as www. or m. */
+function isLinkTo(link: string, domains: readonly string[]): boolean {
+  const { hostname } = new URL(link);
+
+  return domains.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
+}
+
+/** A link to the profile on a network at `domains`, so a link cannot land in the wrong field. */
+function networkLink(domains: readonly string[]) {
+  // Unlike z.url(), rejects "javascript:" links, which would run code when a visitor clicks them.
+  // The pipe checks the domain only of a valid link; an empty one hides the contact.
+  return optionalContact(z.httpUrl()).pipe(
+    z
+      .string()
+      .refine(
+        (link) => link === "" || isLinkTo(link, domains),
+        `Must be a link to ${domains.join(" or ")}`,
+      ),
+  );
+}
 
 /**
  * All contact links. Every link is sent, empty when the site does not show it; the email is
@@ -20,9 +38,9 @@ const webLink = optionalContact(z.httpUrl());
  */
 export const contactLinksBodySchema = z.strictObject({
   email: z.string().trim().max(maxLength).pipe(z.email()),
-  instagram: webLink,
-  linkedin: webLink,
-  youtube: webLink,
+  instagram: networkLink(["instagram.com"]),
+  linkedin: networkLink(["linkedin.com"]),
+  youtube: networkLink(["youtube.com", "youtu.be"]),
 });
 
 /**
