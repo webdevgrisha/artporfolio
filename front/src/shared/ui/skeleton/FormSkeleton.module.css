@@ -1,0 +1,36 @@
+/* The layout of EditForm. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-8);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-6);
+}
+
+/* As TitleList. */
+.narrow {
+  max-inline-size: 48rem;
+}
+
+/* As FormActions: «Отменить» as text, «Сохранить» as a button, pushed to the bottom. */
+.actions {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  justify-content: flex-end;
+  margin-block-start: auto;
+}
+
+.revert {
+  inline-size: 6rem;
+  block-size: 1.25rem;
+}
+
+.save {
+  inline-size: 9rem;
+  block-size: 2.5rem;
+}

@@ -1,0 +1,9 @@
+.root {
+  animation: appear var(--motion-duration-standard) var(--motion-easing-standard) 200ms both;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
