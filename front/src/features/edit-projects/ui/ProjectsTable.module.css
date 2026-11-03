@@ -85,11 +85,6 @@
   }
 }
 
-/* The same light line as between the rows: with the muted names, it is all the header needs. */
-.table thead tr {
-  border-block-end: 1px solid var(--color-divider);
-}
-
 /* The column the table is sorted by stands out from the muted ones, together with its arrow. */
 .table thead th[aria-sort="ascending"],
 .table thead th[aria-sort="descending"] {
