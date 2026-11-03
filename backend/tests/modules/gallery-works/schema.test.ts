@@ -35,8 +35,8 @@ describe("work body", () => {
     expect(isValid({ ...work, title: "a".repeat(101) })).toBe(false);
   });
 
-  it("takes an empty description and limits it", () => {
-    expect(isValid({ ...work, description: "" })).toBe(true);
+  it("needs a description and limits it", () => {
+    expect(isValid({ ...work, description: "  " })).toBe(false);
     expect(isValid({ ...work, description: "a".repeat(2_000) })).toBe(true);
     expect(isValid({ ...work, description: "a".repeat(2_001) })).toBe(false);
   });

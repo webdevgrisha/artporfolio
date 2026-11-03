@@ -55,7 +55,7 @@ export function WorkFields({
         />
         <Textarea
           label="Описание"
-          hint={`Необязательно. До ${String(workMaxLengths.description)} символов. Абзацы разделяйте пустой строкой`}
+          hint={`До ${String(workMaxLengths.description)} символов. Абзацы разделяйте пустой строкой`}
           placeholder="О чём работа и как она сделана"
           rows={8}
           disabled={isSaving}

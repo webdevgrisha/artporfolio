@@ -19,7 +19,7 @@ export const workSizeSchema = z.object({
 
 export type WorkSize = z.infer<typeof workSizeSchema>;
 
-/** A work of the gallery. An empty description is not shown on the site. */
+/** A work of the gallery. */
 export const galleryWorkSchema = z.object({
   id: z.string(),
   title: z.string(),

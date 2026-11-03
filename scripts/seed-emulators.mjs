@@ -568,7 +568,7 @@ async function seedGallery(api) {
 
     await api.create(`/gallery-works/${randomUUID()}`, {
       title: work.title,
-      description: index % 2 === 0 ? `${work.title}. Работа из серии о животных.` : "",
+      description: `${work.title}. Работа из серии о животных.`,
       size: { width, height },
       year: work.year,
       photo: { alt: work.title, uploadId },

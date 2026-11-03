@@ -65,10 +65,10 @@ export const workFormSchema = z
       .trim()
       .min(1, "Введите название")
       .max(workMaxLengths.title, `Не длиннее ${String(workMaxLengths.title)} символов`),
-    /** An empty description is not shown on the site. */
     description: z
       .string()
       .trim()
+      .min(1, "Введите описание")
       .max(workMaxLengths.description, `Не длиннее ${String(workMaxLengths.description)} символов`),
     width: sideSchema,
     height: sideSchema,

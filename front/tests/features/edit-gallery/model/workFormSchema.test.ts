@@ -13,6 +13,7 @@ import { fieldErrors } from "../../../support/schema";
 
 const work = {
   ...emptyWorkFormValues,
+  description: "Масло, холст.",
   height: "70",
   photo: new File([""], "elephant.png"),
   photoAlt: "Слон на закате",
@@ -22,9 +23,10 @@ const work = {
 };
 
 describe("workFormSchema", () => {
-  it("needs a title, a size, a year and a photo", () => {
+  it("needs a title, a description, a size, a year and a photo", () => {
     expect(fieldErrors(workFormSchema, work)).toEqual({});
     expect(fieldErrors(workFormSchema, emptyWorkFormValues)).toEqual({
+      description: ["Введите описание"],
       height: ["Введите размер"],
       photo: ["Выберите фото"],
       title: ["Введите название"],

@@ -43,15 +43,15 @@ const workPhotoBodySchema = z.strictObject({
   uploadId: uploadIdSchema.optional(),
 });
 
-/**
- * A work as the client sends it, to create one or to replace a saved one. Every field is sent; an
- * empty description is not shown on the site.
- */
+/** A work as the client sends it, to create one or to replace a saved one. Every field is sent. */
 export const workBodySchema = z.strictObject({
   /** The name in the gallery, so it cannot be empty. */
   title: z.string().trim().min(1).max(100),
-  /** Plain text: no HTML or Markdown. Paragraphs are separated by a blank line. */
-  description: z.string().trim().max(2_000),
+  /**
+   * What the work is about, which the visitor reads beside it. Plain text: no HTML or Markdown.
+   * Paragraphs are separated by a blank line.
+   */
+  description: z.string().trim().min(1).max(2_000),
   size: workSizeSchema,
   /** A work is dated by the year it was finished, which cannot be in the future. */
   year: z
