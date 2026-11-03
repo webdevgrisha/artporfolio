@@ -129,6 +129,7 @@ backend/src/
 │   ├── gallery-colors/ the colors of the gallery, one list sorted by title
 │   ├── gallery-intro/  the text above the works in the gallery
 │   ├── gallery-materials/ the materials of the gallery, one list sorted by title
+│   ├── gallery-palettes/ the palettes of the gallery (pastel, bright…), one list sorted by title
 │   ├── gallery-sections/ the sections of the gallery, each a Firestore document with its subsections
 │   ├── health/
 │   ├── pages/          the pages of the public site and their main photos (heroes)
