@@ -11,6 +11,15 @@ export {
   gallerySectionsQueryKey,
   replaceGallerySection,
 } from "./api/gallerySections";
+export {
+  createGalleryWork,
+  deleteGalleryWork,
+  type GalleryWorkBody,
+  galleryWorkQuery,
+  galleryWorksQuery,
+  galleryWorksQueryKey,
+  replaceGalleryWork,
+} from "./api/galleryWorks";
 export { type GalleryColor, type GalleryColors, maxColors } from "./model/galleryColors";
 export type { GalleryIntro } from "./model/galleryIntro";
 export {
@@ -28,3 +37,11 @@ export {
   maxSubsections,
   type Subsection,
 } from "./model/gallerySection";
+export {
+  type GalleryWork,
+  maxWorkSide,
+  minWorkYear,
+  type WorkSize,
+  type WorkSizeUnit,
+  workSizeUnits,
+} from "./model/galleryWork";

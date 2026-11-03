@@ -1,0 +1,119 @@
+import { queryOptions } from "@tanstack/react-query";
+
+import { http, type Tagged } from "@/shared/api/http";
+
+import {
+  type GalleryWork,
+  galleryWorkResponseSchema,
+  galleryWorksResponseSchema,
+  type WorkSize,
+} from "../model/galleryWork";
+
+/** A work as the admin saves it: every field at once. */
+export interface GalleryWorkBody {
+  title: string;
+  description: string;
+  size: WorkSize;
+  year: number;
+  /** A new file by its upload (see `uploadImage`), or the saved file when `uploadId` is left out. */
+  photo: { alt: string; uploadId?: string };
+}
+
+interface CreateGalleryWorkParams {
+  body: GalleryWorkBody;
+  /** A new UUID, which the client picks, so that a repeated request names the same work. */
+  id: string;
+}
+
+interface ReplaceGalleryWorkParams {
+  body: GalleryWorkBody;
+  /** The ETag of the work the new one was made from. */
+  etag: string;
+  id: string;
+}
+
+interface DeleteGalleryWorkParams {
+  /** The ETag of the work as the admin saw it, or `*` for whatever version is saved. */
+  etag: string;
+  id: string;
+}
+
+/** Every query of the works starts with this key, so a change can refresh them all. */
+export const galleryWorksQueryKey = ["gallery", "works"] as const;
+
+function workPath(id: string): string {
+  return `/gallery-works/${encodeURIComponent(id)}`;
+}
+
+/** Every work in the order the site shows them. */
+export const galleryWorksQuery = queryOptions({
+  queryFn: async ({ signal }): Promise<GalleryWork[]> => {
+    const { works } = await http.get({
+      path: "/gallery-works",
+      schema: galleryWorksResponseSchema,
+      signal,
+    });
+
+    return works;
+  },
+  queryKey: [...galleryWorksQueryKey, "list"],
+});
+
+/** One work with its ETag. A save puts the saved work here. */
+export function galleryWorkQuery(id: string) {
+  return queryOptions({
+    queryFn: async ({ signal }): Promise<Tagged<GalleryWork>> => {
+      const { data, etag } = await http.getWithETag({
+        path: workPath(id),
+        schema: galleryWorkResponseSchema,
+        signal,
+      });
+
+      return { data: data.work, etag };
+    },
+    queryKey: [...galleryWorksQueryKey, "item", id],
+  });
+}
+
+/**
+ * Creates the work `id` and returns it as saved with its ETag. Rejected with 412 when the work
+ * exists, for example created by an earlier try whose response was lost, and with 422 when the
+ * upload of its photo has expired.
+ */
+export async function createGalleryWork({
+  body,
+  id,
+}: CreateGalleryWorkParams): Promise<Tagged<GalleryWork>> {
+  const { data, etag } = await http.putIfNoneMatch({
+    path: workPath(id),
+    body,
+    schema: galleryWorkResponseSchema,
+  });
+
+  return { data: data.work, etag };
+}
+
+/**
+ * Replaces the work, all its fields at once, and returns it as saved with its new ETag. Rejected
+ * with 412 when the work has changed since `etag` was read, with 404 when it was deleted, and with
+ * 422 when the upload of its new photo has expired.
+ */
+export async function replaceGalleryWork({
+  body,
+  etag,
+  id,
+}: ReplaceGalleryWorkParams): Promise<Tagged<GalleryWork>> {
+  const { data, etag: savedEtag } = await http.putIfMatch({
+    path: workPath(id),
+    body,
+    etag,
+    schema: galleryWorkResponseSchema,
+  });
+
+  return { data: data.work, etag: savedEtag };
+}
+
+/** Deletes the work with its photo. Rejected with 412 when it has changed since `etag` was read. */
+export async function deleteGalleryWork({ etag, id }: DeleteGalleryWorkParams): Promise<void> {
+  await http.deleteResourceIfMatch({ path: workPath(id), etag });
+}
