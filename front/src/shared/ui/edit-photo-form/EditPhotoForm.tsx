@@ -10,14 +10,14 @@ import {
   getPhotoChange,
   type PhotoFormValues,
   photoFieldsShape,
-  refinePhotoAlt,
+  refinePhoto,
   type SavePhotoParams,
   toPhotoFormValues,
 } from "@/shared/lib/photoForm";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 
-const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhotoAlt);
+const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhoto);
 
 interface EditPhotoFormProps {
   className?: string;
@@ -56,10 +56,7 @@ export function EditPhotoForm({ className, label, photo, slot }: EditPhotoFormPr
     initial: photo,
     query: slot.query,
     save: (values, etag) => {
-      const change = getPhotoChange(values, {
-        isAltDirty: Boolean(dirtyFields.photoAlt),
-        isPhotoDirty: Boolean(dirtyFields.photo),
-      });
+      const change = getPhotoChange(values, { isAltDirty: Boolean(dirtyFields.photoAlt) });
 
       return change ? savePhoto.mutateAsync({ change, etag }) : null;
     },

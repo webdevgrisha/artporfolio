@@ -1,7 +1,6 @@
 import type { RequestHandler } from "express";
 
 import {
-  deletePhoto,
   getPhoto,
   type PhotoAltBody,
   type PhotoBody,
@@ -39,12 +38,5 @@ export function photoSlotController(slot: PhotoSlot) {
     response.status(200).set("ETag", etag).json({ photo: data });
   };
 
-  const removePhoto: RequestHandler = async (request, response) => {
-    const etag = await deletePhoto(slot, ifMatchHeader(request));
-
-    // No content, but the tag of the empty photo: the next change sends it in If-Match.
-    response.status(204).set("ETag", etag).end();
-  };
-
-  return { patchAlt, putPhoto, readPhoto, removePhoto };
+  return { patchAlt, putPhoto, readPhoto };
 }

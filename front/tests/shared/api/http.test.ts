@@ -171,22 +171,6 @@ describe("http entity tags", () => {
     },
   );
 
-  it("sends a conditional deletion with If-Match and returns the new ETag", async () => {
-    let request: Request | undefined;
-    server.use(
-      mswHttp.delete("/api/items/1", ({ request: received }) => {
-        request = received;
-        return new HttpResponse(null, { headers: { ETag: '"new-tag"' }, status: 204 });
-      }),
-    );
-
-    const newEtag = await http.deleteIfMatch({ etag, path: "/items/1" });
-
-    expect(request?.headers.get("If-Match")).toBe(etag);
-    expect(newEtag).toBe('"new-tag"');
-    expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
-  });
-
   it("deletes a resource with If-Match, expecting no ETag back", async () => {
     let request: Request | undefined;
     server.use(

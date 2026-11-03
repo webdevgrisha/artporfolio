@@ -204,21 +204,6 @@ class Http {
   }
 
   /**
-   * A DELETE that empties a resource, such as a photo slot, only while it still has the tag
-   * `etag`; the server rejects it with 412 otherwise. The response has no content; returns the
-   * tag of the emptied resource, for the next change.
-   */
-  async deleteIfMatch({ etag, headers, path, ...options }: ConditionalOptions): Promise<string> {
-    const response = await this.request(path, {
-      ...options,
-      headers: withIfMatch(headers, etag),
-      method: "DELETE",
-    });
-
-    return readETag(response);
-  }
-
-  /**
    * A DELETE of the resource itself, such as a project, that applies only while it still has the
    * tag `etag`; the server rejects it with 412 otherwise. The resource is gone afterwards, so the
    * response has neither content nor a tag.

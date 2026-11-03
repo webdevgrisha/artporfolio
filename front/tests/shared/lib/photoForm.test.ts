@@ -6,22 +6,24 @@ import {
   getPhotoChange,
   type PhotoFormValues,
   photoFieldsShape,
-  refinePhotoAlt,
+  refinePhoto,
   toPhotoFormValues,
 } from "@/shared/lib/photoForm";
 
 import { apiPhoto, imageFile } from "../../support/images";
 import { fieldErrors } from "../../support/schema";
 
-const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhotoAlt);
+const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhoto);
 
 function altErrors(values: PhotoFormValues): string[] {
   return fieldErrors(photoFormSchema, values).photoAlt ?? [];
 }
 
 describe("photo form fields", () => {
-  it("needs no description without a photo", () => {
-    expect(altErrors({ photo: null, photoAlt: "" })).toEqual([]);
+  it("needs a photo, and no description until there is one", () => {
+    expect(fieldErrors(photoFormSchema, { photo: null, photoAlt: "" })).toEqual({
+      photo: ["Выберите фото"],
+    });
   });
 
   it.each<[string, ImageFieldValue]>([
@@ -51,38 +53,19 @@ describe("getPhotoChange", () => {
   const file = imageFile();
 
   it("uploads a picked file with its description", () => {
-    expect(
-      getPhotoChange(
-        { photo: file, photoAlt: "Портрет" },
-        { isAltDirty: false, isPhotoDirty: true },
-      ),
-    ).toEqual({ alt: "Портрет", file, type: "upload" });
-  });
-
-  it("deletes the photo when it was removed in the form", () => {
-    expect(
-      getPhotoChange({ photo: null, photoAlt: "" }, { isAltDirty: true, isPhotoDirty: true }),
-    ).toEqual({ type: "delete" });
-  });
-
-  it("does not delete a photo the form did not show, such as one uploaded in another tab", () => {
-    expect(
-      getPhotoChange({ photo: null, photoAlt: "" }, { isAltDirty: false, isPhotoDirty: false }),
-    ).toBeUndefined();
+    expect(getPhotoChange({ photo: file, photoAlt: "Портрет" }, { isAltDirty: false })).toEqual({
+      alt: "Портрет",
+      file,
+      type: "upload",
+    });
   });
 
   it("updates only the description of the saved photo when it was changed", () => {
     expect(
-      getPhotoChange(
-        { photo: savedImage, photoAlt: "Портрет" },
-        { isAltDirty: true, isPhotoDirty: false },
-      ),
+      getPhotoChange({ photo: savedImage, photoAlt: "Портрет" }, { isAltDirty: true }),
     ).toEqual({ alt: "Портрет", type: "updateAlt" });
     expect(
-      getPhotoChange(
-        { photo: savedImage, photoAlt: "Портрет" },
-        { isAltDirty: false, isPhotoDirty: false },
-      ),
+      getPhotoChange({ photo: savedImage, photoAlt: "Портрет" }, { isAltDirty: false }),
     ).toBeUndefined();
   });
 });

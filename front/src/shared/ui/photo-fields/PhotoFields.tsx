@@ -52,11 +52,11 @@ export function PhotoFields({ className, isSaving, label, serverPhoto }: PhotoFi
         value={photoField.value}
         serverImage={serverPhoto}
         disabled={isSaving}
-        error={errors.root?.photoRejection?.message}
+        error={errors.root?.photoRejection?.message ?? errors.photo?.message}
         onChange={photoField.onChange}
         onRejectionChange={handleRejectionChange}
       />
-      {/* Without a photo there is nothing to describe; the text comes back with the photo. */}
+      {/* Until a photo is picked there is nothing to describe. */}
       {photoField.value === null ? null : (
         <ClearableInput
           label="Описание фото"

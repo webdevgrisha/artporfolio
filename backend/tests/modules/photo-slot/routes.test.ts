@@ -11,7 +11,6 @@ const auth = vi.hoisted(() => ({
 }));
 
 const photoService = vi.hoisted(() => ({
-  deletePhoto: vi.fn(),
   getPhoto: vi.fn(),
   savePhoto: vi.fn(),
   updatePhotoAlt: vi.fn(),
@@ -70,7 +69,6 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  photoService.deletePhoto.mockResolvedValue(savedEtag);
   photoService.getPhoto.mockResolvedValue({ data: photo, etag });
   photoService.savePhoto.mockResolvedValue({ created: false, data: photo, etag: savedEtag });
   photoService.updatePhotoAlt.mockResolvedValue({ data: photo, etag: savedEtag });
@@ -117,14 +115,14 @@ describe("photo slot routes", () => {
     expect(photoService.savePhoto).toHaveBeenCalledWith(slot, { alt: "Portrait", uploadId }, etag);
   });
 
-  it.each(["PUT", "PATCH", "DELETE"])("requires the ETag of the photo for %s", async (method) => {
+  it.each(["PUT", "PATCH"])("requires the ETag of the photo for %s", async (method) => {
     const response = await sendPhoto(
       method,
       {
         ...(await adminHeaders(server.baseUrl)),
         "Content-Type": method === "PATCH" ? "application/merge-patch+json" : "application/json",
       },
-      method === "DELETE" ? undefined : { alt: "Portrait", uploadId },
+      { alt: "Portrait", uploadId },
     );
 
     expect(response.status).toBe(428);
@@ -205,11 +203,9 @@ describe("photo slot routes", () => {
     expect(response.status).toBe(404);
   });
 
-  it("deletes the photo", async () => {
+  it("has no DELETE: a photo can be replaced, not removed", async () => {
     const response = await sendPhoto("DELETE", await ifMatchHeaders());
 
-    expect(response.status).toBe(204);
-    expect(response.headers.get("ETag")).toBe(savedEtag);
-    expect(photoService.deletePhoto).toHaveBeenCalledWith(slot, etag);
+    expect(response.status).toBe(404);
   });
 });

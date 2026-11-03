@@ -3,14 +3,7 @@ import { z } from "zod";
 
 import { NotFoundError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
-import {
-  changeSlot,
-  clearSlot,
-  fillSlot,
-  getSlot,
-  type ImageSlot,
-  readSlot,
-} from "#shared/images/slot";
+import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
 import { imageSchema, storedImageSchema, toImage } from "#shared/images/storage";
 import { uploadIdSchema } from "#shared/images/uploads";
 
@@ -115,9 +108,4 @@ export async function updatePhotoAlt(
   });
 
   return { data: toPhoto(data), etag };
-}
-
-/** Removes the photo and its files; returns the entity tag of the empty slot. */
-export function deletePhoto(slot: PhotoSlot, ifMatch: string): Promise<string> {
-  return clearSlot(slot, ifMatch);
 }

@@ -32,12 +32,13 @@ async function getSlotPhoto(path: string, signal: AbortSignal): Promise<Tagged<P
 
 /**
  * Sends a change of the photo made from the photo with the ETag `etag`; resolves with the photo
- * now saved and its new ETag, `null` after a deletion, and rejects when it was not saved.
+ * now saved and its new ETag, and rejects when it was not saved. A photo is never deleted: it can
+ * only be replaced.
  */
 export async function saveSlotPhoto(
   { path }: PhotoSlot,
   { change, etag }: SavePhotoParams,
-): Promise<Tagged<Photo | null>> {
+): Promise<Tagged<Photo>> {
   switch (change.type) {
     case "upload": {
       const uploadId = await uploadImage(change.file);
@@ -61,8 +62,5 @@ export async function saveSlotPhoto(
 
       return { data: saved.data.photo, etag: saved.etag };
     }
-    case "delete":
-      // Deletes the photo and its files; succeeds when there is no photo.
-      return { data: null, etag: await http.deleteIfMatch({ path, etag }) };
   }
 }

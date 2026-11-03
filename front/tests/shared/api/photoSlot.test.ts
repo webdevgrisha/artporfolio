@@ -4,14 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { HttpError } from "@/shared/api/httpError";
 import { photoSlot, saveSlotPhoto } from "@/shared/api/photoSlot";
 
-import {
-  csrfHandler,
-  csrfToken,
-  noContent,
-  problem,
-  uploadId,
-  uploadsHandler,
-} from "../../support/handlers";
+import { csrfHandler, csrfToken, problem, uploadId, uploadsHandler } from "../../support/handlers";
 import { apiPhoto, imageFile } from "../../support/images";
 import { recordRequests, server } from "../../support/server";
 
@@ -19,6 +12,7 @@ import { recordRequests, server } from "../../support/server";
 const etag = '"read"';
 const savedEtag = '"saved"';
 const slot = photoSlot("/contacts/photo", ["contacts", "photo"]);
+const altChange = { alt: "Автопортрет", type: "updateAlt" } as const;
 
 /** The body, CSRF token and If-Match of each change the API received, by `METHOD /path`. */
 let received: Record<string, { body: unknown; ifMatch: string | null; token: string | null }>;
@@ -50,10 +44,6 @@ beforeEach(() => {
       const body = (await request.json()) as { alt: string };
       receive(request, body);
       return tagged({ photo: apiPhoto(body.alt) });
-    }),
-    mswHttp.delete("/api/contacts/photo", ({ request }) => {
-      receive(request, null);
-      return noContent({ ETag: savedEtag });
     }),
   );
 });
@@ -102,25 +92,13 @@ describe("saveSlotPhoto", () => {
     expect(saved).toEqual({ data: apiPhoto("Автопортрет"), etag: savedEtag });
   });
 
-  it("deletes the photo and takes the ETag of the empty photo from the response", async () => {
-    const requests = recordRequests();
-
-    const saved = await saveSlotPhoto(slot, { change: { type: "delete" }, etag });
-
-    expect(received).toEqual({
-      "DELETE /api/contacts/photo": { body: null, ifMatch: etag, token: csrfToken },
-    });
-    expect(requests.at(-1)).toBe("DELETE /api/contacts/photo");
-    expect(saved).toEqual({ data: null, etag: savedEtag });
-  });
-
   it("rejects with the error of the server", async () => {
-    server.use(mswHttp.delete("/api/contacts/photo", () => problem(412)));
+    server.use(mswHttp.patch("/api/contacts/photo", () => problem(412)));
 
-    await expect(saveSlotPhoto(slot, { change: { type: "delete" }, etag })).rejects.toMatchObject({
+    await expect(saveSlotPhoto(slot, { change: altChange, etag })).rejects.toMatchObject({
       status: 412,
     });
-    await expect(saveSlotPhoto(slot, { change: { type: "delete" }, etag })).rejects.toBeInstanceOf(
+    await expect(saveSlotPhoto(slot, { change: altChange, etag })).rejects.toBeInstanceOf(
       HttpError,
     );
   });
@@ -129,7 +107,7 @@ describe("saveSlotPhoto", () => {
     server.use(mswHttp.get("/api/auth/csrf", () => HttpResponse.error()));
     const requests = recordRequests();
 
-    await expect(saveSlotPhoto(slot, { change: { type: "delete" }, etag })).rejects.toThrow();
+    await expect(saveSlotPhoto(slot, { change: altChange, etag })).rejects.toThrow();
     expect(requests).toEqual(["GET /api/auth/csrf"]);
   });
 });

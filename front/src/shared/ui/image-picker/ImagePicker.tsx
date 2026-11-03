@@ -9,8 +9,8 @@ interface ImagePickerProps {
   /** The error of the field, including the rejection reported with `onRejectionChange`. */
   error?: string;
   label: string;
-  /** A picked file, or `null` when the image is removed. */
-  onChange: (value: File | null) => void;
+  /** Receives a picked file. The image can be replaced, not removed. */
+  onChange: (value: File) => void;
   /** Receives why a file was refused, or `undefined` once the message is outdated. */
   onRejectionChange: (message: string | undefined) => void;
   /** The image on the server, shown while the value keeps it. */
@@ -51,7 +51,6 @@ export function ImagePicker({
       isModified={value !== toImageFieldValue(serverImage)}
       onPick={onChange}
       onRejectionChange={onRejectionChange}
-      onRemove={() => onChange(null)}
     />
   );
 }

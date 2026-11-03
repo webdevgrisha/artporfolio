@@ -36,7 +36,6 @@ import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firesto
 import { NotFoundError, PreconditionFailedError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
 import {
-  deletePhoto,
   getPhoto,
   photoAltBodySchema,
   photoSlot,
@@ -240,30 +239,6 @@ describe("photo", () => {
       PreconditionFailedError,
     );
     expect(transaction.set).not.toHaveBeenCalled();
-  });
-
-  it("deletes the photo and its files", async () => {
-    storedAs(storedPhoto);
-
-    await expect(deletePhoto(slot, storedTag)).resolves.toBe(emptyTag);
-
-    expect(transaction.update).toHaveBeenCalledWith(document, { photo: expect.anything() });
-    expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/old-version");
-  });
-
-  it("does nothing when deleting a missing photo", async () => {
-    await expect(deletePhoto(slot, emptyTag)).resolves.toBe(emptyTag);
-
-    expect(transaction.update).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
-  });
-
-  it("refuses to delete a photo uploaded since the slot was read empty", async () => {
-    storedAs(storedPhoto);
-
-    await expect(deletePhoto(slot, emptyTag)).rejects.toBeInstanceOf(PreconditionFailedError);
-    expect(transaction.update).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 });
 

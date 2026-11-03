@@ -16,7 +16,7 @@ export const photoAltSchema = z
 
 /**
  * The fields of a photo with its description, to spread into a form schema together with
- * `refinePhotoAlt`. `PhotoFields` shows them.
+ * `refinePhoto`. `PhotoFields` shows them.
  */
 export const photoFieldsShape = {
   photo: imageFieldValueSchema,
@@ -28,12 +28,18 @@ export interface PhotoFormValues {
   photoAlt: string;
 }
 
-/** Checks the description only while there is a photo: without one it is hidden and not saved. */
-export function refinePhotoAlt<TValues extends PhotoFormValues>(
+/**
+ * Requires a photo: it can be replaced, not removed, since the site does not show the page without
+ * it. The description is checked once there is a photo: until then it is hidden.
+ */
+export function refinePhoto<TValues extends PhotoFormValues>(
   { photo, photoAlt }: TValues,
   context: z.RefinementCtx<TValues>,
 ): void {
-  if (photo === null) return;
+  if (photo === null) {
+    context.addIssue({ code: "custom", message: "Выберите фото", path: ["photo"] });
+    return;
+  }
 
   for (const issue of photoAltSchema.safeParse(photoAlt).error?.issues ?? []) {
     context.addIssue({ code: "custom", message: issue.message, path: ["photoAlt"] });
@@ -47,8 +53,7 @@ export function toPhotoFormValues(photo: Photo | null): PhotoFormValues {
 /** What a save does with the photo. */
 export type PhotoChange =
   | { alt: string; file: File; type: "upload" }
-  | { alt: string; type: "updateAlt" }
-  | { type: "delete" };
+  | { alt: string; type: "updateAlt" };
 
 /** A change of a photo, made from the photo with the ETag `etag`. */
 export interface SavePhotoParams {
@@ -57,16 +62,15 @@ export interface SavePhotoParams {
 }
 
 /**
- * The change of the submitted photo fields, or `undefined` when there is none. Only what the user
- * changed in the form counts: the photo is deleted only when they removed it here, never because
- * the server has a photo the form did not show, such as one uploaded in another tab.
+ * The change of the submitted photo fields, or `undefined` when there is none: a picked file is
+ * uploaded with its description, and a changed description of the saved photo is sent alone.
  */
 export function getPhotoChange(
   { photo, photoAlt }: PhotoFormValues,
-  { isAltDirty, isPhotoDirty }: { isAltDirty: boolean; isPhotoDirty: boolean },
+  { isAltDirty }: { isAltDirty: boolean },
 ): PhotoChange | undefined {
   if (photo instanceof File) return { alt: photoAlt, file: photo, type: "upload" };
-  if (photo === null) return isPhotoDirty ? { type: "delete" } : undefined;
+  if (photo === null) return undefined;
 
   return isAltDirty ? { alt: photoAlt, type: "updateAlt" } : undefined;
 }
