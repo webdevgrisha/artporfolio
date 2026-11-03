@@ -98,6 +98,9 @@ const deletedMaterialId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const blackId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 const whiteId = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 const deletedColorId = "12121212-1212-4212-8212-121212121212";
+const pastelId = "13131313-1313-4313-8313-131313131313";
+const brightId = "14141414-1414-4414-8414-141414141414";
+const deletedPaletteId = "15151515-1515-4515-8515-151515151515";
 
 function storedPhoto(workId: string) {
   const folder = `galleryWorks/${workId}/photo/old-version`;
@@ -147,6 +150,7 @@ function storedWork(id: string, title: string, year: number, month: number, crea
     sectionIds: [animalsId, deletedSectionId],
     materialIds: [oilId, deletedMaterialId],
     colorIds: [blackId, deletedColorId],
+    paletteIds: [pastelId, deletedPaletteId],
     size: { width: 50, height: 70 },
     title,
     updatedAt: createdAt,
@@ -176,6 +180,7 @@ const body: WorkBody = {
   sectionIds: [birdsId],
   materialIds: [canvasId],
   colorIds: [whiteId],
+  paletteIds: [brightId],
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
@@ -197,6 +202,12 @@ beforeEach(() => {
     materials: [
       { id: canvasId, title: "Холст" },
       { id: oilId, title: "Масло" },
+    ],
+  });
+  lists.set("site/galleryPalettes", {
+    palettes: [
+      { id: pastelId, title: "Пастельная" },
+      { id: brightId, title: "Яркая" },
     ],
   });
   lists.set("site/galleryColors", {
@@ -356,6 +367,45 @@ describe("the colors of a work", () => {
     );
     await expect(
       replaceWork(elephantId, { ...body, colorIds: [deletedColorId] }, await readTag(elephantId)),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+
+    expect(works.has(newId)).toBe(false);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
+  });
+});
+
+describe("the palettes of a work", () => {
+  it("leaves out a palette deleted since the work was saved", async () => {
+    const { data } = await getWork(elephantId);
+
+    expect(data.paletteIds).toEqual([pastelId]);
+    expect((await listWorks()).data[0]?.paletteIds).toEqual([pastelId]);
+  });
+
+  it("saves the palettes named by id", async () => {
+    const { data } = await replaceWork(
+      elephantId,
+      {
+        ...body,
+        processPhotos: [{ alt: "Набросок", id: processPhotoId }],
+        paletteIds: [pastelId, brightId],
+      },
+      await readTag(elephantId),
+    );
+
+    expect(data.paletteIds).toEqual([pastelId, brightId]);
+  });
+
+  it("returns 422 for a palette that does not exist, and removes the copies", async () => {
+    await expect(
+      createWork(newId, { ...body, paletteIds: [deletedPaletteId] }),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+    await expect(
+      replaceWork(
+        elephantId,
+        { ...body, paletteIds: [deletedPaletteId] },
+        await readTag(elephantId),
+      ),
     ).rejects.toBeInstanceOf(UnprocessableContentError);
 
     expect(works.has(newId)).toBe(false);

@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   maxWorkColors,
   maxWorkMaterials,
+  maxWorkPalettes,
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSide,
@@ -23,6 +24,7 @@ const work = {
   sectionIds: [randomUUID()],
   materialIds: [randomUUID()],
   colorIds: [randomUUID()],
+  paletteIds: [randomUUID()],
 };
 
 function isValid(body: unknown): boolean {
@@ -149,6 +151,20 @@ describe("work body", () => {
     );
     expect(
       isValid({ ...work, colorIds: Array.from({ length: maxWorkColors + 1 }, randomUUID) }),
+    ).toBe(false);
+  });
+
+  it("needs at least one palette, each named once", () => {
+    const id = randomUUID();
+
+    expect(isValid({ ...work, paletteIds: [] })).toBe(false);
+    expect(isValid({ ...work, paletteIds: [id, id] })).toBe(false);
+    expect(isValid({ ...work, paletteIds: ["pastel"] })).toBe(false);
+    expect(
+      isValid({ ...work, paletteIds: Array.from({ length: maxWorkPalettes }, randomUUID) }),
+    ).toBe(true);
+    expect(
+      isValid({ ...work, paletteIds: Array.from({ length: maxWorkPalettes + 1 }, randomUUID) }),
     ).toBe(false);
   });
 

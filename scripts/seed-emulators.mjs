@@ -271,6 +271,15 @@ const workPaintingColors = {
 };
 const workEtchingColors = ["Чёрный", "Белый"];
 
+/** The palettes of the seeded works, one after another; an etching is monochrome. */
+const workPaintingPalettes = [
+  ["Тёплая", "Яркая"],
+  ["Холодная"],
+  ["Пастельная", "Тёплая"],
+  ["Приглушённая"],
+];
+const workEtchingPalettes = ["Монохромная"];
+
 /** The coloring of a work as a whole, apart from the colors it has. */
 const galleryPalettes = [
   "Пастельная",
@@ -564,9 +573,11 @@ async function seedGallery(api) {
   const colorIds = new Map(colors.map(({ id, title }) => [title, id]));
 
   await api.put("/gallery-colors", { colors });
-  await api.put("/gallery-palettes", {
-    palettes: galleryPalettes.map((title) => ({ id: randomUUID(), title })),
-  });
+  const palettes = galleryPalettes.map((title) => ({ id: randomUUID(), title }));
+  // The ids of the palettes by title, for the works to refer to.
+  const paletteIds = new Map(palettes.map(({ id, title }) => [title, id]));
+
+  await api.put("/gallery-palettes", { palettes });
 
   for (const [index, work] of galleryWorks.entries()) {
     const [width, height] = work.size;
@@ -619,6 +630,10 @@ async function seedGallery(api) {
       colorIds: (kind === "etching" ? workEtchingColors : workPaintingColors[work.palette]).map(
         (title) => colorIds.get(title),
       ),
+      paletteIds: (kind === "etching"
+        ? workEtchingPalettes
+        : workPaintingPalettes[index % workPaintingPalettes.length]
+      ).map((title) => paletteIds.get(title)),
     });
   }
 

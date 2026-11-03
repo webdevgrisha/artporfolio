@@ -8,12 +8,17 @@ import { byTitle } from "#shared/text/titles";
 const noPalettes: GalleryPalettes = { palettes: [] };
 
 /** The document that holds every palette of the gallery, and nothing else. */
-function palettesDocument() {
+export function palettesDocument() {
   return firestore().doc("site/galleryPalettes");
 }
 
 function readPalettes(snapshot: DocumentSnapshot): GalleryPalettes {
   return snapshot.exists ? galleryPalettesSchema.parse(snapshot.data()) : noPalettes;
+}
+
+/** The ids of every saved palette, which a work may refer to. */
+export function paletteIdsIn(snapshot: DocumentSnapshot): Set<string> {
+  return new Set(readPalettes(snapshot).palettes.map((palette) => palette.id));
 }
 
 /** The palettes with the entity tag for If-Match; there are none until they are first saved. */
