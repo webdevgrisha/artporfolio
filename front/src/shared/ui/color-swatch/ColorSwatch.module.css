@@ -15,3 +15,14 @@
   border: 1px solid var(--color-divider);
   border-radius: 50%;
 }
+
+/* As tall as a capital letter, with no space of its own around it. */
+.text {
+  inline-size: auto;
+  block-size: auto;
+}
+
+.text .circle {
+  inline-size: 0.875em;
+  block-size: 0.875em;
+}

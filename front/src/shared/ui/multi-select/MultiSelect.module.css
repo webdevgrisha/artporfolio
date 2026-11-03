@@ -126,7 +126,11 @@
   font-size: var(--font-size-md);
 }
 
+/* A row of its own, so an icon before the label sits on its line. */
 .option {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
   cursor: pointer;
 }
 

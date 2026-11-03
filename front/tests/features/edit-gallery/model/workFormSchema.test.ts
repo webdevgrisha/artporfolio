@@ -21,6 +21,7 @@ const work = {
   photo: new File([""], "elephant.png"),
   sectionIds: ["section-1"],
   materialIds: ["material-1"],
+  colorIds: ["color-1"],
   photoAlt: "Слон на закате",
   title: "Слон",
   width: "50",
@@ -28,11 +29,12 @@ const work = {
 };
 
 describe("workFormSchema", () => {
-  it("needs a title, a description, a size, a date, a photo, a section and a material", () => {
+  it("needs a title, a description, a size, a date, a photo, a section, a material and a color", () => {
     expect(fieldErrors(workFormSchema, work)).toEqual({});
     expect(fieldErrors(workFormSchema, emptyWorkFormValues)).toEqual({
       description: ["Введите описание"],
       height: ["Введите размер"],
+      colorIds: ["Выберите хотя бы один цвет"],
       materialIds: ["Выберите хотя бы один материал"],
       month: ["Выберите месяц"],
       photo: ["Выберите фото"],
@@ -130,6 +132,17 @@ describe("the materials in the form", () => {
   });
 });
 
+describe("the colors in the form", () => {
+  it("takes up to ten colors", () => {
+    const ids = (count: number) => Array.from({ length: count }, (_, index) => `c${String(index)}`);
+
+    expect(fieldErrors(workFormSchema, { ...work, colorIds: ids(10) })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...work, colorIds: ids(11) })).toEqual({
+      colorIds: ["Не больше 10 цветов"],
+    });
+  });
+});
+
 describe("the size in the form", () => {
   it("shows a saved size with a comma and reads it back as numbers", () => {
     const saved = {
@@ -139,6 +152,7 @@ describe("the size in the form", () => {
       processPhotos: [],
       sectionIds: [],
       materialIds: [],
+      colorIds: [],
       size: { height: 27.9, width: 21.6 },
       title: "Стрекоза",
       year: 2025,

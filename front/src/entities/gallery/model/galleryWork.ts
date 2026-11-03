@@ -11,6 +11,9 @@ export const maxWorkSections = 30;
 /** The most materials one work may be made of. */
 export const maxWorkMaterials = 10;
 
+/** The most colors one work may have. */
+export const maxWorkColors = 10;
+
 /** The most process photos one work may have. */
 export const maxWorkProcessPhotos = 20;
 
@@ -42,6 +45,8 @@ export const galleryWorkSchema = z.object({
   sectionIds: z.array(z.string()),
   /** The ids of the materials the work is made of. */
   materialIds: z.array(z.string()),
+  /** The ids of the colors a visitor finds the work by. */
+  colorIds: z.array(z.string()),
   /** When the work was created, ISO 8601. */
   createdAt: z.iso.datetime(),
   /** When the admin last saved the work, ISO 8601. */

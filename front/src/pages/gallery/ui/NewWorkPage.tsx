@@ -1,6 +1,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { galleryMaterialsQuery, gallerySectionsQuery } from "@/entities/gallery";
+import {
+  galleryColorsQuery,
+  galleryMaterialsQuery,
+  gallerySectionsQuery,
+} from "@/entities/gallery";
 import { CreateWorkForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
@@ -15,6 +19,7 @@ export function NewWorkPage() {
           <FormSkeleton className={styles.form} isNarrow>
             <FieldSkeleton />
             <FieldSkeleton rows={8} />
+            <FieldSkeleton />
             <FieldSkeleton />
             <FieldSkeleton />
             <FieldSkeleton />
@@ -34,12 +39,14 @@ function NewWork() {
   // AwaitPageData has waited for the fresh lists, so this never suspends.
   const { data: sections } = useSuspenseQuery(gallerySectionsQuery);
   const { data: materials } = useSuspenseQuery(galleryMaterialsQuery);
+  const { data: colors } = useSuspenseQuery(galleryColorsQuery);
 
   return (
     <CreateWorkForm
       className={styles.form}
       sections={sections}
       materials={materials.data.materials}
+      colors={colors.data.colors}
     />
   );
 }

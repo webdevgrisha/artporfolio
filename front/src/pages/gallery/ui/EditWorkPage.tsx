@@ -1,7 +1,12 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
-import { galleryMaterialsQuery, gallerySectionsQuery, galleryWorkQuery } from "@/entities/gallery";
+import {
+  galleryColorsQuery,
+  galleryMaterialsQuery,
+  gallerySectionsQuery,
+  galleryWorkQuery,
+} from "@/entities/gallery";
 import { EditWorkForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
@@ -21,6 +26,7 @@ export function EditWorkPage() {
           <FormSkeleton className={styles.form} isNarrow>
             <FieldSkeleton />
             <FieldSkeleton rows={8} />
+            <FieldSkeleton />
             <FieldSkeleton />
             <FieldSkeleton />
             <FieldSkeleton />
@@ -45,6 +51,7 @@ function EditWork({ id }: EditWorkProps) {
   const { data: work } = useSuspenseQuery(galleryWorkQuery(id));
   const { data: sections } = useSuspenseQuery(gallerySectionsQuery);
   const { data: materials } = useSuspenseQuery(galleryMaterialsQuery);
+  const { data: colors } = useSuspenseQuery(galleryColorsQuery);
 
   return (
     <EditWorkForm
@@ -52,6 +59,7 @@ function EditWork({ id }: EditWorkProps) {
       work={work}
       sections={sections}
       materials={materials.data.materials}
+      colors={colors.data.colors}
     />
   );
 }

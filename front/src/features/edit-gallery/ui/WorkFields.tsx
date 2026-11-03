@@ -3,13 +3,16 @@ import React from "react";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import {
+  type GalleryColor,
   type GalleryMaterial,
   type GallerySection,
+  maxWorkColors,
   maxWorkMaterials,
   maxWorkProcessPhotos,
 } from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
+import { ColorSwatch } from "@/shared/ui/color-swatch";
 import { Input } from "@/shared/ui/input";
 import { MultiSelect } from "@/shared/ui/multi-select";
 import { PhotoFields } from "@/shared/ui/photo-fields";
@@ -33,11 +36,14 @@ interface WorkFieldsProps {
   sections: readonly GallerySection[];
   /** The materials of the gallery, sorted by title, to choose from. */
   materials: readonly GalleryMaterial[];
+  /** The colors of the gallery, sorted by title, to choose from. */
+  colors: readonly GalleryColor[];
 }
 
 /** The fields of a work form; they read the form from its context. */
 export function WorkFields({
   className,
+  colors,
   isSaving,
   materials,
   savedPhoto,
@@ -54,6 +60,7 @@ export function WorkFields({
   const descriptionField = register("description");
   const { field: sectionsField } = useController({ control, name: "sectionIds" });
   const { field: materialsField } = useController({ control, name: "materialIds" });
+  const { field: colorsField } = useController({ control, name: "colorIds" });
   const widthField = register("width");
   const heightField = register("height");
   // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
@@ -65,6 +72,15 @@ export function WorkFields({
     [defaultValues],
   );
   const materialOptions = React.useMemo(() => toTitleOptions(materials), [materials]);
+  const colorOptions = React.useMemo(
+    () =>
+      colors.map(({ hex, id, title }) => ({
+        icon: <ColorSwatch hex={hex} variant="text" />,
+        label: title,
+        value: id,
+      })),
+    [colors],
+  );
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -119,6 +135,19 @@ export function WorkFields({
           inputRef={materialsField.ref}
           onBlur={materialsField.onBlur}
           onChange={materialsField.onChange}
+        />
+        <MultiSelect
+          label="Цвета"
+          hint={`До ${String(maxWorkColors)}. Чёрно-белой работе — «Чёрный» и «Белый»`}
+          placeholder="Например: синий"
+          options={colorOptions}
+          value={colorsField.value}
+          disabled={isSaving}
+          error={errors.colorIds?.message}
+          isModified={Boolean(dirtyFields.colorIds)}
+          inputRef={colorsField.ref}
+          onBlur={colorsField.onBlur}
+          onChange={colorsField.onChange}
         />
         <div className={styles.size}>
           <Input

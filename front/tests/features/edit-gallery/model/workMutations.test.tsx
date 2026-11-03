@@ -16,6 +16,7 @@ const id = "11111111-1111-4111-8111-111111111111";
 const path = `/api/gallery-works/${id}`;
 const sectionId = "22222222-2222-4222-8222-222222222222";
 const materialId = "33333333-3333-4333-8333-333333333333";
+const colorId = "55555555-5555-4555-8555-555555555555";
 /** The values of the form, with a new file each time: a file once uploaded is not sent again. */
 const values = () => ({
   ...emptyWorkFormValues,
@@ -28,6 +29,7 @@ const values = () => ({
   month: "4",
   sectionIds: [sectionId],
   materialIds: [materialId],
+  colorIds: [colorId],
 });
 const savedEtag = '"saved"';
 
@@ -51,6 +53,7 @@ function apiWork(title: string): GalleryWork {
     processPhotos: [],
     sectionIds: [sectionId],
     materialIds: [materialId],
+    colorIds: [colorId],
     size: { height: 27.9, width: 21.6 },
     title,
     updatedAt: "2026-01-15T10:00:00.000Z",
@@ -113,6 +116,7 @@ describe("useCreateWork", () => {
           processPhotos: [],
           sectionIds: [sectionId],
           materialIds: [materialId],
+          colorIds: [colorId],
           size: { height: 27.9, width: 21.6 },
           title: "Стрекоза",
           year: 2025,

@@ -11,6 +11,8 @@ export interface MultiSelectOption {
   /** What the list and the chip show, such as «Живопись › Пейзаж». */
   label: string;
   value: string;
+  /** Shown before the label in the list and the chip, such as a color swatch; only decoration. */
+  icon?: React.ReactNode;
 }
 
 interface MultiSelectProps {
@@ -143,6 +145,7 @@ export function MultiSelect({
               className={styles.chip}
               {...getSelectedItemProps({ index, selectedItem: option })}
             >
+              {option.icon}
               {option.label}
               <button
                 type="button"
@@ -184,6 +187,7 @@ export function MultiSelect({
                   className={clsx(styles.option, highlightedIndex === index && styles.highlighted)}
                   {...getItemProps({ index, item: option })}
                 >
+                  {option.icon}
                   {option.label}
                 </li>
               ))

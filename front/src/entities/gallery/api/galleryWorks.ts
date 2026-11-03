@@ -26,6 +26,8 @@ export interface GalleryWorkBody {
   sectionIds: readonly string[];
   /** The materials the work is made of, at least one. */
   materialIds: readonly string[];
+  /** The colors a visitor finds the work by, at least one. */
+  colorIds: readonly string[];
 }
 
 interface CreateGalleryWorkParams {
