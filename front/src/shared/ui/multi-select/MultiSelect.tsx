@@ -19,6 +19,8 @@ interface MultiSelectProps {
   error?: string;
   /** A short explanation under the control. */
   hint?: string;
+  /** The text field of the list, which a form focuses to show an error. */
+  inputRef?: React.Ref<HTMLInputElement>;
   /** Highlights a choice that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
   label: string;
@@ -49,6 +51,7 @@ export function MultiSelect({
   disabled = false,
   error,
   hint,
+  inputRef,
   isModified = false,
   label,
   noMatchesText = "Ничего не найдено",
@@ -162,7 +165,8 @@ export function MultiSelect({
             placeholder={selectedOptions.length === 0 ? placeholder : undefined}
             disabled={disabled}
             {...getInputProps({
-              ...getDropdownProps({ preventKeyAction: isOpen }),
+              // Downshift merges its own ref with this one.
+              ...getDropdownProps({ preventKeyAction: isOpen, ref: inputRef }),
               "aria-describedby": describedBy,
               "aria-invalid": Boolean(error),
               onBlur,

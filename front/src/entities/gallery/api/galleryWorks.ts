@@ -24,6 +24,8 @@ export interface GalleryWorkBody {
   processPhotos: readonly ListPhotoItem[];
   /** The sections and subsections the work is shown in, at least one. */
   sectionIds: readonly string[];
+  /** The materials the work is made of, at least one. */
+  materialIds: readonly string[];
 }
 
 interface CreateGalleryWorkParams {

@@ -39,6 +39,7 @@ export {
 } from "./model/gallerySection";
 export {
   type GalleryWork,
+  maxWorkMaterials,
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSide,

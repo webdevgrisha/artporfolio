@@ -8,6 +8,9 @@ export const minWorkYear = 1900;
 /** The most sections and subsections one work may be in. */
 export const maxWorkSections = 30;
 
+/** The most materials one work may be made of. */
+export const maxWorkMaterials = 10;
+
 /** The most process photos one work may have. */
 export const maxWorkProcessPhotos = 20;
 
@@ -37,6 +40,8 @@ export const galleryWorkSchema = z.object({
   processPhotos: z.array(listPhotoSchema),
   /** The ids of the sections and subsections the work is shown in. */
   sectionIds: z.array(z.string()),
+  /** The ids of the materials the work is made of. */
+  materialIds: z.array(z.string()),
   /** When the work was created, ISO 8601. */
   createdAt: z.iso.datetime(),
   /** When the admin last saved the work, ISO 8601. */

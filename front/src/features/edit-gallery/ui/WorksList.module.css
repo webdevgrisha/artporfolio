@@ -32,11 +32,11 @@
 
 /*
  * As the table of the sections; the widths are set, so a long title never moves the columns. The
- * title and the sections share the rest of the row.
+ * title, the sections and the materials share the rest of the row.
  */
 .table {
   inline-size: 100%;
-  min-inline-size: 56rem;
+  min-inline-size: 64rem;
   font-size: var(--font-size-lg);
   table-layout: fixed;
   border-collapse: collapse;

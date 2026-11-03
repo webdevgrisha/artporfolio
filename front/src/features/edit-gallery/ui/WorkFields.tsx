@@ -2,16 +2,23 @@ import clsx from "clsx";
 import React from "react";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import { type GallerySection, maxWorkProcessPhotos } from "@/entities/gallery";
+import {
+  type GalleryMaterial,
+  type GallerySection,
+  maxWorkMaterials,
+  maxWorkProcessPhotos,
+} from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
+import { MultiSelect } from "@/shared/ui/multi-select";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 import { PhotoListField } from "@/shared/ui/photo-list-field";
 import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 
 import { monthOptions, type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
+import { toTitleOptions } from "../model/workReferences";
 import { SectionsField } from "./SectionsField";
 import styles from "./WorkFields.module.css";
 
@@ -24,12 +31,15 @@ interface WorkFieldsProps {
   savedProcessPhotos: readonly ListPhoto[];
   /** The sections of the gallery, sorted by title, to choose from. */
   sections: readonly GallerySection[];
+  /** The materials of the gallery, sorted by title, to choose from. */
+  materials: readonly GalleryMaterial[];
 }
 
 /** The fields of a work form; they read the form from its context. */
 export function WorkFields({
   className,
   isSaving,
+  materials,
   savedPhoto,
   savedProcessPhotos,
   sections,
@@ -43,6 +53,7 @@ export function WorkFields({
   const titleField = register("title");
   const descriptionField = register("description");
   const { field: sectionsField } = useController({ control, name: "sectionIds" });
+  const { field: materialsField } = useController({ control, name: "materialIds" });
   const widthField = register("width");
   const heightField = register("height");
   // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
@@ -53,6 +64,7 @@ export function WorkFields({
     () => defaultValues?.sectionIds?.filter((id) => id !== undefined) ?? [],
     [defaultValues],
   );
+  const materialOptions = React.useMemo(() => toTitleOptions(materials), [materials]);
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -94,6 +106,19 @@ export function WorkFields({
           inputRef={sectionsField.ref}
           onBlur={sectionsField.onBlur}
           onChange={sectionsField.onChange}
+        />
+        <MultiSelect
+          label="Материалы"
+          hint={`До ${String(maxWorkMaterials)}`}
+          placeholder="Например: масло"
+          options={materialOptions}
+          value={materialsField.value}
+          disabled={isSaving}
+          error={errors.materialIds?.message}
+          isModified={Boolean(dirtyFields.materialIds)}
+          inputRef={materialsField.ref}
+          onBlur={materialsField.onBlur}
+          onChange={materialsField.onChange}
         />
         <div className={styles.size}>
           <Input

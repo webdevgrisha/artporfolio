@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   type GalleryWork,
+  maxWorkMaterials,
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSide,
@@ -107,6 +108,11 @@ export const workFormSchema = z
       .array(z.string())
       .min(1, "Выберите хотя бы один раздел")
       .max(maxWorkSections, `Не больше ${String(maxWorkSections)} разделов`),
+    /** The materials, by id, in the order they were chosen. */
+    materialIds: z
+      .array(z.string())
+      .min(1, "Выберите хотя бы один материал")
+      .max(maxWorkMaterials, `Не больше ${String(maxWorkMaterials)} материалов`),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)
@@ -125,11 +131,13 @@ export const emptyWorkFormValues: WorkFormValues = {
   ...toPhotoFormValues(null),
   photos: [],
   sectionIds: [],
+  materialIds: [],
 };
 
 /** The values of a work as stored on the server. */
 export function toWorkFormValues({
   description,
+  materialIds,
   month,
   photo,
   processPhotos,
@@ -148,6 +156,7 @@ export function toWorkFormValues({
     ...toPhotoFormValues(photo),
     photos: toPhotoListRows(processPhotos),
     sectionIds,
+    materialIds,
   };
 }
 
