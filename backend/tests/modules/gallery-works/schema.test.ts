@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   maxWorkProcessPhotos,
+  maxWorkSections,
   maxWorkSide,
   minWorkYear,
   workBodySchema,
@@ -17,6 +18,7 @@ const work = {
   month: 3,
   photo: { alt: "Слон на закате", uploadId: randomUUID() },
   processPhotos: [],
+  sectionIds: [randomUUID()],
 };
 
 function isValid(body: unknown): boolean {
@@ -102,6 +104,20 @@ describe("work body", () => {
     ).toBe(false);
     expect(isValid({ ...work, processPhotos: [{ ...processPhoto(), alt: "" }] })).toBe(false);
     expect(isValid({ ...work, processPhotos: undefined })).toBe(false);
+  });
+
+  it("needs at least one section, each named once", () => {
+    const id = randomUUID();
+
+    expect(isValid({ ...work, sectionIds: [] })).toBe(false);
+    expect(isValid({ ...work, sectionIds: [id, id] })).toBe(false);
+    expect(isValid({ ...work, sectionIds: ["animals"] })).toBe(false);
+    expect(
+      isValid({ ...work, sectionIds: Array.from({ length: maxWorkSections }, randomUUID) }),
+    ).toBe(true);
+    expect(
+      isValid({ ...work, sectionIds: Array.from({ length: maxWorkSections + 1 }, randomUUID) }),
+    ).toBe(false);
   });
 
   it("rejects unknown fields", () => {

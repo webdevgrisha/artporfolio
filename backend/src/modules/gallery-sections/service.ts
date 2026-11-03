@@ -16,7 +16,8 @@ export interface SavedSection extends Tagged<Section> {
   id: string;
 }
 
-function sectionsCollection() {
+/** Every section; works read it to check the sections they refer to. */
+export function sectionsCollection() {
   return firestore().collection("gallerySections");
 }
 
@@ -69,6 +70,19 @@ function assertNoClash(id: string, section: StoredSection, { docs }: QuerySnapsh
       throw new ConflictError("A subsection has the id of another section or its subsection");
     }
   }
+}
+
+/**
+ * The ids a work can refer to: every saved section and every subsection. They never clash, see
+ * assertNoClash.
+ */
+export function sectionIdsIn({ docs }: QuerySnapshot): Set<string> {
+  return new Set(
+    docs.flatMap((snapshot) => [
+      snapshot.id,
+      ...readSection(snapshot).subsections.map((subsection) => subsection.id),
+    ]),
+  );
 }
 
 /** Every section sorted by title, tagged by the stored list. */

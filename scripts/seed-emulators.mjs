@@ -237,6 +237,9 @@ const gallerySections = [
   { title: "Рисунок", subsections: [] },
 ];
 
+/** The sections the works are in, one after another. */
+const workSections = ["Пейзаж", "Графика", "Портрет", "Натюрморт", "Рекламные", "Театральные"];
+
 const galleryMaterials = ["Акварель", "Гуашь", "Карандаш", "Масло", "Тушь", "Холст", "Бумага"];
 
 /** A black-and-white work gets both «Чёрный» and «Белый»: a color is one swatch. */
@@ -521,11 +524,16 @@ async function seedProjects(api) {
 async function seedGallery(api) {
   await api.put("/gallery-intro", { text: galleryIntro });
 
+  // The ids of the sections and subsections by title, for the works to refer to.
+  const sectionIds = new Map();
+
   for (const section of gallerySections) {
-    await api.create(`/gallery-sections/${randomUUID()}`, {
-      title: section.title,
-      subsections: section.subsections.map((title) => ({ id: randomUUID(), title })),
-    });
+    const id = randomUUID();
+    const subsections = section.subsections.map((title) => ({ id: randomUUID(), title }));
+
+    await api.create(`/gallery-sections/${id}`, { title: section.title, subsections });
+    sectionIds.set(section.title, id);
+    for (const subsection of subsections) sectionIds.set(subsection.title, subsection.id);
   }
 
   await api.put("/gallery-materials", {
@@ -575,6 +583,11 @@ async function seedGallery(api) {
       month: (index % 12) + 1,
       photo: { alt: work.title, uploadId },
       processPhotos,
+      // A work is in a subsection, or a section without them; some are in a second one too.
+      sectionIds: [
+        workSections[index % workSections.length],
+        ...(index % 4 === 0 ? ["Рисунок"] : []),
+      ].map((title) => sectionIds.get(title)),
     });
   }
 

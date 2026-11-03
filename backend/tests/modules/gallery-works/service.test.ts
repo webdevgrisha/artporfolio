@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 /** The `galleryWorks` collection: documents by id. Transactions write to it at once. */
 const works = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 
+/** The `gallerySections` collection, which the works refer to. */
+const sections = vi.hoisted(() => new Map<string, Record<string, unknown>>());
+
 const storage = vi.hoisted(() => ({
   deleteFolder: vi.fn(),
   downloadUrl: ({ path, token }: { path: string; token: string }) =>
@@ -14,14 +17,23 @@ const uploads = vi.hoisted(() => ({
 }));
 
 vi.mock("#shared/firebase/firestore", () => {
-  function snapshot(id: string) {
-    const data = works.get(id);
+  function snapshot(collection: Map<string, Record<string, unknown>>, id: string) {
+    const data = collection.get(id);
 
     return { data: () => data, exists: data !== undefined, id };
   }
 
   function document(id: string) {
-    return { get: async () => snapshot(id), id };
+    return { get: async () => snapshot(works, id), id };
+  }
+
+  function collectionNamed(name: string) {
+    const collection = name === "gallerySections" ? sections : works;
+
+    return {
+      doc: document,
+      get: async () => ({ docs: [...collection.keys()].map((id) => snapshot(collection, id)) }),
+    };
   }
 
   const transaction = {
@@ -33,10 +45,7 @@ vi.mock("#shared/firebase/firestore", () => {
 
   return {
     firestore: () => ({
-      collection: () => ({
-        doc: document,
-        get: async () => ({ docs: [...works.keys()].map(snapshot) }),
-      }),
+      collection: collectionNamed,
       runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
     }),
   };
@@ -70,6 +79,9 @@ const uploadId = "44444444-4444-4444-8444-444444444444";
 const processUploadId = "77777777-7777-4777-8777-777777777777";
 const newId = "55555555-5555-4555-8555-555555555555";
 const processPhotoId = "66666666-6666-4666-8666-666666666666";
+const animalsId = "88888888-8888-4888-8888-888888888888";
+const birdsId = "99999999-9999-4999-8999-999999999999";
+const deletedSectionId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
 function storedPhoto(workId: string) {
   const folder = `galleryWorks/${workId}/photo/old-version`;
@@ -116,6 +128,7 @@ function storedWork(id: string, title: string, year: number, month: number, crea
     month,
     photo: storedPhoto(id),
     processPhotos: [storedProcessPhoto(id)],
+    sectionIds: [animalsId, deletedSectionId],
     size: { width: 50, height: 70 },
     title,
     updatedAt: createdAt,
@@ -142,6 +155,7 @@ const body: WorkBody = {
   description: "Масло, холст.",
   photo: { alt: "Новое фото", uploadId },
   processPhotos: [],
+  sectionIds: [birdsId],
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
@@ -156,6 +170,8 @@ async function readTag(id: string): Promise<string> {
 beforeEach(() => {
   vi.clearAllMocks();
   works.clear();
+  sections.clear();
+  sections.set(animalsId, { subsections: [{ id: birdsId, title: "Птицы" }], title: "Животные" });
   works.set(elephantId, storedWork(elephantId, "Слон", 2023, 5));
   works.set(tigerId, storedWork(tigerId, "Тигр", 2024, 2));
   storage.deleteFolder.mockResolvedValue(undefined);
@@ -191,6 +207,45 @@ describe("listWorks", () => {
     const { data } = await listWorks();
 
     expect(data.map((work) => work.title)).toEqual(["Жираф", "Тигр", "Слон"]);
+  });
+});
+
+describe("the sections of a work", () => {
+  it("leaves out a section deleted since the work was saved", async () => {
+    const { data } = await getWork(elephantId);
+
+    expect(data.sectionIds).toEqual([animalsId]);
+    expect((await listWorks()).data[0]?.sectionIds).toEqual([animalsId]);
+  });
+
+  it("saves the sections and subsections named by id", async () => {
+    const { data } = await replaceWork(
+      elephantId,
+      {
+        ...body,
+        processPhotos: [{ alt: "Набросок", id: processPhotoId }],
+        sectionIds: [animalsId, birdsId],
+      },
+      await readTag(elephantId),
+    );
+
+    expect(data.sectionIds).toEqual([animalsId, birdsId]);
+  });
+
+  it("returns 422 for a section that does not exist, and removes the copies", async () => {
+    await expect(
+      createWork(newId, { ...body, sectionIds: [deletedSectionId] }),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+    await expect(
+      replaceWork(
+        elephantId,
+        { ...body, sectionIds: [deletedSectionId] },
+        await readTag(elephantId),
+      ),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+
+    expect(works.has(newId)).toBe(false);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
   });
 });
 
