@@ -79,6 +79,16 @@ function editedContent({
   return { description, month, photo, processPhotos, sectionIds, size, title, year };
 }
 
+const centimetresPerInch = 2.54;
+
+/**
+ * A side in inches, rounded to hundredths. A side measured in inches with two decimals and saved in
+ * centimetres comes back as measured: 16 inches are stored as 40.64 cm and read as 16 again.
+ */
+function toInches(centimetres: number): number {
+  return Math.round((centimetres / centimetresPerInch) * 100) / 100;
+}
+
 /**
  * The stored work as the API returns it, with download URLs and ISO 8601 dates. A section deleted
  * since the work was saved is left out of its sections (`sectionIds`, the ids that exist).
@@ -108,6 +118,7 @@ function toWork(
     processPhotos: processPhotos.map(toListPhoto),
     sectionIds: sectionIds.filter((sectionId) => knownSectionIds.has(sectionId)),
     size,
+    sizeInches: { width: toInches(size.width), height: toInches(size.height) },
     title,
     updatedAt: updatedAt.toDate().toISOString(),
     year,

@@ -257,6 +257,33 @@ describe("getWork", () => {
     expect(data).toMatchObject({ id: elephantId, title: "Слон", year: 2023 });
   });
 
+  it("returns the size in inches as well, rounded to hundredths", async () => {
+    works.set(elephantId, {
+      ...storedWork(elephantId, "Слон", 2023, 5),
+      size: { width: 21.6, height: 27.9 },
+    });
+
+    const { data } = await getWork(elephantId);
+
+    expect(data.size).toEqual({ width: 21.6, height: 27.9 });
+    expect(data.sizeInches).toEqual({ width: 8.5, height: 10.98 });
+  });
+
+  it("gives back the inches a size was measured in", async () => {
+    // 16 × 20 inches and 11.75 × 15.13 inches, saved in centimetres with two decimals.
+    works.set(elephantId, {
+      ...storedWork(elephantId, "Слон", 2023, 5),
+      size: { width: 40.64, height: 50.8 },
+    });
+    works.set(tigerId, {
+      ...storedWork(tigerId, "Тигр", 2023, 5),
+      size: { width: 29.85, height: 38.43 },
+    });
+
+    expect((await getWork(elephantId)).data.sizeInches).toEqual({ width: 16, height: 20 });
+    expect((await getWork(tigerId)).data.sizeInches).toEqual({ width: 11.75, height: 15.13 });
+  });
+
   it("returns 404 for a work that does not exist", async () => {
     await expect(getWork(newId)).rejects.toBeInstanceOf(NotFoundError);
   });

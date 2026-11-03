@@ -31,7 +31,7 @@ export const workParamsSchema = z.object({
 /** A side of a work in centimetres, with at most two decimals, such as 29.7. */
 const workSideSchema = z.number().positive().max(maxWorkSide).multipleOf(0.01);
 
-/** The size of a work in centimetres; the site converts it for visitors who read inches. */
+/** The size of a work in centimetres, the only unit stored; the API adds the size in inches. */
 const workSizeSchema = z.strictObject({
   width: workSideSchema,
   height: workSideSchema,
@@ -114,6 +114,8 @@ export const workSchema = z.object({
   description: z.string(),
   /** In centimetres. */
   size: z.object({ width: z.number(), height: z.number() }),
+  /** The same size in inches, computed from the centimetres for the site; not stored. */
+  sizeInches: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
   /** 1 for January. */
   month: z.number(),
