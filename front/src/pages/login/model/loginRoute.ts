@@ -2,15 +2,13 @@ import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect } from "reac
 
 import { getCurrentUser } from "@/entities/user";
 import { getLoginErrorMessage, login, loginSchema } from "@/features/login";
-import { toAdminPath } from "@/shared/config/routes";
-
-export const redirectToField = "redirectTo";
+import { redirectToParam, toAdminPath } from "@/shared/config/routes";
 
 export async function loginLoader({ request }: LoaderFunctionArgs) {
   const user = await getCurrentUser({ signal: request.signal }).catch(() => null);
 
   if (user) {
-    throw redirect(toAdminPath(new URL(request.url).searchParams.get(redirectToField)));
+    throw redirect(toAdminPath(new URL(request.url).searchParams.get(redirectToParam)));
   }
 
   return null;
@@ -33,5 +31,5 @@ export async function loginAction({ request }: ActionFunctionArgs) {
     return { error: getLoginErrorMessage(error) };
   }
 
-  return redirect(toAdminPath(formData.get(redirectToField)));
+  return redirect(toAdminPath(formData.get(redirectToParam)));
 }

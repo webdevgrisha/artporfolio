@@ -36,6 +36,14 @@ export function projectPath(id: string): string {
   return `${routes.projects}/${encodeURIComponent(id)}`;
 }
 
+/** The search parameter of the login page: the admin page to come back to after signing in. */
+export const redirectToParam = "redirectTo";
+
+/** The login page, which brings the user back to `redirectTo` after signing in. */
+export function loginPath(redirectTo: string): string {
+  return `${routes.login}?${new URLSearchParams({ [redirectToParam]: redirectTo }).toString()}`;
+}
+
 /**
  * The path to go to after signing in or a failed logout: a page of the admin, or the admin home.
  * The value comes from a URL or a form, so it never leads to another site.

@@ -57,10 +57,10 @@ export const router = createBrowserRouter([
               return {
                 Component: AdminLayout,
                 loader: requireSession,
-                // The session is checked on every navigation to a page, not only on the first one:
-                // when it has expired, its redirect to the login page wins over the failed page
-                // loader.
-                shouldRevalidate: (args) => !changesOnlySearch(args),
+                // The session is checked once, on entering the admin, so moving between its pages
+                // waits for no extra request. A session that expires later is found by the next
+                // page load, which then sends the user to the login page (AdminPageError).
+                shouldRevalidate: () => false,
               };
             },
             children: [
