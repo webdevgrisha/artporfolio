@@ -35,6 +35,7 @@ vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 import { listProcessPhotos, replaceProcessPhotos } from "#modules/about/process-photos/service";
 import { PreconditionFailedError, UnprocessableContentError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
+import { minPhotoSize } from "#shared/images/processing";
 
 const firstId = "11111111-1111-4111-8111-111111111111";
 const secondId = "22222222-2222-4222-8222-222222222222";
@@ -159,6 +160,7 @@ describe("replaceProcessPhotos", () => {
     expect(uploads.publishUpload).toHaveBeenCalledWith(
       uploadId,
       `about/process-photos/${String(added?.id)}`,
+      minPhotoSize,
     );
     expect(writtenPhotos()[2]).toMatchObject({ alt: "New", id: added?.id, version: "new-version" });
   });

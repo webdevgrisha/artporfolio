@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { UnprocessableContentError } from "#shared/http/errors";
 import { altSchema, photoSchema, storedPhotoSchema, toPhoto } from "#shared/images/photo";
+import { minPhotoSize } from "#shared/images/processing";
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
 import { publishUpload, uploadIdSchema } from "#shared/images/uploads";
 
@@ -152,7 +153,7 @@ export async function preparePhotoList(
   try {
     for (const { id, uploadId } of planned) {
       if (uploadId) {
-        images.set(id, await publishUpload(uploadId, photoFolder(id)));
+        images.set(id, await publishUpload(uploadId, photoFolder(id), minPhotoSize));
       }
     }
   } catch (error) {

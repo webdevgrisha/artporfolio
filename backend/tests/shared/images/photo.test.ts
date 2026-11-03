@@ -44,6 +44,7 @@ import {
   toPhoto,
   updatePhotoAlt,
 } from "#shared/images/photo";
+import { minPhotoSize } from "#shared/images/processing";
 
 const slot = photoSlot({
   document: () => document as unknown as DocumentReference,
@@ -139,7 +140,7 @@ describe("photo", () => {
     const stored = { ...published, alt: "Portrait" };
 
     expect(created).toBe(true);
-    expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "contacts/photo");
+    expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "contacts/photo", minPhotoSize);
     expect(transaction.set).toHaveBeenCalledWith(document, { photo: stored }, { merge: true });
     expect(etag).toBe(entityTag(stored));
     expect(data.sources.avif[0]).toEqual({

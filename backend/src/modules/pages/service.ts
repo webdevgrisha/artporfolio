@@ -1,6 +1,7 @@
 import { type Page, type PageId, pageIds } from "#modules/pages/schema";
 import { firestore } from "#shared/firebase/firestore";
 import type { Tagged } from "#shared/http/etag";
+import { minHeroSize } from "#shared/images/processing";
 import { fillSlot, getSlot, type ImageSlot, readSlot, type SlotField } from "#shared/images/slot";
 import { type Image, type StoredImage, storedImageSchema, toImage } from "#shared/images/storage";
 
@@ -13,7 +14,12 @@ function pageDocument(page: PageId) {
 }
 
 function heroSlot(page: PageId): ImageSlot<StoredImage> {
-  return { ...heroField, document: () => pageDocument(page), folder: `pages/${page}/hero` };
+  return {
+    ...heroField,
+    document: () => pageDocument(page),
+    folder: `pages/${page}/hero`,
+    minSize: minHeroSize,
+  };
 }
 
 export async function getPages(): Promise<Record<PageId, Page>> {
