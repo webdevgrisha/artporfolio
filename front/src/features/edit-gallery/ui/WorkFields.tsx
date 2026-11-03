@@ -37,10 +37,18 @@ export function WorkFields({
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
   const { defaultValues, dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
+  // After a refused submit, react-hook-form focuses the first invalid field in the order the
+  // fields were registered, so they are registered here in the order of the form; the photos
+  // come last, from their own components.
+  const titleField = register("title");
+  const descriptionField = register("description");
+  const { field: sectionsField } = useController({ control, name: "sectionIds" });
+  const widthField = register("width");
+  const heightField = register("height");
   // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
   // for a change, so a controller keeps the value in the form's state instead (see the colours).
   const { field: monthField } = useController({ control, name: "month" });
-  const { field: sectionsField } = useController({ control, name: "sectionIds" });
+  const yearField = register("year");
   const savedSectionIds = React.useMemo(
     () => defaultValues?.sectionIds?.filter((id) => id !== undefined) ?? [],
     [defaultValues],
@@ -65,7 +73,7 @@ export function WorkFields({
           hasValue={Boolean(title)}
           clearLabel="Очистить название"
           onClear={clearTitle}
-          {...register("title")}
+          {...titleField}
         />
         <Textarea
           label="Описание"
@@ -75,7 +83,7 @@ export function WorkFields({
           disabled={isSaving}
           error={errors.description?.message}
           isModified={Boolean(dirtyFields.description)}
-          {...register("description")}
+          {...descriptionField}
         />
         <SectionsField
           sections={sections}
@@ -97,7 +105,7 @@ export function WorkFields({
             disabled={isSaving}
             error={errors.width?.message}
             isModified={Boolean(dirtyFields.width)}
-            {...register("width")}
+            {...widthField}
           />
           <Input
             className={styles.side}
@@ -108,7 +116,7 @@ export function WorkFields({
             disabled={isSaving}
             error={errors.height?.message}
             isModified={Boolean(dirtyFields.height)}
-            {...register("height")}
+            {...heightField}
           />
         </div>
         {/* When the work was finished, as it is read: the month, then the year. */}
@@ -137,7 +145,7 @@ export function WorkFields({
             disabled={isSaving}
             error={errors.year?.message}
             isModified={Boolean(dirtyFields.year)}
-            {...register("year")}
+            {...yearField}
           />
         </div>
       </div>
