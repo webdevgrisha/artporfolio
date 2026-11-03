@@ -1,4 +1,4 @@
-import type { FetchQueryOptions, QueryKey } from "@tanstack/react-query";
+import { type FetchQueryOptions, isCancelledError, type QueryKey } from "@tanstack/react-query";
 
 import { queryClient } from "./queryClient";
 
@@ -11,10 +11,19 @@ export interface PageData {
  * Loads a query afresh, even when it is cached: a form, or a list, takes its saved values and
  * their ETag from it once, so they must not be outdated.
  */
-export function fetchFresh<TQueryFnData, TError, TData, TQueryKey extends QueryKey>(
+export async function fetchFresh<TQueryFnData, TError, TData, TQueryKey extends QueryKey>(
   query: FetchQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
 ): Promise<TData> {
-  return queryClient.fetchQuery({ ...query, staleTime: 0 });
+  try {
+    return await queryClient.fetchQuery({ ...query, staleTime: 0 });
+  } catch (error) {
+    // TanStack Query cancels a request when the last component that reads the query unmounts
+    // during it, such as the title of a section in the breadcrumbs, which StrictMode mounts twice.
+    // The page still waits for the data, so it is loaded again; a request that a component has
+    // started since is joined, not repeated.
+    if (isCancelledError(error)) return fetchFresh(query);
+    throw error;
+  }
 }
 
 /**

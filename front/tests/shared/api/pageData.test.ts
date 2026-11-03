@@ -1,3 +1,4 @@
+import { QueryObserver } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { fetchFresh, loadPageData } from "@/shared/api/pageData";
@@ -17,6 +18,26 @@ describe("fetchFresh", () => {
     await expect(fetchFresh({ queryFn, queryKey })).resolves.toBe("fresh");
     expect(queryFn).toHaveBeenCalledOnce();
     expect(queryClient.getQueryData(queryKey)).toBe("fresh");
+  });
+
+  it("loads again when a component that read the query unmounts during the request", async () => {
+    // Reads the signal, as the requests of the API do, so leaving the query cancels the request.
+    const queryFn = vi.fn(
+      ({ signal }: { signal: AbortSignal }) =>
+        new Promise<string>((resolve) => {
+          const timer = setTimeout(() => resolve("fresh"), 10);
+          signal.addEventListener("abort", () => clearTimeout(timer));
+        }),
+    );
+
+    const loading = fetchFresh({ queryFn, queryKey });
+    const unsubscribe = new QueryObserver(queryClient, { enabled: false, queryKey }).subscribe(
+      () => undefined,
+    );
+    unsubscribe();
+
+    await expect(loading).resolves.toBe("fresh");
+    expect(queryFn).toHaveBeenCalledTimes(2);
   });
 });
 
