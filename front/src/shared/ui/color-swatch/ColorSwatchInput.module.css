@@ -1,4 +1,4 @@
-/* The control is a tap target; the swatch is a circle in its middle. */
+/* The control is a tap target; the swatch is a circle in its middle, as in ColorSwatch. */
 .root {
   --swatch-size: 1.75rem;
 

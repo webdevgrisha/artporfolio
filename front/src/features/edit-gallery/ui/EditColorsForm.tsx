@@ -4,7 +4,7 @@ import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "reac
 
 import { type GalleryColors, galleryColorsQuery, maxColors } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
-import { ColorSwatchInput } from "@/shared/ui/color-swatch-input";
+import { ColorSwatch, ColorSwatchInput } from "@/shared/ui/color-swatch";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { Tooltip } from "@/shared/ui/tooltip";
 
@@ -26,15 +26,16 @@ interface EditColorsFormProps {
   colors: Tagged<GalleryColors>;
 }
 
-/** The color being renamed: the key of its row and the title the renaming started from. */
+/** The color being edited: the key of its row and the title and swatch the editing started from. */
 interface Editing {
   key: string;
+  startHex: string;
   startTitle: string;
 }
 
 /**
- * Every color of the gallery, as one list: a color is added with its swatch, renamed, given
- * another swatch or removed here, and «Сохранить» sends the whole list. A color is one swatch: a
+ * Every color of the gallery, as one list: a color is added with its swatch, edited (its title and
+ * its swatch, after the pencil) or removed here, and «Сохранить» sends the whole list. A color is one swatch: a
  * black-and-white work gets «Чёрный» and «Белый». The site lists the colors by title, and so does
  * the list once it is saved; the colors added since stay at its end until then.
  */
@@ -80,6 +81,7 @@ export function EditColorsForm({ className, colors }: EditColorsFormProps) {
         shouldDirty: true,
         shouldValidate: isSubmitted,
       });
+      setValue(`colors.${index}.hex`, editing.startHex, { shouldDirty: true });
     }
     setEditing(undefined);
   }
@@ -135,6 +137,7 @@ export function EditColorsForm({ className, colors }: EditColorsFormProps) {
               const savedColor = savedColors.get(row.id);
               const isTitleModified = savedColor?.title !== row.title;
               const titleError = errors.colors?.[index]?.title?.message;
+              const isEditing = editing?.key === field.id || Boolean(titleError);
               const swatchLabel = `Образец цвета ${row.title}`;
 
               return (
@@ -143,34 +146,41 @@ export function EditColorsForm({ className, colors }: EditColorsFormProps) {
                   title={row.title}
                   titleField={register(`colors.${index}.title`)}
                   start={
-                    <Tooltip content={swatchLabel}>
-                      {/* Controlled: an uncontrolled color input shows #000000 before the form
+                    // The swatch changes after the pencil, as the title does.
+                    isEditing ? (
+                      <Tooltip content={swatchLabel}>
+                        {/* Controlled: an uncontrolled color input shows #000000 before the form
                           fills it, and the form would take that for a value the user picked. */}
-                      <Controller
-                        control={control}
-                        name={`colors.${index}.hex`}
-                        render={({ field: swatch }) => (
-                          <ColorSwatchInput
-                            {...swatch}
-                            label={swatchLabel}
-                            disabled={editForm.isSaving}
-                          />
-                        )}
-                      />
-                    </Tooltip>
+                        <Controller
+                          control={control}
+                          name={`colors.${index}.hex`}
+                          render={({ field: swatch }) => (
+                            <ColorSwatchInput
+                              {...swatch}
+                              label={swatchLabel}
+                              disabled={editForm.isSaving}
+                            />
+                          )}
+                        />
+                      </Tooltip>
+                    ) : (
+                      <ColorSwatch hex={row.hex} />
+                    )
                   }
                   labels={{
                     field: `Название цвета ${savedColor?.title ?? row.title}`,
                     remove: `Удалить ${row.title || "цвет"}`,
-                    rename: `Переименовать ${row.title}`,
+                    edit: `Изменить ${row.title}`,
                   }}
                   error={titleError}
-                  isEditing={editing?.key === field.id || Boolean(titleError)}
+                  isEditing={isEditing}
                   isNew={savedColor === undefined}
                   isModified={isTitleModified || savedColor?.hex !== row.hex}
                   isTitleModified={isTitleModified}
                   isSaving={editForm.isSaving}
-                  onStartEdit={() => setEditing({ key: field.id, startTitle: row.title })}
+                  onStartEdit={() =>
+                    setEditing({ key: field.id, startHex: row.hex, startTitle: row.title })
+                  }
                   onFinishEdit={() => finishEdit(index)}
                   onCancelEdit={() => cancelEdit(index)}
                   onRemove={() => removeRow(index)}

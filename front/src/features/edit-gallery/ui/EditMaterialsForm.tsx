@@ -125,7 +125,7 @@ export function EditMaterialsForm({ className, materials }: EditMaterialsFormPro
                   labels={{
                     field: `Название материала ${savedTitle ?? row.title}`,
                     remove: `Удалить ${row.title || "материал"}`,
-                    rename: `Переименовать ${row.title}`,
+                    edit: `Переименовать ${row.title}`,
                   }}
                   error={titleError}
                   isEditing={editing?.key === field.id || Boolean(titleError)}

@@ -14,8 +14,8 @@ interface TitleListRowProps {
   labels: {
     /** E.g. «Название материала Акварель». */
     field: string;
-    /** E.g. «Переименовать Акварель». */
-    rename: string;
+    /** The pencil, which opens the row, e.g. «Переименовать Акварель». */
+    edit: string;
     /** E.g. «Удалить Акварель». */
     remove: string;
   };
@@ -28,20 +28,23 @@ interface TitleListRowProps {
   isSaving: boolean;
   /** The title differs from the saved one, for the mark of the field. */
   isTitleModified: boolean;
-  /** Keeps the new title. */
+  /** Keeps the changes: the focus has left the row, or Enter was pressed in the title. */
   onFinishEdit: () => void;
-  /** Brings back the title the editing started from. */
+  /** Brings back what the editing started from: Escape anywhere in the row. */
   onCancelEdit: () => void;
   onRemove: () => void;
   onStartEdit: () => void;
-  /** Before the title, for example the swatch of a color. */
+  /** Before the title, for example the swatch of a color, which may be a control while editing. */
   start?: ReactNode;
   title: string;
   /** The title field of the row, as the form registers it. */
   titleField: UseFormRegisterReturn;
 }
 
-/** A row of a list of titles: the title, or a field while it is renamed, and its actions. */
+/**
+ * A row of a list of titles: the title, or a field while the row is edited, and its actions. The
+ * editing lasts while the focus stays in the row, so a control in `start` can be used too.
+ */
 export function TitleListRow({
   error,
   isEditing,
@@ -70,7 +73,26 @@ export function TitleListRow({
   }, [isEditing]);
 
   return (
-    <li className={clsx(styles.row, isModified && styles.rowModified)}>
+    <li
+      className={clsx(styles.row, isModified && styles.rowModified)}
+      onBlur={(event) => {
+        // A dialog of the browser, such as the color picker, takes the focus from the page only:
+        // the editing goes on.
+        if (
+          isEditing &&
+          document.hasFocus() &&
+          !event.currentTarget.contains(event.relatedTarget)
+        ) {
+          onFinishEdit();
+        }
+      }}
+      onKeyDown={(event) => {
+        if (isEditing && event.key === "Escape") {
+          focusEditButton.current = true;
+          onCancelEdit();
+        }
+      }}
+    >
       {start}
 
       {isEditing ? (
@@ -84,19 +106,12 @@ export function TitleListRow({
           isModified={isTitleModified}
           // The field opens on the pencil, which goes away; the focus moves into the field.
           autoFocus
-          onBlur={(event) => {
-            void titleField.onBlur(event);
-            onFinishEdit();
-          }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
-              // Enter ends the renaming instead of submitting the whole form.
+              // Enter ends the editing instead of submitting the whole form.
               event.preventDefault();
               focusEditButton.current = true;
               onFinishEdit();
-            } else if (event.key === "Escape") {
-              focusEditButton.current = true;
-              onCancelEdit();
             }
           }}
         />
@@ -109,10 +124,10 @@ export function TitleListRow({
 
       <div className={styles.rowActions}>
         {isEditing ? null : (
-          <Tooltip content={labels.rename}>
+          <Tooltip content={labels.edit}>
             <IconButton
               ref={editButtonRef}
-              label={labels.rename}
+              label={labels.edit}
               disabled={isSaving}
               onClick={onStartEdit}
             >
@@ -124,7 +139,7 @@ export function TitleListRow({
           <IconButton
             label={labels.remove}
             disabled={isSaving}
-            // Keeps the field from ending the renaming first, which would move the focus.
+            // Keeps the click from moving the focus first, which would end the editing.
             onMouseDown={(event) => event.preventDefault()}
             onClick={onRemove}
           >

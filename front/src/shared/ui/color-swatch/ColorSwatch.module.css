@@ -1,0 +1,17 @@
+/* The space and the circle of ColorSwatchInput. */
+.root {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--min-tap-target-size);
+  block-size: var(--min-tap-target-size);
+}
+
+/* The line keeps a white swatch visible on the white page. */
+.circle {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border: 1px solid var(--color-divider);
+  border-radius: 50%;
+}
