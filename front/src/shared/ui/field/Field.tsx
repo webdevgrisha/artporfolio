@@ -15,6 +15,8 @@ interface FieldProps {
   hint?: string;
   hintId: string;
   label: string;
+  /** The id of the label, for a control that names its parts by it, such as a combobox. */
+  labelId?: string;
 }
 
 /** The label, the hint and the error message around a form control. */
@@ -27,10 +29,11 @@ export function Field({
   hint,
   hintId,
   label,
+  labelId,
 }: FieldProps) {
   return (
     <div className={clsx(styles.root, className)}>
-      <label className={styles.label} htmlFor={controlId}>
+      <label id={labelId} className={styles.label} htmlFor={controlId}>
         {label}
       </label>
       {children}
