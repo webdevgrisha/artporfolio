@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { galleryWorksQuery } from "@/entities/gallery";
+import { gallerySectionsQuery, galleryWorksQuery } from "@/entities/gallery";
 import { WorksList } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { TableSkeleton } from "@/shared/ui/skeleton";
@@ -16,6 +16,7 @@ export function GalleryWorksSection() {
 function GalleryWorks() {
   // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: works } = useSuspenseQuery(galleryWorksQuery);
+  const { data: sections } = useSuspenseQuery(gallerySectionsQuery);
 
-  return <WorksList works={works} />;
+  return <WorksList works={works} sections={sections} />;
 }

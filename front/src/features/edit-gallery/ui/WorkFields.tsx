@@ -1,16 +1,19 @@
 import clsx from "clsx";
+import React from "react";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import { maxWorkProcessPhotos } from "@/entities/gallery";
+import { type GallerySection, maxWorkProcessPhotos } from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
+import { MultiSelect } from "@/shared/ui/multi-select";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 import { PhotoListField } from "@/shared/ui/photo-list-field";
 import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 
 import { monthOptions, type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
+import { toSectionOptions } from "../model/workSections";
 import styles from "./WorkFields.module.css";
 
 interface WorkFieldsProps {
@@ -20,6 +23,8 @@ interface WorkFieldsProps {
   savedPhoto: Photo | null;
   /** The process photos of the saved work, to show that some were removed or moved. */
   savedProcessPhotos: readonly ListPhoto[];
+  /** The sections of the gallery, sorted by title, to choose from. */
+  sections: readonly GallerySection[];
 }
 
 /** The fields of a work form; they read the form from its context. */
@@ -28,6 +33,7 @@ export function WorkFields({
   isSaving,
   savedPhoto,
   savedProcessPhotos,
+  sections,
 }: WorkFieldsProps) {
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
   const { dirtyFields, errors, isSubmitted } = useFormState({ control });
@@ -35,6 +41,8 @@ export function WorkFields({
   // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
   // for a change, so a controller keeps the value in the form's state instead (see the colours).
   const { field: monthField } = useController({ control, name: "month" });
+  const { field: sectionsField } = useController({ control, name: "sectionIds" });
+  const sectionOptions = React.useMemo(() => toSectionOptions(sections), [sections]);
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -66,6 +74,18 @@ export function WorkFields({
           error={errors.description?.message}
           isModified={Boolean(dirtyFields.description)}
           {...register("description")}
+        />
+        <MultiSelect
+          label="Разделы"
+          hint="Начните вводить название. Работа в подразделе видна и в его разделе"
+          placeholder="Например: Пейзаж"
+          options={sectionOptions}
+          value={sectionsField.value}
+          disabled={isSaving}
+          error={errors.sectionIds?.message}
+          isModified={Boolean(dirtyFields.sectionIds)}
+          onBlur={sectionsField.onBlur}
+          onChange={sectionsField.onChange}
         />
         <div className={styles.size}>
           <Input

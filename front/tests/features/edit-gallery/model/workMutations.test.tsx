@@ -14,6 +14,7 @@ import { recordRequests, server } from "../../../support/server";
 
 const id = "11111111-1111-4111-8111-111111111111";
 const path = `/api/gallery-works/${id}`;
+const sectionId = "22222222-2222-4222-8222-222222222222";
 /** The values of the form, with a new file each time: a file once uploaded is not sent again. */
 const values = () => ({
   ...emptyWorkFormValues,
@@ -24,6 +25,7 @@ const values = () => ({
   width: "21,6",
   year: "2025",
   month: "4",
+  sectionIds: [sectionId],
 });
 const savedEtag = '"saved"';
 
@@ -45,6 +47,7 @@ function apiWork(title: string): GalleryWork {
       width: 960,
     },
     processPhotos: [],
+    sectionIds: [sectionId],
     size: { height: 27.9, width: 21.6 },
     title,
     updatedAt: "2026-01-15T10:00:00.000Z",
@@ -105,6 +108,7 @@ describe("useCreateWork", () => {
           description: "",
           photo: { alt: "Стрекоза", uploadId },
           processPhotos: [],
+          sectionIds: [sectionId],
           size: { height: 27.9, width: 21.6 },
           title: "Стрекоза",
           year: 2025,

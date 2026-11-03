@@ -185,9 +185,15 @@ export const router = createBrowserRouter([
                   {
                     path: routes.galleryWorkNew,
                     lazy: async () => {
-                      const { NewWorkPage, newWorkHandle } = await import("@/pages/gallery");
+                      const { NewWorkPage, newGalleryWorkLoader, newWorkHandle } = await import(
+                        "@/pages/gallery"
+                      );
 
-                      return { Component: NewWorkPage, handle: newWorkHandle };
+                      return {
+                        Component: NewWorkPage,
+                        handle: newWorkHandle,
+                        loader: newGalleryWorkLoader,
+                      };
                     },
                   },
                   {

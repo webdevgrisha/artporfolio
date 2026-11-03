@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   type GalleryWork,
   maxWorkProcessPhotos,
+  maxWorkSections,
   maxWorkSide,
   minWorkYear,
   type WorkSize,
@@ -101,6 +102,11 @@ export const workFormSchema = z
      * `photos` field.
      */
     photos: photoListRowsSchema(maxWorkProcessPhotos),
+    /** The sections and subsections, by id, in the order they were chosen. */
+    sectionIds: z
+      .array(z.string())
+      .min(1, "Выберите хотя бы один раздел")
+      .max(maxWorkSections, `Не больше ${String(maxWorkSections)} разделов`),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)
@@ -118,6 +124,7 @@ export const emptyWorkFormValues: WorkFormValues = {
   year: "",
   ...toPhotoFormValues(null),
   photos: [],
+  sectionIds: [],
 };
 
 /** The values of a work as stored on the server. */
@@ -126,6 +133,7 @@ export function toWorkFormValues({
   month,
   photo,
   processPhotos,
+  sectionIds,
   size,
   title,
   year,
@@ -139,6 +147,7 @@ export function toWorkFormValues({
     year: String(year),
     ...toPhotoFormValues(photo),
     photos: toPhotoListRows(processPhotos),
+    sectionIds,
   };
 }
 

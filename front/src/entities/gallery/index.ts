@@ -40,6 +40,7 @@ export {
 export {
   type GalleryWork,
   maxWorkProcessPhotos,
+  maxWorkSections,
   maxWorkSide,
   minWorkYear,
   type WorkSize,

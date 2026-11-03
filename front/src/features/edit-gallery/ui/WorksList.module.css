@@ -30,10 +30,13 @@
   overflow-x: auto;
 }
 
-/* As the table of the sections; the widths are set, so a long title never moves the columns. */
+/*
+ * As the table of the sections; the widths are set, so a long title never moves the columns. The
+ * title and the sections share the rest of the row.
+ */
 .table {
   inline-size: 100%;
-  min-inline-size: 50rem;
+  min-inline-size: 56rem;
   font-size: var(--font-size-lg);
   table-layout: fixed;
   border-collapse: collapse;
@@ -69,14 +72,15 @@
   inline-size: 6rem;
 }
 
-/* Room for «10 000 × 10 000 см», which a long title never squeezes. */
+/* Room for «100 × 70,5 см», which a long title never squeezes. */
 .sizeColumn {
-  inline-size: 11rem;
+  inline-size: 10rem;
 }
 
-/* Room for «сентябрь 2024». */
+/* Room for «сентябрь 2024», on one line: the month and the year read as one date. */
 .dateColumn {
-  inline-size: 10.5rem;
+  inline-size: 11rem;
+  white-space: nowrap;
 }
 
 .actionsColumn {

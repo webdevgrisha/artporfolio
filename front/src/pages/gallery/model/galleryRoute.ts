@@ -26,12 +26,21 @@ export function gallerySectionLoader({ params }: LoaderFunctionArgs) {
   return loadPageData(fetchFresh(gallerySectionQuery(params.id ?? "")));
 }
 
+// The works name their sections by id, so their pages load the sections too.
+
 export function galleryWorksLoader() {
-  return loadPageData(fetchFresh(galleryWorksQuery));
+  return loadPageData(fetchFresh(galleryWorksQuery), fetchFresh(gallerySectionsQuery));
+}
+
+export function newGalleryWorkLoader() {
+  return loadPageData(fetchFresh(gallerySectionsQuery));
 }
 
 export function galleryWorkLoader({ params }: LoaderFunctionArgs) {
-  return loadPageData(fetchFresh(galleryWorkQuery(params.id ?? "")));
+  return loadPageData(
+    fetchFresh(galleryWorkQuery(params.id ?? "")),
+    fetchFresh(gallerySectionsQuery),
+  );
 }
 
 export function galleryMaterialsLoader() {

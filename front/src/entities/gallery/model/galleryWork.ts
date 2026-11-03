@@ -5,6 +5,9 @@ import { listPhotoSchema, photoSchema } from "@/shared/api/photo";
 /** The earliest year a work can be dated (backend/src/modules/gallery-works/schema.ts). */
 export const minWorkYear = 1900;
 
+/** The most sections and subsections one work may be in. */
+export const maxWorkSections = 30;
+
 /** The most process photos one work may have. */
 export const maxWorkProcessPhotos = 20;
 
@@ -32,6 +35,8 @@ export const galleryWorkSchema = z.object({
   photo: photoSchema,
   /** How the work was made, in the order the site shows them. */
   processPhotos: z.array(listPhotoSchema),
+  /** The ids of the sections and subsections the work is shown in. */
+  sectionIds: z.array(z.string()),
   /** When the work was created, ISO 8601. */
   createdAt: z.iso.datetime(),
   /** When the admin last saved the work, ISO 8601. */

@@ -13,6 +13,7 @@ export {
   gallerySectionsLoader,
   galleryWorkLoader,
   galleryWorksLoader,
+  newGalleryWorkLoader,
 } from "./model/galleryRoute";
 export { EditSectionPage } from "./ui/EditSectionPage";
 export { EditWorkPage } from "./ui/EditWorkPage";

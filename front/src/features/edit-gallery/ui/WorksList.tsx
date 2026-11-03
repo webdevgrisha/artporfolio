@@ -2,7 +2,7 @@ import clsx from "clsx";
 import React from "react";
 import { useSearchParams } from "react-router";
 
-import type { GalleryWork } from "@/entities/gallery";
+import type { GallerySection, GalleryWork } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
@@ -12,6 +12,7 @@ import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import { useDeleteWork } from "../model/useDeleteWork";
 import { formatWorkDate, formatWorkSize } from "../model/workFormSchema";
+import { sectionLabels } from "../model/workSections";
 import { matchesWorkQuery, worksSearchParam } from "../model/worksSearch";
 import { WorkActions } from "./WorkActions";
 import styles from "./WorksList.module.css";
@@ -20,6 +21,8 @@ interface WorksListProps {
   className?: string;
   /** In the order the site shows them: the latest first. */
   works: readonly GalleryWork[];
+  /** The sections of the gallery, to name the sections of each work. */
+  sections: readonly GallerySection[];
 }
 
 /**
@@ -27,7 +30,7 @@ interface WorksListProps {
  * rows while searching. The search, in the titles, is kept in the address; a new work is added
  * from beside it. A work opens for editing by the pencil and is deleted after a confirmation.
  */
-export function WorksList({ className, works }: WorksListProps) {
+export function WorksList({ className, sections, works }: WorksListProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get(worksSearchParam) ?? "";
   const deletion = useDeleteWork();
@@ -83,6 +86,7 @@ export function WorksList({ className, works }: WorksListProps) {
                   Фото
                 </th>
                 <th scope="col">Название</th>
+                <th scope="col">Разделы</th>
                 <th className={styles.sizeColumn} scope="col">
                   Размер
                 </th>
@@ -105,6 +109,7 @@ export function WorksList({ className, works }: WorksListProps) {
                     />
                   </td>
                   <td>{work.title}</td>
+                  <td>{sectionLabels(work.sectionIds, sections).join(", ")}</td>
                   <td className={styles.sizeColumn}>{formatWorkSize(work.size)}</td>
                   <td className={styles.dateColumn}>{formatWorkDate(work)}</td>
                   <td className={styles.actionsColumn}>

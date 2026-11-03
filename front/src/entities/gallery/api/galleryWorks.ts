@@ -22,6 +22,8 @@ export interface GalleryWorkBody {
   photo: { alt: string; uploadId?: string };
   /** In the order the site shows them; a saved photo left out is deleted. */
   processPhotos: readonly ListPhotoItem[];
+  /** The sections and subsections the work is shown in, at least one. */
+  sectionIds: readonly string[];
 }
 
 interface CreateGalleryWorkParams {
@@ -83,7 +85,7 @@ export function galleryWorkQuery(id: string) {
 /**
  * Creates the work `id` and returns it as saved with its ETag. Rejected with 412 when the work
  * exists, for example created by an earlier try whose response was lost, and with 422 when the
- * upload of its photo has expired.
+ * upload of a photo has expired or a section no longer exists.
  */
 export async function createGalleryWork({
   body,
@@ -101,7 +103,7 @@ export async function createGalleryWork({
 /**
  * Replaces the work, all its fields at once, and returns it as saved with its new ETag. Rejected
  * with 412 when the work has changed since `etag` was read, with 404 when it was deleted, and with
- * 422 when it names a process photo or an upload that no longer exists.
+ * 422 when it names a process photo, an upload or a section that no longer exists.
  */
 export async function replaceGalleryWork({
   body,

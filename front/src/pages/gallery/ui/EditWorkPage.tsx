@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
-import { galleryWorkQuery } from "@/entities/gallery";
+import { gallerySectionsQuery, galleryWorkQuery } from "@/entities/gallery";
 import { EditWorkForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
@@ -23,6 +23,7 @@ export function EditWorkPage() {
             <FieldSkeleton rows={8} />
             <FieldSkeleton />
             <FieldSkeleton />
+            <FieldSkeleton />
             <MediaSkeleton />
             <MediaSkeleton />
           </FormSkeleton>
@@ -41,6 +42,7 @@ interface EditWorkProps {
 function EditWork({ id }: EditWorkProps) {
   // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: work } = useSuspenseQuery(galleryWorkQuery(id));
+  const { data: sections } = useSuspenseQuery(gallerySectionsQuery);
 
-  return <EditWorkForm className={styles.form} work={work} />;
+  return <EditWorkForm className={styles.form} work={work} sections={sections} />;
 }

@@ -32,7 +32,7 @@ interface SaveWorkParams {
  * its file and sends its description alone. Rejects with `UploadError`.
  */
 async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
-  const { description, month, photo, photoAlt, photos, title, year } = values;
+  const { description, month, photo, photoAlt, photos, sectionIds, title, year } = values;
 
   return {
     description,
@@ -41,6 +41,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
         ? { alt: photoAlt, uploadId: await uploadImage(photo) }
         : { alt: photoAlt },
     processPhotos: await toPhotoListItems(photos),
+    sectionIds,
     size: toWorkSize(values),
     title,
     year: Number(year),

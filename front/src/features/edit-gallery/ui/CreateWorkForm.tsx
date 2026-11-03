@@ -3,6 +3,7 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
+import type { GallerySection } from "@/entities/gallery";
 import { galleryWorkPath } from "@/shared/config/routes";
 import { EditForm } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
@@ -12,10 +13,12 @@ import { WorkFields } from "./WorkFields";
 
 interface CreateWorkFormProps {
   className?: string;
+  /** The sections of the gallery, to choose from. */
+  sections: readonly GallerySection[];
 }
 
 /** A new work; once it is created, its edit page opens in place of this one. */
-export function CreateWorkForm({ className }: CreateWorkFormProps) {
+export function CreateWorkForm({ className, sections }: CreateWorkFormProps) {
   const navigate = useNavigate();
   const allowNextNavigation = useAllowNextNavigation();
   // Every try of this form creates the same work, so a retry after a lost response never creates
@@ -61,7 +64,12 @@ export function CreateWorkForm({ className }: CreateWorkFormProps) {
         onRevert={() => reset()}
         onSubmit={handleSubmit(create)}
       >
-        <WorkFields isSaving={isSaving} savedPhoto={null} savedProcessPhotos={[]} />
+        <WorkFields
+          isSaving={isSaving}
+          savedPhoto={null}
+          savedProcessPhotos={[]}
+          sections={sections}
+        />
       </EditForm>
     </FormProvider>
   );

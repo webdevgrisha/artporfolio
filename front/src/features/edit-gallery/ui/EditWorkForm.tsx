@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { type GalleryWork, galleryWorkQuery } from "@/entities/gallery";
+import { type GallerySection, type GalleryWork, galleryWorkQuery } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { toWorkFormValues, type WorkFormValues, workFormSchema } from "../model/workFormSchema";
@@ -12,9 +12,11 @@ interface EditWorkFormProps {
   className?: string;
   /** The work as stored on the server when the form opens, with its ETag. */
   work: Tagged<GalleryWork>;
+  /** The sections of the gallery, to choose from. */
+  sections: readonly GallerySection[];
 }
 
-export function EditWorkForm({ className, work }: EditWorkFormProps) {
+export function EditWorkForm({ className, sections, work }: EditWorkFormProps) {
   const form = useForm<WorkFormValues>({
     defaultValues: toWorkFormValues(work.data),
     resolver: zodResolver(workFormSchema),
@@ -38,6 +40,7 @@ export function EditWorkForm({ className, work }: EditWorkFormProps) {
           isSaving={editForm.isSaving}
           savedPhoto={saved.data.photo}
           savedProcessPhotos={saved.data.processPhotos}
+          sections={sections}
         />
       </EditForm>
     </FormProvider>
