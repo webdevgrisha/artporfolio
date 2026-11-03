@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { GalleryWork } from "@/entities/gallery";
 import {
   emptyWorkFormValues,
+  formatWorkSize,
   toWorkFormValues,
   toWorkSize,
   workFormSchema,
@@ -89,5 +90,12 @@ describe("the size in the form", () => {
 
     expect(values).toMatchObject({ height: "11", unit: "in", width: "8,5", year: "2025" });
     expect(toWorkSize(values)).toEqual({ height: 11, unit: "in", width: 8.5 });
+  });
+});
+
+describe("formatWorkSize", () => {
+  it("shows the width first, with a comma and the short unit", () => {
+    expect(formatWorkSize({ height: 42, unit: "cm", width: 29.7 })).toBe("29,7 × 42 см");
+    expect(formatWorkSize({ height: 11, unit: "in", width: 8.5 })).toBe("8,5 × 11 дюйм.");
   });
 });

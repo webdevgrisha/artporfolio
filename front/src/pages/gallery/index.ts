@@ -22,5 +22,6 @@ export { GalleryMaterialsSection } from "./ui/GalleryMaterialsSection";
 export { GalleryPage } from "./ui/GalleryPage";
 export { GalleryPalettesSection } from "./ui/GalleryPalettesSection";
 export { GallerySectionsSection } from "./ui/GallerySectionsSection";
+export { GalleryWorksSection } from "./ui/GalleryWorksSection";
 export { NewSectionPage } from "./ui/NewSectionPage";
 export { NewWorkPage } from "./ui/NewWorkPage";

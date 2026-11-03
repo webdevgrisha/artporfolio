@@ -121,3 +121,14 @@ export const workSizeUnitLabels = {
   cm: "Сантиметры",
   in: "Дюймы",
 } as const satisfies Record<WorkSizeUnit, string>;
+
+/** The short names of the units, after a size. */
+const workSizeUnitAbbreviations = {
+  cm: "см",
+  in: "дюйм.",
+} as const satisfies Record<WorkSizeUnit, string>;
+
+/** The size as the admin reads it: «29,7 × 42 см», the width first. */
+export function formatWorkSize({ height, unit, width }: WorkSize): string {
+  return `${formatSide(width)} × ${formatSide(height)} ${workSizeUnitAbbreviations[unit]}`;
+}

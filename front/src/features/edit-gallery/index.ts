@@ -7,3 +7,4 @@ export { EditPalettesForm } from "./ui/EditPalettesForm";
 export { EditSectionForm } from "./ui/EditSectionForm";
 export { EditWorkForm } from "./ui/EditWorkForm";
 export { SectionsList } from "./ui/SectionsList";
+export { WorksList } from "./ui/WorksList";

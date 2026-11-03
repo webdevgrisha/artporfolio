@@ -76,12 +76,12 @@ export const router = createBrowserRouter([
                     lazy: async () => ({
                       Component: (await import("@/pages/gallery")).GalleryPage,
                     }),
-                    // The text, the sections, the materials, the colors and the palettes are saved
-                    // independently; the page opens the sections.
+                    // The text, the works, the sections, the materials, the colors and the palettes
+                    // are saved independently; the page opens the works.
                     children: [
                       {
                         index: true,
-                        element: <Navigate to={routes.gallerySections} replace />,
+                        element: <Navigate to={routes.galleryWorks} replace />,
                       },
                       {
                         path: routes.galleryIntro,
@@ -91,6 +91,21 @@ export const router = createBrowserRouter([
                           );
 
                           return { Component: GalleryIntroSection, loader: galleryIntroLoader };
+                        },
+                      },
+                      {
+                        path: routes.galleryWorks,
+                        lazy: async () => {
+                          const { GalleryWorksSection, galleryWorksLoader } = await import(
+                            "@/pages/gallery"
+                          );
+
+                          return {
+                            Component: GalleryWorksSection,
+                            loader: galleryWorksLoader,
+                            shouldRevalidate: (args) =>
+                              !changesOnlySearch(args) && args.defaultShouldRevalidate,
+                          };
                         },
                       },
                       {

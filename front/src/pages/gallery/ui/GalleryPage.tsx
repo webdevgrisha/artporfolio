@@ -7,6 +7,7 @@ import styles from "./GalleryPage.module.css";
 
 const sections = [
   { label: "Основной текст", to: routes.galleryIntro },
+  { label: "Все работы", to: routes.galleryWorks },
   { label: "Разделы", to: routes.gallerySections },
   { label: "Материалы", to: routes.galleryMaterials },
   { label: "Цвета", to: routes.galleryColors },
@@ -14,8 +15,8 @@ const sections = [
 ] as const;
 
 /**
- * The text above the works, the sections, the materials, the colors and the palettes are saved
- * independently.
+ * The text above the works, the works, the sections, the materials, the colors and the palettes
+ * are saved independently.
  */
 export function GalleryPage() {
   return (
