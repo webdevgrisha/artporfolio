@@ -2,13 +2,15 @@
  * The line under the field spans its whole width. The field is already as tall as a tap target, so
  * a small padding is enough to keep the line close under the query. The magnifier and the
  * placeholder tell what the field is, so the line is decorative: as pale as the lines between the
- * rows of the table under it.
+ * rows of the table under it. The content keeps the inline padding of a table cell, so the
+ * magnifier stands over the first column and the summary over the last.
  */
 .root {
   display: flex;
   gap: var(--space-4);
   align-items: center;
   padding-block-end: var(--space-1);
+  padding-inline: var(--space-4);
   font-size: var(--font-size-lg);
   border-block-end: 1px solid var(--color-divider);
 }
