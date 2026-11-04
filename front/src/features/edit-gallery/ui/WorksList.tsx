@@ -1,24 +1,19 @@
-import {
-  type ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import clsx from "clsx";
+import type { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
 import type { GalleryMaterial, GallerySection, GalleryWork } from "@/entities/gallery";
-import { routes } from "@/shared/config/routes";
-import { useTableView } from "@/shared/lib/useTableView";
-import { Button, ButtonLink } from "@/shared/ui/button";
+import { galleryWorkPath, routes } from "@/shared/config/routes";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
-import { SearchInput } from "@/shared/ui/search-input";
-import { TableHead } from "@/shared/ui/table-head";
-import { VisuallyHidden } from "@/shared/ui/visually-hidden";
+import {
+  actionsColumn,
+  DataTable,
+  positionColumn,
+  RowActions,
+  TablePhoto,
+  type TableRow,
+} from "@/shared/ui/data-table";
 
-import { useDeleteWork } from "../model/useDeleteWork";
+import { useDeleteWork, useDeletingWorkIds } from "../model/useDeleteWork";
 import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workFormSchema";
 import { titlesOf } from "../model/workReferences";
 import { sectionLabels } from "../model/workSections";
@@ -28,7 +23,6 @@ import {
   matchesWorkQuery,
   worksSortableColumns,
 } from "../model/worksTableView";
-import { WorkActions } from "./WorkActions";
 import styles from "./WorksList.module.css";
 
 interface WorksListProps {
@@ -41,89 +35,59 @@ interface WorksListProps {
   materials: readonly GalleryMaterial[];
 }
 
-/** A work with its place on the site, which the sorting of the table does not change. */
-interface WorkRow {
-  position: number;
-  work: GalleryWork;
-}
-
 const collator = new Intl.Collator("ru", { sensitivity: "base" });
 
-/**
- * Every work; until it is sorted, in the order of the site, which «№» keeps showing after a sort
- * and while searching. The search, in the titles, and the sorting are kept in the address; a new
- * work is added from beside the search. A work opens for editing by the pencil and is deleted after
- * a confirmation.
- */
+/** Every work, in a table; a work opens by the pencil and is deleted after a confirmation. */
 export function WorksList({ className, materials, sections, works }: WorksListProps) {
-  const { changeSorting, changeView, view } = useTableView(worksSortableColumns);
-  const { query } = view;
   const deletion = useDeleteWork();
+  const deletingIds = useDeletingWorkIds();
   const [deleted, setDeleted] = React.useState<GalleryWork>();
-  const shownRows = React.useMemo(
-    () =>
-      works
-        .map((work, index) => ({ position: index + 1, work }))
-        .filter(({ work }) => matchesWorkQuery(work, query)),
-    [works, query],
-  );
 
-  const columns = React.useMemo<ColumnDef<WorkRow>[]>(
+  const columns = React.useMemo<ColumnDef<TableRow<GalleryWork>>[]>(
     () => [
-      {
-        id: "position",
-        header: "№",
-        meta: { className: styles.positionColumn },
-        accessorFn: (row) => row.position,
-        cell: ({ row: { original } }) => <span className={styles.muted}>{original.position}</span>,
-      },
+      positionColumn({ isSortable: true }),
       {
         id: "photo",
         header: "Фото",
         meta: { className: styles.photoColumn },
         enableSorting: false,
-        cell: ({ row: { original } }) => (
-          <MediaImage
-            className={styles.photo}
-            source={imageToMediaItem(original.work.photo).source}
-          />
-        ),
+        cell: ({ row: { original } }) => <TablePhoto image={original.item.photo} />,
       },
       {
         id: "title",
         header: "Название",
-        accessorFn: (row) => row.work.title,
-        sortingFn: (a, b) => collator.compare(a.original.work.title, b.original.work.title),
+        accessorFn: (row) => row.item.title,
+        sortingFn: (a, b) => collator.compare(a.original.item.title, b.original.item.title),
       },
       {
         id: "sections",
         header: "Разделы",
         enableSorting: false,
         cell: ({ row: { original } }) =>
-          sectionLabels(original.work.sectionIds, sections).join(", "),
+          sectionLabels(original.item.sectionIds, sections).join(", "),
       },
       {
         id: "materials",
         header: "Материалы",
         enableSorting: false,
-        cell: ({ row: { original } }) => titlesOf(original.work.materialIds, materials).join(", "),
+        cell: ({ row: { original } }) => titlesOf(original.item.materialIds, materials).join(", "),
       },
       {
         id: "size",
         header: "Размер",
         meta: { className: styles.sizeColumn },
-        accessorFn: (row) => row.work.size,
-        sortingFn: (a, b) => compareWorkSizes(a.original.work, b.original.work),
+        accessorFn: (row) => row.item.size,
+        sortingFn: (a, b) => compareWorkSizes(a.original.item, b.original.item),
         // The smallest first would read as a step back; the largest first is the useful start.
         sortDescFirst: true,
         cell: ({ row: { original } }) => {
-          const format = formatWorkFormat(original.work);
+          const format = formatWorkFormat(original.item);
 
           // The format under the size, muted: «диптих», «12 шт.»; a single work has none.
           return (
             <>
-              {formatWorkSize(original.work.size)}
-              {format === null ? null : <div className={styles.muted}>{format}</div>}
+              {formatWorkSize(original.item.size)}
+              {format === null ? null : <div className={styles.format}>{format}</div>}
             </>
           );
         },
@@ -132,85 +96,39 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         id: "date",
         header: "Дата",
         meta: { className: styles.dateColumn },
-        accessorFn: (row) => row.work.year,
-        sortingFn: (a, b) => compareWorkDates(a.original.work, b.original.work),
+        accessorFn: (row) => row.item.year,
+        sortingFn: (a, b) => compareWorkDates(a.original.item, b.original.item),
         // The latest first, as the site shows them.
         sortDescFirst: true,
-        cell: ({ row: { original } }) => formatWorkDate(original.work),
+        cell: ({ row: { original } }) => formatWorkDate(original.item),
       },
-      {
-        id: "actions",
-        header: () => <VisuallyHidden>Действия</VisuallyHidden>,
-        meta: { className: styles.actionsColumn },
-        enableSorting: false,
-        cell: ({ row: { original } }) => <WorkActions work={original.work} onDelete={setDeleted} />,
-      },
+      actionsColumn((work) => (
+        <RowActions
+          title={work.title}
+          editTo={galleryWorkPath(work.id)}
+          isDeleting={deletingIds.includes(work.id)}
+          onDelete={() => setDeleted(work)}
+        />
+      )),
     ],
-    [materials, sections],
+    [deletingIds, materials, sections],
   );
 
-  const table = useReactTable({
-    columns,
-    // There are no pages, so nothing to reset when the rows change; the reset would render again.
-    autoResetPageIndex: false,
-    data: shownRows,
-    enableMultiSort: false,
-    getCoreRowModel: getCoreRowModel(),
-    getRowId: (row) => row.work.id,
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: changeSorting,
-    state: { sorting: view.sorting },
-  });
-
-  function changeQuery(next: string) {
-    changeView({ query: next });
-  }
-
   return (
-    <div className={clsx(styles.root, className)}>
-      <div className={styles.toolbar}>
-        <SearchInput
-          className={styles.search}
-          label="Поиск по названию"
-          clearLabel="Очистить поиск"
-          value={query}
-          summary={query ? `Найдено: ${String(shownRows.length)} из ${String(works.length)}` : ""}
-          onChange={changeQuery}
-        />
-        <ButtonLink to={routes.galleryWorkNew}>Добавить работу</ButtonLink>
-      </div>
-
-      {works.length === 0 ? (
-        <p className={styles.empty}>Работ пока нет</p>
-      ) : shownRows.length === 0 ? (
-        <div className={styles.empty}>
-          <p>Ничего не найдено по запросу «{query}»</p>
-          <Button variant="text" onClick={() => changeQuery("")}>
-            Сбросить поиск
-          </Button>
-        </div>
-      ) : (
-        <div className={styles.scroller}>
-          <table className={styles.table}>
-            <caption>
-              <VisuallyHidden>Все работы</VisuallyHidden>
-            </caption>
-            <TableHead table={table} />
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className={styles.row}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className={cell.column.columnDef.meta?.className}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
+    <>
+      <DataTable
+        className={className}
+        tableClassName={styles.table}
+        caption="Все работы"
+        columns={columns}
+        items={works}
+        getId={(work) => work.id}
+        matches={matchesWorkQuery}
+        sortableColumns={worksSortableColumns}
+        searchLabel="Поиск по названию"
+        addLink={{ label: "Добавить работу", to: routes.galleryWorkNew }}
+        emptyText="Работ пока нет"
+      />
       <ConfirmDialog
         isOpen={deleted !== undefined}
         title={`Удалить работу «${deleted?.title ?? ""}»?`}
@@ -223,6 +141,6 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
           setDeleted(undefined);
         }}
       />
-    </div>
+    </>
   );
 }

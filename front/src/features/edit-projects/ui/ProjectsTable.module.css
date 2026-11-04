@@ -1,109 +1,14 @@
-/* The search sits as far above the table as a cell keeps its text from its lines. */
-.root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-/*
- * The actions of the list over its table: the search takes the room, the adding keeps its end. On
- * a narrow screen the button goes under the search, still at the end.
- */
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.search {
-  flex: 1 1 20rem;
-}
-
-/*
- * A narrow screen scrolls the table instead of squeezing its columns. The scroll clips vertically too,
- * so the padding keeps room for the focus ring of the sort buttons, which have none above them.
- * Positioned, so the visually hidden texts of the cells stay inside the scroll instead of widening
- * the page.
- */
-.scroller {
-  position: relative;
-  padding-block-start: var(--space-1);
-  overflow-x: auto;
-}
-
-/*
- * As in the design: the size of the tabs, no lines between the rows. The widths are set, not taken
- * from the content, so a long title or a search never moves the columns; below the minimum the
- * table scrolls instead of squeezing the title.
- */
+/* As in the design: the size of the tabs. The link gets enough for a domain, the title the rest. */
 .table {
-  inline-size: 100%;
   min-inline-size: 40rem;
-  font-size: var(--font-size-lg);
-  table-layout: fixed;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: var(--space-4);
-  vertical-align: middle;
-  text-align: start;
-}
-
-/* The narrow columns fit their content, the link gets enough for a domain, the title the rest. */
-.positionColumn {
-  inline-size: 4.75rem;
 }
 
 .photoColumn {
   inline-size: 6rem;
 }
 
-.titleColumn {
-  overflow-wrap: anywhere;
-}
-
 .linkColumn {
   inline-size: 30%;
-}
-
-.actionsColumn {
-  inline-size: 7.5rem;
-}
-
-/*
- * The sort buttons are tall enough to tap; the row needs no padding above them. Muted, as the
- * labels of the admin, so the names of the columns never read as a row of data.
- */
-.table thead th {
-  padding-block-start: 0;
-  font-weight: normal;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
-
-/* A line between the rows, as in the photo lists. */
-.row {
-  border-block-end: 1px solid var(--color-divider);
-}
-
-.row:last-child {
-  border-block-end: 0;
-}
-
-/* The row the pointer is over, so its actions are easy to match with it. */
-@media (hover: hover) {
-  .row:hover {
-    background: var(--color-surface-disabled);
-  }
-}
-
-/* The same light line as between the rows: with the muted names, it is all the header needs. */
-.table thead tr {
-  border-block-end: 1px solid var(--color-divider);
 }
 
 /* A long domain is cut short; the tooltip shows the whole link. */
@@ -137,38 +42,6 @@
   block-size: auto;
 }
 
-.cover {
-  display: block;
-  inline-size: 4rem;
-  block-size: 3.625rem;
-  object-fit: cover;
-  background: var(--color-surface-disabled);
-}
-
-.muted {
-  color: var(--color-text-muted);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* The icon sizes of the design. */
-.editIcon {
-  inline-size: auto;
-  block-size: 1.625rem;
-}
-
-.removeIcon {
-  inline-size: auto;
-  block-size: 1.625rem;
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  align-items: flex-start;
+.none {
   color: var(--color-text-muted);
 }

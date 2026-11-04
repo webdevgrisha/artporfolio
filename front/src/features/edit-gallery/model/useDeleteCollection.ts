@@ -1,4 +1,4 @@
-import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   deleteGalleryCollection,
@@ -6,6 +6,8 @@ import {
   galleryCollectionsQueryKey,
   galleryWorksQueryKey,
 } from "@/entities/gallery";
+
+import { usePendingIds } from "@/shared/lib/usePendingIds";
 
 import { getDeleteCollectionErrorMessage } from "../lib/saveErrorMessages";
 
@@ -37,16 +39,7 @@ export function useDeleteCollection() {
   });
 }
 
-/** Whether the collection is being deleted, so that it is not deleted twice meanwhile. */
-export function useIsDeletingCollection(id: string): boolean {
-  const deletions = useMutationState({
-    filters: {
-      mutationKey: deleteCollectionMutationKey,
-      predicate: (mutation) =>
-        (mutation.state.variables as GalleryCollection | undefined)?.id === id,
-      status: "pending",
-    },
-  });
-
-  return deletions.length > 0;
+/** The ids of the collections being deleted, so that none is deleted twice meanwhile. */
+export function useDeletingCollectionIds(): readonly string[] {
+  return usePendingIds(deleteCollectionMutationKey);
 }

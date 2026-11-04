@@ -1,0 +1,7 @@
+.root {
+  display: block;
+  inline-size: 4rem;
+  block-size: 3.625rem;
+  object-fit: cover;
+  background: var(--color-surface-disabled);
+}

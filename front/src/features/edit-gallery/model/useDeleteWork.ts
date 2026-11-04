@@ -1,4 +1,4 @@
-import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   deleteGalleryWork,
@@ -6,6 +6,8 @@ import {
   galleryCollectionsQueryKey,
   galleryWorksQueryKey,
 } from "@/entities/gallery";
+
+import { usePendingIds } from "@/shared/lib/usePendingIds";
 
 import { getDeleteWorkErrorMessage } from "../lib/saveErrorMessages";
 
@@ -37,15 +39,7 @@ export function useDeleteWork() {
   });
 }
 
-/** Whether the work is being deleted, so that it is not deleted twice meanwhile. */
-export function useIsDeletingWork(id: string): boolean {
-  const deletions = useMutationState({
-    filters: {
-      mutationKey: deleteWorkMutationKey,
-      predicate: (mutation) => (mutation.state.variables as GalleryWork | undefined)?.id === id,
-      status: "pending",
-    },
-  });
-
-  return deletions.length > 0;
+/** The ids of the works being deleted, so that none is deleted twice meanwhile. */
+export function useDeletingWorkIds(): readonly string[] {
+  return usePendingIds(deleteWorkMutationKey);
 }

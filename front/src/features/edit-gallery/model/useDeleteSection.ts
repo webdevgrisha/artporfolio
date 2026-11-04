@@ -1,10 +1,12 @@
-import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   deleteGallerySection,
   type GallerySection,
   gallerySectionsQueryKey,
 } from "@/entities/gallery";
+
+import { usePendingIds } from "@/shared/lib/usePendingIds";
 
 import { getDeleteSectionErrorMessage } from "../lib/saveErrorMessages";
 
@@ -31,15 +33,7 @@ export function useDeleteSection() {
   });
 }
 
-/** Whether the section is being deleted, so that it is not deleted twice meanwhile. */
-export function useIsDeletingSection(id: string): boolean {
-  const deletions = useMutationState({
-    filters: {
-      mutationKey: deleteSectionMutationKey,
-      predicate: (mutation) => (mutation.state.variables as GallerySection | undefined)?.id === id,
-      status: "pending",
-    },
-  });
-
-  return deletions.length > 0;
+/** The ids of the sections being deleted, so that none is deleted twice meanwhile. */
+export function useDeletingSectionIds(): readonly string[] {
+  return usePendingIds(deleteSectionMutationKey);
 }

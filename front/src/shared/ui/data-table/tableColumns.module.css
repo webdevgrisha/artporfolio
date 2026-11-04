@@ -1,0 +1,11 @@
+.positionColumn {
+  inline-size: 4.75rem;
+}
+
+.actionsColumn {
+  inline-size: 7.5rem;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
