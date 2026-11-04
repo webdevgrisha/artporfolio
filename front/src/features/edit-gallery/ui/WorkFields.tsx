@@ -28,6 +28,14 @@ import {
   workFormatOptions,
   workMaxLengths,
 } from "../model/workFormSchema";
+import {
+  discountError,
+  discountedAmount,
+  formatPrice,
+  parseWholeNumber,
+  priceError,
+  workFormCurrency,
+} from "../model/workPrice";
 import { toCollectionOptions, toTitleOptions } from "../model/workReferences";
 import { SectionsField } from "./SectionsField";
 import styles from "./WorkFields.module.css";
@@ -74,6 +82,10 @@ export function WorkFields({
   const { field: materialsField } = useController({ control, name: "materialIds" });
   const { field: colorsField } = useController({ control, name: "colorIds" });
   const { field: palettesField } = useController({ control, name: "paletteIds" });
+  const priceField = register("price");
+  const discountField = register("discountPercent");
+  const price = useWatch({ control, name: "price" });
+  const discountPercent = useWatch({ control, name: "discountPercent" });
   const headingId = React.useId();
   const savedSectionIds = React.useMemo(
     () => defaultValues?.sectionIds?.filter((id) => id !== undefined) ?? [],
@@ -293,6 +305,45 @@ export function WorkFields({
         />
       </section>
 
+      <section className={styles.group} aria-labelledby={`${headingId}-sale`}>
+        <h2 id={`${headingId}-sale`} className={styles.heading}>
+          Продажа
+        </h2>
+        <div className={styles.price}>
+          <Input
+            id={`${headingId}-price`}
+            className={styles.amount}
+            label="Цена, $"
+            hint="Необязательно"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="1 500"
+            disabled={isSaving}
+            error={errors.price?.message}
+            isModified={Boolean(dirtyFields.price)}
+            {...priceField}
+          />
+          <Input
+            id={`${headingId}-discount`}
+            className={styles.discount}
+            label="Скидка, %"
+            hint="Необязательно"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="10"
+            disabled={isSaving}
+            error={errors.discountPercent?.message}
+            isModified={Boolean(dirtyFields.discountPercent)}
+            {...discountField}
+          />
+        </div>
+        <FinalPrice
+          price={price}
+          discountPercent={discountPercent}
+          sourceIds={`${headingId}-price ${headingId}-discount`}
+        />
+      </section>
+
       <section className={styles.group} aria-labelledby={`${headingId}-process`}>
         <h2 id={`${headingId}-process`} className={styles.heading}>
           Процесс
@@ -305,6 +356,38 @@ export function WorkFields({
           savedPhotos={savedProcessPhotos}
         />
       </section>
+    </div>
+  );
+}
+
+interface FinalPriceProps {
+  /** The price as typed. */
+  price: string;
+  /** The discount as typed. */
+  discountPercent: string;
+  /** The ids of the price and discount fields, which the result is computed from. */
+  sourceIds: string;
+}
+
+/**
+ * The price after the discount, computed as it is typed, as the server will compute it on save; a
+ * dash while the price is empty or wrong.
+ */
+function FinalPrice({ discountPercent, price, sourceIds }: FinalPriceProps) {
+  const isValid =
+    price.trim() !== "" &&
+    priceError(price) === null &&
+    discountError(discountPercent, price) === null;
+  const discount = discountPercent.trim() === "" ? null : parseWholeNumber(discountPercent);
+
+  return (
+    <div className={styles.final}>
+      <span className={styles.finalLabel}>Итоговая цена</span>
+      <output htmlFor={sourceIds} className={styles.finalValue}>
+        {isValid
+          ? formatPrice(discountedAmount(parseWholeNumber(price), discount), workFormCurrency)
+          : "—"}
+      </output>
     </div>
   );
 }

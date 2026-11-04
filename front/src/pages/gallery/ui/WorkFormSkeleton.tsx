@@ -5,7 +5,8 @@ import styles from "./GalleryPage.module.css";
 /**
  * The work form while it loads, in the order of its fields: the photo, the title and the
  * description; the format, the size and the date; the sections and the collection; the materials,
- * the colors and the palettes; the process photos.
+ * the colors and the palettes; the price with its discount and the price after it; the process
+ * photos.
  */
 export function WorkFormSkeleton() {
   return (
@@ -17,6 +18,8 @@ export function WorkFormSkeleton() {
       <FieldSkeleton />
       <FieldSkeleton />
       <FieldSkeleton rows={6} />
+      <FieldSkeleton />
+      <FieldSkeleton />
       <FieldSkeleton />
       <FieldSkeleton />
       <FieldSkeleton />
