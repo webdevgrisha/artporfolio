@@ -1,0 +1,84 @@
+.controlWrapper {
+  position: relative;
+}
+
+/* A text field with room at its end for the chevron. */
+.control {
+  min-block-size: var(--control-size);
+  padding-inline: var(--space-4) var(--control-size);
+  text-overflow: ellipsis;
+}
+
+/* A square at the end of the field; it opens and closes the list, as the chevron of Select. */
+.toggle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--control-size);
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+.toggle:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+/* Points down into the list while it is closed, and up once it is open. */
+.chevron {
+  inline-size: 0.5rem;
+  block-size: auto;
+  transform: rotate(90deg);
+  transition: transform var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.chevronOpen {
+  transform: rotate(-90deg);
+}
+
+/* The list under the field, over what follows it; as the list of Select. */
+.menu {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-1));
+  inset-inline: 0;
+  z-index: var(--layer-drawer);
+  max-block-size: 18rem;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  /* The scroll stops at the ends of the list instead of moving the page. */
+  overscroll-behavior: contain;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+/* Kept in the page while closed, as Downshift needs, but out of sight and of the layout. */
+.menuHidden {
+  display: none;
+}
+
+.option,
+.noMatches {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-md);
+}
+
+.option {
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.highlighted {
+  background: var(--color-surface-hover);
+}
+
+.noMatches {
+  color: var(--color-text-muted);
+}
