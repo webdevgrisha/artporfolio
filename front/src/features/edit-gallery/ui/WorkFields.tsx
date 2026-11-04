@@ -14,6 +14,7 @@ import type { ListPhoto, Photo } from "@/shared/api/photo";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { ColorSwatch } from "@/shared/ui/color-swatch";
+import { Combobox } from "@/shared/ui/combobox";
 import { FieldHint } from "@/shared/ui/field";
 import { Frame, FrameRow, FrameRowLabel } from "@/shared/ui/frame-list";
 import { Input } from "@/shared/ui/input";
@@ -81,7 +82,7 @@ export function WorkFields({
   // A select has no input for react-hook-form to register, so a controller keeps its value.
   const { field: monthField } = useController({ control, name: "month" });
   const yearField = register("year");
-  // A select, so a controller, as for the month.
+  // A combobox keeps its value through a controller, as the selects do.
   const { field: countryField } = useController({ control, name: "country" });
   const cityField = register("city");
   const cities = useWorkCities(countryField.value);
@@ -245,14 +246,16 @@ export function WorkFields({
         </div>
         {/* Where the work was made: the country, then the city, as an address reads. */}
         <div className={styles.place}>
-          <Select
+          {/* Over two hundred countries, so the list is searched by typing. */}
+          <Combobox
             className={styles.country}
             label="Страна"
+            placeholder="Начните вводить"
             options={countryOptions}
             disabled={isSaving}
             error={errors.country?.message}
             isModified={Boolean(dirtyFields.country)}
-            ref={countryField.ref}
+            inputRef={countryField.ref}
             value={countryField.value}
             onBlur={countryField.onBlur}
             onChange={countryField.onChange}
