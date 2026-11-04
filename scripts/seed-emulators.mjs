@@ -384,7 +384,8 @@ const galleryWorks = [
     year: 2020,
     collection: "Ночные птицы",
   },
-  { title: "Болото", palette: "frog", size: [80, 60], year: 2019, price: 950 },
+  // A draft the site does not show yet.
+  { title: "Болото", palette: "frog", size: [80, 60], year: 2019, price: 950, published: false },
 ];
 
 const projects = [
@@ -746,6 +747,7 @@ async function seedGallery(api) {
       partCount: work.partCount ?? null,
       country: work.country ?? null,
       city: work.city ?? "",
+      published: work.published ?? true,
       saleStatus: work.saleStatus ?? "available",
       price:
         work.price === undefined

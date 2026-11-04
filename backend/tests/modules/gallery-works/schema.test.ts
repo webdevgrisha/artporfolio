@@ -21,6 +21,7 @@ import {
 } from "#modules/gallery-works/schema";
 
 const work = {
+  published: true,
   title: "Слон",
   description: "Масло, холст.",
   size: { width: 50, height: 70 },
@@ -223,6 +224,12 @@ describe("work body", () => {
     expect(isValid({ ...work, city: "а".repeat(maxWorkCityLength) })).toBe(true);
     expect(isValid({ ...work, city: "а".repeat(maxWorkCityLength + 1) })).toBe(false);
     expect(isValid({ ...work, city: undefined })).toBe(false);
+  });
+
+  it("needs to know whether the site shows the work", () => {
+    expect(isValid({ ...work, published: false })).toBe(true);
+    expect(isValid({ ...work, published: undefined })).toBe(false);
+    expect(isValid({ ...work, published: "yes" })).toBe(false);
   });
 
   it("takes each sale status, whatever the price", () => {

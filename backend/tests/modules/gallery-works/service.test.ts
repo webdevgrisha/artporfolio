@@ -190,6 +190,7 @@ const body: WorkBody = {
   saleStatus: "available",
   price: null,
   size: { width: 21.6, height: 27.9 },
+  published: true,
   title: "Жираф",
   year: 2025,
   month: 4,
@@ -499,6 +500,22 @@ describe("the place of a work", () => {
 
     expect(data).toMatchObject({ city: "Варшава", country: "PL" });
     expect(works.get(newId)).toMatchObject({ city: "Варшава", country: "PL" });
+  });
+});
+
+describe("whether the site shows a work", () => {
+  it("reads a work saved before works could be hidden as shown", async () => {
+    const { data } = await getWork(elephantId);
+
+    expect(data.published).toBe(true);
+  });
+
+  it("saves a hidden work, and lists it for the admin", async () => {
+    const { data } = await createWork(newId, { ...body, published: false });
+
+    expect(data.published).toBe(false);
+    expect(works.get(newId)?.published).toBe(false);
+    expect((await listWorks()).data.map((work) => work.id)).toContain(newId);
   });
 });
 

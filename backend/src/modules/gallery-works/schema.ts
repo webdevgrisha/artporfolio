@@ -115,6 +115,8 @@ function isFutureMonth(year: number, month: number): boolean {
 /** A work as the client sends it, to create one or to replace a saved one. Every field is sent. */
 export const workBodySchema = z
   .strictObject({
+    /** Whether the site shows the work; a hidden one is kept, as a draft or put aside. */
+    published: z.boolean(),
     /** The name in the gallery, so it cannot be empty. */
     title: z.string().trim().min(1).max(100),
     /**
@@ -172,6 +174,8 @@ export const workBodySchema = z
  * makes a saved work unreadable.
  */
 export const storedWorkSchema = z.object({
+  /** A work saved before works could be hidden is shown. */
+  published: z.boolean().default(true),
   title: z.string(),
   description: z.string(),
   size: z.object({ width: z.number(), height: z.number() }),
@@ -215,6 +219,8 @@ export const storedWorkSchema = z.object({
 /** A work as the API returns it. */
 export const workSchema = z.object({
   id: workIdSchema,
+  /** Whether the site shows the work. */
+  published: z.boolean(),
   title: z.string(),
   description: z.string(),
   /** In centimetres. */
