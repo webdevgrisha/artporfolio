@@ -1,3 +1,5 @@
+export { materialsList } from "./model/materialsList";
+export { palettesList } from "./model/palettesList";
 export { useWorkReferences } from "./model/useWorkReferences";
 export { CollectionsList } from "./ui/CollectionsList";
 export { CreateCollectionForm } from "./ui/CreateCollectionForm";
@@ -6,9 +8,8 @@ export { CreateWorkForm } from "./ui/CreateWorkForm";
 export { EditCollectionForm } from "./ui/EditCollectionForm";
 export { EditColorsForm } from "./ui/EditColorsForm";
 export { EditGalleryIntroForm } from "./ui/EditGalleryIntroForm";
-export { EditMaterialsForm } from "./ui/EditMaterialsForm";
-export { EditPalettesForm } from "./ui/EditPalettesForm";
 export { EditSectionForm } from "./ui/EditSectionForm";
+export { EditTitleListForm } from "./ui/EditTitleListForm";
 export { EditWorkForm } from "./ui/EditWorkForm";
 export { SectionsList } from "./ui/SectionsList";
 export { WorksList } from "./ui/WorksList";

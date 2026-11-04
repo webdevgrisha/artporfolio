@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { galleryMaterialsQuery } from "@/entities/gallery";
-import { EditMaterialsForm } from "@/features/edit-gallery";
+import { EditTitleListForm, materialsList } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, ListSkeleton } from "@/shared/ui/skeleton";
 
@@ -26,5 +26,5 @@ function GalleryMaterials() {
   // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: materials } = useSuspenseQuery(galleryMaterialsQuery);
 
-  return <EditMaterialsForm className={styles.form} materials={materials} />;
+  return <EditTitleListForm className={styles.form} list={materialsList} data={materials} />;
 }

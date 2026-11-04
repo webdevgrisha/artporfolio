@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { colorsFormSchema } from "@/features/edit-gallery/model/colorsFormSchema";
-import { materialsFormSchema } from "@/features/edit-gallery/model/materialsFormSchema";
-import { palettesFormSchema } from "@/features/edit-gallery/model/palettesFormSchema";
+import { materialsList } from "@/features/edit-gallery/model/materialsList";
+import { palettesList } from "@/features/edit-gallery/model/palettesList";
 import { sectionFormSchema } from "@/features/edit-gallery/model/sectionFormSchema";
+import { titleListFormSchema } from "@/features/edit-gallery/model/titleList";
+
+const materialsFormSchema = titleListFormSchema(materialsList);
+const palettesFormSchema = titleListFormSchema(palettesList);
 
 function row(title: string, index: number) {
   return { id: `id-${String(index)}`, title };
@@ -46,15 +50,15 @@ describe("section form", () => {
 
 describe("materials form", () => {
   it("takes no materials at all", () => {
-    expect(materialsFormSchema.safeParse({ materials: [] }).success).toBe(true);
+    expect(materialsFormSchema.safeParse({ items: [] }).success).toBe(true);
   });
 
   it("points at a material used twice and at an empty title", () => {
-    const materials = ["Акварель", "", "АКВАРЕЛЬ"].map(row);
+    const items = ["Акварель", "", "АКВАРЕЛЬ"].map(row);
 
-    expect(issuesOf(materialsFormSchema.safeParse({ materials }))).toEqual([
-      { message: "Введите название", path: ["materials", 1, "title"] },
-      { message: "Такой материал уже есть", path: ["materials", 2, "title"] },
+    expect(issuesOf(materialsFormSchema.safeParse({ items }))).toEqual([
+      { message: "Введите название", path: ["items", 1, "title"] },
+      { message: "Такой материал уже есть", path: ["items", 2, "title"] },
     ]);
   });
 });
@@ -84,19 +88,19 @@ describe("colors form", () => {
 
 describe("palettes form", () => {
   it("points at a palette used twice and at an empty title", () => {
-    const palettes = ["Пастельная", "", "пастельная "].map(row);
+    const items = ["Пастельная", "", "пастельная "].map(row);
 
-    expect(issuesOf(palettesFormSchema.safeParse({ palettes }))).toEqual([
-      { message: "Введите название", path: ["palettes", 1, "title"] },
-      { message: "Такая палитра уже есть", path: ["palettes", 2, "title"] },
+    expect(issuesOf(palettesFormSchema.safeParse({ items }))).toEqual([
+      { message: "Введите название", path: ["items", 1, "title"] },
+      { message: "Такая палитра уже есть", path: ["items", 2, "title"] },
     ]);
   });
 
   it("takes up to 30 palettes", () => {
-    const palettes = Array.from({ length: 31 }, (_, index) => row(String(index), index));
+    const items = Array.from({ length: 31 }, (_, index) => row(String(index), index));
 
-    expect(issuesOf(palettesFormSchema.safeParse({ palettes }))).toEqual([
-      { message: "Не больше 30 палитр", path: ["palettes"] },
+    expect(issuesOf(palettesFormSchema.safeParse({ items }))).toEqual([
+      { message: "Не больше 30 палитр", path: ["items"] },
     ]);
   });
 });
