@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { matchesSectionQuery } from "@/features/edit-gallery/model/sectionsSearch";
+import { matchesSectionQuery } from "@/features/edit-gallery/model/sectionsTableView";
 
 const posters = {
   id: "posters",

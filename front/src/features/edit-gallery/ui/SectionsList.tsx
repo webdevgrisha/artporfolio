@@ -1,16 +1,23 @@
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import clsx from "clsx";
 import React from "react";
 
-import { useSearchParams } from "react-router";
-
 import type { GallerySection } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
+import { useTableView } from "@/shared/lib/useTableView";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { SearchInput } from "@/shared/ui/search-input";
+import { TableHead } from "@/shared/ui/table-head";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
-import { matchesSectionQuery, searchParam } from "../model/sectionsSearch";
+import { matchesSectionQuery, sectionsSortableColumns } from "../model/sectionsTableView";
 import { useDeleteSection } from "../model/useDeleteSection";
 import { SectionActions } from "./SectionActions";
 import styles from "./SectionsList.module.css";
@@ -33,28 +40,88 @@ function deletionDescription({ subsections }: GallerySection): string {
   return `Раздел и ${String(count)} ${noun} пропадут с сайта. Это нельзя отменить.`;
 }
 
+/** A section with its place on the site, which the sorting of the table does not change. */
+interface SectionRow {
+  position: number;
+  section: GallerySection;
+}
+
 /**
- * Every section with its subsections, by title as on the site; the numbers show how many there
- * are and stay with their rows while searching. The search, in the titles of the sections and
- * their subsections, is kept in the address; a new section is added from beside it. A section
- * opens for editing by the pencil and is deleted after a confirmation.
+ * Every section with its subsections; until it is sorted, by title as on the site, which «№» keeps
+ * showing after a sort and while searching. The search, in the titles of the sections and their
+ * subsections, and the sorting are kept in the address; a new section is added from beside the
+ * search. A section opens for editing by the pencil and is deleted after a confirmation.
  */
 export function SectionsList({ className, sections }: SectionsListProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get(searchParam) ?? "";
+  const { changeSorting, changeView, view } = useTableView(sectionsSortableColumns);
+  const { query } = view;
   const deletion = useDeleteSection();
   const [deleted, setDeleted] = React.useState<GallerySection>();
-  const shownRows = sections
-    .map((section, index) => ({ position: index + 1, section }))
-    .filter(({ section }) => matchesSectionQuery(section, query));
+  const shownRows = React.useMemo(
+    () =>
+      sections
+        .map((section, index) => ({ position: index + 1, section }))
+        .filter(({ section }) => matchesSectionQuery(section, query)),
+    [sections, query],
+  );
+
+  const columns = React.useMemo<ColumnDef<SectionRow>[]>(
+    () => [
+      {
+        id: "position",
+        header: "№",
+        meta: { className: styles.positionColumn },
+        enableSorting: false,
+        cell: ({ row: { original } }) => <span className={styles.muted}>{original.position}</span>,
+      },
+      {
+        id: "title",
+        header: "Раздел",
+        meta: { className: styles.titleColumn },
+        enableSorting: false,
+        cell: ({ row: { original } }) => original.section.title,
+      },
+      {
+        id: "subsections",
+        header: "Подразделы",
+        accessorFn: (row) => row.section.subsections.length,
+        // The most subsections first: the useful start.
+        sortDescFirst: true,
+        cell: ({ row: { original } }) =>
+          original.section.subsections.length > 0 ? (
+            original.section.subsections.map((subsection) => subsection.title).join(", ")
+          ) : (
+            <span className={styles.muted}>Нет</span>
+          ),
+      },
+      {
+        id: "actions",
+        header: () => <VisuallyHidden>Действия</VisuallyHidden>,
+        meta: { className: styles.actionsColumn },
+        enableSorting: false,
+        cell: ({ row: { original } }) => (
+          <SectionActions section={original.section} onDelete={setDeleted} />
+        ),
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    columns,
+    // There are no pages, so nothing to reset when the rows change; the reset would render again.
+    autoResetPageIndex: false,
+    data: shownRows,
+    enableMultiSort: false,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.section.id,
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: changeSorting,
+    state: { sorting: view.sorting },
+  });
 
   function changeQuery(next: string) {
-    const params = new URLSearchParams(searchParams);
-
-    if (next) params.set(searchParam, next);
-    else params.delete(searchParam);
-    // Replaces the entry: the back button leaves the table instead of undoing each letter.
-    setSearchParams(params, { replace: true });
+    changeView({ query: next });
   }
 
   return (
@@ -88,35 +155,15 @@ export function SectionsList({ className, sections }: SectionsListProps) {
             <caption>
               <VisuallyHidden>Разделы галереи</VisuallyHidden>
             </caption>
-            <thead>
-              <tr>
-                <th className={styles.positionColumn} scope="col">
-                  №
-                </th>
-                <th className={styles.titleColumn} scope="col">
-                  Раздел
-                </th>
-                <th scope="col">Подразделы</th>
-                <th className={styles.actionsColumn} scope="col">
-                  <VisuallyHidden>Действия</VisuallyHidden>
-                </th>
-              </tr>
-            </thead>
+            <TableHead table={table} />
             <tbody>
-              {shownRows.map(({ position, section }) => (
-                <tr key={section.id} className={styles.row}>
-                  <td className={clsx(styles.positionColumn, styles.muted)}>{position}</td>
-                  <td className={styles.titleColumn}>{section.title}</td>
-                  <td>
-                    {section.subsections.length > 0 ? (
-                      section.subsections.map((subsection) => subsection.title).join(", ")
-                    ) : (
-                      <span className={styles.muted}>Нет</span>
-                    )}
-                  </td>
-                  <td className={styles.actionsColumn}>
-                    <SectionActions section={section} onDelete={setDeleted} />
-                  </td>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className={styles.row}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className={cell.column.columnDef.meta?.className}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
