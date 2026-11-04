@@ -12,10 +12,17 @@ interface PhotoThumbnailProps {
   image: Image | undefined;
 }
 
-/** The photo of an item in a row of a list or a table, cropped to fill its place. */
+/**
+ * The photo of an item in a row of a list or a table, cropped to fill its place. It loads once its
+ * row comes near the screen, so a long table does not load every photo at once.
+ */
 export function PhotoThumbnail({ className, image }: PhotoThumbnailProps) {
   return image ? (
-    <MediaImage className={clsx(styles.root, className)} source={imageToMediaItem(image).source} />
+    <MediaImage
+      className={clsx(styles.root, className)}
+      loading="lazy"
+      source={imageToMediaItem(image).source}
+    />
   ) : (
     <span className={clsx(styles.root, className)} />
   );
