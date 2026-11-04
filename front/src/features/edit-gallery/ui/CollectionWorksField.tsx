@@ -137,6 +137,7 @@ export function CollectionWorksField({
       </Button>
       <AddWorksDialog
         isOpen={isAdding}
+        isGalleryEmpty={works.length === 0}
         works={others}
         collections={collections}
         collectionId={collectionId}

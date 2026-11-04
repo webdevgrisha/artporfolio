@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import React from "react";
+import { createPortal } from "react-dom";
 
 import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
 import { useModalDialog } from "@/shared/lib/useModalDialog";
@@ -18,6 +19,8 @@ interface AddWorksDialogProps {
   /** The collection being edited; none for a new one. */
   collectionId?: string;
   isOpen: boolean;
+  /** The gallery has no works at all, so there is nothing to add yet. */
+  isGalleryEmpty: boolean;
   /** Called on the cancel button and on Escape. */
   onCancel: () => void;
   /** Gets the chosen works, by id. */
@@ -34,6 +37,7 @@ interface AddWorksDialogProps {
 export function AddWorksDialog({
   collectionId,
   collections,
+  isGalleryEmpty,
   isOpen,
   onAdd,
   onCancel,
@@ -67,7 +71,9 @@ export function AddWorksDialog({
     return collectionTitles.get(workCollectionId);
   }
 
-  return (
+  // In a portal: the dialog opens from a form, and inside it the search would belong to that form,
+  // so Enter in the search would submit it.
+  return createPortal(
     <dialog
       ref={dialogRef}
       className={styles.root}
@@ -88,7 +94,11 @@ export function AddWorksDialog({
       />
       <div className={styles.frame}>
         {works.length === 0 ? (
-          <p className={styles.empty}>Все работы галереи уже в этой коллекции</p>
+          <p className={styles.empty}>
+            {isGalleryEmpty
+              ? "В галерее пока нет работ"
+              : "Все работы галереи уже в этой коллекции"}
+          </p>
         ) : shownWorks.length === 0 ? (
           <p className={styles.empty}>Ничего не найдено по запросу «{query}»</p>
         ) : (
@@ -141,6 +151,7 @@ export function AddWorksDialog({
           Добавить
         </Button>
       </div>
-    </dialog>
+    </dialog>,
+    document.body,
   );
 }
