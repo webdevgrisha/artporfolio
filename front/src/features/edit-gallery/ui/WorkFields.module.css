@@ -54,6 +54,11 @@
   inline-size: 8rem;
 }
 
+/* As wide as the month and the year above it together. */
+.place {
+  max-inline-size: 28rem;
+}
+
 /* Room for a long title of a collection and the chevron. */
 .collection {
   max-inline-size: 24rem;

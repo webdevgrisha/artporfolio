@@ -28,6 +28,7 @@ import {
   workFormatOptions,
   workMaxLengths,
 } from "../model/workFormSchema";
+import { useWorkPlaces } from "../model/workPlaces";
 import {
   discountError,
   discountedAmount,
@@ -76,6 +77,8 @@ export function WorkFields({
   // A select has no input for react-hook-form to register, so a controller keeps its value.
   const { field: monthField } = useController({ control, name: "month" });
   const yearField = register("year");
+  const placeField = register("place");
+  const places = useWorkPlaces();
   const { field: sectionsField } = useController({ control, name: "sectionIds" });
   // A select, so a controller, as for the month.
   const { field: collectionField } = useController({ control, name: "collectionId" });
@@ -230,6 +233,24 @@ export function WorkFields({
             {...yearField}
           />
         </div>
+        {/* Suggests the places of the other works, so one place is not typed two ways. */}
+        <Input
+          className={styles.place}
+          label="Место"
+          hint="Где написана работа, например город. Необязательно"
+          placeholder="Например: Варшава"
+          autoComplete="off"
+          list={`${headingId}-places`}
+          disabled={isSaving}
+          error={errors.place?.message}
+          isModified={Boolean(dirtyFields.place)}
+          {...placeField}
+        />
+        <datalist id={`${headingId}-places`}>
+          {places.map((place) => (
+            <option key={place} value={place} />
+          ))}
+        </datalist>
       </section>
 
       <section className={styles.group} aria-labelledby={`${headingId}-place`}>
