@@ -43,6 +43,7 @@ const collection = {
   startYear: 2023,
   title: "Звери",
   updatedAt: "2026-02-01T12:30:00.000Z",
+  workIds: [otherId],
 };
 const body = {
   cover: { alt: "Слон на закате", uploadId },
@@ -50,6 +51,7 @@ const body = {
   endYear: 2024,
   startYear: 2023,
   title: "Звери",
+  workIds: [otherId],
 };
 const etag = '"read"';
 const savedEtag = '"saved"';

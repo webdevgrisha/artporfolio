@@ -25,6 +25,7 @@ const work = {
   materialIds: [randomUUID()],
   colorIds: [randomUUID()],
   paletteIds: [randomUUID()],
+  collectionId: null,
 };
 
 function isValid(body: unknown): boolean {
@@ -166,6 +167,13 @@ describe("work body", () => {
     expect(
       isValid({ ...work, paletteIds: Array.from({ length: maxWorkPalettes + 1 }, randomUUID) }),
     ).toBe(false);
+  });
+
+  it("takes the id of a collection, or null for a work on its own", () => {
+    expect(isValid({ ...work, collectionId: randomUUID() })).toBe(true);
+    expect(isValid({ ...work, collectionId: null })).toBe(true);
+    expect(isValid({ ...work, collectionId: "animals" })).toBe(false);
+    expect(isValid({ ...work, collectionId: undefined })).toBe(false);
   });
 
   it("rejects unknown fields", () => {

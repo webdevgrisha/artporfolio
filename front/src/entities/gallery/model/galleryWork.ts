@@ -52,6 +52,8 @@ export const galleryWorkSchema = z.object({
   colorIds: z.array(z.string()),
   /** The ids of the palettes: the coloring of the work as a whole. */
   paletteIds: z.array(z.string()),
+  /** The id of the collection the work was painted for, or null for a work on its own. */
+  collectionId: z.string().nullable(),
   /** When the work was created, ISO 8601. */
   createdAt: z.iso.datetime(),
   /** When the admin last saved the work, ISO 8601. */

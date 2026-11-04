@@ -8,6 +8,12 @@ import { uploadIdSchema } from "#shared/images/uploads";
 /** A collection holds works, so it starts no earlier than a work can be dated. */
 export const minCollectionYear = minWorkYear;
 
+/**
+ * The most works one collection may hold; raise it when the artist needs more. Saving moves every
+ * added and removed work in one transaction, which takes at most 500 writes.
+ */
+export const maxCollectionWorks = 200;
+
 const collectionIdSchema = z.uuid();
 
 /** The path parameters of a request about one collection. */
@@ -41,6 +47,14 @@ export const collectionBodySchema = z
     startYear: collectionYearSchema,
     /** The year it was finished, after the start; null for a collection of one year. */
     endYear: collectionYearSchema.nullable(),
+    /**
+     * Every work of the collection, in any order: the site shows them by date. A work of another
+     * collection moves to this one; a saved work left out becomes a work on its own.
+     */
+    workIds: z
+      .array(z.uuid())
+      .max(maxCollectionWorks)
+      .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once"),
   })
   .superRefine(({ endYear, startYear }, context) => {
     const thisYear = new Date().getFullYear();
@@ -75,8 +89,9 @@ export const collectionBodySchema = z
 
 /**
  * A collection as stored in Firestore, in its own document of the `galleryCollections`
- * collection. Only the shape is checked: the rules above apply when a collection is saved, so
- * tightening a rule later never makes a saved collection unreadable.
+ * collection. Its works are not stored here: each work names its collection. Only the shape is
+ * checked: the rules above apply when a collection is saved, so tightening a rule later never makes
+ * a saved collection unreadable.
  */
 export const storedCollectionSchema = z.object({
   title: z.string(),
@@ -99,6 +114,8 @@ export const collectionSchema = z.object({
   startYear: z.number(),
   /** Null for a collection of one year. */
   endYear: z.number().nullable(),
+  /** In the order the site shows them: the latest first. */
+  workIds: z.array(z.uuid()),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

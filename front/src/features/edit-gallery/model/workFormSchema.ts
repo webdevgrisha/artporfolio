@@ -125,6 +125,8 @@ export const workFormSchema = z
       .array(z.string())
       .min(1, "Выберите хотя бы одну палитру")
       .max(maxWorkPalettes, `Не больше ${String(maxWorkPalettes)} палитр`),
+    /** The id of the collection; empty for a work on its own. */
+    collectionId: z.string(),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)
@@ -146,10 +148,12 @@ export const emptyWorkFormValues: WorkFormValues = {
   materialIds: [],
   colorIds: [],
   paletteIds: [],
+  collectionId: "",
 };
 
 /** The values of a work as stored on the server. */
 export function toWorkFormValues({
+  collectionId,
   colorIds,
   description,
   materialIds,
@@ -175,6 +179,7 @@ export function toWorkFormValues({
     materialIds,
     colorIds,
     paletteIds,
+    collectionId: collectionId ?? "",
   };
 }
 

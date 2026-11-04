@@ -33,6 +33,7 @@ interface SaveWorkParams {
  */
 async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
   const {
+    collectionId,
     colorIds,
     description,
     materialIds,
@@ -57,6 +58,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     materialIds,
     colorIds,
     paletteIds,
+    collectionId: collectionId === "" ? null : collectionId,
     size: toWorkSize(values),
     title,
     year: Number(year),

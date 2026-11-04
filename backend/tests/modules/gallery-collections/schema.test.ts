@@ -2,7 +2,11 @@ import { randomUUID } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
-import { collectionBodySchema, minCollectionYear } from "#modules/gallery-collections/schema";
+import {
+  collectionBodySchema,
+  maxCollectionWorks,
+  minCollectionYear,
+} from "#modules/gallery-collections/schema";
 
 const thisYear = new Date().getFullYear();
 
@@ -12,6 +16,7 @@ const collection = {
   cover: { alt: "Слон на закате", uploadId: randomUUID() },
   startYear: 2023,
   endYear: 2024,
+  workIds: [randomUUID()],
 };
 
 function isValid(body: unknown): boolean {
@@ -70,7 +75,25 @@ describe("collection body", () => {
     expect(result.error?.issues.map((issue) => issue.path)).toEqual([["endYear"]]);
   });
 
+  it("takes no works, or up to the limit, each named once", () => {
+    const id = randomUUID();
+
+    expect(isValid({ ...collection, workIds: [] })).toBe(true);
+    expect(
+      isValid({ ...collection, workIds: Array.from({ length: maxCollectionWorks }, randomUUID) }),
+    ).toBe(true);
+    expect(
+      isValid({
+        ...collection,
+        workIds: Array.from({ length: maxCollectionWorks + 1 }, randomUUID),
+      }),
+    ).toBe(false);
+    expect(isValid({ ...collection, workIds: [id, id] })).toBe(false);
+    expect(isValid({ ...collection, workIds: ["elephant"] })).toBe(false);
+    expect(isValid({ ...collection, workIds: undefined })).toBe(false);
+  });
+
   it("rejects unknown fields", () => {
-    expect(isValid({ ...collection, workIds: [] })).toBe(false);
+    expect(isValid({ ...collection, position: 1 })).toBe(false);
   });
 });

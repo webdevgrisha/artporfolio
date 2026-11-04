@@ -6,6 +6,9 @@ const works = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 /** The `gallerySections` collection, which the works refer to. */
 const sections = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 
+/** The `galleryCollections` collection, which a work may be in. */
+const collections = vi.hoisted(() => new Map<string, Record<string, unknown>>());
+
 /** The `site/…` documents of the lists the works refer to, such as `site/galleryMaterials`. */
 const lists = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 
@@ -26,15 +29,12 @@ vi.mock("#shared/firebase/firestore", () => {
     return { data: () => data, exists: data !== undefined, id };
   }
 
-  function document(id: string) {
-    return { get: async () => snapshot(works, id), id };
-  }
-
   function collectionNamed(name: string) {
-    const collection = name === "gallerySections" ? sections : works;
+    const collection =
+      name === "gallerySections" ? sections : name === "galleryCollections" ? collections : works;
 
     return {
-      doc: document,
+      doc: (id: string) => ({ get: async () => snapshot(collection, id), id }),
       get: async () => ({ docs: [...collection.keys()].map((id) => snapshot(collection, id)) }),
     };
   }
@@ -101,6 +101,8 @@ const deletedColorId = "12121212-1212-4212-8212-121212121212";
 const pastelId = "13131313-1313-4313-8313-131313131313";
 const brightId = "14141414-1414-4414-8414-141414141414";
 const deletedPaletteId = "15151515-1515-4515-8515-151515151515";
+const animalsCollectionId = "16161616-1616-4616-8616-161616161616";
+const deletedCollectionId = "17171717-1717-4717-8717-171717171717";
 
 function storedPhoto(workId: string) {
   const folder = `galleryWorks/${workId}/photo/old-version`;
@@ -151,6 +153,7 @@ function storedWork(id: string, title: string, year: number, month: number, crea
     materialIds: [oilId, deletedMaterialId],
     colorIds: [blackId, deletedColorId],
     paletteIds: [pastelId, deletedPaletteId],
+    collectionId: null,
     size: { width: 50, height: 70 },
     title,
     updatedAt: createdAt,
@@ -181,6 +184,7 @@ const body: WorkBody = {
   materialIds: [canvasId],
   colorIds: [whiteId],
   paletteIds: [brightId],
+  collectionId: null,
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
@@ -197,6 +201,8 @@ beforeEach(() => {
   works.clear();
   sections.clear();
   sections.set(animalsId, { subsections: [{ id: birdsId, title: "Птицы" }], title: "Животные" });
+  collections.clear();
+  collections.set(animalsCollectionId, { title: "Звери" });
   lists.clear();
   lists.set("site/galleryMaterials", {
     materials: [
@@ -404,6 +410,53 @@ describe("the palettes of a work", () => {
       replaceWork(
         elephantId,
         { ...body, paletteIds: [deletedPaletteId] },
+        await readTag(elephantId),
+      ),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+
+    expect(works.has(newId)).toBe(false);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
+  });
+});
+
+describe("the collection of a work", () => {
+  it("returns null for a work on its own", async () => {
+    expect((await getWork(elephantId)).data.collectionId).toBeNull();
+  });
+
+  it("saves the collection named by id", async () => {
+    const created = await createWork(newId, { ...body, collectionId: animalsCollectionId });
+    const replaced = await replaceWork(
+      elephantId,
+      {
+        ...body,
+        collectionId: animalsCollectionId,
+        processPhotos: [{ alt: "Набросок", id: processPhotoId }],
+      },
+      await readTag(elephantId),
+    );
+
+    expect(created.data.collectionId).toBe(animalsCollectionId);
+    expect(replaced.data.collectionId).toBe(animalsCollectionId);
+  });
+
+  it("makes a form opened before the work moved outdated", async () => {
+    const etag = await readTag(elephantId);
+    works.set(elephantId, { ...works.get(elephantId), collectionId: animalsCollectionId });
+
+    await expect(replaceWork(elephantId, body, etag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
+  });
+
+  it("returns 422 for a collection that does not exist, and removes the copies", async () => {
+    await expect(
+      createWork(newId, { ...body, collectionId: deletedCollectionId }),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+    await expect(
+      replaceWork(
+        elephantId,
+        { ...body, collectionId: deletedCollectionId },
         await readTag(elephantId),
       ),
     ).rejects.toBeInstanceOf(UnprocessableContentError);

@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 /** The `galleryCollections` collection: documents by id. Transactions write to it at once. */
 const collections = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 
+/** The `galleryWorks` collection, whose works name the collection they are in. */
+const works = vi.hoisted(() => new Map<string, Record<string, unknown>>());
+
 const storage = vi.hoisted(() => ({
   deleteFolder: vi.fn(),
   downloadUrl: ({ path, token }: { path: string; token: string }) =>
@@ -14,29 +17,55 @@ const uploads = vi.hoisted(() => ({
 }));
 
 vi.mock("#shared/firebase/firestore", () => {
-  function snapshot(id: string) {
-    const data = collections.get(id);
+  type Documents = Map<string, Record<string, unknown>>;
+
+  interface Reference {
+    documents: Documents;
+    id: string;
+  }
+
+  function snapshot({ documents, id }: Reference) {
+    const data = documents.get(id);
 
     return { data: () => data, exists: data !== undefined, id };
   }
 
-  function document(id: string) {
-    return { get: async () => snapshot(id), id };
+  function reference(documents: Documents, id: string) {
+    return { documents, get: async () => snapshot({ documents, id }), id };
+  }
+
+  function all(documents: Documents) {
+    return [...documents.keys()].map((id) => snapshot({ documents, id }));
+  }
+
+  function collectionNamed(name: string) {
+    const documents = name === "galleryWorks" ? works : collections;
+
+    return {
+      doc: (id: string) => reference(documents, id),
+      get: async () => ({ docs: all(documents) }),
+      where: (field: string, _operator: "==", value: unknown) => ({
+        get: async () => ({
+          docs: all(documents).filter((document) => document.data()?.[field] === value),
+        }),
+      }),
+    };
   }
 
   const transaction = {
-    create: (ref: { id: string }, data: Record<string, unknown>) => collections.set(ref.id, data),
-    delete: (ref: { id: string }) => collections.delete(ref.id),
+    create: ({ documents, id }: Reference, data: Record<string, unknown>) =>
+      documents.set(id, data),
+    delete: ({ documents, id }: Reference) => documents.delete(id),
     get: (target: { get: () => unknown }) => target.get(),
-    set: (ref: { id: string }, data: Record<string, unknown>) => collections.set(ref.id, data),
+    getAll: async (...references: Reference[]) => references.map(snapshot),
+    set: ({ documents, id }: Reference, data: Record<string, unknown>) => documents.set(id, data),
+    update: ({ documents, id }: Reference, data: Record<string, unknown>) =>
+      documents.set(id, { ...documents.get(id), ...data }),
   };
 
   return {
     firestore: () => ({
-      collection: () => ({
-        doc: document,
-        get: async () => ({ docs: [...collections.keys()].map(snapshot) }),
-      }),
+      collection: collectionNamed,
       runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
     }),
   };
@@ -69,6 +98,11 @@ const animalsId = "11111111-1111-4111-8111-111111111111";
 const seaId = "22222222-2222-4222-8222-222222222222";
 const uploadId = "44444444-4444-4444-8444-444444444444";
 const newId = "55555555-5555-4555-8555-555555555555";
+const elephantId = "66666666-6666-4666-8666-666666666666";
+const tigerId = "77777777-7777-4777-8777-777777777777";
+const whaleId = "88888888-8888-4888-8888-888888888888";
+const foxId = "99999999-9999-4999-8999-999999999999";
+const deletedWorkId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
 function storedCover(collectionId: string) {
   const folder = `galleryCollections/${collectionId}/cover/old-version`;
@@ -107,6 +141,31 @@ function storedCollection(
   };
 }
 
+/** A saved work, dated by its month, in the collection `collectionId` or on its own. */
+function storedWork(year: number, month: number, collectionId: string | null) {
+  return {
+    collectionId,
+    colorIds: [],
+    createdAt: seededAt,
+    description: "Масло.",
+    materialIds: [],
+    month,
+    paletteIds: [],
+    photo: storedCover("work"),
+    processPhotos: [],
+    sectionIds: [],
+    size: { height: 70, width: 50 },
+    title: "Работа",
+    updatedAt: seededAt,
+    year,
+  };
+}
+
+/** The collection a saved work is in. */
+function collectionOf(workId: string): unknown {
+  return works.get(workId)?.collectionId;
+}
+
 /** The image publishUpload makes from an upload, in a new version under `folder`. */
 function publishedImage(folder: string) {
   return {
@@ -128,6 +187,7 @@ const body: CollectionBody = {
   endYear: 2025,
   startYear: 2024,
   title: "Лес",
+  workIds: [],
 };
 
 /** The If-Match of a client that read the collection. */
@@ -140,6 +200,11 @@ beforeEach(() => {
   collections.clear();
   collections.set(animalsId, storedCollection(animalsId, "Звери", 2022, 2023));
   collections.set(seaId, storedCollection(seaId, "Море", 2024));
+  works.clear();
+  works.set(elephantId, storedWork(2023, 5, animalsId));
+  works.set(tigerId, storedWork(2024, 2, animalsId));
+  works.set(whaleId, storedWork(2024, 6, seaId));
+  works.set(foxId, storedWork(2022, 1, null));
   storage.deleteFolder.mockResolvedValue(undefined);
   uploads.publishUpload.mockImplementation(async (_uploadId: string, folder: string) =>
     publishedImage(folder),
@@ -170,6 +235,97 @@ describe("listCollections", () => {
     const { data } = await listCollections();
 
     expect(data.map((collection) => collection.title)).toEqual(["Горы", "Море", "Звери"]);
+  });
+});
+
+describe("the works of a collection", () => {
+  it("returns the works of each collection, the latest first", async () => {
+    works.set(foxId, storedWork(2022, 1, seaId));
+
+    const { data } = await listCollections();
+
+    expect(data.map((collection) => collection.workIds)).toEqual([
+      [whaleId, foxId],
+      [tigerId, elephantId],
+    ]);
+    expect((await getCollection(animalsId)).data.workIds).toEqual([tigerId, elephantId]);
+  });
+
+  it("returns no works for an empty collection", async () => {
+    works.clear();
+
+    expect((await getCollection(animalsId)).data.workIds).toEqual([]);
+    expect((await listCollections()).data.map((collection) => collection.workIds)).toEqual([
+      [],
+      [],
+    ]);
+  });
+
+  it("creates a collection with its works, moving one from another collection", async () => {
+    const { data } = await createCollection(newId, { ...body, workIds: [foxId, whaleId] });
+
+    expect(data.workIds).toEqual([whaleId, foxId]);
+    expect(collectionOf(foxId)).toBe(newId);
+    expect(collectionOf(whaleId)).toBe(newId);
+    expect((await getCollection(seaId)).data.workIds).toEqual([]);
+  });
+
+  it("adds and removes works, leaving a removed work on its own", async () => {
+    const { data } = await replaceCollection(
+      animalsId,
+      { ...body, workIds: [foxId, tigerId] },
+      await readTag(animalsId),
+    );
+
+    expect(data.workIds).toEqual([tigerId, foxId]);
+    expect(collectionOf(foxId)).toBe(animalsId);
+    expect(collectionOf(elephantId)).toBeNull();
+    expect(collectionOf(whaleId)).toBe(seaId);
+    // Moving a work does not edit it.
+    expect(works.get(foxId)?.updatedAt).toBe(seededAt);
+  });
+
+  it("returns the tag a later read gives", async () => {
+    const { etag } = await replaceCollection(
+      animalsId,
+      { ...body, workIds: [foxId] },
+      await readTag(animalsId),
+    );
+
+    expect(etag).toBe(await readTag(animalsId));
+  });
+
+  it("makes a page opened before a work moved in outdated", async () => {
+    const etag = await readTag(animalsId);
+    works.set(foxId, storedWork(2022, 1, animalsId));
+
+    await expect(replaceCollection(animalsId, body, etag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
+  });
+
+  it("returns 422 for a work that does not exist, and moves nothing", async () => {
+    await expect(
+      createCollection(newId, { ...body, workIds: [foxId, deletedWorkId] }),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+    await expect(
+      replaceCollection(animalsId, { ...body, workIds: [deletedWorkId] }, await readTag(animalsId)),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
+
+    expect(collections.has(newId)).toBe(false);
+    expect(collectionOf(foxId)).toBeNull();
+    expect(collectionOf(elephantId)).toBe(animalsId);
+    expect(storage.deleteFolder).toHaveBeenCalledWith(
+      `galleryCollections/${newId}/cover/new-version`,
+    );
+  });
+
+  it("leaves the works of a deleted collection on their own", async () => {
+    await deleteCollection(animalsId, await readTag(animalsId));
+
+    expect(collectionOf(elephantId)).toBeNull();
+    expect(collectionOf(tigerId)).toBeNull();
+    expect(collectionOf(whaleId)).toBe(seaId);
   });
 });
 

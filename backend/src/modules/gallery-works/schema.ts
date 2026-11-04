@@ -103,6 +103,8 @@ export const workBodySchema = z
     colorIds: referenceIdsSchema(maxWorkColors),
     /** The coloring of the work as a whole, by the ids of the gallery palettes; at least one. */
     paletteIds: referenceIdsSchema(maxWorkPalettes),
+    /** The collection the work was painted for, or null for a work on its own. */
+    collectionId: z.uuid().nullable(),
   })
   .refine(({ month, year }) => !isFutureMonth(year, month), {
     message: "The month cannot be in the future",
@@ -130,6 +132,8 @@ export const storedWorkSchema = z.object({
   colorIds: z.array(z.string()),
   /** May name a palette deleted since; the API leaves such ids out. */
   paletteIds: z.array(z.string()),
+  /** Always a saved collection: deleting a collection takes its works out of it. */
+  collectionId: z.string().nullable(),
   /** Set by the server when the work is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the work. */
@@ -159,6 +163,8 @@ export const workSchema = z.object({
   colorIds: z.array(z.uuid()),
   /** The palettes of the work; a deleted one is left out. */
   paletteIds: z.array(z.uuid()),
+  /** Null for a work on its own. */
+  collectionId: z.uuid().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

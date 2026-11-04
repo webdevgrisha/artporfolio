@@ -30,6 +30,8 @@ export interface GalleryWorkBody {
   colorIds: readonly string[];
   /** The coloring of the work as a whole, at least one palette. */
   paletteIds: readonly string[];
+  /** The collection the work was painted for, or null for a work on its own. */
+  collectionId: string | null;
 }
 
 interface CreateGalleryWorkParams {
@@ -91,7 +93,7 @@ export function galleryWorkQuery(id: string) {
 /**
  * Creates the work `id` and returns it as saved with its ETag. Rejected with 412 when the work
  * exists, for example created by an earlier try whose response was lost, and with 422 when the
- * upload of a photo has expired or a section no longer exists.
+ * upload of a photo has expired or a section or the collection no longer exists.
  */
 export async function createGalleryWork({
   body,
@@ -109,7 +111,7 @@ export async function createGalleryWork({
 /**
  * Replaces the work, all its fields at once, and returns it as saved with its new ETag. Rejected
  * with 412 when the work has changed since `etag` was read, with 404 when it was deleted, and with
- * 422 when it names a process photo, an upload or a section that no longer exists.
+ * 422 when it names a process photo, an upload, a section or a collection that no longer exists.
  */
 export async function replaceGalleryWork({
   body,

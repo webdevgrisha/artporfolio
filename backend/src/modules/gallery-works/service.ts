@@ -1,5 +1,6 @@
 import { type DocumentSnapshot, Timestamp, type Transaction } from "firebase-admin/firestore";
 
+import { collectionDocument } from "#modules/gallery-collections/document";
 import { colorIdsIn, colorsDocument } from "#modules/gallery-colors/service";
 import { materialIdsIn, materialsDocument } from "#modules/gallery-materials/service";
 import { paletteIdsIn, palettesDocument } from "#modules/gallery-palettes/service";
@@ -42,7 +43,8 @@ interface KnownIds {
   palettes: Set<string>;
 }
 
-function worksCollection() {
+/** Every work; a collection reads it to find its works. */
+export function worksCollection() {
   return firestore().collection("galleryWorks");
 }
 
@@ -79,6 +81,7 @@ function readWork(snapshot: DocumentSnapshot): StoredWork {
 
 /** What the client edits, which the entity tag of a work follows. */
 function editedContent({
+  collectionId,
   colorIds,
   description,
   materialIds,
@@ -92,6 +95,7 @@ function editedContent({
   year,
 }: StoredWork) {
   return {
+    collectionId,
     colorIds,
     description,
     materialIds,
@@ -124,6 +128,7 @@ function toInches(centimetres: number): number {
 function toWork(
   id: string,
   {
+    collectionId,
     colorIds,
     createdAt,
     description,
@@ -141,6 +146,7 @@ function toWork(
   known: KnownIds,
 ): Work {
   return {
+    collectionId,
     colorIds: colorIds.filter((colorId) => known.colors.has(colorId)),
     createdAt: createdAt.toDate().toISOString(),
     description,
@@ -190,15 +196,17 @@ function assertKnown(ids: string[], known: Set<string>, kind: string): void {
 }
 
 /**
- * Rejects with 422 a section, a material, a color or a palette the work names that does not exist,
- * such as one deleted while the form was open. Read in the transaction, so one deleted meanwhile is caught too.
+ * Rejects with 422 a section, a material, a color, a palette or a collection the work names that
+ * does not exist, such as one deleted while the form was open. Read in the transaction, so one
+ * deleted meanwhile is caught too.
  */
 async function assertReferencesExist(transaction: Transaction, body: WorkBody): Promise<KnownIds> {
-  const [sections, materials, colors, palettes] = await Promise.all([
+  const [sections, materials, colors, palettes, collection] = await Promise.all([
     transaction.get(sectionsCollection()),
     transaction.get(materialsDocument()),
     transaction.get(colorsDocument()),
     transaction.get(palettesDocument()),
+    body.collectionId === null ? null : transaction.get(collectionDocument(body.collectionId)),
   ]);
   const known: KnownIds = {
     colors: colorIdsIn(colors),
@@ -212,6 +220,10 @@ async function assertReferencesExist(transaction: Transaction, body: WorkBody): 
   assertKnown(body.colorIds, known.colors, "color");
   assertKnown(body.paletteIds, known.palettes, "palette");
 
+  if (collection?.exists === false) {
+    throw new UnprocessableContentError(`There is no collection ${String(body.collectionId)}`);
+  }
+
   return known;
 }
 
@@ -220,12 +232,17 @@ function compareWorks(a: StoredWork, b: StoredWork): number {
   return b.year - a.year || b.month - a.month || b.createdAt.toMillis() - a.createdAt.toMillis();
 }
 
+/** The saved works in the order the site shows them. */
+export function worksInOrder(docs: DocumentSnapshot[]): { id: string; work: StoredWork }[] {
+  return docs
+    .map((snapshot) => ({ id: snapshot.id, work: readWork(snapshot) }))
+    .sort((a, b) => compareWorks(a.work, b.work));
+}
+
 /** Every work in the order the site shows them, tagged by the stored list. */
 export async function listWorks(): Promise<Tagged<Work[]>> {
   const [{ docs }, known] = await Promise.all([worksCollection().get(), readKnownIds()]);
-  const works = docs
-    .map((snapshot) => ({ id: snapshot.id, work: readWork(snapshot) }))
-    .sort((a, b) => compareWorks(a.work, b.work));
+  const works = worksInOrder(docs);
   const data = works.map(({ id, work }) => toWork(id, work, known));
 
   // Tagged by what is returned: deleting an item of a list a work refers to, such as a section,
@@ -261,8 +278,8 @@ async function discardPhoto(id: string, image: StoredImage | undefined): Promise
  * Creates the work `id`, which the client chose; rejects it with 412 once a work has that id, such
  * as one an earlier try of the same request created. A new work has no saved photos, so its photo
  * needs an upload and a process photo cannot name an id, or it is rejected with 422, as it is for a
- * section, a material, a color or a palette that does not exist. The files are copied from their uploads first; if saving fails, the
- * copies are removed.
+ * section, a material, a color, a palette or a collection that does not exist. The files are copied
+ * from their uploads first; if saving fails, the copies are removed.
  */
 export async function createWork(id: string, body: WorkBody): Promise<SavedWork> {
   const { alt, uploadId } = body.photo;
@@ -320,8 +337,8 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
  * from their uploads first and the replaced ones are removed once the work is saved, so the site
  * never links to missing files; if saving fails, the copies are removed and the work stays as it
  * was. The process photos are saved as one list: a saved photo left out is deleted, see
- * preparePhotoList. A section, a material, a color or a palette that does not exist is rejected
- * with 422.
+ * preparePhotoList. A section, a material, a color, a palette or a collection that does not exist
+ * is rejected with 422. Moving the work to another collection changes both collections.
  */
 export async function replaceWork(id: string, body: WorkBody, ifMatch: string): Promise<SavedWork> {
   const image = await publishPhoto(id, body.photo.uploadId);
