@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import type { GalleryWork } from "@/entities/gallery";
+import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
 import type { Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
@@ -14,6 +14,10 @@ import { CollectionWorksField } from "./CollectionWorksField";
 
 interface CollectionFieldsProps {
   className?: string;
+  /** The collection being edited; none for a new one. */
+  collectionId?: string;
+  /** The collections of the gallery, to name the one a work to add is in now. */
+  collections: readonly GalleryCollection[];
   isSaving: boolean;
   /** The cover of the saved collection, shown while the cover field keeps it; none for a new one. */
   savedCover: Photo | null;
@@ -24,6 +28,8 @@ interface CollectionFieldsProps {
 /** The fields of a collection form; they read the form from its context. */
 export function CollectionFields({
   className,
+  collectionId,
+  collections,
   isSaving,
   savedCover,
   works,
@@ -100,6 +106,8 @@ export function CollectionFields({
         </div>
         <CollectionWorksField
           works={works}
+          collections={collections}
+          collectionId={collectionId}
           value={worksField.value}
           disabled={isSaving}
           error={errors.workIds?.message}

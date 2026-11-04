@@ -62,16 +62,18 @@ export function galleryCollectionsLoader() {
   return loadPageData(fetchFresh(galleryCollectionsQuery));
 }
 
-// A collection shows its works and adds others, so its pages load every work.
+// A collection shows its works and adds others, naming the collection each one is in now, so its
+// pages load every work and every collection.
 
 export function newGalleryCollectionLoader() {
-  return loadPageData(fetchFresh(galleryWorksQuery));
+  return loadPageData(fetchFresh(galleryWorksQuery), fetchFresh(galleryCollectionsQuery));
 }
 
 export function galleryCollectionLoader({ params }: LoaderFunctionArgs) {
   return loadPageData(
     fetchFresh(galleryCollectionQuery(params.id ?? "")),
     fetchFresh(galleryWorksQuery),
+    fetchFresh(galleryCollectionsQuery),
   );
 }
 

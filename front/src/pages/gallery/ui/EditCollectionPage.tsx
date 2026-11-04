@@ -1,7 +1,11 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
-import { galleryCollectionQuery, galleryWorksQuery } from "@/entities/gallery";
+import {
+  galleryCollectionQuery,
+  galleryCollectionsQuery,
+  galleryWorksQuery,
+} from "@/entities/gallery";
 import { EditCollectionForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
@@ -41,6 +45,14 @@ function EditCollection({ id }: EditCollectionProps) {
   // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: collection } = useSuspenseQuery(galleryCollectionQuery(id));
   const { data: works } = useSuspenseQuery(galleryWorksQuery);
+  const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);
 
-  return <EditCollectionForm className={styles.form} collection={collection} works={works} />;
+  return (
+    <EditCollectionForm
+      className={styles.form}
+      collection={collection}
+      works={works}
+      collections={collections}
+    />
+  );
 }

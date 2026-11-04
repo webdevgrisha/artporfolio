@@ -112,3 +112,7 @@
   inline-size: auto;
   block-size: 1.625rem;
 }
+
+.add {
+  margin-block-start: var(--space-4);
+}

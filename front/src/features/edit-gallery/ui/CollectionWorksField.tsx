@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import React from "react";
 
-import type { GalleryWork } from "@/entities/gallery";
+import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
+import { Button } from "@/shared/ui/button";
 import { FieldError, FieldHint, useFieldIds } from "@/shared/ui/field";
 import { TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
@@ -9,14 +10,19 @@ import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import { formatWorkDate } from "../model/workFormSchema";
+import { AddWorksDialog } from "./AddWorksDialog";
 import styles from "./CollectionWorksField.module.css";
 
 interface CollectionWorksFieldProps {
+  /** The collection being edited; none for a new one. */
+  collectionId?: string;
+  /** The collections of the gallery, to name the one a work to add is in now. */
+  collections: readonly GalleryCollection[];
   disabled: boolean;
   error?: string;
   /** Whether the works differ from the saved ones. */
   isModified: boolean;
-  /** Gets the ids of the works left. */
+  /** Gets the ids of the works after a work is added or taken out. */
   onChange: (ids: string[]) => void;
   /** The works of the collection, by id. */
   value: readonly string[];
@@ -25,10 +31,13 @@ interface CollectionWorksFieldProps {
 }
 
 /**
- * The works of a collection, in a frame, in the order the site shows them: the latest first. A
- * work is taken out by the trash button; it stays in the gallery, on its own.
+ * The works of a collection, in a frame, in the order the site shows them: the latest first. Works
+ * are added from a dialog under the frame; a work is taken out by the trash button and stays in the
+ * gallery, on its own.
  */
 export function CollectionWorksField({
+  collectionId,
+  collections,
   disabled,
   error,
   isModified,
@@ -39,24 +48,34 @@ export function CollectionWorksField({
   const hint = "На сайте идут по дате, сначала новые";
   const { describedBy, errorId, hintId } = useFieldIds({ error, hint });
   const chosen = works.filter((work) => value.includes(work.id));
+  const others = works.filter((work) => !value.includes(work.id));
+  const [isAdding, setIsAdding] = React.useState(false);
   const removeButtons = React.useRef(new Map<string, HTMLButtonElement>());
-  // The work whose button takes the focus once a removed row is gone, so the focus stays in the
-  // list instead of falling to the page.
-  const [focusedId, setFocusedId] = React.useState<string>();
+  const addButton = React.useRef<HTMLButtonElement>(null);
+  // What takes the focus once a removed row is gone: the button of the next row, or the adding
+  // when no row is left, so the focus stays in the field instead of falling to the page.
+  const [focusTarget, setFocusTarget] = React.useState<{ workId?: string }>();
 
   React.useEffect(() => {
-    if (focusedId === undefined) return;
+    if (focusTarget === undefined) return;
 
-    removeButtons.current.get(focusedId)?.focus();
-    setFocusedId(undefined);
-  }, [focusedId]);
+    const { workId } = focusTarget;
+
+    (workId === undefined ? addButton.current : removeButtons.current.get(workId))?.focus();
+    setFocusTarget(undefined);
+  }, [focusTarget]);
 
   function remove(id: string) {
     const index = chosen.findIndex((work) => work.id === id);
     const neighbour = chosen[index + 1] ?? chosen[index - 1];
 
     onChange(value.filter((chosenId) => chosenId !== id));
-    setFocusedId(neighbour?.id);
+    setFocusTarget({ workId: neighbour?.id });
+  }
+
+  function add(ids: string[]) {
+    onChange([...value, ...ids]);
+    setIsAdding(false);
   }
 
   return (
@@ -106,6 +125,22 @@ export function CollectionWorksField({
       </div>
       <FieldHint id={hintId}>{hint}</FieldHint>
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
+      <Button
+        ref={addButton}
+        className={styles.add}
+        disabled={disabled}
+        onClick={() => setIsAdding(true)}
+      >
+        Добавить работы
+      </Button>
+      <AddWorksDialog
+        isOpen={isAdding}
+        works={others}
+        collections={collections}
+        collectionId={collectionId}
+        onAdd={add}
+        onCancel={() => setIsAdding(false)}
+      />
     </fieldset>
   );
 }

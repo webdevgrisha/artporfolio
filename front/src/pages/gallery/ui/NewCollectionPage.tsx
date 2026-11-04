@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { galleryWorksQuery } from "@/entities/gallery";
+import { galleryCollectionsQuery, galleryWorksQuery } from "@/entities/gallery";
 import { CreateCollectionForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
@@ -28,8 +28,9 @@ export function NewCollectionPage() {
 }
 
 function NewCollection() {
-  // AwaitPageData has waited for the fresh works, so this never suspends.
+  // AwaitPageData has waited for the fresh lists, so this never suspends.
   const { data: works } = useSuspenseQuery(galleryWorksQuery);
+  const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);
 
-  return <CreateCollectionForm className={styles.form} works={works} />;
+  return <CreateCollectionForm className={styles.form} works={works} collections={collections} />;
 }

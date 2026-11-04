@@ -21,11 +21,18 @@ interface EditCollectionFormProps {
   className?: string;
   /** The collection as stored on the server when the form opens, with its ETag. */
   collection: Tagged<GalleryCollection>;
+  /** The collections of the gallery, to name the one a work to add is in now. */
+  collections: readonly GalleryCollection[];
   /** Every work of the gallery, in the order the site shows them, to add to the collection. */
   works: readonly GalleryWork[];
 }
 
-export function EditCollectionForm({ className, collection, works }: EditCollectionFormProps) {
+export function EditCollectionForm({
+  className,
+  collection,
+  collections,
+  works,
+}: EditCollectionFormProps) {
   const form = useForm<CollectionFormValues>({
     defaultValues: toCollectionFormValues(collection.data),
     resolver: zodResolver(collectionFormSchema),
@@ -49,6 +56,8 @@ export function EditCollectionForm({ className, collection, works }: EditCollect
           isSaving={editForm.isSaving}
           savedCover={saved.data.cover}
           works={works}
+          collections={collections}
+          collectionId={collection.data.id}
         />
       </EditForm>
     </FormProvider>

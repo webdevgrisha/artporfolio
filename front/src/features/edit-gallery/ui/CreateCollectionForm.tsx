@@ -3,7 +3,7 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import type { GalleryWork } from "@/entities/gallery";
+import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
 import { galleryCollectionPath } from "@/shared/config/routes";
 import { EditForm } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
@@ -18,12 +18,14 @@ import { CollectionFields } from "./CollectionFields";
 
 interface CreateCollectionFormProps {
   className?: string;
+  /** The collections of the gallery, to name the one a work to add is in now. */
+  collections: readonly GalleryCollection[];
   /** Every work of the gallery, in the order the site shows them, to add to the collection. */
   works: readonly GalleryWork[];
 }
 
 /** A new collection; once it is created, its edit page opens in place of this one. */
-export function CreateCollectionForm({ className, works }: CreateCollectionFormProps) {
+export function CreateCollectionForm({ className, collections, works }: CreateCollectionFormProps) {
   const navigate = useNavigate();
   const allowNextNavigation = useAllowNextNavigation();
   // Every try of this form creates the same collection, so a retry after a lost response never
@@ -69,7 +71,12 @@ export function CreateCollectionForm({ className, works }: CreateCollectionFormP
         onRevert={() => reset()}
         onSubmit={handleSubmit(create)}
       >
-        <CollectionFields isSaving={isSaving} savedCover={null} works={works} />
+        <CollectionFields
+          isSaving={isSaving}
+          savedCover={null}
+          works={works}
+          collections={collections}
+        />
       </EditForm>
     </FormProvider>
   );
