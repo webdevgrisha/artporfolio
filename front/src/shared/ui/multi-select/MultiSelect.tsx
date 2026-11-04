@@ -101,17 +101,19 @@ export function MultiSelect({
         if (type === useCombobox.stateChangeTypes.InputChange) setQuery(inputValue);
       },
       onSelectedItemChange: ({ selectedItem }) => {
-        if (selectedItem) choose([...selectedOptions, selectedItem]);
+        if (!selectedItem) return;
+
+        choose([...selectedOptions, selectedItem]);
+        setQuery("");
       },
       // Nothing stays chosen in the combobox itself: a choice becomes a chip.
       selectedItem: null,
-      // After a choice the list stays open on the same place, for the next one, and the query
-      // is cleared; a blur only closes the list, it never chooses.
+      // After a choice the list stays open on the same place, for the next one; a blur only
+      // closes the list, it never chooses.
       stateReducer: (state, { changes, type }) => {
         switch (type) {
           case useCombobox.stateChangeTypes.InputKeyDownEnter:
           case useCombobox.stateChangeTypes.ItemClick:
-            setQuery("");
             return { ...changes, highlightedIndex: state.highlightedIndex, isOpen: true };
           case useCombobox.stateChangeTypes.InputBlur:
             return { ...changes, selectedItem: null };
