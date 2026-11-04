@@ -22,7 +22,7 @@ export function AboutTextFields({ className, isSaving }: AboutTextFieldsProps) {
         <Textarea
           key={field.name}
           label={field.label}
-          hint={`Необязательно. До ${String(aboutTextMaxLengths[field.name])} символов. Абзацы разделяйте пустой строкой`}
+          hint={`До ${String(aboutTextMaxLengths[field.name])} символов. Абзацы разделяйте пустой строкой`}
           placeholder={field.placeholder}
           rows={12}
           disabled={isSaving}

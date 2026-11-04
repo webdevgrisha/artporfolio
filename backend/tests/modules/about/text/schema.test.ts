@@ -16,8 +16,8 @@ describe("about text body", () => {
     });
   });
 
-  it.each(["about", "biography", "creation"])("accepts an empty %s", (field) => {
-    expect(aboutTextBodySchema.parse({ ...text, [field]: "  " })).toEqual({ ...text, [field]: "" });
+  it.each(["about", "biography", "creation"])("needs %s", (field) => {
+    expect(isValid({ ...text, [field]: "  " })).toBe(false);
   });
 
   it.each(["about", "biography", "creation"])("requires %s to be sent", (field) => {
