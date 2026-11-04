@@ -176,6 +176,32 @@ export const router = createBrowserRouter([
                     ],
                   },
                   {
+                    path: routes.galleryCollectionNew,
+                    lazy: async () => {
+                      const { NewCollectionPage, newCollectionHandle, newGalleryCollectionLoader } =
+                        await import("@/pages/gallery");
+
+                      return {
+                        Component: NewCollectionPage,
+                        handle: newCollectionHandle,
+                        loader: newGalleryCollectionLoader,
+                      };
+                    },
+                  },
+                  {
+                    path: `${routes.galleryCollections}/:id`,
+                    lazy: async () => {
+                      const { EditCollectionPage, editCollectionHandle, galleryCollectionLoader } =
+                        await import("@/pages/gallery");
+
+                      return {
+                        Component: EditCollectionPage,
+                        handle: editCollectionHandle,
+                        loader: galleryCollectionLoader,
+                      };
+                    },
+                  },
+                  {
                     path: routes.gallerySectionNew,
                     lazy: async () => {
                       const { NewSectionPage, newSectionHandle } = await import("@/pages/gallery");

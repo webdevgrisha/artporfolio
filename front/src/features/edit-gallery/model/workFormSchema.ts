@@ -8,11 +8,12 @@ import {
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSide,
-  minWorkYear,
   type WorkSize,
 } from "@/entities/gallery";
 import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
 import { photoListRowsSchema, toPhotoListRows } from "@/shared/lib/photoListForm";
+
+import { yearSchema } from "./yearField";
 
 // Mirror the server rules in backend/src/modules/gallery-works/schema.ts.
 export const workMaxLengths = {
@@ -47,19 +48,6 @@ const sideSchema = z
         (text) => parseSide(text) <= maxWorkSide,
         `Не больше ${maxWorkSide.toLocaleString("ru")}`,
       ),
-  );
-
-const yearSchema = z
-  .string()
-  .trim()
-  .min(1, "Введите год")
-  .pipe(z.string().regex(/^\d{4}$/, "Введите год четырьмя цифрами"))
-  .pipe(
-    z
-      .string()
-      .refine((text) => Number(text) >= minWorkYear, `Не раньше ${String(minWorkYear)}`)
-      // Read when the form is checked, so a form left open over New Year takes the new year.
-      .refine((text) => Number(text) <= new Date().getFullYear(), "Год ещё не наступил"),
   );
 
 /** Whether the month has not come yet; read when the form is checked. */

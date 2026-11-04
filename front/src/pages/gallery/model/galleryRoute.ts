@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 
 import {
+  galleryCollectionQuery,
   galleryCollectionsQuery,
   galleryColorsQuery,
   galleryIntroQuery,
@@ -59,6 +60,19 @@ export function galleryWorkLoader({ params }: LoaderFunctionArgs) {
 
 export function galleryCollectionsLoader() {
   return loadPageData(fetchFresh(galleryCollectionsQuery));
+}
+
+// A collection shows its works and adds others, so its pages load every work.
+
+export function newGalleryCollectionLoader() {
+  return loadPageData(fetchFresh(galleryWorksQuery));
+}
+
+export function galleryCollectionLoader({ params }: LoaderFunctionArgs) {
+  return loadPageData(
+    fetchFresh(galleryCollectionQuery(params.id ?? "")),
+    fetchFresh(galleryWorksQuery),
+  );
 }
 
 export function galleryMaterialsLoader() {

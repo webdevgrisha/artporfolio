@@ -102,3 +102,23 @@ export function getDeleteCollectionErrorMessage(error: unknown): string {
     fallback: "Не удалось удалить коллекцию. Попробуйте ещё раз",
   });
 }
+
+export function getSaveCollectionErrorMessage(error: unknown): string {
+  if (error instanceof UploadError) return getUploadErrorMessage(error);
+
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      400: "Сервер не принял коллекцию. Проверьте поля и попробуйте ещё раз",
+      404: "Коллекция уже удалена",
+      // Another collection has this title, whatever the case.
+      409: "Коллекция с таким названием уже есть",
+      // The collection or its works were changed since this page loaded them, for example in
+      // another tab.
+      412: "Коллекцию или её работы уже изменили в другой вкладке",
+      // A work was deleted, or the upload of the cover expired: it is kept for a day and the
+      // collection is sent right after it, so that is rare.
+      422: "Работа или обложка уже удалены. Обновите страницу и внесите изменения заново",
+    },
+    fallback: "Не удалось сохранить коллекцию. Попробуйте ещё раз",
+  });
+}
