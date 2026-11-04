@@ -90,6 +90,7 @@ function editedContent({
   paletteIds,
   partCount,
   photo,
+  price,
   processPhotos,
   sectionIds,
   size,
@@ -106,6 +107,7 @@ function editedContent({
     paletteIds,
     partCount,
     photo,
+    price,
     processPhotos,
     sectionIds,
     size,
@@ -122,6 +124,19 @@ const centimetresPerInch = 2.54;
  */
 function toInches(centimetres: number): number {
   return Math.round((centimetres / centimetresPerInch) * 100) / 100;
+}
+
+/** The price as the API returns it, with the amount after the discount rounded to a whole unit. */
+function toPrice(price: StoredWork["price"]): Work["price"] {
+  if (price === null) {
+    return null;
+  }
+
+  const { amount, currency, discountPercent } = price;
+  const finalAmount =
+    discountPercent === null ? amount : Math.round((amount * (100 - discountPercent)) / 100);
+
+  return { amount, currency, discountPercent, finalAmount };
 }
 
 /**
@@ -142,6 +157,7 @@ function toWork(
     paletteIds,
     partCount,
     photo,
+    price,
     processPhotos,
     sectionIds,
     size,
@@ -163,6 +179,7 @@ function toWork(
     paletteIds: paletteIds.filter((paletteId) => known.palettes.has(paletteId)),
     partCount,
     photo: toPhoto(photo),
+    price: toPrice(price),
     processPhotos: processPhotos.map(toListPhoto),
     sectionIds: sectionIds.filter((sectionId) => known.sections.has(sectionId)),
     size,

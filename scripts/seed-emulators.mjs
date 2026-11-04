@@ -306,10 +306,19 @@ const galleryWorks = [
     size: [50, 70],
     year: 2025,
     collection: "Саванна",
+    price: 1200,
   },
-  { title: "Тигр в зарослях", palette: "tiger", size: [60, 80], year: 2025, collection: "Саванна" },
+  {
+    title: "Тигр в зарослях",
+    palette: "tiger",
+    size: [60, 80],
+    year: 2025,
+    collection: "Саванна",
+    price: 1500,
+    discountPercent: 20,
+  },
   { title: "Стрекоза", palette: "dragonfly", size: [21.6, 27.9], year: 2025, collection: "У воды" },
-  { title: "Лев", palette: "lion", size: [40, 50], year: 2024, collection: "Саванна" },
+  { title: "Лев", palette: "lion", size: [40, 50], year: 2024, collection: "Саванна", price: 800 },
   {
     title: "Лягушка на листе",
     palette: "frog",
@@ -323,12 +332,21 @@ const galleryWorks = [
     size: [30, 40],
     year: 2024,
     collection: "Ночные птицы",
-    // An etching printed from one plate.
+    // An etching printed from one plate, priced for the whole set.
     format: "set",
     partCount: 30,
+    price: 1800,
   },
   { title: "Слонёнок", palette: "elephant", size: [30.5, 40.6], year: 2023 },
-  { title: "Полосы", palette: "tiger", size: [100, 70], year: 2023, format: "diptych" },
+  {
+    title: "Полосы",
+    palette: "tiger",
+    size: [100, 70],
+    year: 2023,
+    format: "diptych",
+    price: 2400,
+    discountPercent: 15,
+  },
   { title: "Пруд", palette: "dragonfly", size: [70, 50], year: 2022, collection: "У воды" },
   { title: "Грива", palette: "lion", size: [61, 76.2], year: 2021, format: "triptych" },
   {
@@ -338,7 +356,7 @@ const galleryWorks = [
     year: 2020,
     collection: "Ночные птицы",
   },
-  { title: "Болото", palette: "frog", size: [80, 60], year: 2019 },
+  { title: "Болото", palette: "frog", size: [80, 60], year: 2019, price: 950 },
 ];
 
 const projects = [
@@ -698,6 +716,10 @@ async function seedGallery(api) {
       collectionId: work.collection === undefined ? null : collectionIds.get(work.collection),
       format: work.format ?? "single",
       partCount: work.partCount ?? null,
+      price:
+        work.price === undefined
+          ? null
+          : { amount: work.price, currency: "USD", discountPercent: work.discountPercent ?? null },
     });
   }
 

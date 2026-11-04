@@ -37,6 +37,16 @@ export const maxWorkSetSize = 100;
  */
 export const workFormats = ["single", "diptych", "triptych", "set"] as const;
 
+/** The only currency a price is set in for now; the site will show other currencies converted. */
+export const workCurrencies = ["USD"] as const;
+
+/** The highest price in whole units of its currency: well above any work, low enough to catch a typo. */
+export const maxWorkPrice = 100_000_000;
+
+/** A discount takes off a whole percent of the price: at least 1, and never the whole price. */
+export const minWorkDiscount = 1;
+export const maxWorkDiscount = 99;
+
 /** The largest side in centimetres: well above any painting, low enough to catch a typo. */
 export const maxWorkSide = 10_000;
 
@@ -54,6 +64,16 @@ const workSideSchema = z.number().positive().max(maxWorkSide).multipleOf(0.01);
 const workSizeSchema = z.strictObject({
   width: workSideSchema,
   height: workSideSchema,
+});
+
+/**
+ * What the work costs, in whole units of the currency (dollars, without cents), and the percent
+ * taken off it, if any. The price after the discount is not sent: the API computes it.
+ */
+const workPriceBodySchema = z.strictObject({
+  amount: z.number().int().min(1).max(maxWorkPrice),
+  currency: z.enum(workCurrencies),
+  discountPercent: z.number().int().min(minWorkDiscount).max(maxWorkDiscount).nullable(),
 });
 
 /**
@@ -118,6 +138,8 @@ export const workBodySchema = z
     format: z.enum(workFormats),
     /** How many works the set has; null for any other format, which tells its count itself. */
     partCount: z.number().int().min(minWorkSetSize).max(maxWorkSetSize).nullable(),
+    /** Null for a work without a price. The price of a set is for all its works together. */
+    price: workPriceBodySchema.nullable(),
   })
   .refine(({ month, year }) => !isFutureMonth(year, month), {
     message: "The month cannot be in the future",
@@ -154,6 +176,15 @@ export const storedWorkSchema = z.object({
   /** A work saved before formats were added is a single work. */
   format: z.enum(workFormats).default("single"),
   partCount: z.number().nullable().default(null),
+  /** A work saved before prices were added has none. */
+  price: z
+    .object({
+      amount: z.number(),
+      currency: z.enum(workCurrencies),
+      discountPercent: z.number().nullable(),
+    })
+    .nullable()
+    .default(null),
   /** Set by the server when the work is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the work. */
@@ -188,6 +219,17 @@ export const workSchema = z.object({
   format: z.enum(workFormats),
   /** How many works the set has; null for any other format. */
   partCount: z.number().nullable(),
+  /** Null for a work without a price. */
+  price: z
+    .object({
+      /** In whole units of the currency, before the discount. */
+      amount: z.number(),
+      currency: z.enum(workCurrencies),
+      discountPercent: z.number().nullable(),
+      /** The amount after the discount, rounded to a whole unit; computed, not stored. */
+      finalAmount: z.number(),
+    })
+    .nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -200,6 +242,7 @@ export const worksResponseSchema = z.object({
 });
 
 export type WorkFormat = (typeof workFormats)[number];
+export type WorkCurrency = (typeof workCurrencies)[number];
 export type WorkParams = z.infer<typeof workParamsSchema>;
 export type WorkBody = z.infer<typeof workBodySchema>;
 export type StoredWork = z.infer<typeof storedWorkSchema>;

@@ -187,6 +187,7 @@ const body: WorkBody = {
   collectionId: null,
   format: "single",
   partCount: null,
+  price: null,
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
@@ -480,6 +481,51 @@ describe("the format of a work", () => {
 
     expect(data).toMatchObject({ format: "set", partCount: 12 });
     expect(works.get(newId)).toMatchObject({ format: "set", partCount: 12 });
+  });
+});
+
+describe("the price of a work", () => {
+  it("reads a work saved before prices as a work without a price", async () => {
+    const { data } = await getWork(elephantId);
+
+    expect(data.price).toBeNull();
+  });
+
+  it("saves the price without the amount after the discount, which it computes", async () => {
+    const price = { amount: 500, currency: "USD", discountPercent: 10 } as const;
+    const { data } = await createWork(newId, { ...body, price });
+
+    expect(data.price).toEqual({ ...price, finalAmount: 450 });
+    expect(works.get(newId)?.price).toEqual(price);
+  });
+
+  it("gives the full amount as the final one when there is no discount", async () => {
+    const price = { amount: 500, currency: "USD", discountPercent: null } as const;
+    const { data } = await createWork(newId, { ...body, price });
+
+    expect(data.price?.finalAmount).toBe(500);
+  });
+
+  it("rounds the amount after the discount to a whole dollar", async () => {
+    const { data } = await createWork(newId, {
+      ...body,
+      price: { amount: 999, currency: "USD", discountPercent: 15 },
+    });
+
+    // 999 × 0.85 = 849.15
+    expect(data.price?.finalAmount).toBe(849);
+  });
+
+  it("changes the entity tag when only the price changes", async () => {
+    const withoutPrice = { ...body, photo: { alt: "Слон" } };
+    const { etag } = await replaceWork(elephantId, withoutPrice, await readTag(elephantId));
+    const { etag: priced } = await replaceWork(
+      elephantId,
+      { ...withoutPrice, price: { amount: 500, currency: "USD", discountPercent: null } },
+      etag,
+    );
+
+    expect(priced).not.toBe(etag);
   });
 });
 

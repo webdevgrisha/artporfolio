@@ -4,12 +4,15 @@ import { describe, expect, it } from "vitest";
 
 import {
   maxWorkColors,
+  maxWorkDiscount,
   maxWorkMaterials,
   maxWorkPalettes,
+  maxWorkPrice,
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSetSize,
   maxWorkSide,
+  minWorkDiscount,
   minWorkSetSize,
   minWorkYear,
   workBodySchema,
@@ -30,7 +33,9 @@ const work = {
   collectionId: null,
   format: "single",
   partCount: null,
+  price: null,
 };
+const price = { amount: 500, currency: "USD", discountPercent: null };
 
 function isValid(body: unknown): boolean {
   return workBodySchema.safeParse(body).success;
@@ -197,7 +202,35 @@ describe("work body", () => {
     expect(isValid({ ...work, format: "set", partCount: 2.5 })).toBe(false);
   });
 
+  it("takes a work without a price", () => {
+    expect(isValid({ ...work, price: null })).toBe(true);
+    expect(isValid({ ...work, price: undefined })).toBe(false);
+  });
+
+  it("takes a price in whole dollars, within the limits", () => {
+    expect(isValid({ ...work, price })).toBe(true);
+    expect(isValid({ ...work, price: { ...price, amount: 1 } })).toBe(true);
+    expect(isValid({ ...work, price: { ...price, amount: maxWorkPrice } })).toBe(true);
+    expect(isValid({ ...work, price: { ...price, amount: 0 } })).toBe(false);
+    expect(isValid({ ...work, price: { ...price, amount: maxWorkPrice + 1 } })).toBe(false);
+    expect(isValid({ ...work, price: { ...price, amount: 499.99 } })).toBe(false);
+    expect(isValid({ ...work, price: { ...price, currency: "EUR" } })).toBe(false);
+    expect(isValid({ ...work, price: { ...price, discountPercent: undefined } })).toBe(false);
+  });
+
+  it("takes a discount of a whole percent, within the limits", () => {
+    expect(isValid({ ...work, price: { ...price, discountPercent: minWorkDiscount } })).toBe(true);
+    expect(isValid({ ...work, price: { ...price, discountPercent: maxWorkDiscount } })).toBe(true);
+    expect(isValid({ ...work, price: { ...price, discountPercent: 0 } })).toBe(false);
+    expect(isValid({ ...work, price: { ...price, discountPercent: 100 } })).toBe(false);
+    expect(isValid({ ...work, price: { ...price, discountPercent: 12.5 } })).toBe(false);
+  });
+
+  it("does not take the price after the discount, which the API computes", () => {
+    expect(isValid({ ...work, price: { ...price, finalAmount: 500 } })).toBe(false);
+  });
+
   it("rejects unknown fields", () => {
-    expect(isValid({ ...work, price: 100 })).toBe(false);
+    expect(isValid({ ...work, cost: 100 })).toBe(false);
   });
 });
