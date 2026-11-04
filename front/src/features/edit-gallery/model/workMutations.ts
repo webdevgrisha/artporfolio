@@ -44,7 +44,6 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     photo,
     photoAlt,
     photos,
-    place,
     sectionIds,
     title,
     year,
@@ -69,7 +68,8 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     title,
     year: Number(year),
     month: Number(month),
-    place,
+    country: values.country === "" ? null : values.country,
+    city: values.city,
   };
 }
 

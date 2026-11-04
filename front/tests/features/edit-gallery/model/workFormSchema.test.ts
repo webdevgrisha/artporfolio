@@ -40,7 +40,8 @@ const work = {
 const savedWork = {
   description: "",
   month: 3,
-  place: "Варшава",
+  country: "PL",
+  city: "Варшава",
   photo: { alt: "Стрекоза" },
   processPhotos: [],
   sectionIds: [],
@@ -218,16 +219,17 @@ describe("the format in the form", () => {
 });
 
 describe("the place in the form", () => {
-  it("takes no place, or a place up to 100 characters", () => {
-    expect(fieldErrors(workFormSchema, { ...work, place: "" })).toEqual({});
-    expect(fieldErrors(workFormSchema, { ...work, place: "а".repeat(100) })).toEqual({});
-    expect(fieldErrors(workFormSchema, { ...work, place: "а".repeat(101) })).toEqual({
-      place: ["Не длиннее 100 символов"],
+  it("takes no city, or a city up to 100 characters", () => {
+    expect(fieldErrors(workFormSchema, { ...work, city: "" })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...work, city: "а".repeat(100) })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...work, city: "а".repeat(101) })).toEqual({
+      city: ["Не длиннее 100 символов"],
     });
   });
 
-  it("shows the saved place", () => {
-    expect(toWorkFormValues(savedWork).place).toBe("Варшава");
+  it("shows the saved country and city, and no country as none chosen", () => {
+    expect(toWorkFormValues(savedWork)).toMatchObject({ city: "Варшава", country: "PL" });
+    expect(toWorkFormValues({ ...savedWork, country: null }).country).toBe("");
   });
 });
 

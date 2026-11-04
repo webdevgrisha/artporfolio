@@ -66,7 +66,8 @@ function apiWork(title: string): GalleryWork {
     updatedAt: "2026-01-15T10:00:00.000Z",
     year: 2025,
     month: 4,
-    place: "",
+    country: null,
+    city: "",
   };
 }
 
@@ -134,7 +135,8 @@ describe("useCreateWork", () => {
           title: "Стрекоза",
           year: 2025,
           month: 4,
-          place: "",
+          country: null,
+          city: "",
         },
         ifMatch: null,
         ifNoneMatch: "*",
@@ -201,6 +203,24 @@ describe("useSaveWork", () => {
     expect(puts).toEqual([
       expect.objectContaining({
         body: expect.objectContaining({ format: "set", partCount: 12 }),
+      }),
+    ]);
+  });
+
+  it("sends the chosen country by its code, and none as null", async () => {
+    const puts = handlePuts(() =>
+      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+    );
+    const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
+
+    await saveWork.mutateAsync({
+      etag: '"read"',
+      values: { ...values(), city: "Варшава", country: "PL" },
+    });
+
+    expect(puts).toEqual([
+      expect.objectContaining({
+        body: expect.objectContaining({ city: "Варшава", country: "PL" }),
       }),
     ]);
   });

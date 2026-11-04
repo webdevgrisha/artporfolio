@@ -20,8 +20,10 @@ export interface GalleryWorkBody {
   year: number;
   /** 1 for January. */
   month: number;
-  /** Where the work was made; an empty string for none. */
-  place: string;
+  /** The country the work was made in, by its ISO 3166-1 alpha-2 code, or null for none. */
+  country: string | null;
+  /** The city the work was made in; an empty string for none. */
+  city: string;
   /** A new file by its upload (see `uploadImage`), or the saved file when `uploadId` is left out. */
   photo: { alt: string; uploadId?: string };
   /** In the order the site shows them; a saved photo left out is deleted. */

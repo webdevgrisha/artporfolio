@@ -2,10 +2,10 @@ import { z } from "zod";
 
 import {
   type GalleryWork,
+  maxWorkCityLength,
   maxWorkColors,
   maxWorkMaterials,
   maxWorkPalettes,
-  maxWorkPlaceLength,
   maxWorkProcessPhotos,
   maxWorkSections,
   maxWorkSetSize,
@@ -25,7 +25,7 @@ import { yearSchema } from "./yearField";
 // Mirror the server rules in backend/src/modules/gallery-works/schema.ts.
 export const workMaxLengths = {
   description: 2_000,
-  place: maxWorkPlaceLength,
+  city: maxWorkCityLength,
   title: 100,
 } as const;
 
@@ -144,11 +144,13 @@ export const workFormSchema = z
     /** The number of the month, «1» for January; empty until one is chosen. */
     month: z.string().min(1, "Выберите месяц"),
     year: yearSchema,
-    /** Where the work was made; may be empty. */
-    place: z
+    /** The code of the country the work was made in; empty for none. */
+    country: z.string(),
+    /** The city the work was made in; may be empty. */
+    city: z
       .string()
       .trim()
-      .max(workMaxLengths.place, `Не длиннее ${String(workMaxLengths.place)} символов`),
+      .max(workMaxLengths.city, `Не длиннее ${String(workMaxLengths.city)} символов`),
     ...photoFieldsShape,
     /**
      * The process photos, in the order the site shows them. `PhotoListField` edits the list in the
@@ -201,7 +203,8 @@ export const emptyWorkFormValues: WorkFormValues = {
   title: "",
   width: "",
   year: "",
-  place: "",
+  country: "",
+  city: "",
   ...toPhotoFormValues(null),
   photos: [],
   sectionIds: [],
@@ -217,8 +220,10 @@ export const emptyWorkFormValues: WorkFormValues = {
 
 /** The values of a work as stored on the server. */
 export function toWorkFormValues({
+  city,
   collectionId,
   colorIds,
+  country,
   description,
   format,
   materialIds,
@@ -226,7 +231,6 @@ export function toWorkFormValues({
   paletteIds,
   partCount,
   photo,
-  place,
   price,
   processPhotos,
   sectionIds,
@@ -241,7 +245,8 @@ export function toWorkFormValues({
     title,
     width: formatSide(size.width),
     year: String(year),
-    place,
+    country: country ?? "",
+    city,
     ...toPhotoFormValues(photo),
     photos: toPhotoListRows(processPhotos),
     sectionIds: toIdSet(sectionIds),

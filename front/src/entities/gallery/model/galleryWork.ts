@@ -32,8 +32,8 @@ export const workFormats = ["single", "diptych", "triptych", "set"] as const;
 
 export type WorkFormat = (typeof workFormats)[number];
 
-/** The longest place a work was made in. */
-export const maxWorkPlaceLength = 100;
+/** The longest name of the city a work was made in. */
+export const maxWorkCityLength = 100;
 
 /** The only currency a price is set in for now. */
 export const workCurrencies = ["USD"] as const;
@@ -80,8 +80,10 @@ export const galleryWorkSchema = z.object({
   year: z.number(),
   /** The month the work was finished, 1 for January. */
   month: z.number(),
-  /** Where the work was made, such as a city; an empty string for none. */
-  place: z.string(),
+  /** The country the work was made in, by its ISO 3166-1 alpha-2 code, or null for none. */
+  country: z.string().nullable(),
+  /** The city the work was made in; an empty string for none. */
+  city: z.string(),
   photo: photoSchema,
   /** How the work was made, in the order the site shows them. */
   processPhotos: z.array(listPhotoSchema),
