@@ -8,7 +8,9 @@ import {
   maxWorkPalettes,
   maxWorkProcessPhotos,
   maxWorkSections,
+  maxWorkSetSize,
   maxWorkSide,
+  minWorkSetSize,
   minWorkYear,
   workBodySchema,
 } from "#modules/gallery-works/schema";
@@ -26,6 +28,8 @@ const work = {
   colorIds: [randomUUID()],
   paletteIds: [randomUUID()],
   collectionId: null,
+  format: "single",
+  partCount: null,
 };
 
 function isValid(body: unknown): boolean {
@@ -174,6 +178,23 @@ describe("work body", () => {
     expect(isValid({ ...work, collectionId: null })).toBe(true);
     expect(isValid({ ...work, collectionId: "animals" })).toBe(false);
     expect(isValid({ ...work, collectionId: undefined })).toBe(false);
+  });
+
+  it("takes a single work, a diptych or a triptych without a count", () => {
+    expect(isValid({ ...work, format: "single" })).toBe(true);
+    expect(isValid({ ...work, format: "diptych" })).toBe(true);
+    expect(isValid({ ...work, format: "triptych" })).toBe(true);
+    expect(isValid({ ...work, format: "diptych", partCount: 2 })).toBe(false);
+    expect(isValid({ ...work, format: "polyptych" })).toBe(false);
+  });
+
+  it("needs the count of works of a set, within the limits", () => {
+    expect(isValid({ ...work, format: "set", partCount: null })).toBe(false);
+    expect(isValid({ ...work, format: "set", partCount: minWorkSetSize })).toBe(true);
+    expect(isValid({ ...work, format: "set", partCount: maxWorkSetSize })).toBe(true);
+    expect(isValid({ ...work, format: "set", partCount: minWorkSetSize - 1 })).toBe(false);
+    expect(isValid({ ...work, format: "set", partCount: maxWorkSetSize + 1 })).toBe(false);
+    expect(isValid({ ...work, format: "set", partCount: 2.5 })).toBe(false);
   });
 
   it("rejects unknown fields", () => {

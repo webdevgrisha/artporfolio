@@ -27,6 +27,16 @@ export const maxWorkPalettes = 5;
 /** The most process photos one work may have; raise it when the artist needs more. */
 export const maxWorkProcessPhotos = 20;
 
+/** How many works a set may have: a set of one is a single work, two or three a diptych or triptych. */
+export const minWorkSetSize = 2;
+export const maxWorkSetSize = 100;
+
+/**
+ * What the work is made up of: one work, a diptych or triptych (one work of two or three panels), or
+ * a set of separate works, most often prints of an original, which says how many it has.
+ */
+export const workFormats = ["single", "diptych", "triptych", "set"] as const;
+
 /** The largest side in centimetres: well above any painting, low enough to catch a typo. */
 export const maxWorkSide = 10_000;
 
@@ -105,10 +115,17 @@ export const workBodySchema = z
     paletteIds: referenceIdsSchema(maxWorkPalettes),
     /** The collection the work was painted for, or null for a work on its own. */
     collectionId: z.uuid().nullable(),
+    format: z.enum(workFormats),
+    /** How many works the set has; null for any other format, which tells its count itself. */
+    partCount: z.number().int().min(minWorkSetSize).max(maxWorkSetSize).nullable(),
   })
   .refine(({ month, year }) => !isFutureMonth(year, month), {
     message: "The month cannot be in the future",
     path: ["month"],
+  })
+  .refine(({ format, partCount }) => (format === "set") === (partCount !== null), {
+    message: "A set needs its count of works, and any other format none",
+    path: ["partCount"],
   });
 
 /**
@@ -134,6 +151,9 @@ export const storedWorkSchema = z.object({
   paletteIds: z.array(z.string()),
   /** Always a saved collection: deleting a collection takes its works out of it. */
   collectionId: z.string().nullable(),
+  /** A work saved before formats were added is a single work. */
+  format: z.enum(workFormats).default("single"),
+  partCount: z.number().nullable().default(null),
   /** Set by the server when the work is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the work. */
@@ -165,6 +185,9 @@ export const workSchema = z.object({
   paletteIds: z.array(z.uuid()),
   /** Null for a work on its own. */
   collectionId: z.uuid().nullable(),
+  format: z.enum(workFormats),
+  /** How many works the set has; null for any other format. */
+  partCount: z.number().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -176,6 +199,7 @@ export const worksResponseSchema = z.object({
   works: z.array(workSchema),
 });
 
+export type WorkFormat = (typeof workFormats)[number];
 export type WorkParams = z.infer<typeof workParamsSchema>;
 export type WorkBody = z.infer<typeof workBodySchema>;
 export type StoredWork = z.infer<typeof storedWorkSchema>;

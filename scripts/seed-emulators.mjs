@@ -317,11 +317,20 @@ const galleryWorks = [
     year: 2024,
     collection: "У воды",
   },
-  { title: "Сова", palette: "owl", size: [30, 40], year: 2024, collection: "Ночные птицы" },
+  {
+    title: "Сова",
+    palette: "owl",
+    size: [30, 40],
+    year: 2024,
+    collection: "Ночные птицы",
+    // An etching printed from one plate.
+    format: "set",
+    partCount: 30,
+  },
   { title: "Слонёнок", palette: "elephant", size: [30.5, 40.6], year: 2023 },
-  { title: "Полосы", palette: "tiger", size: [100, 70], year: 2023 },
+  { title: "Полосы", palette: "tiger", size: [100, 70], year: 2023, format: "diptych" },
   { title: "Пруд", palette: "dragonfly", size: [70, 50], year: 2022, collection: "У воды" },
-  { title: "Грива", palette: "lion", size: [61, 76.2], year: 2021 },
+  { title: "Грива", palette: "lion", size: [61, 76.2], year: 2021, format: "triptych" },
   {
     title: "Ночная сова",
     palette: "owl",
@@ -687,6 +696,8 @@ async function seedGallery(api) {
         : workPaintingPalettes[index % workPaintingPalettes.length]
       ).map((title) => paletteIds.get(title)),
       collectionId: work.collection === undefined ? null : collectionIds.get(work.collection),
+      format: work.format ?? "single",
+      partCount: work.partCount ?? null,
     });
   }
 

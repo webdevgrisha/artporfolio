@@ -185,6 +185,8 @@ const body: WorkBody = {
   colorIds: [whiteId],
   paletteIds: [brightId],
   collectionId: null,
+  format: "single",
+  partCount: null,
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
   year: 2025,
@@ -463,6 +465,21 @@ describe("the collection of a work", () => {
 
     expect(works.has(newId)).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
+  });
+});
+
+describe("the format of a work", () => {
+  it("reads a work saved before formats as a single work", async () => {
+    const { data } = await getWork(elephantId);
+
+    expect(data).toMatchObject({ format: "single", partCount: null });
+  });
+
+  it("saves a set with its count of works", async () => {
+    const { data } = await createWork(newId, { ...body, format: "set", partCount: 12 });
+
+    expect(data).toMatchObject({ format: "set", partCount: 12 });
+    expect(works.get(newId)).toMatchObject({ format: "set", partCount: 12 });
   });
 });
 
