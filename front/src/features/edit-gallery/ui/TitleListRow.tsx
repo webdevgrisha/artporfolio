@@ -121,8 +121,10 @@ export function TitleListRow({
         />
       ) : (
         <span className={styles.rowTitle}>
-          {title}
-          {isNew ? <span className={styles.rowNote}> — новый</span> : null}
+          <span className={styles.rowTitleText}>
+            {title}
+            {isNew ? <span className={styles.rowNote}> — новый</span> : null}
+          </span>
           {workCount === undefined ? null : (
             <span className={styles.rowCount}>{formatWorkCount(workCount)}</span>
           )}

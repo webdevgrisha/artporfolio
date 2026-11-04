@@ -79,6 +79,9 @@
 .rowTitle {
   flex: 1;
   min-inline-size: 0;
+}
+
+.rowTitleText {
   overflow-wrap: anywhere;
 }
 
@@ -86,10 +89,30 @@
   color: var(--color-text-muted);
 }
 
-/* Under the title, as the notes under the titles of the works table. */
+/* Under the title on a phone, where a row has no room for both. */
 .rowCount {
   display: block;
   color: var(--color-text-muted);
+}
+
+/* Beside the title, with the same width in every row, so the counts line up as a column. */
+@media (width >= 40rem) {
+  .rowTitle {
+    display: flex;
+    gap: var(--space-4);
+    align-items: baseline;
+  }
+
+  .rowTitleText {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  /* Room for «100 работ». */
+  .rowCount {
+    flex: none;
+    inline-size: 7rem;
+  }
 }
 
 .rowField {
