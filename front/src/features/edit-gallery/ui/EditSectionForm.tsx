@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { type GallerySection, gallerySectionQuery } from "@/entities/gallery";
+import { type GallerySection, type GalleryWork, gallerySectionQuery } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
@@ -17,9 +17,11 @@ interface EditSectionFormProps {
   className?: string;
   /** The section as stored on the server when the form opens, with its ETag. */
   section: Tagged<GallerySection>;
+  /** Every work, to count the works in each subsection. */
+  works: readonly GalleryWork[];
 }
 
-export function EditSectionForm({ className, section }: EditSectionFormProps) {
+export function EditSectionForm({ className, section, works }: EditSectionFormProps) {
   const form = useForm<SectionFormValues>({
     defaultValues: toSectionFormValues(section.data),
     resolver: zodResolver(sectionFormSchema),
@@ -39,7 +41,11 @@ export function EditSectionForm({ className, section }: EditSectionFormProps) {
     // The fields read the form from the context.
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <SectionFields isSaving={editForm.isSaving} savedSubsections={saved.data.subsections} />
+        <SectionFields
+          isSaving={editForm.isSaving}
+          savedSubsections={saved.data.subsections}
+          works={works}
+        />
       </EditForm>
     </FormProvider>
   );

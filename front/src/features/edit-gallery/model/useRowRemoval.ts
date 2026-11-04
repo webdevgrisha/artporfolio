@@ -11,8 +11,8 @@ interface PendingRemoval {
 interface UseRowRemovalParams {
   /** Removes the row from the form. */
   remove: (index: number) => void;
-  /** Moves the focus once the row has gone. */
-  onRemoved: () => void;
+  /** Moves the focus once the row has gone, unless `remove` sees to it. */
+  onRemoved?: () => void;
 }
 
 /**
@@ -28,7 +28,7 @@ export function useRowRemoval({ onRemoved, remove }: UseRowRemovalParams) {
   React.useEffect(() => {
     if (isRemoved.current) {
       isRemoved.current = false;
-      onRemoved();
+      onRemoved?.();
     }
   });
 
