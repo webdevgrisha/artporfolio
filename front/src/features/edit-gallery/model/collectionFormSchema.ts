@@ -3,6 +3,7 @@ import { z } from "zod";
 import { type GalleryCollection, maxCollectionWorks } from "@/entities/gallery";
 import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
 
+import { toIdSet } from "./idSet";
 import { yearSchema } from "./yearField";
 
 // Mirror the server rules in backend/src/modules/gallery-collections/schema.ts.
@@ -93,6 +94,6 @@ export function toCollectionFormValues({
     startYear: String(startYear),
     title,
     ...toPhotoFormValues(cover),
-    workIds,
+    workIds: toIdSet(workIds),
   };
 }

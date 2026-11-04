@@ -27,9 +27,7 @@ export function toCollectionOptions(collections: readonly TitledItem[]): SelectO
   ];
 }
 
-/** The titles of the items a work names, in the order it names them; unknown ids are skipped. */
+/** The titles of the items a work names, in the order of the list; unknown ids are skipped. */
 export function titlesOf(ids: readonly string[], items: readonly TitledItem[]): string[] {
-  const titles = new Map(items.map(({ id, title }) => [id, title]));
-
-  return ids.flatMap((id) => titles.get(id) ?? []);
+  return items.filter((item) => ids.includes(item.id)).map((item) => item.title);
 }

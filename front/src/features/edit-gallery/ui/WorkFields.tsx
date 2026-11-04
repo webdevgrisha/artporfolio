@@ -25,7 +25,7 @@ import { PhotoListField } from "@/shared/ui/photo-list-field";
 import { RadioGroup } from "@/shared/ui/radio-group";
 import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
-
+import { toIdSet } from "../model/idSet";
 import {
   monthOptions,
   type WorkFormValues,
@@ -247,7 +247,7 @@ export function WorkFields({
           error={errors.sectionIds?.message}
           inputRef={sectionsField.ref}
           onBlur={sectionsField.onBlur}
-          onChange={sectionsField.onChange}
+          onChange={(ids) => sectionsField.onChange(toIdSet(ids))}
         />
         {/* Always holds a choice, so it needs no «Необязательно»: «Без коллекции» is one. */}
         <Select
@@ -279,7 +279,7 @@ export function WorkFields({
           isModified={Boolean(dirtyFields.materialIds)}
           inputRef={materialsField.ref}
           onBlur={materialsField.onBlur}
-          onChange={materialsField.onChange}
+          onChange={(ids) => materialsField.onChange(toIdSet(ids))}
         />
         <MultiSelect
           label="Цвета"
@@ -292,7 +292,7 @@ export function WorkFields({
           isModified={Boolean(dirtyFields.colorIds)}
           inputRef={colorsField.ref}
           onBlur={colorsField.onBlur}
-          onChange={colorsField.onChange}
+          onChange={(ids) => colorsField.onChange(toIdSet(ids))}
         />
         <MultiSelect
           label="Палитры"
@@ -305,7 +305,7 @@ export function WorkFields({
           isModified={Boolean(dirtyFields.paletteIds)}
           inputRef={palettesField.ref}
           onBlur={palettesField.onBlur}
-          onChange={palettesField.onChange}
+          onChange={(ids) => palettesField.onChange(toIdSet(ids))}
         />
       </section>
 

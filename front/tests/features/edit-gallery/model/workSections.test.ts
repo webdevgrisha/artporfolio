@@ -27,10 +27,10 @@ describe("toSectionOptions", () => {
 });
 
 describe("sectionLabels", () => {
-  it("names the sections in the order of the work and skips deleted ones", () => {
+  it("names the sections in the order of the list and skips deleted ones", () => {
     expect(sectionLabels(["portrait", "deleted", "graphics"], sections)).toEqual([
-      "Живопись › Портрет",
       "Графика",
+      "Живопись › Портрет",
     ]);
   });
 });

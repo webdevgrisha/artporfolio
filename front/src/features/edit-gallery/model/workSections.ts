@@ -20,12 +20,12 @@ export function toSectionOptions(sections: readonly GallerySection[]): MultiSele
   ]);
 }
 
-/** The names of the sections a work is in, in the order it names them; unknown ids are skipped. */
+/** The names of the sections a work is in, in the order of the list; unknown ids are skipped. */
 export function sectionLabels(
   ids: readonly string[],
   sections: readonly GallerySection[],
 ): string[] {
-  const labels = new Map(toSectionOptions(sections).map((option) => [option.value, option.label]));
-
-  return ids.flatMap((id) => labels.get(id) ?? []);
+  return toSectionOptions(sections)
+    .filter((option) => ids.includes(option.value))
+    .map((option) => option.label);
 }

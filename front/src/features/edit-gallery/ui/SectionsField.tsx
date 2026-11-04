@@ -14,7 +14,7 @@ interface SectionsFieldProps {
   /** Takes the first checkbox, so the form can focus the field when it has an error. */
   inputRef: React.Ref<HTMLInputElement>;
   onBlur: () => void;
-  /** Gets the chosen ids in the order they were chosen. */
+  /** Gets the chosen ids. */
   onChange: (ids: string[]) => void;
   /** The ids the form started with, to highlight the checkboxes that differ from them. */
   savedIds: readonly string[];

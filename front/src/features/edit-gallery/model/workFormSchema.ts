@@ -17,6 +17,7 @@ import {
 import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
 import { photoListRowsSchema, toPhotoListRows } from "@/shared/lib/photoListForm";
 
+import { toIdSet } from "./idSet";
 import { yearSchema } from "./yearField";
 
 // Mirror the server rules in backend/src/modules/gallery-works/schema.ts.
@@ -207,10 +208,10 @@ export function toWorkFormValues({
     year: String(year),
     ...toPhotoFormValues(photo),
     photos: toPhotoListRows(processPhotos),
-    sectionIds,
-    materialIds,
-    colorIds,
-    paletteIds,
+    sectionIds: toIdSet(sectionIds),
+    materialIds: toIdSet(materialIds),
+    colorIds: toIdSet(colorIds),
+    paletteIds: toIdSet(paletteIds),
     collectionId: collectionId ?? "",
     format,
     partCount: partCount === null ? "" : String(partCount),

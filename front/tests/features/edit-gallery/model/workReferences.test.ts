@@ -23,8 +23,8 @@ describe("toTitleOptions", () => {
 });
 
 describe("titlesOf", () => {
-  it("names the items in the order of the work and skips deleted ones", () => {
-    expect(titlesOf(["canvas", "deleted", "oil"], materials)).toEqual(["Холст", "Масло"]);
+  it("names the items in the order of the list and skips deleted ones", () => {
+    expect(titlesOf(["canvas", "deleted", "oil"], materials)).toEqual(["Масло", "Холст"]);
   });
 });
 

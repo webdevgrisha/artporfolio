@@ -29,12 +29,15 @@ interface MultiSelectProps {
   /** Shown in the list when nothing matches what was typed. */
   noMatchesText?: string;
   onBlur?: () => void;
-  /** Gets the chosen values in the order they were chosen. */
+  /** Gets the chosen values. */
   onChange: (values: string[]) => void;
   /** Every choice, in the order of the list. */
   options: readonly MultiSelectOption[];
   placeholder?: string;
-  /** The chosen values; a value with no option, such as a deleted section, is not shown. */
+  /**
+   * The chosen values, shown as chips in the order of the options; a value with no option, such as
+   * a deleted section, is not shown.
+   */
   value: readonly string[];
 }
 
@@ -66,11 +69,10 @@ export function MultiSelect({
   const [query, setQuery] = React.useState("");
   const { controlId, describedBy, errorId, hintId } = useFieldIds({ error, hint });
   const labelId = `${controlId}-label`;
-  const selectedOptions = React.useMemo(() => {
-    const byValue = new Map(options.map((option) => [option.value, option]));
-
-    return value.flatMap((chosen) => byValue.get(chosen) ?? []);
-  }, [options, value]);
+  const selectedOptions = React.useMemo(
+    () => options.filter((option) => value.includes(option.value)),
+    [options, value],
+  );
   const items = React.useMemo(
     () => options.filter((option) => !value.includes(option.value) && matches(option, query)),
     [options, query, value],

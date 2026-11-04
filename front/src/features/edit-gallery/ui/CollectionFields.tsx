@@ -9,6 +9,7 @@ import { PhotoFields } from "@/shared/ui/photo-fields";
 import { Textarea } from "@/shared/ui/textarea";
 
 import { type CollectionFormValues, collectionMaxLengths } from "../model/collectionFormSchema";
+import { toIdSet } from "../model/idSet";
 import styles from "./CollectionFields.module.css";
 import { CollectionWorksField } from "./CollectionWorksField";
 
@@ -112,7 +113,7 @@ export function CollectionFields({
           disabled={isSaving}
           error={errors.workIds?.message}
           isModified={Boolean(dirtyFields.workIds)}
-          onChange={worksField.onChange}
+          onChange={(ids) => worksField.onChange(toIdSet(ids))}
         />
       </div>
 
