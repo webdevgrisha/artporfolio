@@ -3,36 +3,26 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  type RowData,
-  type SortDirection,
-  type SortingState,
-  type Updater,
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
 import React from "react";
-import { useSearchParams } from "react-router";
 
 import { type Project, ProjectCover } from "@/entities/project";
 import { routes } from "@/shared/config/routes";
+import { useTableView } from "@/shared/lib/useTableView";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { ArrowDownIcon, ArrowUpIcon, ExternalLinkIcon, SortIcon } from "@/shared/ui/icon";
+import { ExternalLinkIcon } from "@/shared/ui/icon";
 import { SearchInput } from "@/shared/ui/search-input";
+import { TableHead } from "@/shared/ui/table-head";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
-import { linkHost, matchesQuery, readTableView, writeTableView } from "../model/projectsTableView";
+import { linkHost, matchesQuery, sortableColumns } from "../model/projectsTableView";
 import { useDeleteProject } from "../model/useDeleteProject";
 import { ProjectActions } from "./ProjectActions";
 import styles from "./ProjectsTable.module.css";
-
-declare module "@tanstack/react-table" {
-  interface ColumnMeta<TData extends RowData, TValue> {
-    /** The class of the column's header and cells, such as its width. */
-    className?: string;
-  }
-}
 
 interface ProjectsTableProps {
   className?: string;
@@ -48,19 +38,6 @@ interface ProjectRow {
 
 const collator = new Intl.Collator("ru", { sensitivity: "base" });
 
-const ariaSort = {
-  asc: "ascending",
-  desc: "descending",
-} as const satisfies Record<SortDirection, string>;
-
-/** Which way a column is sorted: an arrow once it is, a pale double arrowhead until then. */
-function SortState({ direction }: { direction: SortDirection | false }) {
-  if (direction === "asc") return <ArrowUpIcon className={styles.sortArrow} />;
-  if (direction === "desc") return <ArrowDownIcon className={styles.sortArrow} />;
-
-  return <SortIcon className={styles.sortIdle} />;
-}
-
 /**
  * Every project; until it is sorted, in the order the site shows them, which «№» keeps showing
  * after a sort. The search and the sorting are kept in the address. A project opens for editing
@@ -68,9 +45,7 @@ function SortState({ direction }: { direction: SortDirection | false }) {
  * «Порядок на сайте».
  */
 export function ProjectsTable({ className, projects }: ProjectsTableProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  // Read once per address: the table recomputes its rows whenever its sorting is a new array.
-  const view = React.useMemo(() => readTableView(searchParams), [searchParams]);
+  const { changeSorting, changeView, view } = useTableView(sortableColumns);
   const deletion = useDeleteProject();
   const [deleted, setDeleted] = React.useState<Project>();
   const shownRows = React.useMemo(
@@ -143,15 +118,6 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
     [],
   );
 
-  function changeView(changes: Partial<typeof view>) {
-    // Replaces the entry: the back button leaves the table instead of undoing each letter.
-    setSearchParams(writeTableView(searchParams, { ...view, ...changes }), { replace: true });
-  }
-
-  function changeSorting(updater: Updater<SortingState>) {
-    changeView({ sorting: typeof updater === "function" ? updater(view.sorting) : updater });
-  }
-
   const table = useReactTable({
     columns,
     // There are no pages, so nothing to reset when the rows change; the reset would render again.
@@ -196,39 +162,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
             <caption>
               <VisuallyHidden>Все проекты</VisuallyHidden>
             </caption>
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    const sorted = header.column.getIsSorted();
-                    const canSort = header.column.getCanSort();
-                    const label = flexRender(header.column.columnDef.header, header.getContext());
-
-                    return (
-                      <th
-                        key={header.id}
-                        className={header.column.columnDef.meta?.className}
-                        scope="col"
-                        aria-sort={canSort ? (sorted ? ariaSort[sorted] : "none") : undefined}
-                      >
-                        {canSort ? (
-                          <button
-                            type="button"
-                            className={styles.sortButton}
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            {label}
-                            <SortState direction={sorted} />
-                          </button>
-                        ) : (
-                          label
-                        )}
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
+            <TableHead table={table} />
             <tbody>
               {table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className={styles.row}>
