@@ -9,29 +9,14 @@ import {
 } from "@/entities/gallery";
 import { CreateWorkForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
-import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
 
 import styles from "./GalleryPage.module.css";
+import { WorkFormSkeleton } from "./WorkFormSkeleton";
 
 export function NewWorkPage() {
   return (
     <div className={styles.root}>
-      <AwaitPageData
-        fallback={
-          <FormSkeleton className={styles.form} isNarrow>
-            <FieldSkeleton />
-            <FieldSkeleton rows={8} />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <MediaSkeleton />
-            <MediaSkeleton />
-          </FormSkeleton>
-        }
-      >
+      <AwaitPageData fallback={<WorkFormSkeleton />}>
         <NewWork />
       </AwaitPageData>
     </div>

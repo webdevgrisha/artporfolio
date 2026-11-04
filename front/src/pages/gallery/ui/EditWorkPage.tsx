@@ -11,9 +11,9 @@ import {
 } from "@/entities/gallery";
 import { EditWorkForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
-import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
 
 import styles from "./GalleryPage.module.css";
+import { WorkFormSkeleton } from "./WorkFormSkeleton";
 
 export function EditWorkPage() {
   const { id = "" } = useParams();
@@ -22,23 +22,7 @@ export function EditWorkPage() {
     <div className={styles.root}>
       {/* Keyed: another work shows its skeleton, then a form of its own, whose values come from
           the work it opened with. */}
-      <AwaitPageData
-        key={id}
-        fallback={
-          <FormSkeleton className={styles.form} isNarrow>
-            <FieldSkeleton />
-            <FieldSkeleton rows={8} />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <MediaSkeleton />
-            <MediaSkeleton />
-          </FormSkeleton>
-        }
-      >
+      <AwaitPageData key={id} fallback={<WorkFormSkeleton />}>
         <EditWork id={id} />
       </AwaitPageData>
     </div>
