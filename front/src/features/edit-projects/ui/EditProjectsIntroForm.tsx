@@ -45,7 +45,7 @@ export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFor
       <Textarea
         className={styles.text}
         label="Основной текст"
-        hint={`Необязательно. До ${String(maxIntroLength)} символов. Абзацы разделяйте пустой строкой`}
+        hint={`До ${String(maxIntroLength)} символов. Абзацы разделяйте пустой строкой`}
         placeholder="Например: о каких проектах эта страница"
         rows={12}
         disabled={editForm.isSaving}

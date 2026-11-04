@@ -72,10 +72,11 @@ describe("projects intro routes", () => {
     expect(introService.replaceProjectsIntro).toHaveBeenCalledWith(intro, etag);
   });
 
-  it("accepts an empty text", async () => {
-    const response = await putIntro({ text: "" }, await adminHeaders(server.baseUrl));
+  it("rejects an empty text", async () => {
+    const response = await putIntro({ text: "  " }, await adminHeaders(server.baseUrl));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
+    expect(introService.replaceProjectsIntro).not.toHaveBeenCalled();
   });
 
   it("requires the ETag of the text in If-Match", async () => {
