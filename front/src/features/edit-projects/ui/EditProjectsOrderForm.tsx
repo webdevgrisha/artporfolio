@@ -1,25 +1,23 @@
-import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import { useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { type Project, projectsOrderQuery, projectsQuery } from "@/entities/project";
 import type { Tagged } from "@/shared/api/http";
+import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import {
   formatPosition,
-  getAnnouncements,
-  getScreenReaderInstructions,
-} from "@/shared/lib/sortableAnnouncements";
-import { useSortableRowFocus } from "@/shared/lib/useSortableRowFocus";
-import { restrictToVerticalAxis, useVerticalSortableSensors } from "@/shared/lib/verticalSortable";
-import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
+  type MoveControl,
+  SortableList,
+  useSortableRowFocus,
+} from "@/shared/ui/sortable";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import { projectSortableMessages } from "../model/projectsOrderMessages";
 import { saveProjectsOrderFeedback, useSaveProjectsOrder } from "../model/useSaveProjectsOrder";
 import styles from "./EditProjectsOrderForm.module.css";
-import { type OrderRowControl, ProjectsOrderRow } from "./ProjectsOrderRow";
+import { ProjectsOrderRow } from "./ProjectsOrderRow";
 
 interface EditProjectsOrderFormProps {
   className?: string;
@@ -57,7 +55,6 @@ export function EditProjectsOrderForm({ className, order, projects }: EditProjec
   });
   const ids = useWatch({ control: form.control, name: "ids" });
   const { focusAfterUpdate, listRef } = useSortableRowFocus<HTMLOListElement>();
-  const sensors = useVerticalSortableSensors();
   // Announces a move made with the arrow buttons; dnd-kit announces the dragged ones.
   const [moveAnnouncement, setMoveAnnouncement] = React.useState("");
   const projectsById = new Map(projects.map((project) => [project.id, project]));
@@ -77,15 +74,11 @@ export function EditProjectsOrderForm({ className, order, projects }: EditProjec
     }
   }, [hasProjectsWithoutRows, queryClient]);
 
-  function getIndex(id: string): number {
-    return ids.indexOf(id);
-  }
-
   function getTitle(id: string): string {
     return projectsById.get(id)?.title ?? "";
   }
 
-  function moveProject(from: number, to: number, control?: OrderRowControl) {
+  function moveProject(from: number, to: number, control?: MoveControl) {
     const id = ids[from];
     if (id === undefined) return;
 
@@ -98,44 +91,30 @@ export function EditProjectsOrderForm({ className, order, projects }: EditProjec
     form.setValue("ids", arrayMove(ids, from, to), { shouldDirty: true });
   }
 
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    if (!over || active.id === over.id) return;
-
-    moveProject(getIndex(String(active.id)), getIndex(String(over.id)));
-  }
-
   return (
     <EditForm className={className} {...editForm}>
       {rows.length > 0 ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis]}
-          accessibility={{
-            announcements: getAnnouncements(projectSortableMessages, getTitle, (id) =>
-              formatPosition(getIndex(id), ids.length),
-            ),
-            screenReaderInstructions: getScreenReaderInstructions(projectSortableMessages),
-          }}
-          onDragEnd={handleDragEnd}
+        <SortableList
+          ids={ids}
+          messages={projectSortableMessages}
+          getName={getTitle}
+          onMove={moveProject}
         >
-          <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-            <ol ref={listRef} className={styles.rows} aria-label="Порядок проектов на сайте">
-              {rows.map(({ index, project }) => (
-                <ProjectsOrderRow
-                  key={project.id}
-                  project={project}
-                  disabled={editForm.isSaving}
-                  isFirst={index === 0}
-                  isLast={index === ids.length - 1}
-                  isModified={saved.data[index] !== project.id}
-                  onMoveUp={() => moveProject(index, index - 1, "moveUp")}
-                  onMoveDown={() => moveProject(index, index + 1, "moveDown")}
-                />
-              ))}
-            </ol>
-          </SortableContext>
-        </DndContext>
+          <ol ref={listRef} className={styles.rows} aria-label="Порядок проектов на сайте">
+            {rows.map(({ index, project }) => (
+              <ProjectsOrderRow
+                key={project.id}
+                project={project}
+                disabled={editForm.isSaving}
+                isFirst={index === 0}
+                isLast={index === ids.length - 1}
+                isModified={saved.data[index] !== project.id}
+                onMoveUp={() => moveProject(index, index - 1, "moveUp")}
+                onMoveDown={() => moveProject(index, index + 1, "moveDown")}
+              />
+            ))}
+          </ol>
+        </SortableList>
       ) : (
         <p className={styles.empty}>Проектов пока нет</p>
       )}

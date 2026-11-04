@@ -1,0 +1,29 @@
+/* The dragged row stays over the others. */
+.dragging {
+  z-index: 1;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 15%);
+}
+
+.control {
+  flex: none;
+}
+
+/* Touch scrolling would take the gesture instead of the drag. */
+.handle {
+  touch-action: none;
+  cursor: grab;
+}
+
+.dragging .handle {
+  cursor: grabbing;
+}
+
+.handleIcon {
+  inline-size: 0.75rem;
+  block-size: 1.25rem;
+}
+
+.arrowIcon {
+  inline-size: auto;
+  block-size: 1.125rem;
+}

@@ -1,17 +1,10 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
 
 import type { Project } from "@/entities/project";
-import { ArrowDownIcon, ArrowUpIcon, DragHandleIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { DragHandle, MoveButtons, useSortableRow } from "@/shared/ui/sortable";
 
 import styles from "./EditProjectsOrderForm.module.css";
-
-/** The buttons of a row the list moves the focus back to, named in `data-control`. */
-export type OrderRowControl = "moveDown" | "moveUp";
 
 interface ProjectsOrderRowProps {
   disabled: boolean;
@@ -36,72 +29,33 @@ export function ProjectsOrderRow({
 }: ProjectsOrderRowProps) {
   // A single project has nowhere to go: its handle is disabled like both of its arrows.
   const isAlone = isFirst && isLast;
-  const {
-    attributes,
-    isDragging,
-    listeners,
-    setActivatorNodeRef,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({
-    attributes: { roleDescription: "перемещаемый проект" },
+  const { handleProps, rowProps } = useSortableRow({
     disabled: disabled || isAlone,
     id: project.id,
+    roleDescription: "перемещаемый проект",
   });
-  const dragLabel = `Переместить ${project.title}`;
-  const moveUpLabel = `Поднять ${project.title}`;
-  const moveDownLabel = `Опустить ${project.title}`;
 
   return (
     <li
-      ref={setNodeRef}
-      className={clsx(
-        styles.row,
-        isModified && styles.rowModified,
-        isDragging && styles.rowDragging,
-      )}
-      // Translate only: scaling would stretch rows of different heights into each other.
-      style={{ transform: CSS.Translate.toString(transform), transition }}
-      data-item-id={project.id}
+      {...rowProps}
+      className={clsx(styles.row, isModified && styles.rowModified, rowProps.className)}
     >
-      <Tooltip content={dragLabel}>
-        <IconButton
-          ref={setActivatorNodeRef}
-          className={styles.dragHandle}
-          label={dragLabel}
-          disabled={disabled || isAlone}
-          {...attributes}
-          {...listeners}
-        >
-          <DragHandleIcon className={styles.dragIcon} />
-        </IconButton>
-      </Tooltip>
-
+      <DragHandle
+        label={`Переместить ${project.title}`}
+        disabled={disabled || isAlone}
+        handleProps={handleProps}
+      />
       <PhotoThumbnail className={styles.cover} image={project.photos[0]} />
       <span className={styles.title}>{project.title}</span>
-
       <div className={styles.arrows}>
-        <Tooltip content={moveUpLabel}>
-          <IconButton
-            label={moveUpLabel}
-            disabled={disabled || isFirst}
-            data-control={"moveUp" satisfies OrderRowControl}
-            onClick={onMoveUp}
-          >
-            <ArrowUpIcon className={styles.arrowIcon} />
-          </IconButton>
-        </Tooltip>
-        <Tooltip content={moveDownLabel}>
-          <IconButton
-            label={moveDownLabel}
-            disabled={disabled || isLast}
-            data-control={"moveDown" satisfies OrderRowControl}
-            onClick={onMoveDown}
-          >
-            <ArrowDownIcon className={styles.arrowIcon} />
-          </IconButton>
-        </Tooltip>
+        <MoveButtons
+          name={project.title}
+          disabled={disabled}
+          isFirst={isFirst}
+          isLast={isLast}
+          onMoveUp={onMoveUp}
+          onMoveDown={onMoveDown}
+        />
       </div>
     </li>
   );

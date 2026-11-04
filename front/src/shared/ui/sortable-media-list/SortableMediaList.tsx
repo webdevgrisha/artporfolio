@@ -1,26 +1,17 @@
-import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import React, { type ReactNode } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { joinMessages } from "@/shared/lib/joinMessages";
-import {
-  formatPosition,
-  getAnnouncements,
-  getScreenReaderInstructions,
-} from "@/shared/lib/sortableAnnouncements";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
-import { useSortableRowFocus } from "@/shared/lib/useSortableRowFocus";
-import { restrictToVerticalAxis, useVerticalSortableSensors } from "@/shared/lib/verticalSortable";
 import { Button } from "@/shared/ui/button";
 import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
 import { MediaPreviewDialog } from "@/shared/ui/media-preview";
+import { formatPosition, SortableList, useSortableRowFocus } from "@/shared/ui/sortable";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
-
+import { photoSortableMessages } from "./photoSortableMessages";
 import styles from "./SortableMediaList.module.css";
 import { type RowControl, SortableMediaRow } from "./SortableMediaRow";
-import { photoSortableMessages } from "./sortableAnnouncements";
 import type { SortableMediaItem } from "./sortableMediaItem";
 
 interface SortableMediaListProps {
@@ -85,7 +76,6 @@ export function SortableMediaList({
     disabled: disabled || isFull,
     onDrop: addFiles,
   });
-  const sensors = useVerticalSortableSensors();
 
   function getItemIndex(itemId: string): number {
     return items.findIndex((item) => item.id === itemId);
@@ -160,12 +150,6 @@ export function SortableMediaList({
     onRemove(item.id);
   }
 
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    if (!over || active.id === over.id) return;
-
-    moveItem(getItemIndex(String(active.id)), getItemIndex(String(over.id)));
-  }
-
   return (
     <>
       <MediaFieldset
@@ -180,42 +164,31 @@ export function SortableMediaList({
         dropTargetProps={dropTargetProps}
       >
         {items.length > 0 ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            accessibility={{
-              announcements: getAnnouncements(photoSortableMessages, getItemName, (itemId) =>
-                formatPosition(getItemIndex(itemId), items.length),
-              ),
-              screenReaderInstructions: getScreenReaderInstructions(photoSortableMessages),
-            }}
-            onDragEnd={handleDragEnd}
+          <SortableList
+            ids={items.map((item) => item.id)}
+            messages={photoSortableMessages}
+            getName={getItemName}
+            onMove={moveItem}
           >
-            <SortableContext
-              items={items.map((item) => item.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <ul ref={listRef} className={styles.rows}>
-                {items.map((item, index) => (
-                  <SortableMediaRow
-                    key={item.id}
-                    item={item}
-                    disabled={disabled}
-                    isFirst={index === 0}
-                    isLast={index === items.length - 1}
-                    onMoveUp={() => moveItem(index, index - 1, "moveUp")}
-                    onMoveDown={() => moveItem(index, index + 1, "moveDown")}
-                    onOpen={() => setViewedItemId(item.id)}
-                    onRemove={() => removeItem(index)}
-                    onReplace={() => openReplacePicker(item.id)}
-                  >
-                    {renderItemFields?.(item, index)}
-                  </SortableMediaRow>
-                ))}
-              </ul>
-            </SortableContext>
-          </DndContext>
+            <ul ref={listRef} className={styles.rows}>
+              {items.map((item, index) => (
+                <SortableMediaRow
+                  key={item.id}
+                  item={item}
+                  disabled={disabled}
+                  isFirst={index === 0}
+                  isLast={index === items.length - 1}
+                  onMoveUp={() => moveItem(index, index - 1, "moveUp")}
+                  onMoveDown={() => moveItem(index, index + 1, "moveDown")}
+                  onOpen={() => setViewedItemId(item.id)}
+                  onRemove={() => removeItem(index)}
+                  onReplace={() => openReplacePicker(item.id)}
+                >
+                  {renderItemFields?.(item, index)}
+                </SortableMediaRow>
+              ))}
+            </ul>
+          </SortableList>
         ) : (
           <p className={styles.placeholder}>Перетащите фото сюда или нажмите «Добавить фото»</p>
         )}

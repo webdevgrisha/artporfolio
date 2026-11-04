@@ -33,32 +33,6 @@
   }
 }
 
-/* Lifted above the rows it passes over. */
-.rowDragging {
-  z-index: 1;
-  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 15%);
-}
-
-.dragHandle {
-  touch-action: none;
-  cursor: grab;
-}
-
-.rowDragging .dragHandle {
-  cursor: grabbing;
-}
-
-/* The icon sizes of SortableMediaList. */
-.dragIcon {
-  inline-size: 0.75rem;
-  block-size: 1.25rem;
-}
-
-.arrowIcon {
-  inline-size: auto;
-  block-size: 1.125rem;
-}
-
 /* Smaller than in the table: the rows of the order are dense. */
 .cover {
   inline-size: 3rem;

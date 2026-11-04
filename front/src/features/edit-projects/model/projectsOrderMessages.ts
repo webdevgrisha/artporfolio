@@ -1,4 +1,4 @@
-import type { SortableMessages } from "@/shared/lib/sortableAnnouncements";
+import type { SortableMessages } from "@/shared/ui/sortable";
 
 /** What a screen reader says about a moved project. */
 export const projectSortableMessages: SortableMessages = {
