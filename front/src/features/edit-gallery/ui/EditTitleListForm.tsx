@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { QueryKey } from "@tanstack/react-query";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import type { Tagged } from "@/shared/api/http";
+import { useReplaceResource } from "@/shared/api/useReplaceResource";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
 import {
@@ -30,22 +31,6 @@ interface Editing {
 }
 
 /**
- * Saves the whole list, then puts the saved list into the cache: the server returns it sorted,
- * with its ETag, so the page need not load it again.
- */
-function useSaveTitleList<TData, TQueryKey extends QueryKey>(
-  list: TitleListConfig<TData, TQueryKey>,
-) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    meta: { feedback: { getErrorMessage: list.getSaveErrorMessage, toastId: list.toastId } },
-    mutationFn: list.replace,
-    onSuccess: (saved) => queryClient.setQueryData<Tagged<TData>>(list.query.queryKey, saved),
-  });
-}
-
-/**
  * A list of titles of the gallery, such as the materials: a row is added, renamed or removed here,
  * and «Сохранить» sends the whole list. The site lists the rows by title, and so does the list once
  * it is saved; the rows added since stay at its end until then.
@@ -62,7 +47,11 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
     defaultValues: toValues(data.data),
     resolver: zodResolver(schema),
   });
-  const saveList = useSaveTitleList(list);
+  const saveList = useReplaceResource({
+    feedback: { getErrorMessage: list.getSaveErrorMessage, toastId: list.toastId },
+    mutationFn: list.replace,
+    queryKey: list.query.queryKey,
+  });
   const { editForm, saved } = useSavedForm({
     form,
     initial: data,

@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { galleryColorsQuery, replaceGalleryColors } from "@/entities/gallery";
 import type { MutationFeedback } from "@/shared/api/queryClient";
+import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
 import { getSaveColorsErrorMessage } from "../lib/saveErrorMessages";
 
@@ -15,11 +14,9 @@ export const saveColorsFeedback: MutationFeedback = {
  * with its ETag, so the page need not load it again.
  */
 export function useSaveColors() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    meta: { feedback: saveColorsFeedback },
+  return useReplaceResource({
+    feedback: saveColorsFeedback,
     mutationFn: replaceGalleryColors,
-    onSuccess: (saved) => queryClient.setQueryData(galleryColorsQuery.queryKey, saved),
+    queryKey: galleryColorsQuery.queryKey,
   });
 }

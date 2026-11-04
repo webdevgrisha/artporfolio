@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import type { Tagged } from "@/shared/api/http";
 import { getSavePhotoErrorMessage, type Photo } from "@/shared/api/photo";
 import { type PhotoSlot, saveSlotPhoto } from "@/shared/api/photoSlot";
+import { useReplaceResource } from "@/shared/api/useReplaceResource";
 import {
   getPhotoChange,
   type PhotoFormValues,
@@ -27,25 +27,16 @@ interface EditPhotoFormProps {
   slot: PhotoSlot;
 }
 
-/**
- * Saves a change of the photo, then puts the saved photo into the cache: the server returns it
- * with its ETag, so the page need not load it again.
- */
-function useSavePhoto(slot: PhotoSlot, toastId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    meta: { feedback: { getErrorMessage: getSavePhotoErrorMessage, toastId } },
-    mutationFn: (params: SavePhotoParams) => saveSlotPhoto(slot, params),
-    onSuccess: (saved) => queryClient.setQueryData(slot.query.queryKey, saved),
-  });
-}
-
 /** Edits a single photo with its description, such as «Моё фото» or the contacts photo. */
 export function EditPhotoForm({ className, label, photo, slot }: EditPhotoFormProps) {
   // One toast for the saves of this photo: a later result replaces the previous one.
   const toastId = `save ${slot.path}`;
-  const savePhoto = useSavePhoto(slot, toastId);
+  // The server returns the saved photo with its ETag, so the page need not load it again.
+  const savePhoto = useReplaceResource({
+    feedback: { getErrorMessage: getSavePhotoErrorMessage, toastId },
+    mutationFn: (params: SavePhotoParams) => saveSlotPhoto(slot, params),
+    queryKey: slot.query.queryKey,
+  });
   const form = useForm<PhotoFormValues>({
     defaultValues: toPhotoFormValues(photo.data),
     resolver: zodResolver(photoFormSchema),

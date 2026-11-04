@@ -1,30 +1,7 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { palettesList } from "@/features/edit-gallery";
 
-import { galleryPalettesQuery } from "@/entities/gallery";
-import { EditTitleListForm, palettesList } from "@/features/edit-gallery";
-import { AwaitPageData } from "@/shared/ui/page-data";
-import { FieldSkeleton, FormSkeleton, ListSkeleton } from "@/shared/ui/skeleton";
-
-import styles from "./GalleryPage.module.css";
+import { TitleListSection } from "./TitleListSection";
 
 export function GalleryPalettesSection() {
-  return (
-    <AwaitPageData
-      fallback={
-        <FormSkeleton className={styles.form} isNarrow>
-          <FieldSkeleton />
-          <ListSkeleton rows={6} />
-        </FormSkeleton>
-      }
-    >
-      <GalleryPalettes />
-    </AwaitPageData>
-  );
-}
-
-function GalleryPalettes() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
-  const { data: palettes } = useSuspenseQuery(galleryPalettesQuery);
-
-  return <EditTitleListForm className={styles.form} list={palettesList} data={palettes} />;
+  return <TitleListSection list={palettesList} />;
 }

@@ -1,12 +1,9 @@
 import type { UIMatch } from "react-router";
 
+import { galleryCollectionQuery, gallerySectionQuery, galleryWorkQuery } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
-import type { BreadcrumbItem } from "@/shared/ui/breadcrumbs";
+import { type BreadcrumbItem, QueryTitle } from "@/shared/ui/breadcrumbs";
 import type { AdminPageHandle } from "@/widgets/admin-layout";
-
-import { CollectionTitle } from "../ui/CollectionTitle";
-import { SectionTitle } from "../ui/SectionTitle";
-import { WorkTitle } from "../ui/WorkTitle";
 
 /** The pages above a section: the list it is opened from. */
 const sectionsCrumbs: BreadcrumbItem[] = [
@@ -21,7 +18,7 @@ export const newSectionHandle: AdminPageHandle = {
 export const editSectionHandle: AdminPageHandle = {
   breadcrumbs: ({ params }: UIMatch) => [
     ...sectionsCrumbs,
-    { label: <SectionTitle id={params.id ?? ""} /> },
+    { label: <QueryTitle query={gallerySectionQuery(params.id ?? "")} /> },
   ],
 };
 
@@ -38,7 +35,7 @@ export const newCollectionHandle: AdminPageHandle = {
 export const editCollectionHandle: AdminPageHandle = {
   breadcrumbs: ({ params }: UIMatch) => [
     ...collectionsCrumbs,
-    { label: <CollectionTitle id={params.id ?? ""} /> },
+    { label: <QueryTitle query={galleryCollectionQuery(params.id ?? "")} /> },
   ],
 };
 
@@ -55,6 +52,6 @@ export const newWorkHandle: AdminPageHandle = {
 export const editWorkHandle: AdminPageHandle = {
   breadcrumbs: ({ params }: UIMatch) => [
     ...worksCrumbs,
-    { label: <WorkTitle id={params.id ?? ""} /> },
+    { label: <QueryTitle query={galleryWorkQuery(params.id ?? "")} /> },
   ],
 };

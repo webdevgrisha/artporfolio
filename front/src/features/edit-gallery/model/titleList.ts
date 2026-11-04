@@ -1,4 +1,4 @@
-import type { FetchQueryOptions, QueryKey } from "@tanstack/react-query";
+import type { QueryKey, UseSuspenseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
 import type { Tagged } from "@/shared/api/http";
@@ -21,7 +21,7 @@ export interface TitleListConfig<TData, TQueryKey extends QueryKey = QueryKey> {
   /** The most rows the list may hold. */
   max: number;
   /** Reads the list with its ETag; a save puts the saved list here. */
-  query: FetchQueryOptions<Tagged<TData>, Error, Tagged<TData>, TQueryKey>;
+  query: UseSuspenseQueryOptions<Tagged<TData>, Error, Tagged<TData>, TQueryKey>;
   /** Replaces the whole list and returns it as saved, with its new ETag. */
   replace: (params: { etag: string; items: TitleItem[] }) => Promise<Tagged<TData>>;
   texts: {

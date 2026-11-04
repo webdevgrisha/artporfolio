@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { projectsIntroQuery, replaceProjectsIntro } from "@/entities/project";
 import type { MutationFeedback } from "@/shared/api/queryClient";
+import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
 import { getSaveIntroErrorMessage } from "../lib/saveErrorMessages";
 
@@ -15,11 +14,9 @@ export const saveProjectsIntroFeedback: MutationFeedback = {
  * ETag, so the page need not load it again.
  */
 export function useSaveProjectsIntro() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    meta: { feedback: saveProjectsIntroFeedback },
+  return useReplaceResource({
+    feedback: saveProjectsIntroFeedback,
     mutationFn: replaceProjectsIntro,
-    onSuccess: (saved) => queryClient.setQueryData(projectsIntroQuery.queryKey, saved),
+    queryKey: projectsIntroQuery.queryKey,
   });
 }
