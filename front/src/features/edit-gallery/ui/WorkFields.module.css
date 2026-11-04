@@ -59,6 +59,20 @@
   max-inline-size: 24rem;
 }
 
+/*
+ * The price, the discount and the price after it in one light frame, so the result reads as theirs;
+ * as wide as its fields, not the whole line.
+ */
+.priceBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  padding: var(--space-6);
+  border: 1px solid var(--color-divider);
+}
+
 /* Room for «100 000 000». */
 .amount {
   inline-size: 12rem;
@@ -68,11 +82,13 @@
   inline-size: 8rem;
 }
 
-/* Read like a field, but only shown: the label above, the value in the size of a field's text. */
+/* Under a line, as a total: the label above, the value larger than the text of a field. */
 .final {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--color-divider);
 }
 
 .finalLabel {

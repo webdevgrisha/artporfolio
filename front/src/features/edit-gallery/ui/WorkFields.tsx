@@ -310,39 +310,41 @@ export function WorkFields({
         <h2 id={`${headingId}-sale`} className={styles.heading}>
           Продажа
         </h2>
-        <div className={styles.price}>
-          <Input
-            id={`${headingId}-price`}
-            className={styles.amount}
-            label="Цена, $"
-            hint="Необязательно"
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="1 500"
-            disabled={isSaving}
-            error={errors.price?.message}
-            isModified={Boolean(dirtyFields.price)}
-            {...priceField}
-          />
-          <Input
-            id={`${headingId}-discount`}
-            className={styles.discount}
-            label="Скидка, %"
-            hint="Необязательно"
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="10"
-            disabled={isSaving}
-            error={errors.discountPercent?.message}
-            isModified={Boolean(dirtyFields.discountPercent)}
-            {...discountField}
+        <div className={styles.priceBox}>
+          <div className={styles.price}>
+            <Input
+              id={`${headingId}-price`}
+              className={styles.amount}
+              label="Цена, $"
+              hint="Необязательно"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="1 500"
+              disabled={isSaving}
+              error={errors.price?.message}
+              isModified={Boolean(dirtyFields.price)}
+              {...priceField}
+            />
+            <Input
+              id={`${headingId}-discount`}
+              className={styles.discount}
+              label="Скидка, %"
+              hint="Необязательно"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="10"
+              disabled={isSaving}
+              error={errors.discountPercent?.message}
+              isModified={Boolean(dirtyFields.discountPercent)}
+              {...discountField}
+            />
+          </div>
+          <FinalPrice
+            price={price}
+            discountPercent={discountPercent}
+            sourceIds={`${headingId}-price ${headingId}-discount`}
           />
         </div>
-        <FinalPrice
-          price={price}
-          discountPercent={discountPercent}
-          sourceIds={`${headingId}-price ${headingId}-discount`}
-        />
       </section>
 
       <section className={styles.group} aria-labelledby={`${headingId}-process`}>
