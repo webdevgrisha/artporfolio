@@ -82,7 +82,8 @@ export function WorkFields({
   const { field: materialsField } = useController({ control, name: "materialIds" });
   const { field: colorsField } = useController({ control, name: "colorIds" });
   const { field: palettesField } = useController({ control, name: "paletteIds" });
-  const priceField = register("price");
+  // A discount needs a price, so typing the price checks the discount again.
+  const priceField = register("price", { deps: ["discountPercent"] });
   const discountField = register("discountPercent");
   const price = useWatch({ control, name: "price" });
   const discountPercent = useWatch({ control, name: "discountPercent" });
