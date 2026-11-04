@@ -1,6 +1,6 @@
 // Fills the running emulators with demo content through the API, as the admin would: page heroes,
 // the About page, the contacts, the projects with their photos, and the gallery text, sections,
-// materials, colors, palettes and works. Every run first empties the Firestore emulator, so the admin
+// materials, colors, palettes, collections and works. Every run first empties the Firestore emulator, so the admin
 // always starts from the same content. The images are drawn here, so the result is the same on
 // every machine and needs no network.
 //
@@ -290,19 +290,45 @@ const galleryPalettes = [
   "Монохромная",
 ];
 
-/** In the order the site shows them. */
+/** The works refer to them by title; «Зима» has no works yet. */
+const galleryCollections = [
+  { title: "Саванна", palette: "lion", startYear: 2024, endYear: 2025 },
+  { title: "У воды", palette: "frog", startYear: 2022, endYear: 2025 },
+  { title: "Ночные птицы", palette: "owl", startYear: 2020, endYear: 2024 },
+  { title: "Зима", palette: "elephant", startYear: 2025, endYear: null },
+];
+
+/** In the order the site shows them; a work without a collection is a work on its own. */
 const galleryWorks = [
-  { title: "Слон на закате", palette: "elephant", size: [50, 70], year: 2025 },
-  { title: "Тигр в зарослях", palette: "tiger", size: [60, 80], year: 2025 },
-  { title: "Стрекоза", palette: "dragonfly", size: [21.6, 27.9], year: 2025 },
-  { title: "Лев", palette: "lion", size: [40, 50], year: 2024 },
-  { title: "Лягушка на листе", palette: "frog", size: [29.7, 42], year: 2024 },
-  { title: "Сова", palette: "owl", size: [30, 40], year: 2024 },
+  {
+    title: "Слон на закате",
+    palette: "elephant",
+    size: [50, 70],
+    year: 2025,
+    collection: "Саванна",
+  },
+  { title: "Тигр в зарослях", palette: "tiger", size: [60, 80], year: 2025, collection: "Саванна" },
+  { title: "Стрекоза", palette: "dragonfly", size: [21.6, 27.9], year: 2025, collection: "У воды" },
+  { title: "Лев", palette: "lion", size: [40, 50], year: 2024, collection: "Саванна" },
+  {
+    title: "Лягушка на листе",
+    palette: "frog",
+    size: [29.7, 42],
+    year: 2024,
+    collection: "У воды",
+  },
+  { title: "Сова", palette: "owl", size: [30, 40], year: 2024, collection: "Ночные птицы" },
   { title: "Слонёнок", palette: "elephant", size: [30.5, 40.6], year: 2023 },
   { title: "Полосы", palette: "tiger", size: [100, 70], year: 2023 },
-  { title: "Пруд", palette: "dragonfly", size: [70, 50], year: 2022 },
+  { title: "Пруд", palette: "dragonfly", size: [70, 50], year: 2022, collection: "У воды" },
   { title: "Грива", palette: "lion", size: [61, 76.2], year: 2021 },
-  { title: "Ночная сова", palette: "owl", size: [21, 29.7], year: 2020 },
+  {
+    title: "Ночная сова",
+    palette: "owl",
+    size: [21, 29.7],
+    year: 2020,
+    collection: "Ночные птицы",
+  },
   { title: "Болото", palette: "frog", size: [80, 60], year: 2019 },
 ];
 
@@ -579,6 +605,32 @@ async function seedGallery(api) {
 
   await api.put("/gallery-palettes", { palettes });
 
+  // The ids of the collections by title, for the works to refer to. A collection is created empty:
+  // each work names its own when it is created.
+  const collectionIds = new Map();
+
+  for (const [index, collection] of galleryCollections.entries()) {
+    const id = randomUUID();
+
+    await api.create(`/gallery-collections/${id}`, {
+      title: collection.title,
+      description: `${collection.title}. Серия работ о животных.`,
+      cover: {
+        alt: collection.title,
+        uploadId: await uploadArtwork(api, {
+          kind: "painting",
+          name: collection.title,
+          palette: collection.palette,
+          seed: 4000 + index,
+        }),
+      },
+      startYear: collection.startYear,
+      endYear: collection.endYear,
+      workIds: [],
+    });
+    collectionIds.set(collection.title, id);
+  }
+
   for (const [index, work] of galleryWorks.entries()) {
     const [width, height] = work.size;
     const kind = index % 3 === 2 ? "etching" : "painting";
@@ -634,11 +686,12 @@ async function seedGallery(api) {
         ? workEtchingPalettes
         : workPaintingPalettes[index % workPaintingPalettes.length]
       ).map((title) => paletteIds.get(title)),
+      collectionId: work.collection === undefined ? null : collectionIds.get(work.collection),
     });
   }
 
   console.log(
-    `  gallery: text, ${String(gallerySections.length)} sections, ${String(galleryMaterials.length)} materials, ${String(galleryColors.length)} colors, ${String(galleryPalettes.length)} palettes, ${String(galleryWorks.length)} works`,
+    `  gallery: text, ${String(gallerySections.length)} sections, ${String(galleryMaterials.length)} materials, ${String(galleryColors.length)} colors, ${String(galleryPalettes.length)} palettes, ${String(galleryCollections.length)} collections, ${String(galleryWorks.length)} works`,
   );
 }
 
