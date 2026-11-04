@@ -20,6 +20,18 @@ export const maxWorkPalettes = 5;
 /** The most process photos one work may have. */
 export const maxWorkProcessPhotos = 20;
 
+/** How many works a set may have; two or three are a diptych or a triptych. */
+export const minWorkSetSize = 2;
+export const maxWorkSetSize = 100;
+
+/**
+ * What the work is made up of: one work, a diptych or triptych (one work of two or three panels), or
+ * a set of separate works, most often prints of an original, which says how many it has.
+ */
+export const workFormats = ["single", "diptych", "triptych", "set"] as const;
+
+export type WorkFormat = (typeof workFormats)[number];
+
 /** The largest side of a work in centimetres. */
 export const maxWorkSide = 10_000;
 
@@ -54,6 +66,9 @@ export const galleryWorkSchema = z.object({
   paletteIds: z.array(z.string()),
   /** The id of the collection the work was painted for, or null for a work on its own. */
   collectionId: z.string().nullable(),
+  format: z.enum(workFormats),
+  /** How many works the set has; null for any other format. */
+  partCount: z.number().nullable(),
   /** When the work was created, ISO 8601. */
   createdAt: z.iso.datetime(),
   /** When the admin last saved the work, ISO 8601. */

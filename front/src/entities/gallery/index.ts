@@ -58,7 +58,11 @@ export {
   maxWorkPalettes,
   maxWorkProcessPhotos,
   maxWorkSections,
+  maxWorkSetSize,
   maxWorkSide,
+  minWorkSetSize,
   minWorkYear,
+  type WorkFormat,
   type WorkSize,
+  workFormats,
 } from "./model/galleryWork";

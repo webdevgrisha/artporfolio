@@ -7,8 +7,12 @@ import {
   maxWorkPalettes,
   maxWorkProcessPhotos,
   maxWorkSections,
+  maxWorkSetSize,
   maxWorkSide,
+  minWorkSetSize,
+  type WorkFormat,
   type WorkSize,
+  workFormats,
 } from "@/entities/gallery";
 import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
 import { photoListRowsSchema, toPhotoListRows } from "@/shared/lib/photoListForm";
@@ -70,6 +74,38 @@ function refineMonth(
   }
 }
 
+/** What is wrong with the count of works of a set as typed, or null when it is a valid count. */
+function partCountError(text: string): string | null {
+  if (text === "") {
+    return "Введите количество";
+  }
+
+  if (!/^\d+$/.test(text)) {
+    return "Введите целое число";
+  }
+
+  const count = Number(text);
+
+  return count < minWorkSetSize || count > maxWorkSetSize
+    ? `От ${String(minWorkSetSize)} до ${String(maxWorkSetSize)}`
+    : null;
+}
+
+/**
+ * Checks the count of works of a set, which only a set has: while another format is chosen, the
+ * field is hidden and its text is kept but not checked.
+ */
+function refinePartCount(
+  { format, partCount }: { format: WorkFormat; partCount: string },
+  context: z.RefinementCtx,
+): void {
+  const message = format === "set" ? partCountError(partCount.trim()) : null;
+
+  if (message !== null) {
+    context.addIssue({ code: "custom", message, path: ["partCount"] });
+  }
+}
+
 export const workFormSchema = z
   .object({
     title: z
@@ -115,10 +151,14 @@ export const workFormSchema = z
       .max(maxWorkPalettes, `Не больше ${String(maxWorkPalettes)} палитр`),
     /** The id of the collection; empty for a work on its own. */
     collectionId: z.string(),
+    format: z.enum(workFormats),
+    /** The count of works of a set, as typed; empty for a new work. */
+    partCount: z.string(),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)
-  .superRefine(refineMonth);
+  .superRefine(refineMonth)
+  .superRefine(refinePartCount);
 
 export type WorkFormValues = z.infer<typeof workFormSchema>;
 
@@ -137,6 +177,8 @@ export const emptyWorkFormValues: WorkFormValues = {
   colorIds: [],
   paletteIds: [],
   collectionId: "",
+  format: "single",
+  partCount: "",
 };
 
 /** The values of a work as stored on the server. */
@@ -144,9 +186,11 @@ export function toWorkFormValues({
   collectionId,
   colorIds,
   description,
+  format,
   materialIds,
   month,
   paletteIds,
+  partCount,
   photo,
   processPhotos,
   sectionIds,
@@ -168,7 +212,42 @@ export function toWorkFormValues({
     colorIds,
     paletteIds,
     collectionId: collectionId ?? "",
+    format,
+    partCount: partCount === null ? "" : String(partCount),
   };
+}
+
+/** The count of works of a set the form holds, once it has been checked; null for another format. */
+export function toPartCount({ format, partCount }: WorkFormValues): number | null {
+  return format === "set" ? Number(partCount.trim()) : null;
+}
+
+/** The formats to choose from, a single work first, as it is the usual one. */
+export const workFormatOptions: readonly { label: string; value: WorkFormat }[] = [
+  { label: "Одна работа", value: "single" },
+  { label: "Диптих", value: "diptych" },
+  { label: "Триптих", value: "triptych" },
+  { label: "Несколько работ", value: "set" },
+];
+
+/** The format as the admin reads it beside the size: «диптих», «12 шт.»; nothing for one work. */
+export function formatWorkFormat({
+  format,
+  partCount,
+}: {
+  format: WorkFormat;
+  partCount: number | null;
+}): string | null {
+  switch (format) {
+    case "single":
+      return null;
+    case "diptych":
+      return "диптих";
+    case "triptych":
+      return "триптих";
+    case "set":
+      return `${String(partCount)} шт.`;
+  }
 }
 
 /** The size the form holds, once it has been checked. */

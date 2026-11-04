@@ -7,6 +7,7 @@ import {
   type GalleryWork,
   galleryWorkResponseSchema,
   galleryWorksResponseSchema,
+  type WorkFormat,
   type WorkSize,
 } from "../model/galleryWork";
 
@@ -32,6 +33,9 @@ export interface GalleryWorkBody {
   paletteIds: readonly string[];
   /** The collection the work was painted for, or null for a work on its own. */
   collectionId: string | null;
+  format: WorkFormat;
+  /** How many works the set has; null for any other format. */
+  partCount: number | null;
 }
 
 interface CreateGalleryWorkParams {

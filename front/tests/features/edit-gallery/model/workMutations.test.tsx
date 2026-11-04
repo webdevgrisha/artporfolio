@@ -58,6 +58,8 @@ function apiWork(title: string): GalleryWork {
     colorIds: [colorId],
     paletteIds: [paletteId],
     collectionId: null,
+    format: "single",
+    partCount: null,
     size: { height: 27.9, width: 21.6 },
     title,
     updatedAt: "2026-01-15T10:00:00.000Z",
@@ -123,6 +125,8 @@ describe("useCreateWork", () => {
           colorIds: [colorId],
           paletteIds: [paletteId],
           collectionId: null,
+          format: "single",
+          partCount: null,
           size: { height: 27.9, width: 21.6 },
           title: "Стрекоза",
           year: 2025,
@@ -176,6 +180,24 @@ describe("useSaveWork", () => {
 
     expect(puts).toEqual([
       expect.objectContaining({ body: expect.objectContaining({ collectionId }) }),
+    ]);
+  });
+
+  it("sends a set with its count of works as a number", async () => {
+    const puts = handlePuts(() =>
+      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+    );
+    const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
+
+    await saveWork.mutateAsync({
+      etag: '"read"',
+      values: { ...values(), format: "set", partCount: "12" },
+    });
+
+    expect(puts).toEqual([
+      expect.objectContaining({
+        body: expect.objectContaining({ format: "set", partCount: 12 }),
+      }),
     ]);
   });
 

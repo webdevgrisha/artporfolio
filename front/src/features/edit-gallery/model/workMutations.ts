@@ -14,7 +14,7 @@ import { uploadImage } from "@/shared/api/upload";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
 import { getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
-import { toWorkSize, type WorkFormValues } from "./workFormSchema";
+import { toPartCount, toWorkSize, type WorkFormValues } from "./workFormSchema";
 
 interface CreateWorkParams {
   /** The id the form picked for the new work; every try of the form sends the same one. */
@@ -60,6 +60,8 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     colorIds,
     paletteIds,
     collectionId: collectionId === "" ? null : collectionId,
+    format: values.format,
+    partCount: toPartCount(values),
     size: toWorkSize(values),
     title,
     year: Number(year),

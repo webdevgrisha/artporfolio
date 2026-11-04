@@ -4,8 +4,10 @@ import type { GalleryWork } from "@/entities/gallery";
 import {
   emptyWorkFormValues,
   formatWorkDate,
+  formatWorkFormat,
   formatWorkSize,
   monthOptions,
+  toPartCount,
   toWorkFormValues,
   toWorkSize,
   workFormSchema,
@@ -156,6 +158,41 @@ describe("the palettes in the form", () => {
   });
 });
 
+describe("the format in the form", () => {
+  it("needs the count of works of a set, a whole number from 2 to 100", () => {
+    const set = { ...work, format: "set" as const };
+
+    expect(fieldErrors(workFormSchema, { ...set, partCount: " 12 " })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...set, partCount: "" })).toEqual({
+      partCount: ["Введите количество"],
+    });
+    expect(fieldErrors(workFormSchema, { ...set, partCount: "2,5" })).toEqual({
+      partCount: ["Введите целое число"],
+    });
+    expect(fieldErrors(workFormSchema, { ...set, partCount: "1" })).toEqual({
+      partCount: ["От 2 до 100"],
+    });
+    expect(fieldErrors(workFormSchema, { ...set, partCount: "101" })).toEqual({
+      partCount: ["От 2 до 100"],
+    });
+  });
+
+  it("ignores a count left from a set once another format is chosen", () => {
+    const diptych = { ...work, format: "diptych" as const, partCount: "abc" };
+
+    expect(fieldErrors(workFormSchema, diptych)).toEqual({});
+    expect(toPartCount(diptych)).toBeNull();
+    expect(toPartCount({ ...work, format: "set", partCount: " 12 " })).toBe(12);
+  });
+
+  it("shows the format beside the size, nothing for a single work", () => {
+    expect(formatWorkFormat({ format: "single", partCount: null })).toBeNull();
+    expect(formatWorkFormat({ format: "diptych", partCount: null })).toBe("диптих");
+    expect(formatWorkFormat({ format: "triptych", partCount: null })).toBe("триптих");
+    expect(formatWorkFormat({ format: "set", partCount: 12 })).toBe("12 шт.");
+  });
+});
+
 describe("the size in the form", () => {
   it("shows a saved size with a comma and reads it back as numbers", () => {
     const saved = {
@@ -167,13 +204,21 @@ describe("the size in the form", () => {
       materialIds: [],
       colorIds: [],
       paletteIds: [],
+      format: "set",
+      partCount: 12,
       size: { height: 27.9, width: 21.6 },
       title: "Стрекоза",
       year: 2025,
     } as unknown as GalleryWork;
     const values = toWorkFormValues(saved);
 
-    expect(values).toMatchObject({ height: "27,9", width: "21,6", year: "2025" });
+    expect(values).toMatchObject({
+      format: "set",
+      height: "27,9",
+      partCount: "12",
+      width: "21,6",
+      year: "2025",
+    });
     expect(toWorkSize(values)).toEqual({ height: 27.9, width: 21.6 });
   });
 });
