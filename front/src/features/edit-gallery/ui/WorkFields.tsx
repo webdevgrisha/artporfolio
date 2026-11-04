@@ -70,7 +70,6 @@ export function WorkFields({
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
   const { defaultValues, dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
-  const format = useWatch({ control, name: "format" });
   // After a refused submit, react-hook-form focuses the first invalid field in the order the
   // fields were registered, so they are registered here in the order of the form; the photos
   // come last, from their own components.
@@ -106,6 +105,28 @@ export function WorkFields({
   );
   const paletteOptions = React.useMemo(() => toTitleOptions(palettes), [palettes]);
   const collectionOptions = React.useMemo(() => toCollectionOptions(collections), [collections]);
+  // The count of works opens under «Несколько работ», the only format that needs it.
+  const formatOptions = workFormatOptions.map((option) =>
+    option.value === "set"
+      ? {
+          ...option,
+          details: (
+            <Input
+              className={styles.count}
+              label="Количество работ"
+              hint={`От ${String(minWorkSetSize)} до ${String(maxWorkSetSize)}`}
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="10"
+              disabled={isSaving}
+              error={errors.partCount?.message}
+              isModified={Boolean(dirtyFields.partCount)}
+              {...partCountField}
+            />
+          ),
+        }
+      : option,
+  );
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -203,26 +224,12 @@ export function WorkFields({
         <RadioGroup
           label="Формат"
           name={formatField.name}
-          options={workFormatOptions}
+          options={formatOptions}
           value={formatField.value}
           disabled={isSaving}
           isModified={Boolean(dirtyFields.format)}
           onChange={formatField.onChange}
         />
-        {format === "set" ? (
-          <Input
-            className={styles.side}
-            label="Количество работ"
-            hint={`От ${String(minWorkSetSize)} до ${String(maxWorkSetSize)}`}
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="10"
-            disabled={isSaving}
-            error={errors.partCount?.message}
-            isModified={Boolean(dirtyFields.partCount)}
-            {...partCountField}
-          />
-        ) : null}
         <div className={styles.size}>
           <Input
             className={styles.side}

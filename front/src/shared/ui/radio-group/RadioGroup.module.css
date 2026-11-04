@@ -1,13 +1,12 @@
 .root {
-  display: flex;
-  flex-direction: column;
   min-inline-size: 0;
+  max-inline-size: 24rem;
   padding: 0;
   margin: 0;
   border: 0;
 }
 
-/* As the label of a text field. */
+/* Matches the label of Field; a fieldset is labelled by a legend instead. */
 .legend {
   padding: 0;
   margin-block-end: var(--space-2);
@@ -19,35 +18,81 @@
   content: ":";
 }
 
-/* As tall as a text field, so the group lines up with the fields beside it. */
-.options {
+/* The frame of the sections of a work, see SectionsField.module.css. */
+.frame {
+  padding: calc(var(--space-2) + 1px) 1px;
+  margin: 0;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.frameDisabled {
+  color: var(--color-text-muted);
+  background: var(--color-surface-disabled);
+}
+
+/* The options are divided by lines within the padding, as the sections are. */
+.option + .option::before {
+  display: block;
+  margin-inline: var(--space-6);
+  content: "";
+  border-block-start: 1px solid var(--color-divider);
+}
+
+.row {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-6);
-  align-items: center;
-  min-block-size: var(--control-size);
-}
-
-/* A changed choice is underlined as a changed field is framed: in the colour of the change. */
-.modified {
-  box-shadow: inset 0 -2px 0 var(--color-border-modified);
-}
-
-.option {
-  display: inline-flex;
   gap: var(--space-2);
   align-items: center;
-  min-block-size: var(--min-tap-target-size);
-  font-size: var(--font-size-md);
+  min-block-size: var(--control-size);
+  padding-inline: var(--space-6);
+}
+
+@media (hover: hover) {
+  .row:hover:not(:has(:disabled)) {
+    background: var(--color-surface-disabled);
+  }
+}
+
+.title {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
   cursor: pointer;
 }
 
+/* The label covers the whole row, so a click anywhere in it chooses the option. */
+.title::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+.frameDisabled .title {
+  cursor: not-allowed;
+}
+
+/* Round, in the style of the checkbox: a black dot inside once chosen. Over the label, as the
+   checkbox of a section is. */
 .radio {
+  position: relative;
+  flex: none;
   inline-size: 1.25rem;
   block-size: 1.25rem;
-  margin: 0;
-  accent-color: var(--color-text);
-  cursor: inherit;
+  margin: 0 0 0 auto;
+  appearance: none;
+  cursor: pointer;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.radio:checked {
+  background: radial-gradient(
+    circle,
+    var(--color-surface-inverse) 0 0.3125rem,
+    var(--color-surface) 0.375rem
+  );
 }
 
 .radio:focus-visible {
@@ -55,7 +100,27 @@
   outline-offset: 2px;
 }
 
-.root:disabled .option {
-  color: var(--color-text-muted);
+/* The modified frame of the text fields, see Field.module.css. */
+.radioModified {
+  border-color: var(--color-border-modified);
+  box-shadow: inset 0 0 0 1px var(--color-border-modified);
+}
+
+.radio:disabled {
   cursor: not-allowed;
+  background-color: var(--color-surface-disabled);
+  border-color: var(--color-border-disabled);
+}
+
+.radio:checked:disabled {
+  background: radial-gradient(
+    circle,
+    var(--color-border-disabled) 0 0.3125rem,
+    var(--color-surface-disabled) 0.375rem
+  );
+}
+
+/* The field of the chosen option, under its title. */
+.details {
+  padding: var(--space-2) var(--space-6) var(--space-4);
 }

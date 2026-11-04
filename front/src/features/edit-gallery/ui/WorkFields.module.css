@@ -26,6 +26,11 @@
   inline-size: 8rem;
 }
 
+/* Its label on one line. */
+.count {
+  inline-size: 12rem;
+}
+
 /* Room for «Сентябрь» and the chevron. */
 .month {
   inline-size: 12rem;

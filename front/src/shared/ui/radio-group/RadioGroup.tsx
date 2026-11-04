@@ -1,10 +1,13 @@
 import clsx from "clsx";
+import React from "react";
 
 import styles from "./RadioGroup.module.css";
 
 export interface RadioOption<TValue extends string> {
   label: string;
   value: TValue;
+  /** Shown under the option while it is chosen, such as a field only this choice needs. */
+  details?: React.ReactNode;
 }
 
 interface RadioGroupProps<TValue extends string> {
@@ -21,8 +24,9 @@ interface RadioGroupProps<TValue extends string> {
 }
 
 /**
- * One choice of a few, all in view, such as the unit of a size. The native radio buttons give the
- * keyboard and screen readers the behaviour they expect: the arrows move the choice.
+ * One choice of a few, all in view, as a framed list like the sections of a work. The native radio
+ * buttons give the keyboard and screen readers the behaviour they expect: the arrows move the
+ * choice.
  */
 export function RadioGroup<TValue extends string>({
   className,
@@ -34,24 +38,39 @@ export function RadioGroup<TValue extends string>({
   options,
   value,
 }: RadioGroupProps<TValue>) {
+  const groupId = React.useId();
+
   return (
     <fieldset className={clsx(styles.root, className)} disabled={disabled}>
       <legend className={styles.legend}>{label}</legend>
-      <div className={clsx(styles.options, isModified && styles.modified)}>
-        {options.map((option) => (
-          <label key={option.value} className={styles.option}>
-            <input
-              className={styles.radio}
-              type="radio"
-              name={name}
-              value={option.value}
-              checked={option.value === value}
-              onChange={() => onChange(option.value)}
-            />
-            {option.label}
-          </label>
-        ))}
-      </div>
+      <ul className={clsx(styles.frame, disabled && styles.frameDisabled)}>
+        {options.map((option) => {
+          const id = `${groupId}-${option.value}`;
+          const isChecked = option.value === value;
+
+          return (
+            <li key={option.value} className={styles.option}>
+              <div className={styles.row}>
+                <label className={styles.title} htmlFor={id}>
+                  {option.label}
+                </label>
+                <input
+                  id={id}
+                  className={clsx(styles.radio, isChecked && isModified && styles.radioModified)}
+                  type="radio"
+                  name={name}
+                  value={option.value}
+                  checked={isChecked}
+                  onChange={() => onChange(option.value)}
+                />
+              </div>
+              {isChecked && option.details ? (
+                <div className={styles.details}>{option.details}</div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
     </fieldset>
   );
 }
