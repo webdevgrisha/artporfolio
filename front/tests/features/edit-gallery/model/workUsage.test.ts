@@ -4,6 +4,7 @@ import {
   describeWorkUsage,
   formatWorkCount,
   workUsage,
+  workUsageById,
 } from "@/features/edit-gallery/model/workUsage";
 
 const names = { item: "материал", others: "материалов" };
@@ -15,6 +16,16 @@ describe("workUsage", () => {
     expect(workUsage(works, new Set(["oil"]))).toEqual({ count: 2, onlyCount: 1 });
     expect(workUsage(works, new Set(["oil", "canvas"]))).toEqual({ count: 3, onlyCount: 3 });
     expect(workUsage(works, new Set(["gouache"]))).toEqual({ count: 0, onlyCount: 0 });
+  });
+});
+
+describe("workUsageById", () => {
+  it("counts the works of each item, as workUsage does for one", () => {
+    const usages = workUsageById([["oil"], ["oil", "canvas"], ["canvas"]]);
+
+    expect(usages.get("oil")).toEqual({ count: 2, onlyCount: 1 });
+    expect(usages.get("canvas")).toEqual({ count: 2, onlyCount: 1 });
+    expect(usages.get("gouache")).toBeUndefined();
   });
 });
 

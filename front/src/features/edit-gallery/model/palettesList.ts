@@ -24,8 +24,10 @@ export const palettesList: TitleListConfig<GalleryPalettes, string[]> = {
     placeholder: "Например: Пастельная",
     rowField: (title) => `Название палитры ${title}`,
     rowFallback: "палитру",
+    others: "палитр",
     tooMany: `Не больше ${String(maxPalettes)} палитр`,
   },
   toItems: ({ palettes }) => palettes.map(({ id, title }) => ({ id, title })),
   toastId: "gallery-palettes-save",
+  workIds: (work) => work.paletteIds,
 };

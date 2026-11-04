@@ -14,7 +14,7 @@ import {
 
 import { matchesSectionQuery, sectionsSortableColumns } from "../model/sectionsTableView";
 import { useDeleteSection, useDeletingSectionIds } from "../model/useDeleteSection";
-import { describeWorkUsage, type WorkUsage, workUsage } from "../model/workUsage";
+import { describeWorkUsage, noWorkUsage, type WorkUsage, workUsage } from "../model/workUsage";
 import styles from "./SectionsList.module.css";
 
 interface SectionsListProps {
@@ -24,8 +24,6 @@ interface SectionsListProps {
   /** Every work, to count the works in each section. */
   works: readonly GalleryWork[];
 }
-
-const noUsage: WorkUsage = { count: 0, onlyCount: 0 };
 
 /** How the works use the section: a work in any of its subsections is in the section too. */
 function sectionUsage(
@@ -98,7 +96,7 @@ export function SectionsList({ className, sections, works }: SectionsListProps) 
         id: "works",
         header: "Работ",
         meta: { className: styles.countColumn },
-        accessorFn: (row) => (usages.get(row.item.id) ?? noUsage).count,
+        accessorFn: (row) => (usages.get(row.item.id) ?? noWorkUsage).count,
         // The largest first: the useful start.
         sortDescFirst: true,
       },
@@ -132,7 +130,9 @@ export function SectionsList({ className, sections, works }: SectionsListProps) 
       <ConfirmDialog
         isOpen={deleted !== undefined}
         title={`Удалить раздел «${deleted?.title ?? ""}»?`}
-        description={deleted ? deletionDescription(deleted, usages.get(deleted.id) ?? noUsage) : ""}
+        description={
+          deleted ? deletionDescription(deleted, usages.get(deleted.id) ?? noWorkUsage) : ""
+        }
         cancelLabel="Отмена"
         confirmLabel="Удалить"
         onCancel={() => setDeleted(undefined)}

@@ -7,6 +7,7 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { Input } from "@/shared/ui/input";
 import { Tooltip } from "@/shared/ui/tooltip";
 
+import { formatWorkCount } from "../model/workUsage";
 import styles from "./TitleList.module.css";
 
 interface TitleListRowProps {
@@ -39,6 +40,8 @@ interface TitleListRowProps {
   title: string;
   /** The title field of the row, as the form registers it. */
   titleField: UseFormRegisterReturn;
+  /** How many works name the row; none for a row added since the save. */
+  workCount?: number;
 }
 
 /**
@@ -60,6 +63,7 @@ export function TitleListRow({
   start,
   title,
   titleField,
+  workCount,
 }: TitleListRowProps) {
   const editButtonRef = React.useRef<HTMLButtonElement>(null);
   // Set when Enter or Escape ends the editing: the field goes, so the focus returns to the pencil.
@@ -119,6 +123,9 @@ export function TitleListRow({
         <span className={styles.rowTitle}>
           {title}
           {isNew ? <span className={styles.rowNote}> — новый</span> : null}
+          {workCount === undefined ? null : (
+            <span className={styles.rowCount}>{formatWorkCount(workCount)}</span>
+          )}
         </span>
       )}
 

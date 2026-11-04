@@ -2,9 +2,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
-import { type GalleryColors, galleryColorsQuery, maxColors } from "@/entities/gallery";
+import {
+  type GalleryColors,
+  type GalleryWork,
+  galleryColorsQuery,
+  maxColors,
+} from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { ColorSwatch, ColorSwatchInput } from "@/shared/ui/color-swatch";
+import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { Tooltip } from "@/shared/ui/tooltip";
 
@@ -14,7 +20,9 @@ import {
   defaultColorHex,
   toColorsFormValues,
 } from "../model/colorsFormSchema";
+import { useRowRemoval } from "../model/useRowRemoval";
 import { saveColorsFeedback, useSaveColors } from "../model/useSaveColors";
+import { describeWorkUsage, noWorkUsage, workUsageById } from "../model/workUsage";
 import { AddTitleField } from "./AddTitleField";
 import { TitleList } from "./TitleList";
 import styles from "./TitleList.module.css";
@@ -24,6 +32,8 @@ interface EditColorsFormProps {
   className?: string;
   /** The colors as stored on the server when the form opens, with their ETag. */
   colors: Tagged<GalleryColors>;
+  /** Every work, to count the works of each color. */
+  works: readonly GalleryWork[];
 }
 
 /** The color being edited: the key of its row and the title and swatch the editing started from. */
@@ -37,9 +47,10 @@ interface Editing {
  * Every color of the gallery, as one list: a color is added with its swatch, edited (its title and
  * its swatch, after the pencil) or removed here, and «Сохранить» sends the whole list. A color is one swatch: a
  * black-and-white work gets «Чёрный» and «Белый». The site lists the colors by title, and so does
- * the list once it is saved; the colors added since stay at its end until then.
+ * the list once it is saved; the colors added since stay at its end until then. A color tells how
+ * many works have it, and its removal asks first if any do.
  */
-export function EditColorsForm({ className, colors }: EditColorsFormProps) {
+export function EditColorsForm({ className, colors, works }: EditColorsFormProps) {
   const form = useForm<ColorsFormValues>({
     defaultValues: toColorsFormValues(colors.data),
     resolver: zodResolver(colorsFormSchema),
@@ -68,6 +79,16 @@ export function EditColorsForm({ className, colors }: EditColorsFormProps) {
   const [newHex, setNewHex] = React.useState(defaultColorHex);
   const addFieldRef = React.useRef<HTMLInputElement>(null);
   const savedColors = new Map(saved.data.colors.map((color) => [color.id, color]));
+  const usages = React.useMemo(() => workUsageById(works.map((work) => work.colorIds)), [works]);
+  const removal = useRowRemoval({
+    remove: (index) => {
+      remove(index);
+      setEditing(undefined);
+    },
+    // The row and its buttons are gone; the next color is added from the field above.
+    onRemoved: () => addFieldRef.current?.focus(),
+  });
+  const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
 
   function finishEdit(index: number) {
     setEditing(undefined);
@@ -84,13 +105,6 @@ export function EditColorsForm({ className, colors }: EditColorsFormProps) {
       setValue(`colors.${index}.hex`, editing.startHex, { shouldDirty: true });
     }
     setEditing(undefined);
-  }
-
-  function removeRow(index: number) {
-    remove(index);
-    setEditing(undefined);
-    // The row and its buttons are gone; the next color is added from the field above.
-    addFieldRef.current?.focus();
   }
 
   return (
@@ -183,12 +197,29 @@ export function EditColorsForm({ className, colors }: EditColorsFormProps) {
                   }
                   onFinishEdit={() => finishEdit(index)}
                   onCancelEdit={() => cancelEdit(index)}
-                  onRemove={() => removeRow(index)}
+                  workCount={
+                    savedColor === undefined ? undefined : (usages.get(row.id) ?? noWorkUsage).count
+                  }
+                  onRemove={() => removal.request(index, usages.get(row.id) ?? noWorkUsage)}
                 />
               );
             })}
           </TitleList>
         </div>
+
+        <ConfirmDialog
+          isOpen={removal.pending !== undefined}
+          title={`Удалить цвет «${removedTitle ?? ""}»?`}
+          description={
+            removal.pending
+              ? describeWorkUsage(removal.pending.usage, { item: "цвет", others: "цветов" })
+              : ""
+          }
+          cancelLabel="Отмена"
+          confirmLabel="Удалить"
+          onCancel={removal.cancel}
+          onConfirm={removal.confirm}
+        />
       </EditForm>
     </FormProvider>
   );

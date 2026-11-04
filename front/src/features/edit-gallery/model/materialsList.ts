@@ -23,8 +23,10 @@ export const materialsList: TitleListConfig<GalleryMaterials, string[]> = {
     placeholder: "Например: Акварель",
     rowField: (title) => `Название материала ${title}`,
     rowFallback: "материал",
+    others: "материалов",
     tooMany: `Не больше ${String(maxMaterials)} материалов`,
   },
   toItems: ({ materials }) => materials.map(({ id, title }) => ({ id, title })),
   toastId: "gallery-materials-save",
+  workIds: (work) => work.materialIds,
 };

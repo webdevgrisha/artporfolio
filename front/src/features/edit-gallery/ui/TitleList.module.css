@@ -86,6 +86,12 @@
   color: var(--color-text-muted);
 }
 
+/* Under the title, as the notes under the titles of the works table. */
+.rowCount {
+  display: block;
+  color: var(--color-text-muted);
+}
+
 .rowField {
   flex: 1;
 }

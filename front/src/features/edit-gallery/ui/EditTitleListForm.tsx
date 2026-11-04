@@ -3,8 +3,10 @@ import type { QueryKey } from "@tanstack/react-query";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
+import type { GalleryWork } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
+import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
 import {
@@ -12,6 +14,8 @@ import {
   type TitleListFormValues,
   titleListFormSchema,
 } from "../model/titleList";
+import { useRowRemoval } from "../model/useRowRemoval";
+import { describeWorkUsage, noWorkUsage, workUsageById } from "../model/workUsage";
 import { AddTitleField } from "./AddTitleField";
 import { TitleList } from "./TitleList";
 import styles from "./TitleList.module.css";
@@ -22,6 +26,8 @@ interface EditTitleListFormProps<TData, TQueryKey extends QueryKey> {
   /** The list as stored on the server when the form opens, with its ETag. */
   data: Tagged<TData>;
   list: TitleListConfig<TData, TQueryKey>;
+  /** Every work, to count the works that name each row. */
+  works: readonly GalleryWork[];
 }
 
 /** The row being renamed: the key of its row and the title the renaming started from. */
@@ -32,13 +38,15 @@ interface Editing {
 
 /**
  * A list of titles of the gallery, such as the materials: a row is added, renamed or removed here,
- * and «Сохранить» sends the whole list. The site lists the rows by title, and so does the list once
+ * and «Сохранить» sends the whole list. A row tells how many works name it, and its removal asks
+ * first if any do. The site lists the rows by title, and so does the list once
  * it is saved; the rows added since stay at its end until then.
  */
 export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
   className,
   data,
   list,
+  works,
 }: EditTitleListFormProps<TData, TQueryKey>) {
   const { max, texts } = list;
   const schema = React.useMemo(() => titleListFormSchema(list), [list]);
@@ -73,6 +81,17 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
   const [editing, setEditing] = React.useState<Editing>();
   const addFieldRef = React.useRef<HTMLInputElement>(null);
   const savedTitles = new Map(list.toItems(saved.data).map(({ id, title }) => [id, title]));
+  const { workIds } = list;
+  const usages = React.useMemo(() => workUsageById(works.map(workIds)), [works, workIds]);
+  const removal = useRowRemoval({
+    remove: (index) => {
+      remove(index);
+      setEditing(undefined);
+    },
+    // The row and its buttons are gone; the next row is added from the field above.
+    onRemoved: () => addFieldRef.current?.focus(),
+  });
+  const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
 
   function finishEdit(index: number) {
     setEditing(undefined);
@@ -88,13 +107,6 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
       });
     }
     setEditing(undefined);
-  }
-
-  function removeRow(index: number) {
-    remove(index);
-    setEditing(undefined);
-    // The row and its buttons are gone; the next row is added from the field above.
-    addFieldRef.current?.focus();
   }
 
   return (
@@ -145,15 +157,35 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
                   isModified={isTitleModified}
                   isTitleModified={isTitleModified}
                   isSaving={editForm.isSaving}
+                  workCount={
+                    savedTitle === undefined ? undefined : (usages.get(row.id) ?? noWorkUsage).count
+                  }
                   onStartEdit={() => setEditing({ key: field.id, startTitle: row.title })}
                   onFinishEdit={() => finishEdit(index)}
                   onCancelEdit={() => cancelEdit(index)}
-                  onRemove={() => removeRow(index)}
+                  onRemove={() => removal.request(index, usages.get(row.id) ?? noWorkUsage)}
                 />
               );
             })}
           </TitleList>
         </div>
+
+        <ConfirmDialog
+          isOpen={removal.pending !== undefined}
+          title={`Удалить ${texts.rowFallback} «${removedTitle ?? ""}»?`}
+          description={
+            removal.pending
+              ? describeWorkUsage(removal.pending.usage, {
+                  item: texts.rowFallback,
+                  others: texts.others,
+                })
+              : ""
+          }
+          cancelLabel="Отмена"
+          confirmLabel="Удалить"
+          onCancel={removal.cancel}
+          onConfirm={removal.confirm}
+        />
       </EditForm>
     </FormProvider>
   );

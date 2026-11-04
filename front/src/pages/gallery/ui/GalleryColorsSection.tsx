@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { galleryColorsQuery } from "@/entities/gallery";
+import { galleryColorsQuery, galleryWorksQuery } from "@/entities/gallery";
 import { EditColorsForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, ListSkeleton } from "@/shared/ui/skeleton";
@@ -25,6 +25,7 @@ export function GalleryColorsSection() {
 function GalleryColors() {
   // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: colors } = useSuspenseQuery(galleryColorsQuery);
+  const { data: works } = useSuspenseQuery(galleryWorksQuery);
 
-  return <EditColorsForm className={styles.form} colors={colors} />;
+  return <EditColorsForm className={styles.form} colors={colors} works={works} />;
 }

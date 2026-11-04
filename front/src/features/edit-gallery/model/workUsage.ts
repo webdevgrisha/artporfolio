@@ -27,6 +27,26 @@ export function workUsage(
   return usage;
 }
 
+/** How the works, given by the ids each one names in the list, use each item of it, by its id. */
+export function workUsageById(worksIds: readonly (readonly string[])[]): Map<string, WorkUsage> {
+  const usages = new Map<string, WorkUsage>();
+
+  for (const workIds of worksIds) {
+    for (const id of workIds) {
+      const usage = usages.get(id) ?? { count: 0, onlyCount: 0 };
+
+      usage.count += 1;
+      if (workIds.length === 1) usage.onlyCount += 1;
+      usages.set(id, usage);
+    }
+  }
+
+  return usages;
+}
+
+/** The usage of an item no work names. */
+export const noWorkUsage: WorkUsage = { count: 0, onlyCount: 0 };
+
 const pluralRules = new Intl.PluralRules("ru");
 
 /** The word for `count` among three forms, as in «1 работа», «2 работы», «5 работ». */

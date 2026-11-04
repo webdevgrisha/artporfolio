@@ -1,6 +1,7 @@
 import type { QueryKey, UseSuspenseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
+import type { GalleryWork } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 
 import { refineUniqueTitles, titleSchema } from "./titles";
@@ -43,11 +44,15 @@ export interface TitleListConfig<TData, TQueryKey extends QueryKey = QueryKey> {
     rowField: (title: string) => string;
     /** Names a row without a title, e.g. «материал» in «Удалить материал». */
     rowFallback: string;
+    /** The other rows, as in «других материалов нет». */
+    others: string;
     /** E.g. «Не больше 100 материалов». */
     tooMany: string;
   };
   toItems: (data: TData) => TitleItem[];
   toastId: string;
+  /** The ids of the rows a work names. */
+  workIds: (work: GalleryWork) => readonly string[];
 }
 
 export interface TitleListFormValues {
