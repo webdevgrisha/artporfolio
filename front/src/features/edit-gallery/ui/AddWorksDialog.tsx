@@ -21,12 +21,11 @@ import { formatWorkDate } from "../model/workFormSchema";
 import { matchesWorkQuery } from "../model/worksTableView";
 import styles from "./AddWorksDialog.module.css";
 
-interface AddWorksDialogProps {
+interface AddWorksChoiceProps {
   /** The collections of the gallery, to name the one a work is in now. */
   collections: readonly GalleryCollection[];
   /** The collection being edited; none for a new one. */
   collectionId?: string;
-  isOpen: boolean;
   /** The gallery has no works at all, so there is nothing to add yet. */
   isGalleryEmpty: boolean;
   /** Called on the cancel button and on Escape. */
@@ -37,34 +36,51 @@ interface AddWorksDialogProps {
   works: readonly GalleryWork[];
 }
 
+interface AddWorksDialogProps extends AddWorksChoiceProps {
+  isOpen: boolean;
+}
+
 /**
  * Chooses works to add to a collection, by checkboxes, with a search in the titles. A work of
- * another collection says which: adding it moves it here once the collection is saved. The
- * choice starts empty each time the dialog opens.
+ * another collection says which: adding it moves it here once the collection is saved.
  */
-export function AddWorksDialog({
+export function AddWorksDialog({ isOpen, ...choiceProps }: AddWorksDialogProps) {
+  const { dialogRef, handleCancel } = useModalDialog(isOpen, choiceProps.onCancel);
+  const titleId = React.useId();
+
+  // In a portal: the dialog opens from a form, and inside it the search would belong to that form,
+  // so Enter in the search would submit it. The dialog stays mounted, so closing it returns the
+  // focus; its content is there only while it is open, so a closed dialog loads no thumbnails and
+  // the choice starts empty each time it opens.
+  return createPortal(
+    <dialog
+      ref={dialogRef}
+      className={styles.root}
+      aria-labelledby={titleId}
+      onCancel={handleCancel}
+    >
+      <h2 className={styles.title} id={titleId}>
+        Добавить работы
+      </h2>
+      {isOpen ? <AddWorksChoice {...choiceProps} /> : null}
+    </dialog>,
+    document.body,
+  );
+}
+
+function AddWorksChoice({
   collectionId,
   collections,
   isGalleryEmpty,
-  isOpen,
   onAdd,
   onCancel,
   works,
-}: AddWorksDialogProps) {
-  const { dialogRef, handleCancel } = useModalDialog(isOpen, onCancel);
-  const titleId = React.useId();
+}: AddWorksChoiceProps) {
   const listId = React.useId();
   const [query, setQuery] = React.useState("");
   const [chosenIds, setChosenIds] = React.useState<readonly string[]>([]);
   const shownWorks = works.filter((work) => matchesWorkQuery(work, query));
   const collectionTitles = new Map(collections.map(({ id, title }) => [id, title]));
-
-  React.useEffect(() => {
-    if (isOpen) {
-      setQuery("");
-      setChosenIds([]);
-    }
-  }, [isOpen]);
 
   function toggle(id: string, checked: boolean) {
     setChosenIds((current) =>
@@ -79,18 +95,8 @@ export function AddWorksDialog({
     return collectionTitles.get(workCollectionId);
   }
 
-  // In a portal: the dialog opens from a form, and inside it the search would belong to that form,
-  // so Enter in the search would submit it.
-  return createPortal(
-    <dialog
-      ref={dialogRef}
-      className={styles.root}
-      aria-labelledby={titleId}
-      onCancel={handleCancel}
-    >
-      <h2 className={styles.title} id={titleId}>
-        Добавить работы
-      </h2>
+  return (
+    <>
       {/* showModal() focuses the first focusable element: the search. */}
       <SearchInput
         className={styles.search}
@@ -156,7 +162,6 @@ export function AddWorksDialog({
           Добавить
         </Button>
       </div>
-    </dialog>,
-    document.body,
+    </>
   );
 }
