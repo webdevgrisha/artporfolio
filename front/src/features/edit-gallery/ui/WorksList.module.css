@@ -1,6 +1,6 @@
 /* The title, the sections and the materials share the rest of the row. */
 .table {
-  min-inline-size: 64rem;
+  min-inline-size: 75rem;
 }
 
 .photoColumn {
@@ -18,6 +18,12 @@
   white-space: nowrap;
 }
 
-.format {
+/* Room for «−10% от 100 000 $» on one line. */
+.priceColumn {
+  inline-size: 11rem;
+}
+
+.format,
+.discount {
   color: var(--color-text-muted);
 }

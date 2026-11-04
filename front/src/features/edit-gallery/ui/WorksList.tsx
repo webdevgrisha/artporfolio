@@ -15,6 +15,7 @@ import { PhotoThumbnail } from "@/shared/ui/media-preview";
 
 import { useDeleteWork, useDeletingWorkIds } from "../model/useDeleteWork";
 import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workFormSchema";
+import { formatPrice } from "../model/workPrice";
 import { titlesOf } from "../model/workReferences";
 import { sectionLabels } from "../model/workSections";
 import {
@@ -88,6 +89,34 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
             <>
               {formatWorkSize(original.item.size)}
               {format === null ? null : <div className={styles.format}>{format}</div>}
+            </>
+          );
+        },
+      },
+      {
+        id: "price",
+        header: "Цена",
+        meta: { className: styles.priceColumn },
+        // The price a visitor pays; works without a price stay last either way.
+        accessorFn: (row) => row.item.price?.finalAmount,
+        sortingFn: "basic",
+        sortUndefined: "last",
+        cell: ({ row: { original } }) => {
+          const { price } = original.item;
+
+          if (price === null) {
+            return null;
+          }
+
+          // The discount under the price, muted, with the price it is taken off.
+          return (
+            <>
+              {formatPrice(price.finalAmount, price.currency)}
+              {price.discountPercent === null ? null : (
+                <div className={styles.discount}>
+                  −{price.discountPercent}% от {formatPrice(price.amount, price.currency)}
+                </div>
+              )}
             </>
           );
         },
