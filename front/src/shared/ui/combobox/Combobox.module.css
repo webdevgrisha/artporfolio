@@ -42,13 +42,13 @@
   transform: rotate(-90deg);
 }
 
-/* The list under the field, over what follows it; as the list of Select. */
+/* The list under the field, or above it near the bottom of the screen (useDropdownPosition), over
+   what follows it; as the list of Select. */
 .menu {
   position: absolute;
-  inset-block-start: calc(100% + var(--space-1));
   inset-inline: 0;
   z-index: var(--layer-drawer);
-  max-block-size: 18rem;
+  max-block-size: min(18rem, var(--dropdown-available-height, 18rem));
   padding: 0;
   margin: 0;
   overflow-y: auto;

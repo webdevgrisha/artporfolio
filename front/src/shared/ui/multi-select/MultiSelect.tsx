@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useCombobox, useMultipleSelection } from "downshift";
 import React from "react";
 
+import { useDropdownPosition } from "@/shared/lib/useDropdownPosition";
 import { Field, useFieldIds } from "@/shared/ui/field";
 import { CloseIcon } from "@/shared/ui/icon";
 
@@ -123,6 +124,8 @@ export function MultiSelect({
       },
     });
 
+  const { floatingStyles, setField, setList } = useDropdownPosition(isOpen);
+
   return (
     <Field
       className={className}
@@ -134,7 +137,7 @@ export function MultiSelect({
       label={label}
       labelId={labelId}
     >
-      <div className={styles.controlWrapper}>
+      <div ref={setField} className={styles.controlWrapper}>
         <div
           className={clsx(
             styles.control,
@@ -180,7 +183,10 @@ export function MultiSelect({
             })}
           />
         </div>
-        <ul className={clsx(styles.menu, !isOpen && styles.menuHidden)} {...getMenuProps()}>
+        <ul
+          className={clsx(styles.menu, !isOpen && styles.menuHidden)}
+          {...getMenuProps({ ref: setList, style: floatingStyles })}
+        >
           {isOpen && items.length === 0 ? (
             <li className={styles.noMatches}>{noMatchesText}</li>
           ) : null}

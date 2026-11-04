@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useCombobox } from "downshift";
 import React from "react";
 
+import { useDropdownPosition } from "@/shared/lib/useDropdownPosition";
 import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { SelectOption } from "@/shared/ui/select";
@@ -107,6 +108,8 @@ export function Combobox({
     },
   });
 
+  const { floatingStyles, setField, setList } = useDropdownPosition(isOpen);
+
   return (
     <Field
       className={className}
@@ -118,7 +121,7 @@ export function Combobox({
       label={label}
       labelId={labelId}
     >
-      <div className={styles.controlWrapper}>
+      <div ref={setField} className={styles.controlWrapper}>
         <input
           className={clsx(getFieldControlClassName(isModified), styles.control)}
           placeholder={placeholder}
@@ -142,7 +145,10 @@ export function Combobox({
         >
           <ChevronRightIcon className={clsx(styles.chevron, isOpen && styles.chevronOpen)} />
         </button>
-        <ul className={clsx(styles.menu, !isOpen && styles.menuHidden)} {...getMenuProps()}>
+        <ul
+          className={clsx(styles.menu, !isOpen && styles.menuHidden)}
+          {...getMenuProps({ ref: setList, style: floatingStyles })}
+        >
           {isOpen && items.length === 0 ? (
             <li className={styles.noMatches}>{noMatchesText}</li>
           ) : null}

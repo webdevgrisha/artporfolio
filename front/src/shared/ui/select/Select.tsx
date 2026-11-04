@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useSelect } from "downshift";
 import type React from "react";
 
+import { useDropdownPosition } from "@/shared/lib/useDropdownPosition";
 import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 
@@ -74,6 +75,8 @@ export function Select({
     toggleButtonId: controlId,
   });
 
+  const { floatingStyles, setField, setList } = useDropdownPosition(isOpen);
+
   return (
     <Field
       className={className}
@@ -86,7 +89,7 @@ export function Select({
       labelId={labelId}
       onLabelClick={getLabelProps().onClick}
     >
-      <div className={styles.controlWrapper}>
+      <div ref={setField} className={styles.controlWrapper}>
         <div
           className={clsx(
             getFieldControlClassName(isModified),
@@ -107,7 +110,10 @@ export function Select({
           </span>
           <ChevronRightIcon className={clsx(styles.chevron, isOpen && styles.chevronOpen)} />
         </div>
-        <ul className={clsx(styles.menu, !isOpen && styles.menuHidden)} {...getMenuProps()}>
+        <ul
+          className={clsx(styles.menu, !isOpen && styles.menuHidden)}
+          {...getMenuProps({ ref: setList, style: floatingStyles })}
+        >
           {isOpen
             ? options.map((option, index) => (
                 <li
