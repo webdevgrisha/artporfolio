@@ -12,6 +12,8 @@ import {
   maxWorkMaterials,
   maxWorkPalettes,
   maxWorkProcessPhotos,
+  maxWorkSetSize,
+  minWorkSetSize,
 } from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
@@ -20,10 +22,16 @@ import { Input } from "@/shared/ui/input";
 import { MultiSelect } from "@/shared/ui/multi-select";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 import { PhotoListField } from "@/shared/ui/photo-list-field";
+import { RadioGroup } from "@/shared/ui/radio-group";
 import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 
-import { monthOptions, type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
+import {
+  monthOptions,
+  type WorkFormValues,
+  workFormatOptions,
+  workMaxLengths,
+} from "../model/workFormSchema";
 import { toCollectionOptions, toTitleOptions } from "../model/workReferences";
 import { SectionsField } from "./SectionsField";
 import styles from "./WorkFields.module.css";
@@ -62,6 +70,7 @@ export function WorkFields({
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
   const { defaultValues, dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
+  const format = useWatch({ control, name: "format" });
   // After a refused submit, react-hook-form focuses the first invalid field in the order the
   // fields were registered, so they are registered here in the order of the form; the photos
   // come last, from their own components.
@@ -73,6 +82,9 @@ export function WorkFields({
   const { field: palettesField } = useController({ control, name: "paletteIds" });
   // A select, so a controller, as for the month.
   const { field: collectionField } = useController({ control, name: "collectionId" });
+  // Radio buttons always hold a choice, so the format is never invalid and needs no ref.
+  const { field: formatField } = useController({ control, name: "format" });
+  const partCountField = register("partCount");
   const widthField = register("width");
   const heightField = register("height");
   // A select has no input for react-hook-form to register, so a controller keeps its value.
@@ -188,6 +200,29 @@ export function WorkFields({
           onBlur={collectionField.onBlur}
           onChange={collectionField.onChange}
         />
+        <RadioGroup
+          label="Формат"
+          name={formatField.name}
+          options={workFormatOptions}
+          value={formatField.value}
+          disabled={isSaving}
+          isModified={Boolean(dirtyFields.format)}
+          onChange={formatField.onChange}
+        />
+        {format === "set" ? (
+          <Input
+            className={styles.side}
+            label="Количество работ"
+            hint={`От ${String(minWorkSetSize)} до ${String(maxWorkSetSize)}`}
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="10"
+            disabled={isSaving}
+            error={errors.partCount?.message}
+            isModified={Boolean(dirtyFields.partCount)}
+            {...partCountField}
+          />
+        ) : null}
         <div className={styles.size}>
           <Input
             className={styles.side}
