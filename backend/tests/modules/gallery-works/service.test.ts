@@ -192,6 +192,7 @@ const body: WorkBody = {
   title: "Жираф",
   year: 2025,
   month: 4,
+  place: "",
 };
 
 /** The If-Match of a client that read the work. */
@@ -481,6 +482,21 @@ describe("the format of a work", () => {
 
     expect(data).toMatchObject({ format: "set", partCount: 12 });
     expect(works.get(newId)).toMatchObject({ format: "set", partCount: 12 });
+  });
+});
+
+describe("the place of a work", () => {
+  it("reads a work saved before places as a work without a place", async () => {
+    const { data } = await getWork(elephantId);
+
+    expect(data.place).toBe("");
+  });
+
+  it("saves the place", async () => {
+    const { data } = await createWork(newId, { ...body, place: "Варшава" });
+
+    expect(data.place).toBe("Варшава");
+    expect(works.get(newId)?.place).toBe("Варшава");
   });
 });
 

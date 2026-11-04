@@ -7,6 +7,7 @@ import {
   maxWorkDiscount,
   maxWorkMaterials,
   maxWorkPalettes,
+  maxWorkPlaceLength,
   maxWorkPrice,
   maxWorkProcessPhotos,
   maxWorkSections,
@@ -24,6 +25,7 @@ const work = {
   size: { width: 50, height: 70 },
   year: 2024,
   month: 3,
+  place: "",
   photo: { alt: "Слон на закате", uploadId: randomUUID() },
   processPhotos: [],
   sectionIds: [randomUUID()],
@@ -200,6 +202,14 @@ describe("work body", () => {
     expect(isValid({ ...work, format: "set", partCount: minWorkSetSize - 1 })).toBe(false);
     expect(isValid({ ...work, format: "set", partCount: maxWorkSetSize + 1 })).toBe(false);
     expect(isValid({ ...work, format: "set", partCount: 2.5 })).toBe(false);
+  });
+
+  it("takes a work without a place, and a place within the limit, trimmed", () => {
+    expect(isValid({ ...work, place: "" })).toBe(true);
+    expect(workBodySchema.parse({ ...work, place: "  Варшава " }).place).toBe("Варшава");
+    expect(isValid({ ...work, place: "а".repeat(maxWorkPlaceLength) })).toBe(true);
+    expect(isValid({ ...work, place: "а".repeat(maxWorkPlaceLength + 1) })).toBe(false);
+    expect(isValid({ ...work, place: undefined })).toBe(false);
   });
 
   it("takes a work without a price", () => {

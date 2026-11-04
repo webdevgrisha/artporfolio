@@ -306,6 +306,7 @@ const galleryWorks = [
     size: [50, 70],
     year: 2025,
     collection: "Саванна",
+    place: "Варшава",
     price: 1200,
   },
   {
@@ -314,6 +315,7 @@ const galleryWorks = [
     size: [60, 80],
     year: 2025,
     collection: "Саванна",
+    place: "Варшава",
     price: 1500,
     discountPercent: 20,
   },
@@ -347,7 +349,14 @@ const galleryWorks = [
     price: 2400,
     discountPercent: 15,
   },
-  { title: "Пруд", palette: "dragonfly", size: [70, 50], year: 2022, collection: "У воды" },
+  {
+    title: "Пруд",
+    palette: "dragonfly",
+    size: [70, 50],
+    year: 2022,
+    collection: "У воды",
+    place: "Минск",
+  },
   { title: "Грива", palette: "lion", size: [61, 76.2], year: 2021, format: "triptych" },
   {
     title: "Ночная сова",
@@ -716,6 +725,7 @@ async function seedGallery(api) {
       collectionId: work.collection === undefined ? null : collectionIds.get(work.collection),
       format: work.format ?? "single",
       partCount: work.partCount ?? null,
+      place: work.place ?? "",
       price:
         work.price === undefined
           ? null

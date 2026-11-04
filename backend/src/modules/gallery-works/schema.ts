@@ -37,6 +37,9 @@ export const maxWorkSetSize = 100;
  */
 export const workFormats = ["single", "diptych", "triptych", "set"] as const;
 
+/** The longest place a work was made in, such as «Варшава» or «Мастерская на Повисле». */
+export const maxWorkPlaceLength = 100;
+
 /** The only currency a price is set in for now; the site will show other currencies converted. */
 export const workCurrencies = ["USD"] as const;
 
@@ -116,6 +119,8 @@ export const workBodySchema = z
     year: z.number().int().min(minWorkYear),
     /** 1 for January. */
     month: z.number().int().min(1).max(12),
+    /** Where the work was made, such as a city; an empty string for none. Plain text. */
+    place: z.string().trim().max(maxWorkPlaceLength),
     photo: workPhotoBodySchema,
     /** How the work was made, in the order the site shows them; a saved photo left out is deleted. */
     processPhotos: photoListBodySchema(maxWorkProcessPhotos),
@@ -161,6 +166,8 @@ export const storedWorkSchema = z.object({
   size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
   month: z.number(),
+  /** A work saved before places were added has none. */
+  place: z.string().default(""),
   photo: storedPhotoSchema,
   processPhotos: z.array(storedListPhotoSchema),
   /** May name a section deleted since; the API leaves such ids out. */
@@ -203,6 +210,8 @@ export const workSchema = z.object({
   year: z.number(),
   /** 1 for January. */
   month: z.number(),
+  /** Where the work was made; an empty string for none. */
+  place: z.string(),
   photo: photoSchema,
   /** In the order the site shows them. */
   processPhotos: z.array(listPhotoSchema),
