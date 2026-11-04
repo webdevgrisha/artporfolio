@@ -3,6 +3,7 @@ import React from "react";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import {
+  type GalleryCollection,
   type GalleryColor,
   type GalleryMaterial,
   type GalleryPalette,
@@ -23,7 +24,7 @@ import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 
 import { monthOptions, type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
-import { toTitleOptions } from "../model/workReferences";
+import { toCollectionOptions, toTitleOptions } from "../model/workReferences";
 import { SectionsField } from "./SectionsField";
 import styles from "./WorkFields.module.css";
 
@@ -42,11 +43,14 @@ interface WorkFieldsProps {
   colors: readonly GalleryColor[];
   /** The palettes of the gallery, sorted by title, to choose from. */
   palettes: readonly GalleryPalette[];
+  /** The collections of the gallery, to choose from. */
+  collections: readonly GalleryCollection[];
 }
 
 /** The fields of a work form; they read the form from its context. */
 export function WorkFields({
   className,
+  collections,
   colors,
   isSaving,
   materials,
@@ -67,6 +71,8 @@ export function WorkFields({
   const { field: materialsField } = useController({ control, name: "materialIds" });
   const { field: colorsField } = useController({ control, name: "colorIds" });
   const { field: palettesField } = useController({ control, name: "paletteIds" });
+  // A select, so a controller, as for the month below.
+  const { field: collectionField } = useController({ control, name: "collectionId" });
   const widthField = register("width");
   const heightField = register("height");
   // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
@@ -88,6 +94,7 @@ export function WorkFields({
     [colors],
   );
   const paletteOptions = React.useMemo(() => toTitleOptions(palettes), [palettes]);
+  const collectionOptions = React.useMemo(() => toCollectionOptions(collections), [collections]);
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -168,6 +175,20 @@ export function WorkFields({
           inputRef={palettesField.ref}
           onBlur={palettesField.onBlur}
           onChange={palettesField.onChange}
+        />
+        {/* Always holds a choice, so it needs no «Необязательно»: «Без коллекции» is one. */}
+        <Select
+          className={styles.collection}
+          label="Коллекция"
+          options={collectionOptions}
+          disabled={isSaving}
+          error={errors.collectionId?.message}
+          isModified={Boolean(dirtyFields.collectionId)}
+          ref={collectionField.ref}
+          name={collectionField.name}
+          value={collectionField.value}
+          onBlur={collectionField.onBlur}
+          onChange={collectionField.onChange}
         />
         <div className={styles.size}>
           <Input

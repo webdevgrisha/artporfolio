@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
 import {
+  galleryCollectionsQuery,
   galleryColorsQuery,
   galleryMaterialsQuery,
   galleryPalettesQuery,
@@ -55,6 +56,7 @@ function EditWork({ id }: EditWorkProps) {
   const { data: materials } = useSuspenseQuery(galleryMaterialsQuery);
   const { data: colors } = useSuspenseQuery(galleryColorsQuery);
   const { data: palettes } = useSuspenseQuery(galleryPalettesQuery);
+  const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);
 
   return (
     <EditWorkForm
@@ -64,6 +66,7 @@ function EditWork({ id }: EditWorkProps) {
       materials={materials.data.materials}
       colors={colors.data.colors}
       palettes={palettes.data.palettes}
+      collections={collections}
     />
   );
 }

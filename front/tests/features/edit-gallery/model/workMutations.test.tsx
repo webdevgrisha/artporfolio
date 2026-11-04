@@ -165,6 +165,20 @@ describe("useCreateWork", () => {
 });
 
 describe("useSaveWork", () => {
+  it("sends the chosen collection by id", async () => {
+    const collectionId = "77777777-7777-4777-8777-777777777777";
+    const puts = handlePuts(() =>
+      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+    );
+    const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
+
+    await saveWork.mutateAsync({ etag: '"read"', values: { ...values(), collectionId } });
+
+    expect(puts).toEqual([
+      expect.objectContaining({ body: expect.objectContaining({ collectionId }) }),
+    ]);
+  });
+
   it("keeps the saved photo file and sends its description alone", async () => {
     const puts = handlePuts(() =>
       HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),

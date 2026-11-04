@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
 import {
+  type GalleryCollection,
   type GalleryColor,
   type GalleryMaterial,
   type GalleryPalette,
@@ -27,10 +28,13 @@ interface EditWorkFormProps {
   colors: readonly GalleryColor[];
   /** The palettes of the gallery, to choose from. */
   palettes: readonly GalleryPalette[];
+  /** The collections of the gallery, to choose from. */
+  collections: readonly GalleryCollection[];
 }
 
 export function EditWorkForm({
   className,
+  collections,
   colors,
   materials,
   palettes,
@@ -64,6 +68,7 @@ export function EditWorkForm({
           materials={materials}
           colors={colors}
           palettes={palettes}
+          collections={collections}
         />
       </EditForm>
     </FormProvider>

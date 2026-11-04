@@ -77,9 +77,9 @@ export function getSaveWorkErrorMessage(error: unknown): string {
       404: "Работа уже удалена",
       // The work was changed since this page loaded it, for example in another tab.
       412: "Работу уже изменили в другой вкладке",
-      // A section was deleted, or an upload expired: it is kept for a day and the work is sent
-      // right after it, so that is rare.
-      422: "Раздел или фото уже удалены. Обновите страницу и внесите изменения заново",
+      // A section, a list item or the collection was deleted, or an upload expired: it is kept for
+      // a day and the work is sent right after it, so that is rare.
+      422: "Что-то из выбранного или фото уже удалены. Обновите страницу и внесите изменения заново",
     },
     fallback: "Не удалось сохранить работу. Попробуйте ещё раз",
   });

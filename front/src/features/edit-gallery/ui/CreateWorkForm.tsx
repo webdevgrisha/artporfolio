@@ -4,6 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import type {
+  GalleryCollection,
   GalleryColor,
   GalleryMaterial,
   GalleryPalette,
@@ -26,11 +27,14 @@ interface CreateWorkFormProps {
   colors: readonly GalleryColor[];
   /** The palettes of the gallery, to choose from. */
   palettes: readonly GalleryPalette[];
+  /** The collections of the gallery, to choose from. */
+  collections: readonly GalleryCollection[];
 }
 
 /** A new work; once it is created, its edit page opens in place of this one. */
 export function CreateWorkForm({
   className,
+  collections,
   colors,
   materials,
   palettes,
@@ -89,6 +93,7 @@ export function CreateWorkForm({
           materials={materials}
           colors={colors}
           palettes={palettes}
+          collections={collections}
         />
       </EditForm>
     </FormProvider>

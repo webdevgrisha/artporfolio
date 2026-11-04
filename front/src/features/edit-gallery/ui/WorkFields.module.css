@@ -34,3 +34,8 @@
 .year {
   inline-size: 8rem;
 }
+
+/* Room for a long title of a collection and the chevron. */
+.collection {
+  max-inline-size: 24rem;
+}

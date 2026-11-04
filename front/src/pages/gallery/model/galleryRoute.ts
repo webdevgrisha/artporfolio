@@ -28,8 +28,8 @@ export function gallerySectionLoader({ params }: LoaderFunctionArgs) {
   return loadPageData(fetchFresh(gallerySectionQuery(params.id ?? "")));
 }
 
-// The works name their sections, materials, colors and palettes by id, so their pages load those
-// lists too; the table names only the sections and the materials.
+// The works name their sections, materials, colors, palettes and collection by id, so their pages
+// load those lists too; the table names only the sections and the materials.
 
 export function galleryWorksLoader() {
   return loadPageData(
@@ -45,6 +45,7 @@ export function newGalleryWorkLoader() {
     fetchFresh(galleryMaterialsQuery),
     fetchFresh(galleryColorsQuery),
     fetchFresh(galleryPalettesQuery),
+    fetchFresh(galleryCollectionsQuery),
   );
 }
 
@@ -55,6 +56,7 @@ export function galleryWorkLoader({ params }: LoaderFunctionArgs) {
     fetchFresh(galleryMaterialsQuery),
     fetchFresh(galleryColorsQuery),
     fetchFresh(galleryPalettesQuery),
+    fetchFresh(galleryCollectionsQuery),
   );
 }
 
