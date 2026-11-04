@@ -19,7 +19,7 @@ import { TableHead } from "@/shared/ui/table-head";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import { useDeleteWork } from "../model/useDeleteWork";
-import { formatWorkDate, formatWorkSize } from "../model/workFormSchema";
+import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workFormSchema";
 import { titlesOf } from "../model/workReferences";
 import { sectionLabels } from "../model/workSections";
 import {
@@ -116,7 +116,17 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         sortingFn: (a, b) => compareWorkSizes(a.original.work, b.original.work),
         // The smallest first would read as a step back; the largest first is the useful start.
         sortDescFirst: true,
-        cell: ({ row: { original } }) => formatWorkSize(original.work.size),
+        cell: ({ row: { original } }) => {
+          const format = formatWorkFormat(original.work);
+
+          // The format under the size, muted: «диптих», «12 шт.»; a single work has none.
+          return (
+            <>
+              {formatWorkSize(original.work.size)}
+              {format === null ? null : <div className={styles.muted}>{format}</div>}
+            </>
+          );
+        },
       },
       {
         id: "date",
