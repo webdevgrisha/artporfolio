@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, type ShouldRevalidateFunctionArgs } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 
 import { requireSession } from "@/entities/user";
 import { logoutAction } from "@/features/logout";
@@ -8,13 +8,11 @@ import { adminHomePath, adminRouteId, routes } from "@/shared/config/routes";
 import { PageLoading } from "@/shared/ui/page-loading";
 import { AdminLayout, AdminLayoutSkeleton, AdminPageError } from "@/widgets/admin-layout";
 
-/**
- * A change of the search parameters alone, such as the search of a table, is a view of the same
- * page: it loads nothing again.
- */
-function changesOnlySearch({ currentUrl, nextUrl }: ShouldRevalidateFunctionArgs): boolean {
-  return currentUrl.pathname === nextUrl.pathname && currentUrl.search !== nextUrl.search;
-}
+// Every page loads with its own chunk; each page package exports the routes it renders.
+const gallery = () => import("@/pages/gallery");
+const projects = () => import("@/pages/projects");
+const about = () => import("@/pages/about");
+const contacts = () => import("@/pages/contacts");
 
 export const router = createBrowserRouter([
   {
@@ -34,17 +32,7 @@ export const router = createBrowserRouter([
         children: [
           {
             path: routes.login,
-            lazy: async () => {
-              const { LoginPage, loginAction, loginLoader } = await import("@/pages/login");
-
-              return {
-                action: loginAction,
-                Component: LoginPage,
-                loader: loginLoader,
-                // After a failed sign-in only the action result changes; the session check is not repeated.
-                shouldRevalidate: () => false,
-              };
-            },
+            lazy: () => import("@/pages/login").then((page) => page.loginRoute),
           },
           {
             path: routes.logout,
@@ -73,339 +61,135 @@ export const router = createBrowserRouter([
                   },
                   {
                     path: routes.gallery,
-                    lazy: async () => ({
-                      Component: (await import("@/pages/gallery")).GalleryPage,
-                    }),
+                    lazy: () => gallery().then((page) => page.galleryRoute),
                     // The text, the works, the collections, the sections, the materials, the colors
                     // and the palettes are saved independently; the page opens the works.
                     children: [
-                      {
-                        index: true,
-                        element: <Navigate to={routes.galleryWorks} replace />,
-                      },
+                      { index: true, element: <Navigate to={routes.galleryWorks} replace /> },
                       {
                         path: routes.galleryIntro,
-                        lazy: async () => {
-                          const { GalleryIntroSection, galleryIntroLoader } = await import(
-                            "@/pages/gallery"
-                          );
-
-                          return { Component: GalleryIntroSection, loader: galleryIntroLoader };
-                        },
+                        lazy: () => gallery().then((page) => page.galleryIntroRoute),
                       },
                       {
                         path: routes.galleryWorks,
-                        lazy: async () => {
-                          const { GalleryWorksSection, galleryWorksLoader } = await import(
-                            "@/pages/gallery"
-                          );
-
-                          return {
-                            Component: GalleryWorksSection,
-                            loader: galleryWorksLoader,
-                            shouldRevalidate: (args) =>
-                              !changesOnlySearch(args) && args.defaultShouldRevalidate,
-                          };
-                        },
+                        lazy: () => gallery().then((page) => page.galleryWorksRoute),
                       },
                       {
                         path: routes.galleryCollections,
-                        lazy: async () => {
-                          const { GalleryCollectionsSection, galleryCollectionsLoader } =
-                            await import("@/pages/gallery");
-
-                          return {
-                            Component: GalleryCollectionsSection,
-                            loader: galleryCollectionsLoader,
-                            shouldRevalidate: (args) =>
-                              !changesOnlySearch(args) && args.defaultShouldRevalidate,
-                          };
-                        },
+                        lazy: () => gallery().then((page) => page.galleryCollectionsRoute),
                       },
                       {
                         path: routes.gallerySections,
-                        lazy: async () => {
-                          const { GallerySectionsSection, gallerySectionsLoader } = await import(
-                            "@/pages/gallery"
-                          );
-
-                          return {
-                            Component: GallerySectionsSection,
-                            loader: gallerySectionsLoader,
-                            shouldRevalidate: (args) =>
-                              !changesOnlySearch(args) && args.defaultShouldRevalidate,
-                          };
-                        },
+                        lazy: () => gallery().then((page) => page.gallerySectionsRoute),
                       },
                       {
                         path: routes.galleryMaterials,
-                        lazy: async () => {
-                          const { GalleryMaterialsSection, galleryMaterialsLoader } = await import(
-                            "@/pages/gallery"
-                          );
-
-                          return {
-                            Component: GalleryMaterialsSection,
-                            loader: galleryMaterialsLoader,
-                          };
-                        },
+                        lazy: () => gallery().then((page) => page.galleryMaterialsRoute),
                       },
                       {
                         path: routes.galleryColors,
-                        lazy: async () => {
-                          const { GalleryColorsSection, galleryColorsLoader } = await import(
-                            "@/pages/gallery"
-                          );
-
-                          return { Component: GalleryColorsSection, loader: galleryColorsLoader };
-                        },
+                        lazy: () => gallery().then((page) => page.galleryColorsRoute),
                       },
                       {
                         path: routes.galleryPalettes,
-                        lazy: async () => {
-                          const { GalleryPalettesSection, galleryPalettesLoader } = await import(
-                            "@/pages/gallery"
-                          );
-
-                          return {
-                            Component: GalleryPalettesSection,
-                            loader: galleryPalettesLoader,
-                          };
-                        },
+                        lazy: () => gallery().then((page) => page.galleryPalettesRoute),
                       },
                     ],
                   },
                   {
-                    path: routes.galleryCollectionNew,
-                    lazy: async () => {
-                      const { NewCollectionPage, newCollectionHandle, newGalleryCollectionLoader } =
-                        await import("@/pages/gallery");
-
-                      return {
-                        Component: NewCollectionPage,
-                        handle: newCollectionHandle,
-                        loader: newGalleryCollectionLoader,
-                      };
-                    },
-                  },
-                  {
-                    path: `${routes.galleryCollections}/:id`,
-                    lazy: async () => {
-                      const { EditCollectionPage, editCollectionHandle, galleryCollectionLoader } =
-                        await import("@/pages/gallery");
-
-                      return {
-                        Component: EditCollectionPage,
-                        handle: editCollectionHandle,
-                        loader: galleryCollectionLoader,
-                      };
-                    },
-                  },
-                  {
-                    path: routes.gallerySectionNew,
-                    lazy: async () => {
-                      const { NewSectionPage, newSectionHandle } = await import("@/pages/gallery");
-
-                      return { Component: NewSectionPage, handle: newSectionHandle };
-                    },
-                  },
-                  {
-                    path: `${routes.gallerySections}/:id`,
-                    lazy: async () => {
-                      const { EditSectionPage, editSectionHandle, gallerySectionLoader } =
-                        await import("@/pages/gallery");
-
-                      return {
-                        Component: EditSectionPage,
-                        handle: editSectionHandle,
-                        loader: gallerySectionLoader,
-                      };
-                    },
-                  },
-                  {
                     path: routes.galleryWorkNew,
-                    lazy: async () => {
-                      const { NewWorkPage, newGalleryWorkLoader, newWorkHandle } = await import(
-                        "@/pages/gallery"
-                      );
-
-                      return {
-                        Component: NewWorkPage,
-                        handle: newWorkHandle,
-                        loader: newGalleryWorkLoader,
-                      };
-                    },
+                    lazy: () => gallery().then((page) => page.newWorkRoute),
                   },
                   {
                     path: `${routes.galleryWorks}/:id`,
-                    lazy: async () => {
-                      const { EditWorkPage, editWorkHandle, galleryWorkLoader } = await import(
-                        "@/pages/gallery"
-                      );
-
-                      return {
-                        Component: EditWorkPage,
-                        handle: editWorkHandle,
-                        loader: galleryWorkLoader,
-                      };
-                    },
+                    lazy: () => gallery().then((page) => page.editWorkRoute),
+                  },
+                  {
+                    path: routes.galleryCollectionNew,
+                    lazy: () => gallery().then((page) => page.newCollectionRoute),
+                  },
+                  {
+                    path: `${routes.galleryCollections}/:id`,
+                    lazy: () => gallery().then((page) => page.editCollectionRoute),
+                  },
+                  {
+                    path: routes.gallerySectionNew,
+                    lazy: () => gallery().then((page) => page.newSectionRoute),
+                  },
+                  {
+                    path: `${routes.gallerySections}/:id`,
+                    lazy: () => gallery().then((page) => page.editSectionRoute),
                   },
                   {
                     path: routes.projects,
-                    lazy: async () => ({
-                      Component: (await import("@/pages/projects")).ProjectsPage,
-                    }),
+                    lazy: () => projects().then((page) => page.projectsRoute),
                     // The text and the list are saved independently; the page opens the list.
                     children: [
-                      {
-                        index: true,
-                        element: <Navigate to={routes.projectsAll} replace />,
-                      },
+                      { index: true, element: <Navigate to={routes.projectsAll} replace /> },
                       {
                         path: routes.projectsIntro,
-                        lazy: async () => {
-                          const { ProjectsIntroSection, projectsIntroLoader } = await import(
-                            "@/pages/projects"
-                          );
-
-                          return { Component: ProjectsIntroSection, loader: projectsIntroLoader };
-                        },
+                        lazy: () => projects().then((page) => page.projectsIntroRoute),
                       },
                       {
                         path: routes.projectsAll,
-                        lazy: async () => {
-                          const { ProjectsTableSection, projectsTableLoader } = await import(
-                            "@/pages/projects"
-                          );
-
-                          return {
-                            Component: ProjectsTableSection,
-                            loader: projectsTableLoader,
-                            shouldRevalidate: (args) =>
-                              !changesOnlySearch(args) && args.defaultShouldRevalidate,
-                          };
-                        },
+                        lazy: () => projects().then((page) => page.projectsTableRoute),
                       },
                       {
                         path: routes.projectsOrder,
-                        lazy: async () => {
-                          const { ProjectsOrderSection, projectsOrderLoader } = await import(
-                            "@/pages/projects"
-                          );
-
-                          return { Component: ProjectsOrderSection, loader: projectsOrderLoader };
-                        },
+                        lazy: () => projects().then((page) => page.projectsOrderRoute),
                       },
                     ],
                   },
                   {
                     path: routes.projectNew,
-                    lazy: async () => {
-                      const { NewProjectPage, newProjectHandle } = await import("@/pages/projects");
-
-                      return { Component: NewProjectPage, handle: newProjectHandle };
-                    },
+                    lazy: () => projects().then((page) => page.newProjectRoute),
                   },
                   {
                     path: `${routes.projects}/:id`,
-                    lazy: async () => {
-                      const { EditProjectPage, editProjectHandle, projectLoader } = await import(
-                        "@/pages/projects"
-                      );
-
-                      return {
-                        Component: EditProjectPage,
-                        handle: editProjectHandle,
-                        loader: projectLoader,
-                      };
-                    },
+                    lazy: () => projects().then((page) => page.editProjectRoute),
                   },
                   {
                     path: routes.about,
-                    lazy: async () => ({ Component: (await import("@/pages/about")).AboutPage }),
-                    // Each section has its own form, URL and resource; the page opens its first one.
+                    lazy: () => about().then((page) => page.aboutRoute),
                     children: [
-                      {
-                        index: true,
-                        element: <Navigate to={routes.aboutText} replace />,
-                      },
+                      { index: true, element: <Navigate to={routes.aboutText} replace /> },
                       {
                         path: routes.aboutText,
-                        lazy: async () => {
-                          const { AboutTextSection, aboutTextLoader } = await import(
-                            "@/pages/about"
-                          );
-
-                          return { Component: AboutTextSection, loader: aboutTextLoader };
-                        },
+                        lazy: () => about().then((page) => page.aboutTextRoute),
                       },
                       {
                         path: routes.aboutPhoto,
-                        lazy: async () => {
-                          const { AboutPhotoSection, aboutPhotoLoader } = await import(
-                            "@/pages/about"
-                          );
-
-                          return { Component: AboutPhotoSection, loader: aboutPhotoLoader };
-                        },
+                        lazy: () => about().then((page) => page.aboutPhotoRoute),
                       },
                       {
                         path: routes.aboutProcess,
-                        lazy: async () => {
-                          const { AboutProcessSection, aboutProcessLoader } = await import(
-                            "@/pages/about"
-                          );
-
-                          return { Component: AboutProcessSection, loader: aboutProcessLoader };
-                        },
+                        lazy: () => about().then((page) => page.aboutProcessRoute),
                       },
                     ],
                   },
                   {
                     path: routes.contacts,
-                    lazy: async () => ({
-                      Component: (await import("@/pages/contacts")).ContactsPage,
-                    }),
+                    lazy: () => contacts().then((page) => page.contactsRoute),
                     children: [
-                      {
-                        index: true,
-                        element: <Navigate to={routes.contactLinks} replace />,
-                      },
+                      { index: true, element: <Navigate to={routes.contactLinks} replace /> },
                       {
                         path: routes.contactLinks,
-                        lazy: async () => {
-                          const { ContactLinksSection, contactLinksLoader } = await import(
-                            "@/pages/contacts"
-                          );
-
-                          return { Component: ContactLinksSection, loader: contactLinksLoader };
-                        },
+                        lazy: () => contacts().then((page) => page.contactLinksRoute),
                       },
                       {
                         path: routes.contactPhoto,
-                        lazy: async () => {
-                          const { ContactPhotoSection, contactPhotoLoader } = await import(
-                            "@/pages/contacts"
-                          );
-
-                          return { Component: ContactPhotoSection, loader: contactPhotoLoader };
-                        },
+                        lazy: () => contacts().then((page) => page.contactPhotoRoute),
                       },
                     ],
                   },
                   {
                     path: routes.personalization,
-                    lazy: async () => ({
-                      Component: (await import("@/pages/personalization")).PersonalizationPage,
-                    }),
+                    lazy: () =>
+                      import("@/pages/personalization").then((page) => page.personalizationRoute),
                   },
                   {
                     path: routes.sitePages,
-                    lazy: async () => {
-                      const { SitePagesPage, sitePagesLoader } = await import("@/pages/site-pages");
-
-                      return { Component: SitePagesPage, loader: sitePagesLoader };
-                    },
+                    lazy: () => import("@/pages/site-pages").then((page) => page.sitePagesRoute),
                   },
                 ],
               },

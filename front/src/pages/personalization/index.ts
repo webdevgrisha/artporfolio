@@ -1,1 +1,1 @@
-export { PersonalizationPage } from "./ui/PersonalizationPage";
+export * from "./routes";
