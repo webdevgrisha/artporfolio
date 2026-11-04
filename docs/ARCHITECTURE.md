@@ -126,6 +126,7 @@ backend/src/
 │   ├── contacts/       the whole contacts page for the site; document.ts is the Firestore document shared below
 │   │   ├── links/      the contact links, mounted by the contacts router
 │   │   └── photo.ts    the contact photo, a photo slot mounted by the contacts router
+│   ├── gallery-collections/ the collections of the gallery, each a Firestore document with its cover and years
 │   ├── gallery-colors/ the colors of the gallery, one list sorted by title
 │   ├── gallery-intro/  the text above the works in the gallery
 │   ├── gallery-materials/ the materials of the gallery, one list sorted by title
