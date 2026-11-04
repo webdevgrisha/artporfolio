@@ -50,6 +50,7 @@ const savedWork = {
   paletteIds: [],
   format: "set",
   partCount: 12,
+  saleStatus: "reserved",
   price: null,
   size: { height: 27.9, width: 21.6 },
   title: "Стрекоза",
@@ -225,6 +226,10 @@ describe("the place in the form", () => {
     expect(fieldErrors(workFormSchema, { ...work, city: "а".repeat(101) })).toEqual({
       city: ["Не длиннее 100 символов"],
     });
+  });
+
+  it("shows the saved sale status", () => {
+    expect(toWorkFormValues(savedWork).saleStatus).toBe("reserved");
   });
 
   it("shows the saved country and city, and no country as none chosen", () => {

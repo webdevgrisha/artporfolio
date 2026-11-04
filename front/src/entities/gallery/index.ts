@@ -69,6 +69,8 @@ export {
   type WorkCurrency,
   type WorkFormat,
   type WorkPrice,
+  type WorkSaleStatus,
   type WorkSize,
   workFormats,
+  workSaleStatuses,
 } from "./model/galleryWork";

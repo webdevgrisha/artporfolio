@@ -63,6 +63,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     collectionId: collectionId === "" ? null : collectionId,
     format: values.format,
     partCount: toPartCount(values),
+    saleStatus: values.saleStatus,
     price: toWorkPrice(values),
     size: toWorkSize(values),
     title,

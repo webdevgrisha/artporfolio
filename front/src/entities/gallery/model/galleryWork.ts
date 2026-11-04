@@ -35,6 +35,14 @@ export type WorkFormat = (typeof workFormats)[number];
 /** The longest name of the city a work was made in. */
 export const maxWorkCityLength = 100;
 
+/**
+ * Whether a visitor can buy the work: for sale, reserved for a buyer who has not paid yet, sold, or
+ * not for sale at all. Apart from the price: a sold work keeps the price it was sold for.
+ */
+export const workSaleStatuses = ["available", "reserved", "sold", "notForSale"] as const;
+
+export type WorkSaleStatus = (typeof workSaleStatuses)[number];
+
 /** The only currency a price is set in for now. */
 export const workCurrencies = ["USD"] as const;
 
@@ -100,6 +108,7 @@ export const galleryWorkSchema = z.object({
   format: z.enum(workFormats),
   /** How many works the set has; null for any other format. */
   partCount: z.number().nullable(),
+  saleStatus: z.enum(workSaleStatuses),
   /** Null for a work without a price. The price of a set is for all its works together. */
   price: workPriceSchema.nullable(),
   /** When the work was created, ISO 8601. */

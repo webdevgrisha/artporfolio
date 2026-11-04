@@ -14,6 +14,7 @@ import {
   type WorkFormat,
   type WorkSize,
   workFormats,
+  workSaleStatuses,
 } from "@/entities/gallery";
 import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
 import { photoListRowsSchema, toPhotoListRows } from "@/shared/lib/photoListForm";
@@ -182,6 +183,7 @@ export const workFormSchema = z
     format: z.enum(workFormats),
     /** The count of works of a set, as typed; empty for a new work. */
     partCount: z.string(),
+    saleStatus: z.enum(workSaleStatuses),
     /** The price in whole dollars, as typed; empty for a work without a price. */
     price: z.string(),
     /** The percent taken off the price, as typed; empty for none. */
@@ -214,6 +216,7 @@ export const emptyWorkFormValues: WorkFormValues = {
   collectionId: "",
   format: "single",
   partCount: "",
+  saleStatus: "available",
   price: "",
   discountPercent: "",
 };
@@ -233,6 +236,7 @@ export function toWorkFormValues({
   photo,
   price,
   processPhotos,
+  saleStatus,
   sectionIds,
   size,
   title,
@@ -256,6 +260,7 @@ export function toWorkFormValues({
     collectionId: collectionId ?? "",
     format,
     partCount: partCount === null ? "" : String(partCount),
+    saleStatus,
     price: price === null ? "" : String(price.amount),
     discountPercent:
       price === null || price.discountPercent === null ? "" : String(price.discountPercent),
