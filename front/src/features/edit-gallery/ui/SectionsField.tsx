@@ -87,54 +87,62 @@ export function SectionsField({
           disabled && styles.frameDisabled,
         )}
       >
-        {sections.length === 0 ? (
-          <p className={styles.empty}>Разделов пока нет. Добавьте их на вкладке «Разделы»</p>
-        ) : (
-          <ul className={styles.list}>
-            {sections.map((section) => {
-              const subsectionsId = `${controlId}-${section.id}-subsections`;
-              const isExpanded = expandedIds.has(section.id);
+        <div className={styles.scroller}>
+          {sections.length === 0 ? (
+            <p className={styles.empty}>Разделов пока нет. Добавьте их на вкладке «Разделы»</p>
+          ) : (
+            <ul className={styles.list}>
+              {sections.map((section) => {
+                const subsectionsId = `${controlId}-${section.id}-subsections`;
+                const isExpanded = expandedIds.has(section.id);
 
-              return (
-                <li key={section.id} className={styles.section}>
-                  <div className={styles.row}>
-                    <label className={styles.title} htmlFor={`${controlId}-${section.id}`}>
-                      {section.title}
-                    </label>
+                return (
+                  <li key={section.id} className={styles.section}>
+                    <div className={styles.row}>
+                      <label className={styles.title} htmlFor={`${controlId}-${section.id}`}>
+                        {section.title}
+                      </label>
+                      {section.subsections.length > 0 ? (
+                        <button
+                          type="button"
+                          className={styles.toggle}
+                          aria-controls={subsectionsId}
+                          aria-expanded={isExpanded}
+                          aria-label={`Подразделы: ${section.title}`}
+                          onClick={() => toggleExpanded(section.id)}
+                        >
+                          <ChevronRightIcon
+                            className={clsx(styles.chevron, isExpanded && styles.chevronExpanded)}
+                          />
+                        </button>
+                      ) : null}
+                      <Checkbox className={styles.checkbox} {...checkboxProps(section.id)} />
+                    </div>
                     {section.subsections.length > 0 ? (
-                      <button
-                        type="button"
-                        className={styles.toggle}
-                        aria-controls={subsectionsId}
-                        aria-expanded={isExpanded}
-                        aria-label={`Подразделы: ${section.title}`}
-                        onClick={() => toggleExpanded(section.id)}
-                      >
-                        <ChevronRightIcon
-                          className={clsx(styles.chevron, isExpanded && styles.chevronExpanded)}
-                        />
-                      </button>
+                      <ul id={subsectionsId} className={styles.subsections} hidden={!isExpanded}>
+                        {section.subsections.map((subsection) => (
+                          <li key={subsection.id} className={styles.row}>
+                            <ChevronRightIcon className={styles.marker} />
+                            <label
+                              className={styles.title}
+                              htmlFor={`${controlId}-${subsection.id}`}
+                            >
+                              {subsection.title}
+                            </label>
+                            <Checkbox
+                              className={styles.checkbox}
+                              {...checkboxProps(subsection.id)}
+                            />
+                          </li>
+                        ))}
+                      </ul>
                     ) : null}
-                    <Checkbox className={styles.checkbox} {...checkboxProps(section.id)} />
-                  </div>
-                  {section.subsections.length > 0 ? (
-                    <ul id={subsectionsId} className={styles.subsections} hidden={!isExpanded}>
-                      {section.subsections.map((subsection) => (
-                        <li key={subsection.id} className={styles.row}>
-                          <ChevronRightIcon className={styles.marker} />
-                          <label className={styles.title} htmlFor={`${controlId}-${subsection.id}`}>
-                            {subsection.title}
-                          </label>
-                          <Checkbox className={styles.checkbox} {...checkboxProps(subsection.id)} />
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </div>
       <FieldHint id={hintId}>{hint}</FieldHint>
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}

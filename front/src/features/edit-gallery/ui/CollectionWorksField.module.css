@@ -18,16 +18,25 @@
 }
 
 /*
- * The frame of the list, as the frame of the sections of a work. A long list scrolls inside the
- * frame, so the fields after it stay close; the scroll stops at its ends instead of moving the page.
+ * The frame of the list, as the frame of the sections of a work. The modified and invalid states
+ * draw their second pixel inside the border as an inset shadow, which is painted under the content:
+ * the frame keeps that pixel free, so the rows never cover it.
  */
 .frame {
+  padding: 1px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+/*
+ * A long list scrolls inside the frame, so the fields after it stay close; the scroll stops at its
+ * ends instead of moving the page.
+ */
+.scroller {
   max-block-size: 32rem;
   padding-block: var(--space-2);
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
 }
 
 /* The modified frame of the text fields, see Field.module.css. */

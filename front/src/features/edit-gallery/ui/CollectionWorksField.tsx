@@ -89,39 +89,41 @@ export function CollectionWorksField({
           disabled && styles.frameDisabled,
         )}
       >
-        {chosen.length === 0 ? (
-          <p className={styles.empty}>В коллекции пока нет работ</p>
-        ) : (
-          <ul className={styles.list}>
-            {chosen.map((work) => {
-              const removeLabel = `Убрать из коллекции ${work.title}`;
+        <div className={styles.scroller}>
+          {chosen.length === 0 ? (
+            <p className={styles.empty}>В коллекции пока нет работ</p>
+          ) : (
+            <ul className={styles.list}>
+              {chosen.map((work) => {
+                const removeLabel = `Убрать из коллекции ${work.title}`;
 
-              return (
-                <li key={work.id} className={styles.row}>
-                  <MediaImage
-                    className={styles.photo}
-                    source={imageToMediaItem(work.photo).source}
-                  />
-                  <span className={styles.title}>{work.title}</span>
-                  <span className={styles.date}>{formatWorkDate(work)}</span>
-                  <Tooltip content={removeLabel}>
-                    <IconButton
-                      ref={(button) => {
-                        if (button) removeButtons.current.set(work.id, button);
-                        else removeButtons.current.delete(work.id);
-                      }}
-                      label={removeLabel}
-                      disabled={disabled}
-                      onClick={() => remove(work.id)}
-                    >
-                      <TrashIcon className={styles.removeIcon} />
-                    </IconButton>
-                  </Tooltip>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                return (
+                  <li key={work.id} className={styles.row}>
+                    <MediaImage
+                      className={styles.photo}
+                      source={imageToMediaItem(work.photo).source}
+                    />
+                    <span className={styles.title}>{work.title}</span>
+                    <span className={styles.date}>{formatWorkDate(work)}</span>
+                    <Tooltip content={removeLabel}>
+                      <IconButton
+                        ref={(button) => {
+                          if (button) removeButtons.current.set(work.id, button);
+                          else removeButtons.current.delete(work.id);
+                        }}
+                        label={removeLabel}
+                        disabled={disabled}
+                        onClick={() => remove(work.id)}
+                      >
+                        <TrashIcon className={styles.removeIcon} />
+                      </IconButton>
+                    </Tooltip>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </div>
       <FieldHint id={hintId}>{hint}</FieldHint>
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
