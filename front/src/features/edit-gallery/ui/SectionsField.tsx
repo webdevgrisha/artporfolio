@@ -3,7 +3,15 @@ import React from "react";
 
 import type { GallerySection } from "@/entities/gallery";
 import { Checkbox } from "@/shared/ui/checkbox";
-import { FieldError, FieldHint, useFieldIds } from "@/shared/ui/field";
+import { Fieldset } from "@/shared/ui/fieldset";
+import {
+  Frame,
+  FrameEmpty,
+  FrameList,
+  FrameListItem,
+  FrameRow,
+  FrameRowLabel,
+} from "@/shared/ui/frame-list";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 
 import styles from "./SectionsField.module.css";
@@ -39,8 +47,7 @@ export function SectionsField({
   sections,
   value,
 }: SectionsFieldProps) {
-  const hint = "Работа в подразделе видна и в его разделе";
-  const { controlId, describedBy, errorId, hintId } = useFieldIds({ error, hint });
+  const controlId = React.useId();
   const [expandedIds, setExpandedIds] = React.useState<ReadonlySet<string>>(
     () =>
       new Set(
@@ -78,74 +85,67 @@ export function SectionsField({
   }
 
   return (
-    <fieldset className={styles.root} aria-describedby={describedBy}>
-      <legend className={styles.legend}>Разделы</legend>
-      <div
-        className={clsx(
-          styles.frame,
-          Boolean(error) && styles.frameInvalid,
-          disabled && styles.frameDisabled,
-        )}
-      >
-        <div className={styles.scroller}>
-          {sections.length === 0 ? (
-            <p className={styles.empty}>Разделов пока нет. Добавьте их на вкладке «Разделы»</p>
-          ) : (
-            <ul className={styles.list}>
-              {sections.map((section) => {
-                const subsectionsId = `${controlId}-${section.id}-subsections`;
-                const isExpanded = expandedIds.has(section.id);
+    <Fieldset
+      className={styles.root}
+      legend="Разделы"
+      hint="Работа в подразделе видна и в его разделе"
+      error={error}
+    >
+      <Frame className={styles.frame} isInvalid={Boolean(error)} isDisabled={disabled}>
+        {sections.length === 0 ? (
+          <FrameEmpty>Разделов пока нет. Добавьте их на вкладке «Разделы»</FrameEmpty>
+        ) : (
+          <FrameList>
+            {sections.map((section) => {
+              const subsectionsId = `${controlId}-${section.id}-subsections`;
+              const isExpanded = expandedIds.has(section.id);
 
-                return (
-                  <li key={section.id} className={styles.section}>
-                    <div className={styles.row}>
-                      <label className={styles.title} htmlFor={`${controlId}-${section.id}`}>
-                        {section.title}
-                      </label>
-                      {section.subsections.length > 0 ? (
-                        <button
-                          type="button"
-                          className={styles.toggle}
-                          aria-controls={subsectionsId}
-                          aria-expanded={isExpanded}
-                          aria-label={`Подразделы: ${section.title}`}
-                          onClick={() => toggleExpanded(section.id)}
-                        >
-                          <ChevronRightIcon
-                            className={clsx(styles.chevron, isExpanded && styles.chevronExpanded)}
-                          />
-                        </button>
-                      ) : null}
-                      <Checkbox className={styles.checkbox} {...checkboxProps(section.id)} />
-                    </div>
+              return (
+                <FrameListItem key={section.id}>
+                  <FrameRow>
+                    <FrameRowLabel htmlFor={`${controlId}-${section.id}`}>
+                      {section.title}
+                    </FrameRowLabel>
                     {section.subsections.length > 0 ? (
-                      <ul id={subsectionsId} className={styles.subsections} hidden={!isExpanded}>
-                        {section.subsections.map((subsection) => (
-                          <li key={subsection.id} className={styles.row}>
+                      <button
+                        type="button"
+                        className={styles.toggle}
+                        aria-controls={subsectionsId}
+                        aria-expanded={isExpanded}
+                        aria-label={`Подразделы: ${section.title}`}
+                        onClick={() => toggleExpanded(section.id)}
+                      >
+                        <ChevronRightIcon
+                          className={clsx(styles.chevron, isExpanded && styles.chevronExpanded)}
+                        />
+                      </button>
+                    ) : null}
+                    <Checkbox className={styles.checkbox} {...checkboxProps(section.id)} />
+                  </FrameRow>
+                  {section.subsections.length > 0 ? (
+                    <ul id={subsectionsId} className={styles.subsections} hidden={!isExpanded}>
+                      {section.subsections.map((subsection) => (
+                        <li key={subsection.id}>
+                          <FrameRow className={styles.subsection}>
                             <ChevronRightIcon className={styles.marker} />
-                            <label
-                              className={styles.title}
-                              htmlFor={`${controlId}-${subsection.id}`}
-                            >
+                            <FrameRowLabel htmlFor={`${controlId}-${subsection.id}`}>
                               {subsection.title}
-                            </label>
+                            </FrameRowLabel>
                             <Checkbox
                               className={styles.checkbox}
                               {...checkboxProps(subsection.id)}
                             />
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      </div>
-      <FieldHint id={hintId}>{hint}</FieldHint>
-      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
-    </fieldset>
+                          </FrameRow>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </FrameListItem>
+              );
+            })}
+          </FrameList>
+        )}
+      </Frame>
+    </Fieldset>
   );
 }

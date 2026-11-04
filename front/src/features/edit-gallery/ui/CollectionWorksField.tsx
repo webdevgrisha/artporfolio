@@ -1,12 +1,12 @@
-import clsx from "clsx";
 import React from "react";
 
 import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
 import { Button } from "@/shared/ui/button";
-import { FieldError, FieldHint, useFieldIds } from "@/shared/ui/field";
+import { Fieldset } from "@/shared/ui/fieldset";
+import { Frame, FrameEmpty, FrameList, FrameListItem, FrameRow } from "@/shared/ui/frame-list";
 import { TrashIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
-import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
+import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import { formatWorkDate } from "../model/workFormSchema";
@@ -45,8 +45,6 @@ export function CollectionWorksField({
   value,
   works,
 }: CollectionWorksFieldProps) {
-  const hint = "На сайте идут по дате, сначала новые";
-  const { describedBy, errorId, hintId } = useFieldIds({ error, hint });
   const chosen = works.filter((work) => value.includes(work.id));
   const others = works.filter((work) => !value.includes(work.id));
   const [isAdding, setIsAdding] = React.useState(false);
@@ -79,54 +77,48 @@ export function CollectionWorksField({
   }
 
   return (
-    <fieldset className={styles.root} aria-describedby={describedBy}>
-      <legend className={styles.legend}>Работы</legend>
-      <div
-        className={clsx(
-          styles.frame,
-          isModified && styles.frameModified,
-          Boolean(error) && styles.frameInvalid,
-          disabled && styles.frameDisabled,
-        )}
-      >
-        <div className={styles.scroller}>
+    <div className={styles.root}>
+      <Fieldset legend="Работы" hint="На сайте идут по дате, сначала новые" error={error}>
+        <Frame
+          className={styles.frame}
+          isModified={isModified}
+          isInvalid={Boolean(error)}
+          isDisabled={disabled}
+        >
           {chosen.length === 0 ? (
-            <p className={styles.empty}>В коллекции пока нет работ</p>
+            <FrameEmpty>В коллекции пока нет работ</FrameEmpty>
           ) : (
-            <ul className={styles.list}>
+            <FrameList>
               {chosen.map((work) => {
                 const removeLabel = `Убрать из коллекции ${work.title}`;
 
                 return (
-                  <li key={work.id} className={styles.row}>
-                    <MediaImage
-                      className={styles.photo}
-                      source={imageToMediaItem(work.photo).source}
-                    />
-                    <span className={styles.title}>{work.title}</span>
-                    <span className={styles.date}>{formatWorkDate(work)}</span>
-                    <Tooltip content={removeLabel}>
-                      <IconButton
-                        ref={(button) => {
-                          if (button) removeButtons.current.set(work.id, button);
-                          else removeButtons.current.delete(work.id);
-                        }}
-                        label={removeLabel}
-                        disabled={disabled}
-                        onClick={() => remove(work.id)}
-                      >
-                        <TrashIcon className={styles.removeIcon} />
-                      </IconButton>
-                    </Tooltip>
-                  </li>
+                  <FrameListItem key={work.id}>
+                    <FrameRow className={styles.row}>
+                      <PhotoThumbnail image={work.photo} />
+                      <span className={styles.title}>{work.title}</span>
+                      <span className={styles.date}>{formatWorkDate(work)}</span>
+                      <Tooltip content={removeLabel}>
+                        <IconButton
+                          ref={(button) => {
+                            if (button) removeButtons.current.set(work.id, button);
+                            else removeButtons.current.delete(work.id);
+                          }}
+                          label={removeLabel}
+                          disabled={disabled}
+                          onClick={() => remove(work.id)}
+                        >
+                          <TrashIcon className={styles.removeIcon} />
+                        </IconButton>
+                      </Tooltip>
+                    </FrameRow>
+                  </FrameListItem>
                 );
               })}
-            </ul>
+            </FrameList>
           )}
-        </div>
-      </div>
-      <FieldHint id={hintId}>{hint}</FieldHint>
-      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
+        </Frame>
+      </Fieldset>
       <Button
         ref={addButton}
         className={styles.add}
@@ -144,6 +136,6 @@ export function CollectionWorksField({
         onAdd={add}
         onCancel={() => setIsAdding(false)}
       />
-    </fieldset>
+    </div>
   );
 }

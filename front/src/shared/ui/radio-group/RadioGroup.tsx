@@ -1,6 +1,9 @@
 import clsx from "clsx";
 import React from "react";
 
+import { Fieldset } from "@/shared/ui/fieldset";
+import { Frame, FrameList, FrameListItem, FrameRow, FrameRowLabel } from "@/shared/ui/frame-list";
+
 import styles from "./RadioGroup.module.css";
 
 export interface RadioOption<TValue extends string> {
@@ -41,36 +44,35 @@ export function RadioGroup<TValue extends string>({
   const groupId = React.useId();
 
   return (
-    <fieldset className={clsx(styles.root, className)} disabled={disabled}>
-      <legend className={styles.legend}>{label}</legend>
-      <ul className={clsx(styles.frame, disabled && styles.frameDisabled)}>
-        {options.map((option) => {
-          const id = `${groupId}-${option.value}`;
-          const isChecked = option.value === value;
+    <Fieldset className={clsx(styles.root, className)} legend={label} disabled={disabled}>
+      <Frame isDisabled={disabled}>
+        <FrameList>
+          {options.map((option) => {
+            const id = `${groupId}-${option.value}`;
+            const isChecked = option.value === value;
 
-          return (
-            <li key={option.value} className={styles.option}>
-              <div className={styles.row}>
-                <label className={styles.title} htmlFor={id}>
-                  {option.label}
-                </label>
-                <input
-                  id={id}
-                  className={clsx(styles.radio, isChecked && isModified && styles.radioModified)}
-                  type="radio"
-                  name={name}
-                  value={option.value}
-                  checked={isChecked}
-                  onChange={() => onChange(option.value)}
-                />
-              </div>
-              {isChecked && option.details ? (
-                <div className={styles.details}>{option.details}</div>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
-    </fieldset>
+            return (
+              <FrameListItem key={option.value}>
+                <FrameRow>
+                  <FrameRowLabel htmlFor={id}>{option.label}</FrameRowLabel>
+                  <input
+                    id={id}
+                    className={clsx(styles.radio, isChecked && isModified && styles.radioModified)}
+                    type="radio"
+                    name={name}
+                    value={option.value}
+                    checked={isChecked}
+                    onChange={() => onChange(option.value)}
+                  />
+                </FrameRow>
+                {isChecked && option.details ? (
+                  <div className={styles.details}>{option.details}</div>
+                ) : null}
+              </FrameListItem>
+            );
+          })}
+        </FrameList>
+      </Frame>
+    </Fieldset>
   );
 }

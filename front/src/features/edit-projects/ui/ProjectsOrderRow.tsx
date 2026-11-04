@@ -2,9 +2,10 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
 
-import { type Project, ProjectCover } from "@/entities/project";
+import type { Project } from "@/entities/project";
 import { ArrowDownIcon, ArrowUpIcon, DragHandleIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
+import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./EditProjectsOrderForm.module.css";
@@ -77,7 +78,7 @@ export function ProjectsOrderRow({
         </IconButton>
       </Tooltip>
 
-      <ProjectCover className={styles.cover} project={project} />
+      <PhotoThumbnail className={styles.cover} image={project.photos[0]} />
       <span className={styles.title}>{project.title}</span>
 
       <div className={styles.arrows}>

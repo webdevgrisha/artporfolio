@@ -9,9 +9,9 @@ import {
   DataTable,
   positionColumn,
   RowActions,
-  TablePhoto,
   type TableRow,
 } from "@/shared/ui/data-table";
+import { PhotoThumbnail } from "@/shared/ui/media-preview";
 
 import {
   collectionsSortableColumns,
@@ -58,7 +58,7 @@ export function CollectionsList({ className, collections }: CollectionsListProps
         header: "Обложка",
         meta: { className: styles.coverColumn },
         enableSorting: false,
-        cell: ({ row: { original } }) => <TablePhoto image={original.item.cover} />,
+        cell: ({ row: { original } }) => <PhotoThumbnail image={original.item.cover} />,
       },
       {
         id: "title",

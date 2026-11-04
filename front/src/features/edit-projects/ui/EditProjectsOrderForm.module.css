@@ -59,13 +59,10 @@
   block-size: 1.125rem;
 }
 
+/* Smaller than in the table: the rows of the order are dense. */
 .cover {
-  display: block;
-  flex: none;
   inline-size: 3rem;
   block-size: 3rem;
-  object-fit: cover;
-  background: var(--color-surface-disabled);
 }
 
 .title {

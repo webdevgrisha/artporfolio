@@ -1,5 +1,6 @@
 .root {
   display: block;
+  flex: none;
   inline-size: 4rem;
   block-size: 3.625rem;
   object-fit: cover;

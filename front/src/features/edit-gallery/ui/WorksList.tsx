@@ -9,9 +9,9 @@ import {
   DataTable,
   positionColumn,
   RowActions,
-  TablePhoto,
   type TableRow,
 } from "@/shared/ui/data-table";
+import { PhotoThumbnail } from "@/shared/ui/media-preview";
 
 import { useDeleteWork, useDeletingWorkIds } from "../model/useDeleteWork";
 import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workFormSchema";
@@ -51,7 +51,7 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         header: "Фото",
         meta: { className: styles.photoColumn },
         enableSorting: false,
-        cell: ({ row: { original } }) => <TablePhoto image={original.item.photo} />,
+        cell: ({ row: { original } }) => <PhotoThumbnail image={original.item.photo} />,
       },
       {
         id: "title",

@@ -6,7 +6,15 @@ import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
 import { useModalDialog } from "@/shared/lib/useModalDialog";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
-import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
+import {
+  Frame,
+  FrameEmpty,
+  FrameList,
+  FrameListItem,
+  FrameRow,
+  FrameRowLabel,
+} from "@/shared/ui/frame-list";
+import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { SearchInput } from "@/shared/ui/search-input";
 
 import { formatWorkDate } from "../model/workFormSchema";
@@ -92,49 +100,46 @@ export function AddWorksDialog({
         summary={query ? `Найдено: ${String(shownWorks.length)} из ${String(works.length)}` : ""}
         onChange={setQuery}
       />
-      <div className={styles.frame}>
+      <Frame className={styles.frame}>
         {works.length === 0 ? (
-          <p className={styles.empty}>
+          <FrameEmpty>
             {isGalleryEmpty
               ? "В галерее пока нет работ"
               : "Все работы галереи уже в этой коллекции"}
-          </p>
+          </FrameEmpty>
         ) : shownWorks.length === 0 ? (
-          <p className={styles.empty}>Ничего не найдено по запросу «{query}»</p>
+          <FrameEmpty>Ничего не найдено по запросу «{query}»</FrameEmpty>
         ) : (
-          <ul className={styles.list} id={listId}>
+          <FrameList>
             {shownWorks.map((work) => {
               const checkboxId = `${listId}-${work.id}`;
               const collectionTitle = currentCollection(work);
 
               return (
-                <li key={work.id} className={styles.row}>
-                  <MediaImage
-                    className={styles.photo}
-                    source={imageToMediaItem(work.photo).source}
-                  />
-                  <span className={styles.text}>
-                    <label className={styles.label} htmlFor={checkboxId}>
-                      {work.title}
-                    </label>
-                    <span className={styles.details}>
-                      {formatWorkDate(work)}
-                      {collectionTitle === undefined ? null : (
-                        <span className={styles.collection}>в коллекции «{collectionTitle}»</span>
-                      )}
+                <FrameListItem key={work.id}>
+                  <FrameRow className={styles.row}>
+                    <PhotoThumbnail image={work.photo} />
+                    <span className={styles.text}>
+                      <FrameRowLabel htmlFor={checkboxId}>{work.title}</FrameRowLabel>
+                      <span className={styles.details}>
+                        {formatWorkDate(work)}
+                        {collectionTitle === undefined ? null : (
+                          <span className={styles.collection}>в коллекции «{collectionTitle}»</span>
+                        )}
+                      </span>
                     </span>
-                  </span>
-                  <Checkbox
-                    id={checkboxId}
-                    checked={chosenIds.includes(work.id)}
-                    onChange={(checked) => toggle(work.id, checked)}
-                  />
-                </li>
+                    <Checkbox
+                      id={checkboxId}
+                      checked={chosenIds.includes(work.id)}
+                      onChange={(checked) => toggle(work.id, checked)}
+                    />
+                  </FrameRow>
+                </FrameListItem>
               );
             })}
-          </ul>
+          </FrameList>
         )}
-      </div>
+      </Frame>
       <div className={styles.actions}>
         <p className={clsx(styles.count, chosenIds.length === 0 && styles.countEmpty)}>
           Выбрано: {chosenIds.length}

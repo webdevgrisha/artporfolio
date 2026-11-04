@@ -1,0 +1,18 @@
+.root {
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+/* As the label of a field. */
+.legend {
+  padding: 0;
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-md);
+  line-height: 1.375;
+}
+
+.legend::after {
+  content: ":";
+}

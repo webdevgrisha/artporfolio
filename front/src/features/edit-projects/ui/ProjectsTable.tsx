@@ -9,10 +9,10 @@ import {
   DataTable,
   positionColumn,
   RowActions,
-  TablePhoto,
   type TableRow,
 } from "@/shared/ui/data-table";
 import { ExternalLinkIcon } from "@/shared/ui/icon";
+import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
@@ -46,7 +46,7 @@ export function ProjectsTable({ className, projects }: ProjectsTableProps) {
         meta: { className: styles.photoColumn },
         enableSorting: false,
         // The first photo is the cover of the project.
-        cell: ({ row: { original } }) => <TablePhoto image={original.item.photos[0]} />,
+        cell: ({ row: { original } }) => <PhotoThumbnail image={original.item.photos[0]} />,
       },
       {
         id: "title",

@@ -1,107 +1,24 @@
 .root {
-  min-inline-size: 0;
-  padding: 0;
-  margin: 0;
-  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-/* Matches the label of Field; a fieldset is labelled by a legend instead. */
-.legend {
-  padding: 0;
-  margin-block-end: var(--space-2);
-  font-size: var(--font-size-md);
-  line-height: 1.375;
+/* The adding sits under the hint of the list, at the start. */
+.add {
+  align-self: flex-start;
 }
 
-.legend::after {
-  content: ":";
-}
-
-/*
- * The frame of the list, as the frame of the sections of a work. The modified and invalid states
- * draw their second pixel inside the border as an inset shadow, which is painted under the content:
- * the frame keeps that pixel free, so the rows never cover it.
- */
+/* A long list scrolls inside the frame, so the fields after it stay close. */
 .frame {
-  padding: 1px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-/*
- * A long list scrolls inside the frame, so the fields after it stay close; the scroll stops at its
- * ends instead of moving the page.
- */
-.scroller {
   max-block-size: 32rem;
-  padding-block: var(--space-2);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-/* The modified frame of the text fields, see Field.module.css. */
-.frameModified {
-  border-color: var(--color-border-modified);
-  box-shadow: inset 0 0 0 1px var(--color-border-modified);
-}
-
-.frameInvalid {
-  border-color: var(--color-danger);
-  box-shadow: inset 0 0 0 1px var(--color-danger);
-}
-
-.frameDisabled {
-  color: var(--color-text-muted);
-  background: var(--color-surface-disabled);
-}
-
-.empty {
-  padding: var(--space-3) var(--space-6);
-  margin: 0;
-  color: var(--color-text-muted);
-}
-
-.list {
-  padding: 0;
-  margin: 0;
-  list-style: none;
 }
 
 /* The photo, the title and the date of a work in one row, its button at the end. */
 .row {
-  position: relative;
-  display: flex;
   gap: var(--space-4);
-  align-items: center;
-  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-6);
-}
-
-/*
- * Works are divided by lines within the padding, as the sections of a work. A border of the row
- * would reach the sides of the frame, so the line is drawn over the top of the row instead.
- */
-.row + .row::before {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: var(--space-6);
-  content: "";
-  border-block-start: 1px solid var(--color-divider);
-}
-
-@media (hover: hover) {
-  .row:hover:not(:has(:disabled)) {
-    background: var(--color-surface-disabled);
-  }
-}
-
-/* As the photo in the works table: cropped to fill its place. */
-.photo {
-  display: block;
-  flex: none;
-  inline-size: 4rem;
-  block-size: 3.625rem;
-  object-fit: cover;
-  background: var(--color-surface-disabled);
+  padding-block: var(--space-2);
+  padding-inline-end: var(--space-4);
 }
 
 .title {
@@ -128,8 +45,4 @@
 .removeIcon {
   inline-size: auto;
   block-size: 1.625rem;
-}
-
-.add {
-  margin-block-start: var(--space-4);
 }
