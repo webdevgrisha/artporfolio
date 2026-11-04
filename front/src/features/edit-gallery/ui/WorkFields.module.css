@@ -116,3 +116,13 @@
 .finalValue {
   font-size: var(--font-size-lg);
 }
+
+/* As wide as the frames of the format and the status. */
+.published {
+  max-inline-size: 24rem;
+}
+
+/* The checkbox keeps the end of its row, as in the list of sections. */
+.publishedCheckbox {
+  margin-inline-start: auto;
+}

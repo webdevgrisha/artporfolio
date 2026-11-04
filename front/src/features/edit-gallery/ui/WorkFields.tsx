@@ -11,8 +11,11 @@ import {
   minWorkSetSize,
 } from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
+import { Checkbox } from "@/shared/ui/checkbox";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { ColorSwatch } from "@/shared/ui/color-swatch";
+import { FieldHint } from "@/shared/ui/field";
+import { Frame, FrameRow, FrameRowLabel } from "@/shared/ui/frame-list";
 import { Input } from "@/shared/ui/input";
 import { MultiSelect } from "@/shared/ui/multi-select";
 import { PhotoFields } from "@/shared/ui/photo-fields";
@@ -82,6 +85,8 @@ export function WorkFields({
   const { field: countryField } = useController({ control, name: "country" });
   const cityField = register("city");
   const cities = useWorkCities(countryField.value);
+  // A checkbox always holds a value, so it is never invalid and needs no ref, as the format.
+  const { field: publishedField } = useController({ control, name: "published" });
   const { field: sectionsField } = useController({ control, name: "sectionIds" });
   // A select, so a controller, as for the month.
   const { field: collectionField } = useController({ control, name: "collectionId" });
@@ -277,6 +282,25 @@ export function WorkFields({
         <h2 id={`${headingId}-place`} className={styles.heading}>
           Где показывать
         </h2>
+        <div>
+          <Frame className={styles.published} isModified={Boolean(dirtyFields.published)}>
+            <FrameRow>
+              <FrameRowLabel htmlFor={`${headingId}-published`}>Показывать на сайте</FrameRowLabel>
+              <Checkbox
+                className={styles.publishedCheckbox}
+                id={`${headingId}-published`}
+                aria-describedby={`${headingId}-published-hint`}
+                checked={publishedField.value}
+                disabled={isSaving}
+                onBlur={publishedField.onBlur}
+                onChange={publishedField.onChange}
+              />
+            </FrameRow>
+          </Frame>
+          <FieldHint id={`${headingId}-published-hint`}>
+            Скрытая работа остаётся здесь, её можно показать позже
+          </FieldHint>
+        </div>
         <SectionsField
           sections={sections}
           value={sectionsField.value}

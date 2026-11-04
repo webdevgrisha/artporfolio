@@ -60,6 +60,13 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         header: "Название",
         accessorFn: (row) => row.item.title,
         sortingFn: (a, b) => collator.compare(a.original.item.title, b.original.item.title),
+        // A hidden work says so under its title, muted, as the format is under the size.
+        cell: ({ row: { original } }) => (
+          <>
+            {original.item.title}
+            {original.item.published ? null : <div className={styles.muted}>скрыта</div>}
+          </>
+        ),
       },
       {
         id: "sections",

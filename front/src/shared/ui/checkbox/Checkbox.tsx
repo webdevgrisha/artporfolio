@@ -6,6 +6,8 @@ import { CheckIcon } from "@/shared/ui/icon";
 import styles from "./Checkbox.module.css";
 
 interface CheckboxProps {
+  /** The id of a hint about the box, which screen readers read with it. */
+  "aria-describedby"?: string;
   checked: boolean;
   className?: string;
   disabled?: boolean;
@@ -22,6 +24,7 @@ interface CheckboxProps {
 
 /** A square checkbox in the style of the admin: black when checked, with a white check mark. */
 export function Checkbox({
+  "aria-describedby": ariaDescribedBy,
   checked,
   className,
   disabled = false,
@@ -42,6 +45,7 @@ export function Checkbox({
         checked={checked}
         disabled={disabled}
         aria-invalid={hasError}
+        aria-describedby={ariaDescribedBy}
         onBlur={onBlur}
         onChange={(event) => onChange(event.target.checked)}
       />
