@@ -322,7 +322,15 @@ const galleryWorks = [
     discountPercent: 20,
   },
   { title: "Стрекоза", palette: "dragonfly", size: [21.6, 27.9], year: 2025, collection: "У воды" },
-  { title: "Лев", palette: "lion", size: [40, 50], year: 2024, collection: "Саванна", price: 800 },
+  {
+    title: "Лев",
+    palette: "lion",
+    size: [40, 50],
+    year: 2024,
+    collection: "Саванна",
+    price: 800,
+    saleStatus: "sold",
+  },
   {
     title: "Лягушка на листе",
     palette: "frog",
@@ -350,6 +358,7 @@ const galleryWorks = [
     format: "diptych",
     price: 2400,
     discountPercent: 15,
+    saleStatus: "reserved",
   },
   {
     title: "Пруд",
@@ -360,7 +369,14 @@ const galleryWorks = [
     country: "BY",
     city: "Минск",
   },
-  { title: "Грива", palette: "lion", size: [61, 76.2], year: 2021, format: "triptych" },
+  {
+    title: "Грива",
+    palette: "lion",
+    size: [61, 76.2],
+    year: 2021,
+    format: "triptych",
+    saleStatus: "notForSale",
+  },
   {
     title: "Ночная сова",
     palette: "owl",
@@ -730,6 +746,7 @@ async function seedGallery(api) {
       partCount: work.partCount ?? null,
       country: work.country ?? null,
       city: work.city ?? "",
+      saleStatus: work.saleStatus ?? "available",
       price:
         work.price === undefined
           ? null

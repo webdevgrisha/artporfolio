@@ -41,6 +41,13 @@ export const workFormats = ["single", "diptych", "triptych", "set"] as const;
 /** The longest name of the city a work was made in. */
 export const maxWorkCityLength = 100;
 
+/**
+ * Whether a visitor can buy the work: it is for sale, reserved for a buyer who has not paid yet,
+ * sold, or not for sale at all, such as one the artist keeps. Apart from the price: a sold work
+ * keeps the price it was sold for, and a work for sale without a price is sold on request.
+ */
+export const workSaleStatuses = ["available", "reserved", "sold", "notForSale"] as const;
+
 /** The only currency a price is set in for now; the site will show other currencies converted. */
 export const workCurrencies = ["USD"] as const;
 
@@ -146,6 +153,7 @@ export const workBodySchema = z
     format: z.enum(workFormats),
     /** How many works the set has; null for any other format, which tells its count itself. */
     partCount: z.number().int().min(minWorkSetSize).max(maxWorkSetSize).nullable(),
+    saleStatus: z.enum(workSaleStatuses),
     /** Null for a work without a price. The price of a set is for all its works together. */
     price: workPriceBodySchema.nullable(),
   })
@@ -187,6 +195,8 @@ export const storedWorkSchema = z.object({
   /** A work saved before formats were added is a single work. */
   format: z.enum(workFormats).default("single"),
   partCount: z.number().nullable().default(null),
+  /** A work saved before sale statuses were added is for sale. */
+  saleStatus: z.enum(workSaleStatuses).default("available"),
   /** A work saved before prices were added has none. */
   price: z
     .object({
@@ -234,6 +244,7 @@ export const workSchema = z.object({
   format: z.enum(workFormats),
   /** How many works the set has; null for any other format. */
   partCount: z.number().nullable(),
+  saleStatus: z.enum(workSaleStatuses),
   /** Null for a work without a price. */
   price: z
     .object({
@@ -257,6 +268,7 @@ export const worksResponseSchema = z.object({
 });
 
 export type WorkFormat = (typeof workFormats)[number];
+export type WorkSaleStatus = (typeof workSaleStatuses)[number];
 export type WorkCurrency = (typeof workCurrencies)[number];
 export type WorkParams = z.infer<typeof workParamsSchema>;
 export type WorkBody = z.infer<typeof workBodySchema>;

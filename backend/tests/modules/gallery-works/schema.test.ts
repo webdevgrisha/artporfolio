@@ -17,6 +17,7 @@ import {
   minWorkSetSize,
   minWorkYear,
   workBodySchema,
+  workSaleStatuses,
 } from "#modules/gallery-works/schema";
 
 const work = {
@@ -36,6 +37,7 @@ const work = {
   collectionId: null,
   format: "single",
   partCount: null,
+  saleStatus: "available",
   price: null,
 };
 const price = { amount: 500, currency: "USD", discountPercent: null };
@@ -221,6 +223,16 @@ describe("work body", () => {
     expect(isValid({ ...work, city: "а".repeat(maxWorkCityLength) })).toBe(true);
     expect(isValid({ ...work, city: "а".repeat(maxWorkCityLength + 1) })).toBe(false);
     expect(isValid({ ...work, city: undefined })).toBe(false);
+  });
+
+  it("takes each sale status, whatever the price", () => {
+    for (const saleStatus of workSaleStatuses) {
+      expect(isValid({ ...work, saleStatus })).toBe(true);
+      expect(isValid({ ...work, saleStatus, price })).toBe(true);
+    }
+
+    expect(isValid({ ...work, saleStatus: "lost" })).toBe(false);
+    expect(isValid({ ...work, saleStatus: undefined })).toBe(false);
   });
 
   it("takes a work without a price", () => {

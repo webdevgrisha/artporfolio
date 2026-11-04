@@ -187,6 +187,7 @@ const body: WorkBody = {
   collectionId: null,
   format: "single",
   partCount: null,
+  saleStatus: "available",
   price: null,
   size: { width: 21.6, height: 27.9 },
   title: "Жираф",
@@ -498,6 +499,21 @@ describe("the place of a work", () => {
 
     expect(data).toMatchObject({ city: "Варшава", country: "PL" });
     expect(works.get(newId)).toMatchObject({ city: "Варшава", country: "PL" });
+  });
+});
+
+describe("the sale status of a work", () => {
+  it("reads a work saved before sale statuses as a work for sale", async () => {
+    const { data } = await getWork(elephantId);
+
+    expect(data.saleStatus).toBe("available");
+  });
+
+  it("saves the sale status", async () => {
+    const { data } = await createWork(newId, { ...body, saleStatus: "sold" });
+
+    expect(data.saleStatus).toBe("sold");
+    expect(works.get(newId)?.saleStatus).toBe("sold");
   });
 });
 
