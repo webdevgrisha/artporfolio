@@ -4,6 +4,7 @@ import {
   createGalleryWork,
   type GalleryWork,
   type GalleryWorkBody,
+  galleryCollectionsQueryKey,
   galleryWorkQuery,
   galleryWorksQueryKey,
   replaceGalleryWork,
@@ -100,13 +101,18 @@ export function useCreateWork() {
 
       return (await replaceGalleryWork({ body, etag, id })).data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey }),
+    // A work in a collection changes the works of that collection too.
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey }),
+        queryClient.invalidateQueries({ queryKey: galleryCollectionsQueryKey }),
+      ]),
   });
 }
 
 /**
  * Replaces the work with the values of the form, then puts the saved work into the cache and marks
- * the list outdated. A failed save changed nothing on the server.
+ * the lists outdated. A failed save changed nothing on the server.
  */
 export function useSaveWork(id: string) {
   const queryClient = useQueryClient();
@@ -120,8 +126,14 @@ export function useSaveWork(id: string) {
       replaceGalleryWork({ body: await toWorkBody(values), etag, id }),
     onSuccess: async (saved) => {
       queryClient.setQueryData(queryKey, saved);
-      // The list loads afresh when it opens.
-      await queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey, refetchType: "none" });
+      // The lists load afresh when they open; moving the work changes the works of its collections.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey, refetchType: "none" }),
+        queryClient.invalidateQueries({
+          queryKey: galleryCollectionsQueryKey,
+          refetchType: "none",
+        }),
+      ]);
     },
   });
 }

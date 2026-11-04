@@ -5,6 +5,7 @@ export {
   newWorkHandle,
 } from "./model/galleryHandles";
 export {
+  galleryCollectionsLoader,
   galleryColorsLoader,
   galleryIntroLoader,
   galleryMaterialsLoader,
@@ -17,6 +18,7 @@ export {
 } from "./model/galleryRoute";
 export { EditSectionPage } from "./ui/EditSectionPage";
 export { EditWorkPage } from "./ui/EditWorkPage";
+export { GalleryCollectionsSection } from "./ui/GalleryCollectionsSection";
 export { GalleryColorsSection } from "./ui/GalleryColorsSection";
 export { GalleryIntroSection } from "./ui/GalleryIntroSection";
 export { GalleryMaterialsSection } from "./ui/GalleryMaterialsSection";

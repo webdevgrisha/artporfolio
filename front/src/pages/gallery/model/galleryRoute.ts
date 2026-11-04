@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 
 import {
+  galleryCollectionsQuery,
   galleryColorsQuery,
   galleryIntroQuery,
   galleryMaterialsQuery,
@@ -54,6 +55,10 @@ export function galleryWorkLoader({ params }: LoaderFunctionArgs) {
     fetchFresh(galleryColorsQuery),
     fetchFresh(galleryPalettesQuery),
   );
+}
+
+export function galleryCollectionsLoader() {
+  return loadPageData(fetchFresh(galleryCollectionsQuery));
 }
 
 export function galleryMaterialsLoader() {

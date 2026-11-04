@@ -93,3 +93,12 @@ export function getDeleteWorkErrorMessage(error: unknown): string {
     fallback: "Не удалось удалить работу. Попробуйте ещё раз",
   });
 }
+
+export function getDeleteCollectionErrorMessage(error: unknown): string {
+  return getSaveErrorMessage(error, {
+    byStatus: {
+      404: "Коллекция уже удалена",
+    },
+    fallback: "Не удалось удалить коллекцию. Попробуйте ещё раз",
+  });
+}

@@ -1,13 +1,19 @@
 import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
 
-import { deleteGalleryWork, type GalleryWork, galleryWorksQueryKey } from "@/entities/gallery";
+import {
+  deleteGalleryWork,
+  type GalleryWork,
+  galleryCollectionsQueryKey,
+  galleryWorksQueryKey,
+} from "@/entities/gallery";
 
 import { getDeleteWorkErrorMessage } from "../lib/saveErrorMessages";
 
 const deleteWorkMutationKey = [...galleryWorksQueryKey, "delete"] as const;
 
 /**
- * Deletes a work with its photo, then loads the works again. The list names the work by its title,
+ * Deletes a work with its photo, then loads the works and the collections again: the work leaves
+ * its collection. The list names the work by its title,
  * so the deletion applies to whatever version is saved.
  */
 export function useDeleteWork() {
@@ -23,7 +29,11 @@ export function useDeleteWork() {
     },
     mutationFn: ({ id }: GalleryWork) => deleteGalleryWork({ etag: "*", id }),
     mutationKey: deleteWorkMutationKey,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey }),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey }),
+        queryClient.invalidateQueries({ queryKey: galleryCollectionsQueryKey }),
+      ]),
   });
 }
 

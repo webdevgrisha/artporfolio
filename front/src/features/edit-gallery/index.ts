@@ -1,3 +1,4 @@
+export { CollectionsList } from "./ui/CollectionsList";
 export { CreateSectionForm } from "./ui/CreateSectionForm";
 export { CreateWorkForm } from "./ui/CreateWorkForm";
 export { EditColorsForm } from "./ui/EditColorsForm";
