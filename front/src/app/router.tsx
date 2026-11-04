@@ -47,8 +47,8 @@ export const router = createBrowserRouter([
             HydrateFallback: AdminLayoutSkeleton,
             loader: requireSession,
             // The session is checked once, on entering the admin, so moving between its pages
-            // waits for no extra request. A session that expires later is found by the next page
-            // load, which then sends the user to the login page (AdminPageError).
+            // waits for no extra request. Most pages load public data, so a session that expires
+            // later is found by the next change, whose toast says so.
             shouldRevalidate: () => false,
             children: [
               {

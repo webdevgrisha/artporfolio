@@ -394,8 +394,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
     throw error;
   }
 
-  // A new work has no older files, so this removes only the used uploads.
-  await draft.finish([], work.processPhotos);
+  // A new work has no older files to remove, and the uploads stay until the bucket deletes them.
 
   return toSavedWork(id, work, known);
 }

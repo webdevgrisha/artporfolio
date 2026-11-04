@@ -149,8 +149,7 @@ export async function createProject(id: string, body: ProjectBody): Promise<Save
     throw error;
   }
 
-  // A new project has no older files, so this removes only the used uploads.
-  await draft.finish([], project.photos);
+  // A new project has no older files to remove, and the uploads stay until the bucket deletes them.
 
   return toSavedProject(id, project);
 }

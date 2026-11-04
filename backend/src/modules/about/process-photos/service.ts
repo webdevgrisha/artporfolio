@@ -41,7 +41,8 @@ export async function listProcessPhotos(): Promise<Tagged<ListPhoto[]>> {
  * Replaces the whole list: the order of `items` is the order on the site, and a saved photo left
  * out is deleted. The new files are copied from their uploads first; then one transaction checks
  * that the list is still the one the client read (`ifMatch`) and writes the new one. The files of
- * the deleted photos and of the replaced versions, and the used uploads, are removed afterwards.
+ * the deleted photos and of the replaced versions are removed afterwards; the uploads stay until
+ * the bucket deletes them.
  * If anything fails, the copies are removed and the list stays as it was.
  */
 export async function replaceProcessPhotos(
