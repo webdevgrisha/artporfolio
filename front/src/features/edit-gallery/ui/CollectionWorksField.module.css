@@ -69,14 +69,22 @@
 
 /* The photo, the title and the date of a work in one row, its button at the end. */
 .row {
+  position: relative;
   display: flex;
   gap: var(--space-4);
   align-items: center;
   padding: var(--space-2) var(--space-4) var(--space-2) var(--space-6);
 }
 
-/* Works are divided by lines within the padding, as the sections of a work. */
-.row + .row {
+/*
+ * Works are divided by lines within the padding, as the sections of a work. A border of the row
+ * would reach the sides of the frame, so the line is drawn over the top of the row instead.
+ */
+.row + .row::before {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--space-6);
+  content: "";
   border-block-start: 1px solid var(--color-divider);
 }
 
