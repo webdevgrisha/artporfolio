@@ -17,6 +17,7 @@ import { useDeleteWork, useDeletingWorkIds } from "../model/useDeleteWork";
 import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workFormSchema";
 import { formatPrice } from "../model/workPrice";
 import { titlesOf } from "../model/workReferences";
+import { formatSaleStatus } from "../model/workSaleStatus";
 import { sectionLabels } from "../model/workSections";
 import {
   compareWorkDates,
@@ -88,7 +89,7 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
           return (
             <>
               {formatWorkSize(original.item.size)}
-              {format === null ? null : <div className={styles.format}>{format}</div>}
+              {format === null ? null : <div className={styles.muted}>{format}</div>}
             </>
           );
         },
@@ -102,21 +103,19 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         sortingFn: "basic",
         sortUndefined: "last",
         cell: ({ row: { original } }) => {
-          const { price } = original.item;
+          const { price, saleStatus } = original.item;
+          const status = formatSaleStatus(saleStatus);
 
-          if (price === null) {
-            return null;
-          }
-
-          // The discount under the price, muted, with the price it is taken off.
+          // The discount and the status under the price, muted; a work for sale has no status.
           return (
             <>
-              {formatPrice(price.finalAmount, price.currency)}
-              {price.discountPercent === null ? null : (
-                <div className={styles.discount}>
+              {price === null ? null : formatPrice(price.finalAmount, price.currency)}
+              {price === null || price.discountPercent === null ? null : (
+                <div className={styles.muted}>
                   −{price.discountPercent}% от {formatPrice(price.amount, price.currency)}
                 </div>
               )}
+              {status === null ? null : <div className={styles.muted}>{status}</div>}
             </>
           );
         },

@@ -23,7 +23,7 @@
   inline-size: 11rem;
 }
 
-.format,
-.discount {
+/* The format under the size; the discount and the status under the price. */
+.muted {
   color: var(--color-text-muted);
 }

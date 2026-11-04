@@ -38,6 +38,7 @@ import {
   workFormCurrency,
 } from "../model/workPrice";
 import { toCollectionOptions, toTitleOptions } from "../model/workReferences";
+import { workSaleStatusOptions } from "../model/workSaleStatus";
 import { SectionsField } from "./SectionsField";
 import styles from "./WorkFields.module.css";
 
@@ -87,6 +88,8 @@ export function WorkFields({
   const { field: materialsField } = useController({ control, name: "materialIds" });
   const { field: colorsField } = useController({ control, name: "colorIds" });
   const { field: palettesField } = useController({ control, name: "paletteIds" });
+  // Radio buttons, as for the format.
+  const { field: saleStatusField } = useController({ control, name: "saleStatus" });
   // A discount needs a price, so typing the price checks the discount again.
   const priceField = register("price", { deps: ["discountPercent"] });
   const discountField = register("discountPercent");
@@ -348,6 +351,15 @@ export function WorkFields({
         <h2 id={`${headingId}-sale`} className={styles.heading}>
           Продажа
         </h2>
+        <RadioGroup
+          label="Статус"
+          name={saleStatusField.name}
+          options={workSaleStatusOptions}
+          value={saleStatusField.value}
+          disabled={isSaving}
+          isModified={Boolean(dirtyFields.saleStatus)}
+          onChange={saleStatusField.onChange}
+        />
         <div className={styles.priceBox}>
           <div className={styles.price}>
             <Input
