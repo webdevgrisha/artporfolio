@@ -74,14 +74,20 @@ export function WorkFields({
   // and the process photos come last anyway.
   const titleField = register("title");
   const descriptionField = register("description");
-  // Radio buttons always hold a choice, so the format is never invalid and needs no ref.
-  const { field: formatField } = useController({ control, name: "format" });
+  // Radio buttons always hold a choice, so the format is never invalid and needs no ref. Only a set
+  // needs a count, so choosing the format checks the count again.
+  const { field: formatField } = useController({
+    control,
+    name: "format",
+    rules: { deps: ["partCount"] },
+  });
   const partCountField = register("partCount");
   const widthField = register("width");
   const heightField = register("height");
   // A select has no input for react-hook-form to register, so a controller keeps its value.
   const { field: monthField } = useController({ control, name: "month" });
-  const yearField = register("year");
+  // A month of this year may be still to come, so typing the year checks the month again.
+  const yearField = register("year", { deps: ["month"] });
   // A combobox keeps its value through a controller, as the selects do.
   const { field: countryField } = useController({ control, name: "country" });
   const cityField = register("city");

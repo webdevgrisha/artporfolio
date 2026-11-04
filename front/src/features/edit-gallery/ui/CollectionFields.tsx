@@ -43,7 +43,8 @@ export function CollectionFields({
   // the cover takes no focus.
   const titleField = register("title");
   const descriptionField = register("description");
-  const startYearField = register("startYear");
+  // The end year comes after the start year, so typing the start year checks the end year again.
+  const startYearField = register("startYear", { deps: ["endYear"] });
   const endYearField = register("endYear");
   const { field: worksField } = useController({ control, name: "workIds" });
 
