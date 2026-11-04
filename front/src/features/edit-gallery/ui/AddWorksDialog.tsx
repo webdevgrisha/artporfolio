@@ -9,7 +9,7 @@ import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
 import { SearchInput } from "@/shared/ui/search-input";
 
 import { formatWorkDate } from "../model/workFormSchema";
-import { matchesWorkQuery } from "../model/worksSearch";
+import { matchesWorkQuery } from "../model/worksTableView";
 import styles from "./AddWorksDialog.module.css";
 
 interface AddWorksDialogProps {
