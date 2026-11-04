@@ -10,7 +10,10 @@ import styles from "./EditForm.module.css";
 /** A save refused because the data changed since the form read it, e.g. in another tab. */
 interface EditFormConflict {
   isOpen: boolean;
-  /** Keeps the changes in the form; saving them would be refused again. */
+  /**
+   * Closes the question and keeps the changes in the form, so they can be copied before the latest
+   * version is taken; saving them would be refused again.
+   */
   onKeep: () => void;
   /** Drops the changes and shows the data as it is now. */
   onTakeLatest: () => void;
@@ -59,8 +62,8 @@ export function EditForm({
         <ConfirmDialog
           isOpen={conflict.isOpen}
           title="Данные изменили в другой вкладке"
-          description="Загрузить актуальную версию? Несохранённые изменения на этой странице пропадут."
-          cancelLabel="Оставить мои"
+          description="Ваши изменения сохранить нельзя: их нужно внести заново в актуальную версию. Чтобы не набирать текст снова, скопируйте его, затем ещё раз нажмите «Сохранить» и «Загрузить»."
+          cancelLabel="Не сейчас"
           confirmLabel="Загрузить"
           onCancel={conflict.onKeep}
           onConfirm={conflict.onTakeLatest}
