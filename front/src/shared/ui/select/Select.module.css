@@ -56,6 +56,8 @@
   padding: 0;
   margin: 0;
   overflow-y: auto;
+  /* The scroll stops at the ends of the list instead of moving the page. */
+  overscroll-behavior: contain;
   list-style: none;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
