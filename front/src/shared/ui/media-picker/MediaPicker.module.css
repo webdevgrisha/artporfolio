@@ -9,29 +9,20 @@
   gap: var(--space-2);
 }
 
+/* As tall as the spinner of a save, so the row keeps its height when it shows. */
 .itemHeader {
   display: flex;
   gap: var(--space-1);
   align-items: center;
+  min-block-size: var(--min-tap-target-size);
 }
 
-/* A long file name takes the rest of the row; the button keeps its size. */
-.removeTooltip {
-  flex: none;
-}
-
-/* Takes the place of the remove button, so the row keeps its height. */
 .spinner {
   display: grid;
   flex: none;
   place-items: center;
   inline-size: var(--min-tap-target-size);
   block-size: var(--min-tap-target-size);
-}
-
-.removeIcon {
-  inline-size: 1rem;
-  block-size: 1.125rem;
 }
 
 .thumbnail {
