@@ -71,16 +71,11 @@ export function WorkFields({
   const { defaultValues, dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
   // After a refused submit, react-hook-form focuses the first invalid field in the order the
-  // fields were registered, so they are registered here in the order of the form; the photos
-  // come last, from their own components.
+  // fields were registered, so they are registered here in the order of the form. The photos
+  // register in their own components, after these: the picker of the work photo takes no focus,
+  // and the process photos come last anyway.
   const titleField = register("title");
   const descriptionField = register("description");
-  const { field: sectionsField } = useController({ control, name: "sectionIds" });
-  const { field: materialsField } = useController({ control, name: "materialIds" });
-  const { field: colorsField } = useController({ control, name: "colorIds" });
-  const { field: palettesField } = useController({ control, name: "paletteIds" });
-  // A select, so a controller, as for the month.
-  const { field: collectionField } = useController({ control, name: "collectionId" });
   // Radio buttons always hold a choice, so the format is never invalid and needs no ref.
   const { field: formatField } = useController({ control, name: "format" });
   const partCountField = register("partCount");
@@ -89,6 +84,13 @@ export function WorkFields({
   // A select has no input for react-hook-form to register, so a controller keeps its value.
   const { field: monthField } = useController({ control, name: "month" });
   const yearField = register("year");
+  const { field: sectionsField } = useController({ control, name: "sectionIds" });
+  // A select, so a controller, as for the month.
+  const { field: collectionField } = useController({ control, name: "collectionId" });
+  const { field: materialsField } = useController({ control, name: "materialIds" });
+  const { field: colorsField } = useController({ control, name: "colorIds" });
+  const { field: palettesField } = useController({ control, name: "paletteIds" });
+  const headingId = React.useId();
   const savedSectionIds = React.useMemo(
     () => defaultValues?.sectionIds?.filter((id) => id !== undefined) ?? [],
     [defaultValues],
@@ -134,9 +136,14 @@ export function WorkFields({
     setFocus("title");
   }
 
+  // The fields in groups under headings, in one column: a form is read and filled top to bottom.
   return (
     <div className={clsx(styles.root, className)}>
-      <div className={styles.texts}>
+      <section className={styles.group} aria-labelledby={`${headingId}-work`}>
+        <h2 id={`${headingId}-work`} className={styles.heading}>
+          Работа
+        </h2>
+        <PhotoFields label="Фото работы" isSaving={isSaving} serverPhoto={savedPhoto} />
         <ClearableInput
           label="Название"
           hint={`До ${String(workMaxLengths.title)} символов`}
@@ -159,68 +166,12 @@ export function WorkFields({
           isModified={Boolean(dirtyFields.description)}
           {...descriptionField}
         />
-        <SectionsField
-          sections={sections}
-          value={sectionsField.value}
-          savedIds={savedSectionIds}
-          disabled={isSaving}
-          error={errors.sectionIds?.message}
-          inputRef={sectionsField.ref}
-          onBlur={sectionsField.onBlur}
-          onChange={sectionsField.onChange}
-        />
-        <MultiSelect
-          label="Материалы"
-          hint={`До ${String(maxWorkMaterials)}`}
-          placeholder="Например: масло"
-          options={materialOptions}
-          value={materialsField.value}
-          disabled={isSaving}
-          error={errors.materialIds?.message}
-          isModified={Boolean(dirtyFields.materialIds)}
-          inputRef={materialsField.ref}
-          onBlur={materialsField.onBlur}
-          onChange={materialsField.onChange}
-        />
-        <MultiSelect
-          label="Цвета"
-          hint={`До ${String(maxWorkColors)}`}
-          placeholder="Например: синий"
-          options={colorOptions}
-          value={colorsField.value}
-          disabled={isSaving}
-          error={errors.colorIds?.message}
-          isModified={Boolean(dirtyFields.colorIds)}
-          inputRef={colorsField.ref}
-          onBlur={colorsField.onBlur}
-          onChange={colorsField.onChange}
-        />
-        <MultiSelect
-          label="Палитры"
-          hint={`До ${String(maxWorkPalettes)}. Как работа окрашена в целом`}
-          placeholder="Например: пастельная"
-          options={paletteOptions}
-          value={palettesField.value}
-          disabled={isSaving}
-          error={errors.paletteIds?.message}
-          isModified={Boolean(dirtyFields.paletteIds)}
-          inputRef={palettesField.ref}
-          onBlur={palettesField.onBlur}
-          onChange={palettesField.onChange}
-        />
-        {/* Always holds a choice, so it needs no «Необязательно»: «Без коллекции» is one. */}
-        <Select
-          className={styles.collection}
-          label="Коллекция"
-          options={collectionOptions}
-          disabled={isSaving}
-          error={errors.collectionId?.message}
-          isModified={Boolean(dirtyFields.collectionId)}
-          ref={collectionField.ref}
-          value={collectionField.value}
-          onBlur={collectionField.onBlur}
-          onChange={collectionField.onChange}
-        />
+      </section>
+
+      <section className={styles.group} aria-labelledby={`${headingId}-size`}>
+        <h2 id={`${headingId}-size`} className={styles.heading}>
+          Формат и размер
+        </h2>
         <RadioGroup
           label="Формат"
           name={formatField.name}
@@ -282,17 +233,94 @@ export function WorkFields({
             {...yearField}
           />
         </div>
-      </div>
+      </section>
 
-      <PhotoFields label="Фото работы" isSaving={isSaving} serverPhoto={savedPhoto} />
+      <section className={styles.group} aria-labelledby={`${headingId}-place`}>
+        <h2 id={`${headingId}-place`} className={styles.heading}>
+          Где показывать
+        </h2>
+        <SectionsField
+          sections={sections}
+          value={sectionsField.value}
+          savedIds={savedSectionIds}
+          disabled={isSaving}
+          error={errors.sectionIds?.message}
+          inputRef={sectionsField.ref}
+          onBlur={sectionsField.onBlur}
+          onChange={sectionsField.onChange}
+        />
+        {/* Always holds a choice, so it needs no «Необязательно»: «Без коллекции» is one. */}
+        <Select
+          className={styles.collection}
+          label="Коллекция"
+          options={collectionOptions}
+          disabled={isSaving}
+          error={errors.collectionId?.message}
+          isModified={Boolean(dirtyFields.collectionId)}
+          ref={collectionField.ref}
+          value={collectionField.value}
+          onBlur={collectionField.onBlur}
+          onChange={collectionField.onChange}
+        />
+      </section>
 
-      <PhotoListField
-        label="Фото процесса"
-        altPlaceholder="Например: первые наброски карандашом"
-        maxPhotos={maxWorkProcessPhotos}
-        isSaving={isSaving}
-        savedPhotos={savedProcessPhotos}
-      />
+      <section className={styles.group} aria-labelledby={`${headingId}-search`}>
+        <h2 id={`${headingId}-search`} className={styles.heading}>
+          Для поиска на сайте
+        </h2>
+        <MultiSelect
+          label="Материалы"
+          hint={`До ${String(maxWorkMaterials)}`}
+          placeholder="Например: масло"
+          options={materialOptions}
+          value={materialsField.value}
+          disabled={isSaving}
+          error={errors.materialIds?.message}
+          isModified={Boolean(dirtyFields.materialIds)}
+          inputRef={materialsField.ref}
+          onBlur={materialsField.onBlur}
+          onChange={materialsField.onChange}
+        />
+        <MultiSelect
+          label="Цвета"
+          hint={`До ${String(maxWorkColors)}`}
+          placeholder="Например: синий"
+          options={colorOptions}
+          value={colorsField.value}
+          disabled={isSaving}
+          error={errors.colorIds?.message}
+          isModified={Boolean(dirtyFields.colorIds)}
+          inputRef={colorsField.ref}
+          onBlur={colorsField.onBlur}
+          onChange={colorsField.onChange}
+        />
+        <MultiSelect
+          label="Палитры"
+          hint={`До ${String(maxWorkPalettes)}. Как работа окрашена в целом`}
+          placeholder="Например: пастельная"
+          options={paletteOptions}
+          value={palettesField.value}
+          disabled={isSaving}
+          error={errors.paletteIds?.message}
+          isModified={Boolean(dirtyFields.paletteIds)}
+          inputRef={palettesField.ref}
+          onBlur={palettesField.onBlur}
+          onChange={palettesField.onChange}
+        />
+      </section>
+
+      <section className={styles.group} aria-labelledby={`${headingId}-process`}>
+        <h2 id={`${headingId}-process`} className={styles.heading}>
+          Процесс
+        </h2>
+        <PhotoListField
+          label="Фото процесса"
+          altPlaceholder="Например: первые наброски карандашом"
+          maxPhotos={maxWorkProcessPhotos}
+          isSaving={isSaving}
+          savedPhotos={savedProcessPhotos}
+        />
+      </section>
     </div>
   );
 }
