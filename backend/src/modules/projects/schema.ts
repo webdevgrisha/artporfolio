@@ -19,13 +19,16 @@ export const projectParamsSchema = z.object({
 
 /**
  * A project as the client sends it, to create one or to replace a saved one. Every field is sent;
- * an empty description or link is not shown on the site.
+ * an empty link is not shown on the site.
  */
 export const projectBodySchema = z.strictObject({
   /** The name in the list of projects, so it cannot be empty. */
   title: z.string().trim().min(1).max(100),
-  /** Plain text: no HTML or Markdown. Paragraphs are separated by a blank line. */
-  description: z.string().trim().max(2_000),
+  /**
+   * What the project is about, which the visitor reads beside it, so it cannot be empty. Plain
+   * text: no HTML or Markdown. Paragraphs are separated by a blank line.
+   */
+  description: z.string().trim().min(1).max(2_000),
   /** Unlike z.url(), rejects "javascript:" links, which would run code when a visitor clicks them. */
   link: z
     .string()

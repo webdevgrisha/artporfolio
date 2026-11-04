@@ -46,7 +46,7 @@ export function ProjectFields({ className, isSaving, savedPhotos }: ProjectField
         />
         <Textarea
           label="Описание"
-          hint={`Необязательно. До ${String(projectMaxLengths.description)} символов. Абзацы разделяйте пустой строкой`}
+          hint={`До ${String(projectMaxLengths.description)} символов. Абзацы разделяйте пустой строкой`}
           placeholder="О чём проект и как он сделан"
           rows={8}
           disabled={isSaving}

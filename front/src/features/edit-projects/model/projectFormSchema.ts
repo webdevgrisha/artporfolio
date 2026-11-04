@@ -16,10 +16,10 @@ export const projectFormSchema = z.object({
     .trim()
     .min(1, "Введите название")
     .max(projectMaxLengths.title, `Не длиннее ${String(projectMaxLengths.title)} символов`),
-  /** An empty description is not shown on the site. */
   description: z
     .string()
     .trim()
+    .min(1, "Введите описание")
     .max(
       projectMaxLengths.description,
       `Не длиннее ${String(projectMaxLengths.description)} символов`,
