@@ -3,11 +3,6 @@ import React from "react";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import {
-  type GalleryCollection,
-  type GalleryColor,
-  type GalleryMaterial,
-  type GalleryPalette,
-  type GallerySection,
   maxWorkColors,
   maxWorkMaterials,
   maxWorkPalettes,
@@ -26,6 +21,7 @@ import { RadioGroup } from "@/shared/ui/radio-group";
 import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 import { toIdSet } from "../model/idSet";
+import type { WorkReferences } from "../model/useWorkReferences";
 import {
   monthOptions,
   type WorkFormValues,
@@ -43,29 +39,17 @@ interface WorkFieldsProps {
   savedPhoto: Photo | null;
   /** The process photos of the saved work, to show that some were removed or moved. */
   savedProcessPhotos: readonly ListPhoto[];
-  /** The sections of the gallery, sorted by title, to choose from. */
-  sections: readonly GallerySection[];
-  /** The materials of the gallery, sorted by title, to choose from. */
-  materials: readonly GalleryMaterial[];
-  /** The colors of the gallery, sorted by title, to choose from. */
-  colors: readonly GalleryColor[];
-  /** The palettes of the gallery, sorted by title, to choose from. */
-  palettes: readonly GalleryPalette[];
-  /** The collections of the gallery, to choose from. */
-  collections: readonly GalleryCollection[];
+  /** The lists of the gallery to choose from. */
+  references: WorkReferences;
 }
 
 /** The fields of a work form; they read the form from its context. */
 export function WorkFields({
   className,
-  collections,
-  colors,
   isSaving,
-  materials,
-  palettes,
+  references: { collections, colors, materials, palettes, sections },
   savedPhoto,
   savedProcessPhotos,
-  sections,
 }: WorkFieldsProps) {
   const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
   const { defaultValues, dirtyFields, errors, isSubmitted } = useFormState({ control });

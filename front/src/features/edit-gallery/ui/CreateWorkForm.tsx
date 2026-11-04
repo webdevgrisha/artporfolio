@@ -3,43 +3,22 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import type {
-  GalleryCollection,
-  GalleryColor,
-  GalleryMaterial,
-  GalleryPalette,
-  GallerySection,
-} from "@/entities/gallery";
 import { galleryWorkPath } from "@/shared/config/routes";
 import { EditForm } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
+import type { WorkReferences } from "../model/useWorkReferences";
 import { emptyWorkFormValues, type WorkFormValues, workFormSchema } from "../model/workFormSchema";
 import { useCreateWork } from "../model/workMutations";
 import { WorkFields } from "./WorkFields";
 
 interface CreateWorkFormProps {
   className?: string;
-  /** The sections of the gallery, to choose from. */
-  sections: readonly GallerySection[];
-  /** The materials of the gallery, to choose from. */
-  materials: readonly GalleryMaterial[];
-  /** The colors of the gallery, to choose from. */
-  colors: readonly GalleryColor[];
-  /** The palettes of the gallery, to choose from. */
-  palettes: readonly GalleryPalette[];
-  /** The collections of the gallery, to choose from. */
-  collections: readonly GalleryCollection[];
+  /** The lists of the gallery to choose from. */
+  references: WorkReferences;
 }
 
 /** A new work; once it is created, its edit page opens in place of this one. */
-export function CreateWorkForm({
-  className,
-  collections,
-  colors,
-  materials,
-  palettes,
-  sections,
-}: CreateWorkFormProps) {
+export function CreateWorkForm({ className, references }: CreateWorkFormProps) {
   const navigate = useNavigate();
   const allowNextNavigation = useAllowNextNavigation();
   // Every try of this form creates the same work, so a retry after a lost response never creates
@@ -89,11 +68,7 @@ export function CreateWorkForm({
           isSaving={isSaving}
           savedPhoto={null}
           savedProcessPhotos={[]}
-          sections={sections}
-          materials={materials}
-          colors={colors}
-          palettes={palettes}
-          collections={collections}
+          references={references}
         />
       </EditForm>
     </FormProvider>

@@ -1,3 +1,4 @@
+export { useWorkReferences } from "./model/useWorkReferences";
 export { CollectionsList } from "./ui/CollectionsList";
 export { CreateCollectionForm } from "./ui/CreateCollectionForm";
 export { CreateSectionForm } from "./ui/CreateSectionForm";
