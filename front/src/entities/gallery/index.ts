@@ -1,3 +1,12 @@
+export {
+  createGalleryCollection,
+  deleteGalleryCollection,
+  type GalleryCollectionBody,
+  galleryCollectionQuery,
+  galleryCollectionsQuery,
+  galleryCollectionsQueryKey,
+  replaceGalleryCollection,
+} from "./api/galleryCollections";
 export { galleryColorsQuery, replaceGalleryColors } from "./api/galleryColors";
 export { galleryIntroQuery, replaceGalleryIntro } from "./api/galleryIntro";
 export { galleryMaterialsQuery, replaceGalleryMaterials } from "./api/galleryMaterials";
@@ -20,6 +29,11 @@ export {
   galleryWorksQueryKey,
   replaceGalleryWork,
 } from "./api/galleryWorks";
+export {
+  type GalleryCollection,
+  maxCollectionWorks,
+  minCollectionYear,
+} from "./model/galleryCollection";
 export { type GalleryColor, type GalleryColors, maxColors } from "./model/galleryColors";
 export type { GalleryIntro } from "./model/galleryIntro";
 export {
