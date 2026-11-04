@@ -57,6 +57,7 @@ export {
   maxWorkDiscount,
   maxWorkMaterials,
   maxWorkPalettes,
+  maxWorkPlaceLength,
   maxWorkPrice,
   maxWorkProcessPhotos,
   maxWorkSections,

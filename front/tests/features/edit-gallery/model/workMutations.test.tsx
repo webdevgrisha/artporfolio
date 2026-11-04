@@ -66,6 +66,7 @@ function apiWork(title: string): GalleryWork {
     updatedAt: "2026-01-15T10:00:00.000Z",
     year: 2025,
     month: 4,
+    place: "",
   };
 }
 
@@ -133,6 +134,7 @@ describe("useCreateWork", () => {
           title: "Стрекоза",
           year: 2025,
           month: 4,
+          place: "",
         },
         ifMatch: null,
         ifNoneMatch: "*",

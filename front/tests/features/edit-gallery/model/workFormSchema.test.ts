@@ -40,6 +40,7 @@ const work = {
 const savedWork = {
   description: "",
   month: 3,
+  place: "Варшава",
   photo: { alt: "Стрекоза" },
   processPhotos: [],
   sectionIds: [],
@@ -213,6 +214,20 @@ describe("the format in the form", () => {
     expect(formatWorkFormat({ format: "diptych", partCount: null })).toBe("диптих");
     expect(formatWorkFormat({ format: "triptych", partCount: null })).toBe("триптих");
     expect(formatWorkFormat({ format: "set", partCount: 12 })).toBe("12 шт.");
+  });
+});
+
+describe("the place in the form", () => {
+  it("takes no place, or a place up to 100 characters", () => {
+    expect(fieldErrors(workFormSchema, { ...work, place: "" })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...work, place: "а".repeat(100) })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...work, place: "а".repeat(101) })).toEqual({
+      place: ["Не длиннее 100 символов"],
+    });
+  });
+
+  it("shows the saved place", () => {
+    expect(toWorkFormValues(savedWork).place).toBe("Варшава");
   });
 });
 
