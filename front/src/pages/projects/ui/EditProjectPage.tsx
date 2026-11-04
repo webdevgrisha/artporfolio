@@ -19,10 +19,10 @@ export function EditProjectPage() {
         key={id}
         fallback={
           <FormSkeleton className={styles.form} isNarrow>
+            <MediaSkeleton />
             <FieldSkeleton />
             <FieldSkeleton rows={8} />
             <FieldSkeleton />
-            <MediaSkeleton />
           </FormSkeleton>
         }
       >

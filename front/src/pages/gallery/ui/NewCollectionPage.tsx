@@ -3,24 +3,14 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { galleryCollectionsQuery, galleryWorksQuery } from "@/entities/gallery";
 import { CreateCollectionForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
-import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
 
+import { CollectionFormSkeleton } from "./CollectionFormSkeleton";
 import styles from "./GalleryPage.module.css";
 
 export function NewCollectionPage() {
   return (
     <div className={styles.root}>
-      <AwaitPageData
-        fallback={
-          <FormSkeleton className={styles.form} isNarrow>
-            <FieldSkeleton />
-            <FieldSkeleton rows={8} />
-            <FieldSkeleton />
-            <FieldSkeleton rows={4} />
-            <MediaSkeleton />
-          </FormSkeleton>
-        }
-      >
+      <AwaitPageData fallback={<CollectionFormSkeleton />}>
         <NewCollection />
       </AwaitPageData>
     </div>

@@ -8,8 +8,8 @@ import {
 } from "@/entities/gallery";
 import { EditCollectionForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
-import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
 
+import { CollectionFormSkeleton } from "./CollectionFormSkeleton";
 import styles from "./GalleryPage.module.css";
 
 export function EditCollectionPage() {
@@ -19,18 +19,7 @@ export function EditCollectionPage() {
     <div className={styles.root}>
       {/* Keyed: another collection shows its skeleton, then a form of its own, whose values come
           from the collection it opened with. */}
-      <AwaitPageData
-        key={id}
-        fallback={
-          <FormSkeleton className={styles.form} isNarrow>
-            <FieldSkeleton />
-            <FieldSkeleton rows={8} />
-            <FieldSkeleton />
-            <FieldSkeleton rows={4} />
-            <MediaSkeleton />
-          </FormSkeleton>
-        }
-      >
+      <AwaitPageData key={id} fallback={<CollectionFormSkeleton />}>
         <EditCollection id={id} />
       </AwaitPageData>
     </div>

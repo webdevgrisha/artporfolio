@@ -31,6 +31,14 @@ export function ProjectFields({ className, isSaving, savedPhotos }: ProjectField
 
   return (
     <div className={clsx(styles.root, className)}>
+      <PhotoListField
+        label="Фото проекта"
+        altPlaceholder="Например: разворот книги с иллюстрацией"
+        maxPhotos={maxProjectPhotos}
+        isSaving={isSaving}
+        savedPhotos={savedPhotos}
+      />
+
       <div className={styles.texts}>
         <ClearableInput
           label="Название"
@@ -69,14 +77,6 @@ export function ProjectFields({ className, isSaving, savedPhotos }: ProjectField
           {...register("link")}
         />
       </div>
-
-      <PhotoListField
-        label="Фото проекта"
-        altPlaceholder="Например: разворот книги с иллюстрацией"
-        maxPhotos={maxProjectPhotos}
-        isSaving={isSaving}
-        savedPhotos={savedPhotos}
-      />
     </div>
   );
 }

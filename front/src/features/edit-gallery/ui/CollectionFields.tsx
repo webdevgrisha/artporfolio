@@ -39,8 +39,8 @@ export function CollectionFields({
   const { dirtyFields, errors, isSubmitted } = useFormState({ control });
   const title = useWatch({ control, name: "title" });
   // After a refused submit, react-hook-form focuses the first invalid field in the order the
-  // fields were registered, so they are registered here in the order of the form; the cover comes
-  // last, from its own component.
+  // fields were registered, so they are registered here in the order of the form. The picker of
+  // the cover takes no focus.
   const titleField = register("title");
   const descriptionField = register("description");
   const startYearField = register("startYear");
@@ -55,6 +55,8 @@ export function CollectionFields({
 
   return (
     <div className={clsx(styles.root, className)}>
+      <PhotoFields label="Обложка" isSaving={isSaving} serverPhoto={savedCover} />
+
       <div className={styles.texts}>
         <ClearableInput
           label="Название"
@@ -116,8 +118,6 @@ export function CollectionFields({
           onChange={(ids) => worksField.onChange(toIdSet(ids))}
         />
       </div>
-
-      <PhotoFields label="Обложка" isSaving={isSaving} serverPhoto={savedCover} />
     </div>
   );
 }
