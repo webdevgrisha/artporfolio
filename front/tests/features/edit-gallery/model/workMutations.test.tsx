@@ -60,6 +60,7 @@ function apiWork(title: string): GalleryWork {
     collectionId: null,
     format: "single",
     partCount: null,
+    price: null,
     size: { height: 27.9, width: 21.6 },
     title,
     updatedAt: "2026-01-15T10:00:00.000Z",
@@ -127,6 +128,7 @@ describe("useCreateWork", () => {
           collectionId: null,
           format: "single",
           partCount: null,
+          price: null,
           size: { height: 27.9, width: 21.6 },
           title: "Стрекоза",
           year: 2025,
@@ -197,6 +199,26 @@ describe("useSaveWork", () => {
     expect(puts).toEqual([
       expect.objectContaining({
         body: expect.objectContaining({ format: "set", partCount: 12 }),
+      }),
+    ]);
+  });
+
+  it("sends the price in dollars and the discount as numbers", async () => {
+    const puts = handlePuts(() =>
+      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+    );
+    const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
+
+    await saveWork.mutateAsync({
+      etag: '"read"',
+      values: { ...values(), price: "1 500", discountPercent: " 10 " },
+    });
+
+    expect(puts).toEqual([
+      expect.objectContaining({
+        body: expect.objectContaining({
+          price: { amount: 1500, currency: "USD", discountPercent: 10 },
+        }),
       }),
     ]);
   });

@@ -1,7 +1,7 @@
 import type { GalleryWork } from "@/entities/gallery";
 
 /** The columns the table sorts by, as named in the address. */
-export const worksSortableColumns = ["position", "title", "size", "date"] as const;
+export const worksSortableColumns = ["position", "title", "size", "price", "date"] as const;
 
 /** Whether the title of the work contains the query, in any case. */
 export function matchesWorkQuery({ title }: GalleryWork, query: string): boolean {

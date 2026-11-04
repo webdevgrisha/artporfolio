@@ -18,6 +18,7 @@ import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/p
 import { photoListRowsSchema, toPhotoListRows } from "@/shared/lib/photoListForm";
 
 import { toIdSet } from "./idSet";
+import { discountError, priceError } from "./workPrice";
 import { yearSchema } from "./yearField";
 
 // Mirror the server rules in backend/src/modules/gallery-works/schema.ts.
@@ -107,6 +108,23 @@ function refinePartCount(
   }
 }
 
+/** Checks the price and the discount, which may both be empty: a work may have no price. */
+function refinePrice(
+  { discountPercent, price }: { discountPercent: string; price: string },
+  context: z.RefinementCtx,
+): void {
+  const priceMessage = priceError(price);
+  const discountMessage = discountError(discountPercent, price);
+
+  if (priceMessage !== null) {
+    context.addIssue({ code: "custom", message: priceMessage, path: ["price"] });
+  }
+
+  if (discountMessage !== null) {
+    context.addIssue({ code: "custom", message: discountMessage, path: ["discountPercent"] });
+  }
+}
+
 export const workFormSchema = z
   .object({
     title: z
@@ -155,11 +173,16 @@ export const workFormSchema = z
     format: z.enum(workFormats),
     /** The count of works of a set, as typed; empty for a new work. */
     partCount: z.string(),
+    /** The price in whole dollars, as typed; empty for a work without a price. */
+    price: z.string(),
+    /** The percent taken off the price, as typed; empty for none. */
+    discountPercent: z.string(),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)
   .superRefine(refineMonth)
-  .superRefine(refinePartCount);
+  .superRefine(refinePartCount)
+  .superRefine(refinePrice);
 
 export type WorkFormValues = z.infer<typeof workFormSchema>;
 
@@ -180,6 +203,8 @@ export const emptyWorkFormValues: WorkFormValues = {
   collectionId: "",
   format: "single",
   partCount: "",
+  price: "",
+  discountPercent: "",
 };
 
 /** The values of a work as stored on the server. */
@@ -193,6 +218,7 @@ export function toWorkFormValues({
   paletteIds,
   partCount,
   photo,
+  price,
   processPhotos,
   sectionIds,
   size,
@@ -215,6 +241,9 @@ export function toWorkFormValues({
     collectionId: collectionId ?? "",
     format,
     partCount: partCount === null ? "" : String(partCount),
+    price: price === null ? "" : String(price.amount),
+    discountPercent:
+      price === null || price.discountPercent === null ? "" : String(price.discountPercent),
   };
 }
 

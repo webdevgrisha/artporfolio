@@ -8,6 +8,7 @@ import {
   galleryWorkResponseSchema,
   galleryWorksResponseSchema,
   type WorkFormat,
+  type WorkPrice,
   type WorkSize,
 } from "../model/galleryWork";
 
@@ -36,6 +37,8 @@ export interface GalleryWorkBody {
   format: WorkFormat;
   /** How many works the set has; null for any other format. */
   partCount: number | null;
+  /** Null for a work without a price; the server computes the amount after the discount. */
+  price: Omit<WorkPrice, "finalAmount"> | null;
 }
 
 interface CreateGalleryWorkParams {

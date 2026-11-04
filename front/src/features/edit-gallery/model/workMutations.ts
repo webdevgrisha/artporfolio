@@ -15,6 +15,7 @@ import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
 import { getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
 import { toPartCount, toWorkSize, type WorkFormValues } from "./workFormSchema";
+import { toWorkPrice } from "./workPrice";
 
 interface CreateWorkParams {
   /** The id the form picked for the new work; every try of the form sends the same one. */
@@ -62,6 +63,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     collectionId: collectionId === "" ? null : collectionId,
     format: values.format,
     partCount: toPartCount(values),
+    price: toWorkPrice(values),
     size: toWorkSize(values),
     title,
     year: Number(year),

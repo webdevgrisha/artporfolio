@@ -12,6 +12,11 @@ import {
   toWorkSize,
   workFormSchema,
 } from "@/features/edit-gallery/model/workFormSchema";
+import {
+  discountedAmount,
+  formatPrice,
+  toWorkPrice,
+} from "@/features/edit-gallery/model/workPrice";
 
 import { fieldErrors } from "../../../support/schema";
 
@@ -30,6 +35,24 @@ const work = {
   width: "50",
   year: "2024",
 };
+
+/** A saved work, with only the fields the form reads. */
+const savedWork = {
+  description: "",
+  month: 3,
+  photo: { alt: "Стрекоза" },
+  processPhotos: [],
+  sectionIds: [],
+  materialIds: [],
+  colorIds: [],
+  paletteIds: [],
+  format: "set",
+  partCount: 12,
+  price: null,
+  size: { height: 27.9, width: 21.6 },
+  title: "Стрекоза",
+  year: 2025,
+} as unknown as GalleryWork;
 
 describe("workFormSchema", () => {
   it("needs every field but the process photos", () => {
@@ -193,24 +216,78 @@ describe("the format in the form", () => {
   });
 });
 
+describe("the price in the form", () => {
+  it("takes a work without a price or a discount", () => {
+    expect(fieldErrors(workFormSchema, { ...work, price: "", discountPercent: "" })).toEqual({});
+    expect(toWorkPrice({ price: " ", discountPercent: "" })).toBeNull();
+  });
+
+  it("takes a price in whole dollars, split into thousands or not", () => {
+    expect(fieldErrors(workFormSchema, { ...work, price: "1500" })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...work, price: "1 500" })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...work, price: "1\u00a0500" })).toEqual({});
+    expect(toWorkPrice({ price: "1 500", discountPercent: "" })).toEqual({
+      amount: 1500,
+      currency: "USD",
+      discountPercent: null,
+    });
+  });
+
+  it("needs a whole price above zero and within the limit", () => {
+    expect(fieldErrors(workFormSchema, { ...work, price: "499,99" })).toEqual({
+      price: ["Введите целое число, например 1 500"],
+    });
+    expect(fieldErrors(workFormSchema, { ...work, price: "0" })).toEqual({
+      price: ["Цена больше нуля"],
+    });
+    expect(fieldErrors(workFormSchema, { ...work, price: "100000001" })).toEqual({
+      price: [`Не больше ${(100_000_000).toLocaleString("ru")}`],
+    });
+  });
+
+  it("takes a discount of a whole percent from 1 to 99, only with a price", () => {
+    const priced = { ...work, price: "500" };
+
+    expect(fieldErrors(workFormSchema, { ...priced, discountPercent: "10" })).toEqual({});
+    expect(fieldErrors(workFormSchema, { ...priced, discountPercent: "0" })).toEqual({
+      discountPercent: ["От 1 до 99"],
+    });
+    expect(fieldErrors(workFormSchema, { ...priced, discountPercent: "100" })).toEqual({
+      discountPercent: ["От 1 до 99"],
+    });
+    expect(fieldErrors(workFormSchema, { ...priced, discountPercent: "12,5" })).toEqual({
+      discountPercent: ["Введите целое число"],
+    });
+    expect(fieldErrors(workFormSchema, { ...work, discountPercent: "10" })).toEqual({
+      discountPercent: ["Сначала укажите цену"],
+    });
+  });
+
+  it("shows a saved price and discount and reads them back", () => {
+    const values = toWorkFormValues({
+      ...savedWork,
+      price: { amount: 1500, currency: "USD", discountPercent: 10, finalAmount: 1350 },
+    });
+
+    expect(values).toMatchObject({ discountPercent: "10", price: "1500" });
+    expect(toWorkPrice(values)).toEqual({ amount: 1500, currency: "USD", discountPercent: 10 });
+  });
+
+  it("computes the price after the discount as the server does, in whole dollars", () => {
+    expect(discountedAmount(500, null)).toBe(500);
+    expect(discountedAmount(500, 10)).toBe(450);
+    // 999 × 0.85 = 849.15
+    expect(discountedAmount(999, 15)).toBe(849);
+  });
+
+  it("shows a price in dollars, split into thousands", () => {
+    expect(formatPrice(1500, "USD").replace(/\s/g, " ")).toBe("1 500 $");
+  });
+});
+
 describe("the size in the form", () => {
   it("shows a saved size with a comma and reads it back as numbers", () => {
-    const saved = {
-      description: "",
-      month: 3,
-      photo: { alt: "Стрекоза" },
-      processPhotos: [],
-      sectionIds: [],
-      materialIds: [],
-      colorIds: [],
-      paletteIds: [],
-      format: "set",
-      partCount: 12,
-      size: { height: 27.9, width: 21.6 },
-      title: "Стрекоза",
-      year: 2025,
-    } as unknown as GalleryWork;
-    const values = toWorkFormValues(saved);
+    const values = toWorkFormValues(savedWork);
 
     expect(values).toMatchObject({
       format: "set",

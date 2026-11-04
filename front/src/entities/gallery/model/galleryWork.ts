@@ -32,6 +32,30 @@ export const workFormats = ["single", "diptych", "triptych", "set"] as const;
 
 export type WorkFormat = (typeof workFormats)[number];
 
+/** The only currency a price is set in for now. */
+export const workCurrencies = ["USD"] as const;
+
+export type WorkCurrency = (typeof workCurrencies)[number];
+
+/** The highest price in whole dollars. */
+export const maxWorkPrice = 100_000_000;
+
+/** A discount takes off a whole percent of the price, from 1 to 99. */
+export const minWorkDiscount = 1;
+export const maxWorkDiscount = 99;
+
+/** The price of a work in whole units of its currency. */
+export const workPriceSchema = z.object({
+  amount: z.number(),
+  currency: z.enum(workCurrencies),
+  /** The percent taken off the amount, or null for none. */
+  discountPercent: z.number().nullable(),
+  /** The amount after the discount, which the server computes. */
+  finalAmount: z.number(),
+});
+
+export type WorkPrice = z.infer<typeof workPriceSchema>;
+
 /** The largest side of a work in centimetres. */
 export const maxWorkSide = 10_000;
 
@@ -69,6 +93,8 @@ export const galleryWorkSchema = z.object({
   format: z.enum(workFormats),
   /** How many works the set has; null for any other format. */
   partCount: z.number().nullable(),
+  /** Null for a work without a price. The price of a set is for all its works together. */
+  price: workPriceSchema.nullable(),
   /** When the work was created, ISO 8601. */
   createdAt: z.iso.datetime(),
   /** When the admin last saved the work, ISO 8601. */
