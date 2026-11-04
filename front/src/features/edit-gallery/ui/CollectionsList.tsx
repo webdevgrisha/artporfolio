@@ -1,15 +1,27 @@
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import clsx from "clsx";
 import React from "react";
-import { useSearchParams } from "react-router";
 
 import type { GalleryCollection } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
+import { useTableView } from "@/shared/lib/useTableView";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { imageToMediaItem, MediaImage } from "@/shared/ui/media-preview";
 import { SearchInput } from "@/shared/ui/search-input";
+import { TableHead } from "@/shared/ui/table-head";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
-import { collectionsSearchParam, matchesCollectionQuery } from "../model/collectionsSearch";
+import {
+  collectionsSortableColumns,
+  compareCollectionYears,
+  matchesCollectionQuery,
+} from "../model/collectionsTableView";
 import { formatCollectionYears } from "../model/collectionYears";
 import { useDeleteCollection } from "../model/useDeleteCollection";
 import { CollectionActions } from "./CollectionActions";
@@ -32,28 +44,107 @@ function deletionDescription(count: number): string {
   return `Коллекция пропадёт с сайта, её ${String(count)} ${noun} ${verb} в галерее без коллекции. Это нельзя отменить.`;
 }
 
+/** A collection with its place on the site, which the sorting of the table does not change. */
+interface CollectionRow {
+  collection: GalleryCollection;
+  position: number;
+}
+
+const collator = new Intl.Collator("ru", { sensitivity: "base" });
+
 /**
- * Every collection, in the order of the site; the numbers show how many there are and stay with
- * their rows while searching. The search, in the titles, is kept in the address; a new collection
- * is added from beside it. A collection opens for editing by the pencil and is deleted after a
- * confirmation.
+ * Every collection; until it is sorted, in the order of the site, which «№» keeps showing after a
+ * sort and while searching. The search, in the titles, and the sorting are kept in the address; a
+ * new collection is added from beside the search. A collection opens for editing by the pencil and
+ * is deleted after a confirmation.
  */
 export function CollectionsList({ className, collections }: CollectionsListProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get(collectionsSearchParam) ?? "";
+  const { changeSorting, changeView, view } = useTableView(collectionsSortableColumns);
+  const { query } = view;
   const deletion = useDeleteCollection();
   const [deleted, setDeleted] = React.useState<GalleryCollection>();
-  const shownRows = collections
-    .map((collection, index) => ({ collection, position: index + 1 }))
-    .filter(({ collection }) => matchesCollectionQuery(collection, query));
+  const shownRows = React.useMemo(
+    () =>
+      collections
+        .map((collection, index) => ({ collection, position: index + 1 }))
+        .filter(({ collection }) => matchesCollectionQuery(collection, query)),
+    [collections, query],
+  );
+
+  const columns = React.useMemo<ColumnDef<CollectionRow>[]>(
+    () => [
+      {
+        id: "position",
+        header: "№",
+        meta: { className: styles.positionColumn },
+        accessorFn: (row) => row.position,
+        cell: ({ row: { original } }) => <span className={styles.muted}>{original.position}</span>,
+      },
+      {
+        id: "cover",
+        header: "Обложка",
+        meta: { className: styles.coverColumn },
+        enableSorting: false,
+        cell: ({ row: { original } }) => (
+          <MediaImage
+            className={styles.cover}
+            source={imageToMediaItem(original.collection.cover).source}
+          />
+        ),
+      },
+      {
+        id: "title",
+        header: "Название",
+        accessorFn: (row) => row.collection.title,
+        sortingFn: (a, b) =>
+          collator.compare(a.original.collection.title, b.original.collection.title),
+      },
+      {
+        id: "years",
+        header: "Годы",
+        meta: { className: styles.yearsColumn },
+        accessorFn: (row) => row.collection.startYear,
+        sortingFn: (a, b) => compareCollectionYears(a.original.collection, b.original.collection),
+        // The latest first, as the site shows them.
+        sortDescFirst: true,
+        cell: ({ row: { original } }) => formatCollectionYears(original.collection),
+      },
+      {
+        id: "works",
+        header: "Работ",
+        meta: { className: styles.countColumn },
+        accessorFn: (row) => row.collection.workIds.length,
+        // The largest first: the useful start.
+        sortDescFirst: true,
+      },
+      {
+        id: "actions",
+        header: () => <VisuallyHidden>Действия</VisuallyHidden>,
+        meta: { className: styles.actionsColumn },
+        enableSorting: false,
+        cell: ({ row: { original } }) => (
+          <CollectionActions collection={original.collection} onDelete={setDeleted} />
+        ),
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    columns,
+    // There are no pages, so nothing to reset when the rows change; the reset would render again.
+    autoResetPageIndex: false,
+    data: shownRows,
+    enableMultiSort: false,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.collection.id,
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: changeSorting,
+    state: { sorting: view.sorting },
+  });
 
   function changeQuery(next: string) {
-    const params = new URLSearchParams(searchParams);
-
-    if (next) params.set(collectionsSearchParam, next);
-    else params.delete(collectionsSearchParam);
-    // Replaces the entry: the back button leaves the table instead of undoing each letter.
-    setSearchParams(params, { replace: true });
+    changeView({ query: next });
   }
 
   return (
@@ -87,42 +178,15 @@ export function CollectionsList({ className, collections }: CollectionsListProps
             <caption>
               <VisuallyHidden>Коллекции</VisuallyHidden>
             </caption>
-            <thead>
-              <tr>
-                <th className={styles.positionColumn} scope="col">
-                  №
-                </th>
-                <th className={styles.coverColumn} scope="col">
-                  Обложка
-                </th>
-                <th scope="col">Название</th>
-                <th className={styles.yearsColumn} scope="col">
-                  Годы
-                </th>
-                <th className={styles.countColumn} scope="col">
-                  Работ
-                </th>
-                <th className={styles.actionsColumn} scope="col">
-                  <VisuallyHidden>Действия</VisuallyHidden>
-                </th>
-              </tr>
-            </thead>
+            <TableHead table={table} />
             <tbody>
-              {shownRows.map(({ collection, position }) => (
-                <tr key={collection.id} className={styles.row}>
-                  <td className={clsx(styles.positionColumn, styles.muted)}>{position}</td>
-                  <td className={styles.coverColumn}>
-                    <MediaImage
-                      className={styles.cover}
-                      source={imageToMediaItem(collection.cover).source}
-                    />
-                  </td>
-                  <td>{collection.title}</td>
-                  <td className={styles.yearsColumn}>{formatCollectionYears(collection)}</td>
-                  <td className={styles.countColumn}>{collection.workIds.length}</td>
-                  <td className={styles.actionsColumn}>
-                    <CollectionActions collection={collection} onDelete={setDeleted} />
-                  </td>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className={styles.row}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className={cell.column.columnDef.meta?.className}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

@@ -22,11 +22,14 @@
 }
 
 /*
- * A narrow screen scrolls the table instead of squeezing its columns. Positioned, so the visually
- * hidden texts of the cells stay inside the scroll instead of widening the page.
+ * A narrow screen scrolls the table instead of squeezing its columns. The scroll clips vertically
+ * too, so the padding keeps room for the focus ring of the sort buttons, which have none above
+ * them. Positioned, so the visually hidden texts of the cells stay inside the scroll instead of
+ * widening the page.
  */
 .scroller {
   position: relative;
+  padding-block-start: var(--space-1);
   overflow-x: auto;
 }
 
@@ -57,6 +60,7 @@
   padding-block-start: 0;
   font-weight: normal;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 /* As the column «№» of the projects table. */
@@ -66,18 +70,18 @@
 
 /* Room for the name «Обложка», which is wider than the cover. */
 .coverColumn {
-  inline-size: 8rem;
+  inline-size: 7.5rem;
 }
 
 /* Room for «2022–2025», on one line. */
 .yearsColumn {
-  inline-size: 9rem;
+  inline-size: 8.5rem;
   white-space: nowrap;
 }
 
-/* Room for the name of the column, which is wider than the number. */
+/* Room for the name of the column and its arrow, which are wider than the number. */
 .countColumn {
-  inline-size: 6rem;
+  inline-size: 6.75rem;
 }
 
 .actionsColumn {
