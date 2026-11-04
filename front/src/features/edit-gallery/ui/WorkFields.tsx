@@ -145,7 +145,7 @@ export function WorkFields({
         />
         <MultiSelect
           label="Цвета"
-          hint={`До ${String(maxWorkColors)}. Чёрно-белой работе — «Чёрный» и «Белый»`}
+          hint={`До ${String(maxWorkColors)}. Для чёрно-белой работы выберите «Чёрный» и «Белый»`}
           placeholder="Например: синий"
           options={colorOptions}
           value={colorsField.value}
