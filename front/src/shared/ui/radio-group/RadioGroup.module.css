@@ -50,6 +50,14 @@
   );
 }
 
+/* High contrast drops the background, and with it the dot: the native radio, drawn in the system
+   colors, shows the choice instead. */
+@media (forced-colors: active) {
+  .radio {
+    appearance: auto;
+  }
+}
+
 /* The field of the chosen option, under its title. */
 .details {
   padding: var(--space-2) var(--space-6) var(--space-4);
