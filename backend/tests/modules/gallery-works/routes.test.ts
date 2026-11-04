@@ -52,7 +52,8 @@ const work = {
   updatedAt: "2026-02-01T12:30:00.000Z",
   year: 2024,
   month: 3,
-  place: "Варшава",
+  country: "PL",
+  city: "Варшава",
 };
 const body = {
   description: "Масло, холст.",
@@ -70,7 +71,8 @@ const body = {
   title: "Слон",
   year: 2024,
   month: 3,
-  place: "Варшава",
+  country: "PL",
+  city: "Варшава",
 };
 const etag = '"read"';
 const savedEtag = '"saved"';

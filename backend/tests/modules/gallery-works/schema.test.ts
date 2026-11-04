@@ -3,11 +3,11 @@ import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
 import {
+  maxWorkCityLength,
   maxWorkColors,
   maxWorkDiscount,
   maxWorkMaterials,
   maxWorkPalettes,
-  maxWorkPlaceLength,
   maxWorkPrice,
   maxWorkProcessPhotos,
   maxWorkSections,
@@ -25,7 +25,8 @@ const work = {
   size: { width: 50, height: 70 },
   year: 2024,
   month: 3,
-  place: "",
+  country: null,
+  city: "",
   photo: { alt: "Слон на закате", uploadId: randomUUID() },
   processPhotos: [],
   sectionIds: [randomUUID()],
@@ -204,12 +205,22 @@ describe("work body", () => {
     expect(isValid({ ...work, format: "set", partCount: 2.5 })).toBe(false);
   });
 
-  it("takes a work without a place, and a place within the limit, trimmed", () => {
-    expect(isValid({ ...work, place: "" })).toBe(true);
-    expect(workBodySchema.parse({ ...work, place: "  Варшава " }).place).toBe("Варшава");
-    expect(isValid({ ...work, place: "а".repeat(maxWorkPlaceLength) })).toBe(true);
-    expect(isValid({ ...work, place: "а".repeat(maxWorkPlaceLength + 1) })).toBe(false);
-    expect(isValid({ ...work, place: undefined })).toBe(false);
+  it("takes a country by its ISO 3166-1 code, or none", () => {
+    expect(isValid({ ...work, country: "PL" })).toBe(true);
+    expect(isValid({ ...work, country: null })).toBe(true);
+    expect(isValid({ ...work, country: "pl" })).toBe(false);
+    expect(isValid({ ...work, country: "Польша" })).toBe(false);
+    // The European Union has a code of its own, but is not a country.
+    expect(isValid({ ...work, country: "EU" })).toBe(false);
+    expect(isValid({ ...work, country: undefined })).toBe(false);
+  });
+
+  it("takes no city, or a city within the limit, trimmed", () => {
+    expect(isValid({ ...work, city: "" })).toBe(true);
+    expect(workBodySchema.parse({ ...work, city: "  Варшава " }).city).toBe("Варшава");
+    expect(isValid({ ...work, city: "а".repeat(maxWorkCityLength) })).toBe(true);
+    expect(isValid({ ...work, city: "а".repeat(maxWorkCityLength + 1) })).toBe(false);
+    expect(isValid({ ...work, city: undefined })).toBe(false);
   });
 
   it("takes a work without a price", () => {

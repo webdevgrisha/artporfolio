@@ -192,7 +192,8 @@ const body: WorkBody = {
   title: "Жираф",
   year: 2025,
   month: 4,
-  place: "",
+  country: null,
+  city: "",
 };
 
 /** The If-Match of a client that read the work. */
@@ -486,17 +487,17 @@ describe("the format of a work", () => {
 });
 
 describe("the place of a work", () => {
-  it("reads a work saved before places as a work without a place", async () => {
+  it("reads a work saved before places as a work without a country and a city", async () => {
     const { data } = await getWork(elephantId);
 
-    expect(data.place).toBe("");
+    expect(data).toMatchObject({ city: "", country: null });
   });
 
-  it("saves the place", async () => {
-    const { data } = await createWork(newId, { ...body, place: "Варшава" });
+  it("saves the country and the city", async () => {
+    const { data } = await createWork(newId, { ...body, city: "Варшава", country: "PL" });
 
-    expect(data.place).toBe("Варшава");
-    expect(works.get(newId)?.place).toBe("Варшава");
+    expect(data).toMatchObject({ city: "Варшава", country: "PL" });
+    expect(works.get(newId)).toMatchObject({ city: "Варшава", country: "PL" });
   });
 });
 

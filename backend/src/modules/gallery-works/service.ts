@@ -81,8 +81,10 @@ function readWork(snapshot: DocumentSnapshot): StoredWork {
 
 /** What the client edits, which the entity tag of a work follows. */
 function editedContent({
+  city,
   collectionId,
   colorIds,
+  country,
   description,
   format,
   materialIds,
@@ -90,7 +92,6 @@ function editedContent({
   paletteIds,
   partCount,
   photo,
-  place,
   price,
   processPhotos,
   sectionIds,
@@ -99,8 +100,10 @@ function editedContent({
   year,
 }: StoredWork) {
   return {
+    city,
     collectionId,
     colorIds,
+    country,
     description,
     format,
     materialIds,
@@ -108,7 +111,6 @@ function editedContent({
     paletteIds,
     partCount,
     photo,
-    place,
     price,
     processPhotos,
     sectionIds,
@@ -149,8 +151,10 @@ function toPrice(price: StoredWork["price"]): Work["price"] {
 function toWork(
   id: string,
   {
+    city,
     collectionId,
     colorIds,
+    country,
     createdAt,
     description,
     format,
@@ -159,7 +163,6 @@ function toWork(
     paletteIds,
     partCount,
     photo,
-    place,
     price,
     processPhotos,
     sectionIds,
@@ -171,8 +174,10 @@ function toWork(
   known: KnownIds,
 ): Work {
   return {
+    city,
     collectionId,
     colorIds: colorIds.filter((colorId) => known.colors.has(colorId)),
+    country,
     createdAt: createdAt.toDate().toISOString(),
     description,
     format,
@@ -182,7 +187,6 @@ function toWork(
     paletteIds: paletteIds.filter((paletteId) => known.palettes.has(paletteId)),
     partCount,
     photo: toPhoto(photo),
-    place,
     price: toPrice(price),
     processPhotos: processPhotos.map(toListPhoto),
     sectionIds: sectionIds.filter((sectionId) => known.sections.has(sectionId)),

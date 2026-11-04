@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
+import { countryCodes } from "#shared/geo/countries";
 import { altSchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
 import {
   listPhotoSchema,
@@ -37,8 +38,8 @@ export const maxWorkSetSize = 100;
  */
 export const workFormats = ["single", "diptych", "triptych", "set"] as const;
 
-/** The longest place a work was made in, such as «Варшава» or «Мастерская на Повисле». */
-export const maxWorkPlaceLength = 100;
+/** The longest name of the city a work was made in. */
+export const maxWorkCityLength = 100;
 
 /** The only currency a price is set in for now; the site will show other currencies converted. */
 export const workCurrencies = ["USD"] as const;
@@ -119,8 +120,10 @@ export const workBodySchema = z
     year: z.number().int().min(minWorkYear),
     /** 1 for January. */
     month: z.number().int().min(1).max(12),
-    /** Where the work was made, such as a city; an empty string for none. Plain text. */
-    place: z.string().trim().max(maxWorkPlaceLength),
+    /** The country the work was made in, by its ISO 3166-1 alpha-2 code, or null for none. */
+    country: z.enum(countryCodes).nullable(),
+    /** The city the work was made in, as it is written in Russian; an empty string for none. */
+    city: z.string().trim().max(maxWorkCityLength),
     photo: workPhotoBodySchema,
     /** How the work was made, in the order the site shows them; a saved photo left out is deleted. */
     processPhotos: photoListBodySchema(maxWorkProcessPhotos),
@@ -166,8 +169,9 @@ export const storedWorkSchema = z.object({
   size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
   month: z.number(),
-  /** A work saved before places were added has none. */
-  place: z.string().default(""),
+  /** A work saved before places were added has no country and no city. */
+  country: z.string().nullable().default(null),
+  city: z.string().default(""),
   photo: storedPhotoSchema,
   processPhotos: z.array(storedListPhotoSchema),
   /** May name a section deleted since; the API leaves such ids out. */
@@ -210,8 +214,10 @@ export const workSchema = z.object({
   year: z.number(),
   /** 1 for January. */
   month: z.number(),
-  /** Where the work was made; an empty string for none. */
-  place: z.string(),
+  /** The country the work was made in, by its ISO 3166-1 alpha-2 code, or null for none. */
+  country: z.string().nullable(),
+  /** The city the work was made in; an empty string for none. */
+  city: z.string(),
   photo: photoSchema,
   /** In the order the site shows them. */
   processPhotos: z.array(listPhotoSchema),
