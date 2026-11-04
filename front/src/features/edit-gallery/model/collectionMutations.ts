@@ -9,7 +9,7 @@ import {
   galleryWorksQueryKey,
   replaceGalleryCollection,
 } from "@/entities/gallery";
-import { HttpError } from "@/shared/api/httpError";
+import { createOnce } from "@/shared/api/createOnce";
 import { uploadImage } from "@/shared/api/upload";
 
 import { getSaveCollectionErrorMessage } from "../lib/saveErrorMessages";
@@ -59,9 +59,7 @@ export const saveCollectionToastId = "gallery-collection-save";
 /**
  * Creates a collection from the form: uploads its cover, then sends the collection with its works
  * in one request, which the server saves all or nothing.
- *
- * A try may create the collection even though its response is lost. The next try then finds the
- * collection there (412) and saves the values into it, so it is neither lost nor doubled.
+ * A retry never doubles it (createOnce).
  */
 export function useCreateCollection() {
   const queryClient = useQueryClient();
@@ -77,18 +75,14 @@ export function useCreateCollection() {
     mutationFn: async ({ id, values }: CreateCollectionParams): Promise<GalleryCollection> => {
       const body = await toCollectionBody(values);
 
-      try {
-        return (await createGalleryCollection({ body, id })).data;
-      } catch (error) {
-        if (!(error instanceof HttpError && error.status === 412)) throw error;
-      }
-
-      const { etag } = await queryClient.fetchQuery({
-        ...galleryCollectionQuery(id),
-        staleTime: 0,
+      const saved = await createOnce({
+        create: () => createGalleryCollection({ body, id }),
+        fetchEtag: async () =>
+          (await queryClient.fetchQuery({ ...galleryCollectionQuery(id), staleTime: 0 })).etag,
+        replace: (etag) => replaceGalleryCollection({ body, etag, id }),
       });
 
-      return (await replaceGalleryCollection({ body, etag, id })).data;
+      return saved.data;
     },
     // The works of the collection may have come from other collections.
     onSuccess: () =>

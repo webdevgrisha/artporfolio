@@ -8,7 +8,7 @@ import {
   gallerySectionsQueryKey,
   replaceGallerySection,
 } from "@/entities/gallery";
-import { HttpError } from "@/shared/api/httpError";
+import { createOnce } from "@/shared/api/createOnce";
 
 import { getSaveSectionErrorMessage } from "../lib/saveErrorMessages";
 import type { SectionFormValues } from "./sectionFormSchema";
@@ -34,9 +34,7 @@ function toSectionBody({ subsections, title }: SectionFormValues): GallerySectio
 export const saveSectionToastId = "gallery-section-save";
 
 /**
- * Creates a section from the form. A try may create the section even though its response is
- * lost; the next try then finds it there (412) and saves the values into it, so the section is
- * neither lost nor doubled.
+ * Creates a section from the form. A retry never doubles it (createOnce).
  */
 export function useCreateSection() {
   const queryClient = useQueryClient();
@@ -52,15 +50,14 @@ export function useCreateSection() {
     mutationFn: async ({ id, values }: CreateSectionParams): Promise<GallerySection> => {
       const body = toSectionBody(values);
 
-      try {
-        return (await createGallerySection({ body, id })).data;
-      } catch (error) {
-        if (!(error instanceof HttpError && error.status === 412)) throw error;
-      }
+      const saved = await createOnce({
+        create: () => createGallerySection({ body, id }),
+        fetchEtag: async () =>
+          (await queryClient.fetchQuery({ ...gallerySectionQuery(id), staleTime: 0 })).etag,
+        replace: (etag) => replaceGallerySection({ body, etag, id }),
+      });
 
-      const { etag } = await queryClient.fetchQuery({ ...gallerySectionQuery(id), staleTime: 0 });
-
-      return (await replaceGallerySection({ body, etag, id })).data;
+      return saved.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: gallerySectionsQueryKey }),
   });

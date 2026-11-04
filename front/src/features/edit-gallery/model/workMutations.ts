@@ -9,7 +9,7 @@ import {
   galleryWorksQueryKey,
   replaceGalleryWork,
 } from "@/entities/gallery";
-import { HttpError } from "@/shared/api/httpError";
+import { createOnce } from "@/shared/api/createOnce";
 import { uploadImage } from "@/shared/api/upload";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
@@ -75,9 +75,7 @@ export const saveWorkToastId = "gallery-work-save";
 /**
  * Creates a work from the form: uploads its photos, then sends the work in one request, which the
  * server saves all or nothing.
- *
- * A try may create the work even though its response is lost. The next try then finds the work
- * there (412) and saves the values into it, so the work is neither lost nor doubled.
+ * A retry never doubles it (createOnce).
  */
 export function useCreateWork() {
   const queryClient = useQueryClient();
@@ -93,15 +91,14 @@ export function useCreateWork() {
     mutationFn: async ({ id, values }: CreateWorkParams): Promise<GalleryWork> => {
       const body = await toWorkBody(values);
 
-      try {
-        return (await createGalleryWork({ body, id })).data;
-      } catch (error) {
-        if (!(error instanceof HttpError && error.status === 412)) throw error;
-      }
+      const saved = await createOnce({
+        create: () => createGalleryWork({ body, id }),
+        fetchEtag: async () =>
+          (await queryClient.fetchQuery({ ...galleryWorkQuery(id), staleTime: 0 })).etag,
+        replace: (etag) => replaceGalleryWork({ body, etag, id }),
+      });
 
-      const { etag } = await queryClient.fetchQuery({ ...galleryWorkQuery(id), staleTime: 0 });
-
-      return (await replaceGalleryWork({ body, etag, id })).data;
+      return saved.data;
     },
     // A work in a collection changes the works of that collection too.
     onSuccess: () =>

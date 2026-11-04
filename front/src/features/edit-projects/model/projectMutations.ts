@@ -8,7 +8,7 @@ import {
   projectsQueryKey,
   replaceProject,
 } from "@/entities/project";
-import { HttpError } from "@/shared/api/httpError";
+import { createOnce } from "@/shared/api/createOnce";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
 import { getSaveProjectErrorMessage } from "../lib/saveErrorMessages";
@@ -42,9 +42,7 @@ export const saveProjectToastId = "project-save";
 /**
  * Creates a project from the form: uploads the picked files, then sends the project in one
  * request, which the server saves all or nothing. The new project is at the top of the list.
- *
- * A try may create the project even though its response is lost. The next try then finds the
- * project there (412) and saves the values into it, so the project is neither lost nor doubled.
+ * A retry never doubles it (createOnce).
  */
 export function useCreateProject() {
   const queryClient = useQueryClient();
@@ -60,15 +58,14 @@ export function useCreateProject() {
     mutationFn: async ({ id, values }: CreateProjectParams): Promise<Project> => {
       const body = await toProjectBody(values);
 
-      try {
-        return (await createProject({ body, id })).data;
-      } catch (error) {
-        if (!(error instanceof HttpError && error.status === 412)) throw error;
-      }
+      const saved = await createOnce({
+        create: () => createProject({ body, id }),
+        fetchEtag: async () =>
+          (await queryClient.fetchQuery({ ...projectQuery(id), staleTime: 0 })).etag,
+        replace: (etag) => replaceProject({ body, etag, id }),
+      });
 
-      const { etag } = await queryClient.fetchQuery({ ...projectQuery(id), staleTime: 0 });
-
-      return (await replaceProject({ body, etag, id })).data;
+      return saved.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey }),
   });
