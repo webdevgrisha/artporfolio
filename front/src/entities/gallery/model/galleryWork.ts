@@ -81,6 +81,8 @@ export type WorkSize = z.infer<typeof workSizeSchema>;
 /** A work of the gallery. */
 export const galleryWorkSchema = z.object({
   id: z.string(),
+  /** Whether the site shows the work; a hidden one is kept, as a draft or put aside. */
+  published: z.boolean(),
   title: z.string(),
   description: z.string(),
   size: workSizeSchema,

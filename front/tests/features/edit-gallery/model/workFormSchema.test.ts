@@ -51,6 +51,7 @@ const savedWork = {
   format: "set",
   partCount: 12,
   saleStatus: "reserved",
+  published: false,
   price: null,
   size: { height: 27.9, width: 21.6 },
   title: "Стрекоза",
@@ -226,6 +227,11 @@ describe("the place in the form", () => {
     expect(fieldErrors(workFormSchema, { ...work, city: "а".repeat(101) })).toEqual({
       city: ["Не длиннее 100 символов"],
     });
+  });
+
+  it("shows a new work on the site, and a saved one as it was saved", () => {
+    expect(emptyWorkFormValues.published).toBe(true);
+    expect(toWorkFormValues(savedWork).published).toBe(false);
   });
 
   it("shows the saved sale status", () => {

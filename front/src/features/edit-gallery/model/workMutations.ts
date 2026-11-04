@@ -60,6 +60,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     materialIds,
     colorIds,
     paletteIds,
+    published: values.published,
     collectionId: collectionId === "" ? null : collectionId,
     format: values.format,
     partCount: toPartCount(values),

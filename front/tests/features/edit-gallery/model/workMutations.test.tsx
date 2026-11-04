@@ -57,6 +57,7 @@ function apiWork(title: string): GalleryWork {
     materialIds: [materialId],
     colorIds: [colorId],
     paletteIds: [paletteId],
+    published: true,
     collectionId: null,
     format: "single",
     partCount: null,
@@ -128,6 +129,7 @@ describe("useCreateWork", () => {
           materialIds: [materialId],
           colorIds: [colorId],
           paletteIds: [paletteId],
+          published: true,
           collectionId: null,
           format: "single",
           partCount: null,
@@ -209,7 +211,7 @@ describe("useSaveWork", () => {
     ]);
   });
 
-  it("sends the chosen country by its code, and none as null", async () => {
+  it("sends a hidden work, and the chosen country by its code", async () => {
     const puts = handlePuts(() =>
       HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
     );
@@ -217,12 +219,12 @@ describe("useSaveWork", () => {
 
     await saveWork.mutateAsync({
       etag: '"read"',
-      values: { ...values(), city: "Варшава", country: "PL" },
+      values: { ...values(), published: false, city: "Варшава", country: "PL" },
     });
 
     expect(puts).toEqual([
       expect.objectContaining({
-        body: expect.objectContaining({ city: "Варшава", country: "PL" }),
+        body: expect.objectContaining({ published: false, city: "Варшава", country: "PL" }),
       }),
     ]);
   });

@@ -15,6 +15,8 @@ import {
 
 /** A work as the admin saves it: every field at once. */
 export interface GalleryWorkBody {
+  /** Whether the site shows the work. */
+  published: boolean;
   title: string;
   description: string;
   size: WorkSize;

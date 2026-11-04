@@ -178,6 +178,8 @@ export const workFormSchema = z
       .array(z.string())
       .min(1, "Выберите хотя бы одну палитру")
       .max(maxWorkPalettes, `Не больше ${String(maxWorkPalettes)} палитр`),
+    /** Whether the site shows the work. */
+    published: z.boolean(),
     /** The id of the collection; empty for a work on its own. */
     collectionId: z.string(),
     format: z.enum(workFormats),
@@ -213,6 +215,8 @@ export const emptyWorkFormValues: WorkFormValues = {
   materialIds: [],
   colorIds: [],
   paletteIds: [],
+  // A new work is made to be shown.
+  published: true,
   collectionId: "",
   format: "single",
   partCount: "",
@@ -236,6 +240,7 @@ export function toWorkFormValues({
   photo,
   price,
   processPhotos,
+  published,
   saleStatus,
   sectionIds,
   size,
@@ -257,6 +262,7 @@ export function toWorkFormValues({
     materialIds: toIdSet(materialIds),
     colorIds: toIdSet(colorIds),
     paletteIds: toIdSet(paletteIds),
+    published,
     collectionId: collectionId ?? "",
     format,
     partCount: partCount === null ? "" : String(partCount),
