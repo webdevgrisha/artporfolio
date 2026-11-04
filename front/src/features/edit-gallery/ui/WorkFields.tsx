@@ -22,13 +22,13 @@ import { Select } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 import { toIdSet } from "../model/idSet";
 import type { WorkReferences } from "../model/useWorkReferences";
+import { countryOptions, useWorkCities } from "../model/workCities";
 import {
   monthOptions,
   type WorkFormValues,
   workFormatOptions,
   workMaxLengths,
 } from "../model/workFormSchema";
-import { useWorkPlaces } from "../model/workPlaces";
 import {
   discountError,
   discountedAmount,
@@ -77,8 +77,10 @@ export function WorkFields({
   // A select has no input for react-hook-form to register, so a controller keeps its value.
   const { field: monthField } = useController({ control, name: "month" });
   const yearField = register("year");
-  const placeField = register("place");
-  const places = useWorkPlaces();
+  // A select, so a controller, as for the month.
+  const { field: countryField } = useController({ control, name: "country" });
+  const cityField = register("city");
+  const cities = useWorkCities(countryField.value);
   const { field: sectionsField } = useController({ control, name: "sectionIds" });
   // A select, so a controller, as for the month.
   const { field: collectionField } = useController({ control, name: "collectionId" });
@@ -233,24 +235,39 @@ export function WorkFields({
             {...yearField}
           />
         </div>
-        {/* Suggests the places of the other works, so one place is not typed two ways. */}
-        <Input
-          className={styles.place}
-          label="Место"
-          hint="Где написана работа, например город. Необязательно"
-          placeholder="Например: Варшава"
-          autoComplete="off"
-          list={`${headingId}-places`}
-          disabled={isSaving}
-          error={errors.place?.message}
-          isModified={Boolean(dirtyFields.place)}
-          {...placeField}
-        />
-        <datalist id={`${headingId}-places`}>
-          {places.map((place) => (
-            <option key={place} value={place} />
-          ))}
-        </datalist>
+        {/* Where the work was made: the country, then the city, as an address reads. */}
+        <div className={styles.place}>
+          <Select
+            className={styles.country}
+            label="Страна"
+            options={countryOptions}
+            disabled={isSaving}
+            error={errors.country?.message}
+            isModified={Boolean(dirtyFields.country)}
+            ref={countryField.ref}
+            value={countryField.value}
+            onBlur={countryField.onBlur}
+            onChange={countryField.onChange}
+          />
+          {/* Suggests the cities of the other works, so one city is not typed two ways. */}
+          <Input
+            className={styles.city}
+            label="Город"
+            hint="Необязательно"
+            placeholder="Например: Варшава"
+            autoComplete="off"
+            list={`${headingId}-cities`}
+            disabled={isSaving}
+            error={errors.city?.message}
+            isModified={Boolean(dirtyFields.city)}
+            {...cityField}
+          />
+          <datalist id={`${headingId}-cities`}>
+            {cities.map((city) => (
+              <option key={city} value={city} />
+            ))}
+          </datalist>
+        </div>
       </section>
 
       <section className={styles.group} aria-labelledby={`${headingId}-place`}>
