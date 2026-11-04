@@ -148,60 +148,7 @@
   block-size: auto;
 }
 
-/* The box and its check mark, which is drawn over it when the box is checked. */
-.checkboxBox {
-  position: relative;
-  display: inline-flex;
-  flex: none;
-  margin-inline-start: auto;
-}
-
+/* The checkbox keeps the end of its row. */
 .checkbox {
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
-  margin: 0;
-  appearance: none;
-  cursor: pointer;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.checkbox:checked {
-  background: var(--color-surface-inverse);
-}
-
-.checkbox:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: 2px;
-}
-
-/* The modified frame of the text fields, see Field.module.css. */
-.checkboxModified {
-  border-color: var(--color-border-modified);
-  box-shadow: inset 0 0 0 1px var(--color-border-modified);
-}
-
-.checkbox:disabled {
-  cursor: not-allowed;
-  background: var(--color-surface-disabled);
-  border-color: var(--color-border-disabled);
-}
-
-.checkbox:checked:disabled {
-  background: var(--color-border-disabled);
-}
-
-.checkIcon {
-  position: absolute;
-  inset: 0;
-  visibility: hidden;
-  inline-size: 100%;
-  block-size: 100%;
-  padding: 0.125rem;
-  color: var(--color-text-inverse);
-  pointer-events: none;
-}
-
-.checkbox:checked + .checkIcon {
-  visibility: visible;
+  margin-inline-start: auto;
 }

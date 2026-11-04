@@ -2,8 +2,9 @@ import clsx from "clsx";
 import React from "react";
 
 import type { GallerySection } from "@/entities/gallery";
+import { Checkbox } from "@/shared/ui/checkbox";
 import { FieldError, FieldHint, useFieldIds } from "@/shared/ui/field";
-import { CheckIcon, ChevronRightIcon } from "@/shared/ui/icon";
+import { ChevronRightIcon } from "@/shared/ui/icon";
 
 import styles from "./SectionsField.module.css";
 
@@ -21,46 +22,6 @@ interface SectionsFieldProps {
   sections: readonly GallerySection[];
   /** The chosen sections and subsections, by id. */
   value: readonly string[];
-}
-
-interface CheckboxProps {
-  checked: boolean;
-  disabled: boolean;
-  hasError: boolean;
-  id: string;
-  inputRef?: React.Ref<HTMLInputElement>;
-  isModified: boolean;
-  onBlur: () => void;
-  onChange: (checked: boolean) => void;
-}
-
-/** A checkbox at the end of a row, labelled by the title at its start. */
-function Checkbox({
-  checked,
-  disabled,
-  hasError,
-  id,
-  inputRef,
-  isModified,
-  onBlur,
-  onChange,
-}: CheckboxProps) {
-  return (
-    <span className={styles.checkboxBox}>
-      <input
-        ref={inputRef}
-        id={id}
-        type="checkbox"
-        className={clsx(styles.checkbox, isModified && styles.checkboxModified)}
-        checked={checked}
-        disabled={disabled}
-        aria-invalid={hasError}
-        onBlur={onBlur}
-        onChange={(event) => onChange(event.target.checked)}
-      />
-      <CheckIcon className={styles.checkIcon} />
-    </span>
-  );
 }
 
 /**
@@ -102,7 +63,7 @@ export function SectionsField({
     });
   }
 
-  function checkboxProps(id: string): CheckboxProps {
+  function checkboxProps(id: string): React.ComponentProps<typeof Checkbox> {
     return {
       checked: value.includes(id),
       disabled,
@@ -154,7 +115,7 @@ export function SectionsField({
                         />
                       </button>
                     ) : null}
-                    <Checkbox {...checkboxProps(section.id)} />
+                    <Checkbox className={styles.checkbox} {...checkboxProps(section.id)} />
                   </div>
                   {section.subsections.length > 0 ? (
                     <ul id={subsectionsId} className={styles.subsections} hidden={!isExpanded}>
@@ -164,7 +125,7 @@ export function SectionsField({
                           <label className={styles.title} htmlFor={`${controlId}-${subsection.id}`}>
                             {subsection.title}
                           </label>
-                          <Checkbox {...checkboxProps(subsection.id)} />
+                          <Checkbox className={styles.checkbox} {...checkboxProps(subsection.id)} />
                         </li>
                       ))}
                     </ul>
