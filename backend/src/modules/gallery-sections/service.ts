@@ -44,7 +44,8 @@ function toSavedSection(id: string, section: StoredSection): SavedSection {
 
 /**
  * Rejects with 409 a section `id` that clashes with another saved section: by the title, which
- * the visitor tells sections apart by, or by the id of a subsection, which works will refer to.
+ * the visitor tells sections apart by, or by the id of the section or of a subsection, which works
+ * refer to.
  */
 function assertNoClash(id: string, section: StoredSection, { docs }: QuerySnapshot): void {
   const subsectionIds = new Set(section.subsections.map((subsection) => subsection.id));
@@ -65,6 +66,10 @@ function assertNoClash(id: string, section: StoredSection, { docs }: QuerySnapsh
     }
 
     const otherIds = [snapshot.id, ...other.subsections.map((subsection) => subsection.id)];
+
+    if (otherIds.includes(id)) {
+      throw new ConflictError("The section has the id of a subsection of another section");
+    }
 
     if (otherIds.some((otherId) => subsectionIds.has(otherId))) {
       throw new ConflictError("A subsection has the id of another section or its subsection");

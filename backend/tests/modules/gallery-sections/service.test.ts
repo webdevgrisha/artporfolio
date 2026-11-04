@@ -139,6 +139,13 @@ describe("creating a section", () => {
     }
     expect(sections.has(newId)).toBe(false);
   });
+
+  it("refuses an id that a subsection of another section has", async () => {
+    await expect(createSection(theatreId, { title: "Живопись", subsections: [] })).rejects.toEqual(
+      new ConflictError("The section has the id of a subsection of another section"),
+    );
+    expect(sections.has(theatreId)).toBe(false);
+  });
 });
 
 describe("replacing a section", () => {
