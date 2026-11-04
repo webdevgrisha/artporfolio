@@ -5,14 +5,14 @@
   max-inline-size: 24rem;
 }
 
-/* As the label of MediaField. */
+/* As the label of MediaFieldset. */
 .label {
   inline-size: 10rem;
   max-inline-size: 100%;
   block-size: 1.375rem;
 }
 
-/* A photo in the frame of MediaField, which is never lower than 10rem. */
+/* A photo in the frame of MediaFieldset, which is never lower than 10rem. */
 .frame {
   min-block-size: 10rem;
   aspect-ratio: 4 / 3;
