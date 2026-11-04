@@ -20,12 +20,18 @@ export function galleryIntroLoader() {
   return loadPageData(fetchFresh(galleryIntroQuery));
 }
 
+// The lists that works name tell how many works name each item, and warn before one they name is
+// removed, so their pages load every work too.
+
 export function gallerySectionsLoader() {
-  return loadPageData(fetchFresh(gallerySectionsQuery));
+  return loadPageData(fetchFresh(gallerySectionsQuery), fetchFresh(galleryWorksQuery));
 }
 
 export function gallerySectionLoader({ params }: LoaderFunctionArgs) {
-  return loadPageData(fetchFresh(gallerySectionQuery(params.id ?? "")));
+  return loadPageData(
+    fetchFresh(gallerySectionQuery(params.id ?? "")),
+    fetchFresh(galleryWorksQuery),
+  );
 }
 
 // The works name their sections, materials, colors, palettes and collection by id, so their pages
@@ -79,14 +85,16 @@ export function galleryCollectionLoader({ params }: LoaderFunctionArgs) {
   );
 }
 
+// As the sections, these lists load every work too.
+
 export function galleryMaterialsLoader() {
-  return loadPageData(fetchFresh(galleryMaterialsQuery));
+  return loadPageData(fetchFresh(galleryMaterialsQuery), fetchFresh(galleryWorksQuery));
 }
 
 export function galleryColorsLoader() {
-  return loadPageData(fetchFresh(galleryColorsQuery));
+  return loadPageData(fetchFresh(galleryColorsQuery), fetchFresh(galleryWorksQuery));
 }
 
 export function galleryPalettesLoader() {
-  return loadPageData(fetchFresh(galleryPalettesQuery));
+  return loadPageData(fetchFresh(galleryPalettesQuery), fetchFresh(galleryWorksQuery));
 }
