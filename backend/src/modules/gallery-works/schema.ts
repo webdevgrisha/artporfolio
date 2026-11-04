@@ -77,15 +77,26 @@ const workSizeSchema = z.strictObject({
   height: workSideSchema,
 });
 
+/** The amount after the discount, rounded to a whole unit of the currency. */
+export function discountedAmount(amount: number, discountPercent: number | null): number {
+  return discountPercent === null ? amount : Math.round((amount * (100 - discountPercent)) / 100);
+}
+
 /**
  * What the work costs, in whole units of the currency (dollars, without cents), and the percent
- * taken off it, if any. The price after the discount is not sent: the API computes it.
+ * taken off it, if any. The price after the discount is not sent: the API computes it, and it is
+ * never 0, which would make the work free.
  */
-const workPriceBodySchema = z.strictObject({
-  amount: z.number().int().min(1).max(maxWorkPrice),
-  currency: z.enum(workCurrencies),
-  discountPercent: z.number().int().min(minWorkDiscount).max(maxWorkDiscount).nullable(),
-});
+const workPriceBodySchema = z
+  .strictObject({
+    amount: z.number().int().min(1).max(maxWorkPrice),
+    currency: z.enum(workCurrencies),
+    discountPercent: z.number().int().min(minWorkDiscount).max(maxWorkDiscount).nullable(),
+  })
+  .refine(({ amount, discountPercent }) => discountedAmount(amount, discountPercent) >= 1, {
+    message: "The price after the discount is 0",
+    path: ["discountPercent"],
+  });
 
 /**
  * The photo of the work: a new file by its upload, or the saved file when `uploadId` is left out,

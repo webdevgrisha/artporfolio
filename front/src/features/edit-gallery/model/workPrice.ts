@@ -40,7 +40,7 @@ export function priceError(text: string): string | null {
 
 /**
  * What is wrong with the discount as typed, or null when it is empty or a valid discount. A discount
- * is taken off a price, so it needs one.
+ * is taken off a price, so it needs one, and it may not leave nothing to pay.
  */
 export function discountError(text: string, priceText: string): string | null {
   if (text.trim() === "") {
@@ -57,7 +57,16 @@ export function discountError(text: string, priceText: string): string | null {
     return `От ${String(minWorkDiscount)} до ${String(maxWorkDiscount)}`;
   }
 
-  return priceText.trim() === "" ? "Сначала укажите цену" : null;
+  if (priceText.trim() === "") {
+    return "Сначала укажите цену";
+  }
+
+  // A price that is not valid has its own error.
+  const amount = parseWholeNumber(priceText);
+
+  return amount >= 1 && discountedAmount(amount, percent) < 1
+    ? "Итоговая цена получается 0 $, уменьшите скидку"
+    : null;
 }
 
 /** The amount after the discount, rounded to a whole unit, as the server computes it. */

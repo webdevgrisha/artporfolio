@@ -8,6 +8,7 @@ import { paletteIdsIn, palettesDocument } from "#modules/gallery-palettes/servic
 import { sectionIdsIn, sectionsCollection } from "#modules/gallery-sections/service";
 
 import {
+  discountedAmount,
   type StoredWork,
   storedWorkSchema,
   type Work,
@@ -143,10 +144,13 @@ function toPrice(price: StoredWork["price"]): Work["price"] {
   }
 
   const { amount, currency, discountPercent } = price;
-  const finalAmount =
-    discountPercent === null ? amount : Math.round((amount * (100 - discountPercent)) / 100);
 
-  return { amount, currency, discountPercent, finalAmount };
+  return {
+    amount,
+    currency,
+    discountPercent,
+    finalAmount: discountedAmount(amount, discountPercent),
+  };
 }
 
 /**

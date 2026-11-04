@@ -291,6 +291,15 @@ describe("the price in the form", () => {
     });
   });
 
+  it("refuses a discount that leaves nothing to pay", () => {
+    expect(fieldErrors(workFormSchema, { ...work, price: "1", discountPercent: "99" })).toEqual({
+      discountPercent: ["Итоговая цена получается 0 $, уменьшите скидку"],
+    });
+    expect(fieldErrors(workFormSchema, { ...work, price: "50", discountPercent: "99" })).toEqual(
+      {},
+    );
+  });
+
   it("shows a saved price and discount and reads them back", () => {
     const values = toWorkFormValues({
       ...savedWork,

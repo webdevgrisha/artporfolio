@@ -266,6 +266,12 @@ describe("work body", () => {
     expect(isValid({ ...work, price: { ...price, discountPercent: 12.5 } })).toBe(false);
   });
 
+  it("refuses a discount that leaves nothing to pay", () => {
+    // 1 × 0.01 rounds to 0, 50 × 0.01 to 1.
+    expect(isValid({ ...work, price: { ...price, amount: 1, discountPercent: 99 } })).toBe(false);
+    expect(isValid({ ...work, price: { ...price, amount: 50, discountPercent: 99 } })).toBe(true);
+  });
+
   it("does not take the price after the discount, which the API computes", () => {
     expect(isValid({ ...work, price: { ...price, finalAmount: 500 } })).toBe(false);
   });
