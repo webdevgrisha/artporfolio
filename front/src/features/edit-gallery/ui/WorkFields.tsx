@@ -71,12 +71,11 @@ export function WorkFields({
   const { field: materialsField } = useController({ control, name: "materialIds" });
   const { field: colorsField } = useController({ control, name: "colorIds" });
   const { field: palettesField } = useController({ control, name: "paletteIds" });
-  // A select, so a controller, as for the month below.
+  // A select, so a controller, as for the month.
   const { field: collectionField } = useController({ control, name: "collectionId" });
   const widthField = register("width");
   const heightField = register("height");
-  // A select is not a text input: before the form is ready, react-hook-form takes its DOM value
-  // for a change, so a controller keeps the value in the form's state instead (see the colours).
+  // A select has no input for react-hook-form to register, so a controller keeps its value.
   const { field: monthField } = useController({ control, name: "month" });
   const yearField = register("year");
   const savedSectionIds = React.useMemo(
@@ -185,7 +184,6 @@ export function WorkFields({
           error={errors.collectionId?.message}
           isModified={Boolean(dirtyFields.collectionId)}
           ref={collectionField.ref}
-          name={collectionField.name}
           value={collectionField.value}
           onBlur={collectionField.onBlur}
           onChange={collectionField.onChange}
@@ -225,7 +223,6 @@ export function WorkFields({
             error={errors.month?.message}
             isModified={Boolean(dirtyFields.month)}
             ref={monthField.ref}
-            name={monthField.name}
             value={monthField.value}
             onBlur={monthField.onBlur}
             onChange={monthField.onChange}

@@ -1,5 +1,6 @@
 import clsx from "clsx";
-import type { ComponentPropsWithRef } from "react";
+import { useSelect } from "downshift";
+import type React from "react";
 
 import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field";
 import { ChevronRightIcon } from "@/shared/ui/icon";
@@ -11,43 +12,66 @@ export interface SelectOption {
   value: string;
 }
 
-interface SelectProps extends Omit<ComponentPropsWithRef<"select">, "children"> {
+interface SelectProps {
   /** Positions the field: the label, the control, the hint and the error. */
   className?: string;
+  disabled?: boolean;
   error?: string;
   /** A short explanation under the control. */
   hint?: string;
   /** Highlights a value that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
   label: string;
+  onBlur?: () => void;
+  onChange: (value: string) => void;
   options: readonly SelectOption[];
-  /** The text of the empty choice, shown until one is made; without it the first option is chosen. */
+  /** Shown while the value matches no option, such as an empty one before a choice is made. */
   placeholder?: string;
+  /** The control, which a form focuses to show an error. */
+  ref?: React.Ref<HTMLDivElement>;
+  value: string;
 }
 
 /**
- * One choice from a fixed list, such as a month. The native control gives the keyboard, screen
- * readers and phones the list they expect; it looks like the text fields beside it.
+ * One choice from a fixed list, such as a month, in the look of the text fields beside it, its list
+ * as the list of MultiSelect. It follows the WAI-ARIA select-only combobox pattern through
+ * Downshift: the arrows, Home and End move in the list, Enter or Space chooses, Escape closes it,
+ * and typing jumps to the option that starts with the letters typed.
  */
 export function Select({
-  "aria-describedby": ariaDescribedBy,
-  "aria-invalid": ariaInvalid,
   className,
+  disabled = false,
   error,
   hint,
-  id,
   isModified = false,
   label,
+  onBlur,
+  onChange,
   options,
   placeholder,
   ref,
-  ...selectProps
+  value,
 }: SelectProps) {
-  const { controlId, describedBy, errorId, hintId } = useFieldIds({
-    "aria-describedby": ariaDescribedBy,
-    error,
-    hint,
-    id,
+  const { controlId, describedBy, errorId, hintId } = useFieldIds({ error, hint });
+  const labelId = `${controlId}-label`;
+  const selectedOption = options.find((option) => option.value === value) ?? null;
+  const {
+    getItemProps,
+    getLabelProps,
+    getMenuProps,
+    getToggleButtonProps,
+    highlightedIndex,
+    isOpen,
+  } = useSelect<SelectOption>({
+    items: [...options],
+    itemToKey: (option) => option?.value,
+    itemToString: (option) => option?.label ?? "",
+    labelId,
+    onSelectedItemChange: ({ selectedItem }) => {
+      if (selectedItem) onChange(selectedItem.value);
+    },
+    selectedItem: selectedOption,
+    toggleButtonId: controlId,
   });
 
   return (
@@ -59,28 +83,43 @@ export function Select({
       hint={hint}
       hintId={hintId}
       label={label}
+      labelId={labelId}
+      onLabelClick={getLabelProps().onClick}
     >
       <div className={styles.controlWrapper}>
-        <select
-          ref={ref}
-          id={controlId}
-          className={clsx(getFieldControlClassName(isModified), styles.control)}
-          aria-describedby={describedBy}
-          aria-invalid={ariaInvalid ?? Boolean(error)}
-          {...selectProps}
-        >
-          {placeholder === undefined ? null : (
-            <option value="" disabled>
-              {placeholder}
-            </option>
+        <div
+          className={clsx(
+            getFieldControlClassName(isModified),
+            styles.control,
+            disabled && styles.controlDisabled,
           )}
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronRightIcon className={styles.chevron} />
+          {...getToggleButtonProps({
+            // Downshift merges its own ref with this one.
+            ref,
+            "aria-describedby": describedBy,
+            "aria-invalid": Boolean(error),
+            disabled,
+            onBlur,
+          })}
+        >
+          <span className={clsx(styles.value, selectedOption === null && styles.placeholder)}>
+            {selectedOption?.label ?? placeholder}
+          </span>
+          <ChevronRightIcon className={clsx(styles.chevron, isOpen && styles.chevronOpen)} />
+        </div>
+        <ul className={clsx(styles.menu, !isOpen && styles.menuHidden)} {...getMenuProps()}>
+          {isOpen
+            ? options.map((option, index) => (
+                <li
+                  key={option.value}
+                  className={clsx(styles.option, highlightedIndex === index && styles.highlighted)}
+                  {...getItemProps({ index, item: option })}
+                >
+                  {option.label}
+                </li>
+              ))
+            : null}
+        </ul>
       </div>
     </Field>
   );
