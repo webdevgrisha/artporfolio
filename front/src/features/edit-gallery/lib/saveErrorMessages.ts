@@ -1,3 +1,4 @@
+import { maxCollectionWorks } from "@/entities/gallery";
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
@@ -75,6 +76,8 @@ export function getSaveWorkErrorMessage(error: unknown): string {
     byStatus: {
       400: "Сервер не принял работу. Проверьте поля и попробуйте ещё раз",
       404: "Работа уже удалена",
+      // The chosen collection already holds the most works it may.
+      409: `В коллекции уже ${String(maxCollectionWorks)} работ, больше добавить нельзя`,
       // The work was changed since this page loaded it, for example in another tab.
       412: "Работу уже изменили в другой вкладке",
       // A section, a list item or the collection was deleted, or an upload expired: it is kept for

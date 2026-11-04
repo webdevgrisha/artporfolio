@@ -36,6 +36,15 @@ vi.mock("#shared/firebase/firestore", () => {
     return {
       doc: (id: string) => ({ get: async () => snapshot(collection, id), id }),
       get: async () => ({ docs: [...collection.keys()].map((id) => snapshot(collection, id)) }),
+      where: (field: string, _operator: "==", value: unknown) => ({
+        count: () => ({
+          get: async () => ({
+            data: () => ({
+              count: [...collection.values()].filter((data) => data[field] === value).length,
+            }),
+          }),
+        }),
+      }),
     };
   }
 
@@ -69,6 +78,7 @@ vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import { Timestamp } from "firebase-admin/firestore";
 
+import { maxCollectionWorks } from "#modules/gallery-collections/schema";
 import type { WorkBody } from "#modules/gallery-works/schema";
 import {
   createWork,
@@ -78,6 +88,7 @@ import {
   replaceWork,
 } from "#modules/gallery-works/service";
 import {
+  ConflictError,
   NotFoundError,
   PreconditionFailedError,
   UnprocessableContentError,
@@ -470,6 +481,47 @@ describe("the collection of a work", () => {
 
     expect(works.has(newId)).toBe(false);
     expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
+  });
+
+  describe("in a full collection", () => {
+    beforeEach(() => {
+      for (let index = 0; index < maxCollectionWorks; index++) {
+        works.set(`member-${String(index)}`, { collectionId: animalsCollectionId });
+      }
+    });
+
+    it("returns 409 for a work moved into it, and removes the copies", async () => {
+      await expect(
+        createWork(newId, { ...body, collectionId: animalsCollectionId }),
+      ).rejects.toBeInstanceOf(ConflictError);
+      await expect(
+        replaceWork(
+          elephantId,
+          { ...body, collectionId: animalsCollectionId },
+          await readTag(elephantId),
+        ),
+      ).rejects.toBeInstanceOf(ConflictError);
+
+      expect(works.has(newId)).toBe(false);
+      expect(storage.deleteFolder).toHaveBeenCalledWith(`galleryWorks/${newId}/photo/new-version`);
+    });
+
+    it("still saves a work already in it", async () => {
+      works.set(elephantId, { ...works.get(elephantId), collectionId: animalsCollectionId });
+      works.delete("member-0");
+
+      await expect(
+        replaceWork(
+          elephantId,
+          {
+            ...body,
+            collectionId: animalsCollectionId,
+            processPhotos: [{ alt: "Набросок", id: processPhotoId }],
+          },
+          await readTag(elephantId),
+        ),
+      ).resolves.toMatchObject({ data: { collectionId: animalsCollectionId } });
+    });
   });
 });
 

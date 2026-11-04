@@ -9,8 +9,9 @@ import { uploadIdSchema } from "#shared/images/uploads";
 export const minCollectionYear = minWorkYear;
 
 /**
- * The most works one collection may hold; raise it when the artist needs more. Saving moves every
- * added and removed work in one transaction, which takes at most 500 writes.
+ * The most works one collection may hold; raise it when the artist needs more. Saving the
+ * collection moves every added and removed work in one transaction, which this keeps small. Saving
+ * a work checks it too.
  */
 export const maxCollectionWorks = 200;
 

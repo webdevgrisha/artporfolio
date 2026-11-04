@@ -1,6 +1,7 @@
 import { type DocumentSnapshot, Timestamp, type Transaction } from "firebase-admin/firestore";
 
 import { collectionDocument } from "#modules/gallery-collections/document";
+import { maxCollectionWorks } from "#modules/gallery-collections/schema";
 import { colorIdsIn, colorsDocument } from "#modules/gallery-colors/service";
 import { materialIdsIn, materialsDocument } from "#modules/gallery-materials/service";
 import { paletteIdsIn, palettesDocument } from "#modules/gallery-palettes/service";
@@ -14,6 +15,7 @@ import {
 } from "#modules/gallery-works/schema";
 import { firestore } from "#shared/firebase/firestore";
 import {
+  ConflictError,
   NotFoundError,
   PreconditionFailedError,
   UnprocessableContentError,
@@ -237,11 +239,32 @@ function assertKnown(ids: string[], known: Set<string>, kind: string): void {
 }
 
 /**
- * Rejects with 422 a section, a material, a color, a palette or a collection the work names that
- * does not exist, such as one deleted while the form was open. Read in the transaction, so one
- * deleted meanwhile is caught too.
+ * Rejects with 409 a work moved into a collection that already holds the most works it may, as
+ * saving the collection would refuse them too.
  */
-async function assertReferencesExist(transaction: Transaction, body: WorkBody): Promise<KnownIds> {
+async function assertCollectionHasRoom(
+  transaction: Transaction,
+  collectionId: string,
+): Promise<void> {
+  const members = worksCollection().where("collectionId", "==", collectionId).count();
+  const { count } = (await transaction.get(members)).data();
+
+  if (count >= maxCollectionWorks) {
+    throw new ConflictError(`The collection already has ${String(maxCollectionWorks)} works`);
+  }
+}
+
+/**
+ * Rejects with 422 a section, a material, a color, a palette or a collection the work names that
+ * does not exist, such as one deleted while the form was open, and with 409 a move into a full
+ * collection (`currentCollectionId`, the collection the work is in now). Read in the transaction,
+ * so a change made meanwhile is caught too.
+ */
+async function assertReferencesExist(
+  transaction: Transaction,
+  body: WorkBody,
+  currentCollectionId: string | null,
+): Promise<KnownIds> {
   const [sections, materials, colors, palettes, collection] = await Promise.all([
     transaction.get(sectionsCollection()),
     transaction.get(materialsDocument()),
@@ -263,6 +286,10 @@ async function assertReferencesExist(transaction: Transaction, body: WorkBody): 
 
   if (collection?.exists === false) {
     throw new UnprocessableContentError(`There is no collection ${String(body.collectionId)}`);
+  }
+
+  if (body.collectionId !== null && body.collectionId !== currentCollectionId) {
+    await assertCollectionHasRoom(transaction, body.collectionId);
   }
 
   return known;
@@ -348,7 +375,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
         throw new PreconditionFailedError("The work already exists");
       }
 
-      const references = await assertReferencesExist(transaction, body);
+      const references = await assertReferencesExist(transaction, body, null);
 
       const now = Timestamp.now();
       const created: StoredWork = {
@@ -403,7 +430,7 @@ export async function replaceWork(id: string, body: WorkBody, ifMatch: string): 
 
       assertIfMatch(ifMatch, editedContent(current));
 
-      const references = await assertReferencesExist(transaction, body);
+      const references = await assertReferencesExist(transaction, body, current.collectionId);
 
       const next: StoredWork = {
         ...current,
