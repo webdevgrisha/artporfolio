@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
-import type { GallerySection } from "@/entities/gallery";
+import type { GallerySection, GalleryWork } from "@/entities/gallery";
 import { gallerySectionPath, routes } from "@/shared/config/routes";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import {
@@ -14,36 +14,62 @@ import {
 
 import { matchesSectionQuery, sectionsSortableColumns } from "../model/sectionsTableView";
 import { useDeleteSection, useDeletingSectionIds } from "../model/useDeleteSection";
+import { describeWorkUsage, type WorkUsage, workUsage } from "../model/workUsage";
 import styles from "./SectionsList.module.css";
 
 interface SectionsListProps {
   className?: string;
   /** Sorted by title, as the site shows them. */
   sections: readonly GallerySection[];
+  /** Every work, to count the works in each section. */
+  works: readonly GalleryWork[];
 }
 
-/** What the deletion of the section takes from the site, its subsections included. */
-function deletionDescription({ subsections }: GallerySection): string {
+const noUsage: WorkUsage = { count: 0, onlyCount: 0 };
+
+/** How the works use the section: a work in any of its subsections is in the section too. */
+function sectionUsage(
+  { id, subsections }: GallerySection,
+  works: readonly GalleryWork[],
+): WorkUsage {
+  return workUsage(
+    works.map((work) => work.sectionIds),
+    new Set([id, ...subsections.map((subsection) => subsection.id)]),
+  );
+}
+
+/**
+ * What the deletion of the section takes from the site, its subsections included, and what it
+ * leaves the works that were in it.
+ */
+function deletionDescription({ subsections }: GallerySection, usage: WorkUsage): string {
   const count = subsections.length;
-
-  if (count === 0) return "Раздел пропадёт с сайта. Это нельзя отменить.";
-
   const plural = new Intl.PluralRules("ru").select(count);
   const noun = plural === "one" ? "подраздел" : plural === "few" ? "подраздела" : "подразделов";
+  const removal =
+    count === 0
+      ? "Раздел пропадёт с сайта."
+      : `Раздел и ${String(count)} ${noun} пропадут с сайта.`;
+  const works =
+    usage.count === 0 ? "" : ` ${describeWorkUsage(usage, { item: "раздел", others: "разделов" })}`;
 
-  return `Раздел и ${String(count)} ${noun} пропадут с сайта. Это нельзя отменить.`;
+  return `${removal}${works} Это нельзя отменить.`;
 }
 
 /**
  * Every section with its subsections, in a table, by title as on the site: «№» and the title
- * would only repeat that order, so only the count of subsections sorts. The search finds the
+ * would only repeat that order, so only the counts of subsections and of works sort. The search finds the
  * titles of the subsections too. A section opens by the pencil and is deleted after a
  * confirmation.
  */
-export function SectionsList({ className, sections }: SectionsListProps) {
+export function SectionsList({ className, sections, works }: SectionsListProps) {
   const deletion = useDeleteSection();
   const deletingIds = useDeletingSectionIds();
   const [deleted, setDeleted] = React.useState<GallerySection>();
+  const usages = React.useMemo(
+    () => new Map(sections.map((section) => [section.id, sectionUsage(section, works)])),
+    [sections, works],
+  );
 
   const columns = React.useMemo<ColumnDef<TableRow<GallerySection>>[]>(
     () => [
@@ -68,6 +94,14 @@ export function SectionsList({ className, sections }: SectionsListProps) {
             <span className={styles.none}>Нет</span>
           ),
       },
+      {
+        id: "works",
+        header: "Работ",
+        meta: { className: styles.countColumn },
+        accessorFn: (row) => (usages.get(row.item.id) ?? noUsage).count,
+        // The largest first: the useful start.
+        sortDescFirst: true,
+      },
       actionsColumn((section) => (
         <RowActions
           title={section.title}
@@ -77,7 +111,7 @@ export function SectionsList({ className, sections }: SectionsListProps) {
         />
       )),
     ],
-    [deletingIds],
+    [deletingIds, usages],
   );
 
   return (
@@ -98,7 +132,7 @@ export function SectionsList({ className, sections }: SectionsListProps) {
       <ConfirmDialog
         isOpen={deleted !== undefined}
         title={`Удалить раздел «${deleted?.title ?? ""}»?`}
-        description={deleted ? deletionDescription(deleted) : ""}
+        description={deleted ? deletionDescription(deleted, usages.get(deleted.id) ?? noUsage) : ""}
         cancelLabel="Отмена"
         confirmLabel="Удалить"
         onCancel={() => setDeleted(undefined)}
