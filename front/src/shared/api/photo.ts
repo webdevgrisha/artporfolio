@@ -16,6 +16,12 @@ export const photoSchema = imageSchema.extend({
 
 export type Photo = z.infer<typeof photoSchema>;
 
+/** A photo as a change sends it: a new file by its upload, or the saved file when it is left out. */
+export interface PhotoBody {
+  alt: string;
+  uploadId?: string;
+}
+
 /**
  * A photo of an ordered list, such as the process photos or the photos of a project
  * (backend/src/shared/images/photo-list.ts). The id stays the same when the file is replaced.
@@ -34,13 +40,11 @@ export type ListPhotoItem =
   | { alt: string; id: string; uploadId?: string }
   | { alt: string; uploadId: string };
 
-/** For a failed upload, alt text update or deletion of a photo. */
+/** For a failed upload or update of a photo. */
 export function getSavePhotoErrorMessage(error: unknown): string {
   return getSaveErrorMessage(requestErrorOf(error), {
     byStatus: {
       400: "Сервер не принял фото. Попробуйте другой файл",
-      // Only an update of the alt text expects an existing photo.
-      404: "Фото уже удалено. Обновите страницу",
       // The photo was changed since this page loaded it, for example in another tab.
       412: "Фото уже изменили в другой вкладке",
       413: `Фото больше ${formatFileSize(imageUploadRules.maxFileSize)}`,

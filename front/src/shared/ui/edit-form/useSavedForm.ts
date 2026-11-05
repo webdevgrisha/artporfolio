@@ -23,9 +23,9 @@ interface UseSavedFormParams<TData, TValues extends FieldValues, TQueryKey exten
   related?: readonly QueryKey[];
   /**
    * Sends the changes made from the resource with the ETag `etag` and shows the result; resolves
-   * with the saved resource and its new ETag. `null` when the changes need no request.
+   * with the saved resource and its new ETag.
    */
-  save: (values: TValues, etag: string) => Promise<Tagged<TData>> | null;
+  save: (values: TValues, etag: string) => Promise<Tagged<TData>>;
   toValues: (data: TData) => TValues;
   /** The toast of `save`, for the result of a save with nothing to send. */
   toastId: string;
@@ -92,9 +92,7 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
   }
 
   async function saveChanges(values: TValues) {
-    const saving = isDirty ? save(values, saved.etag) : null;
-
-    if (!saving) {
+    if (!isDirty) {
       showSuccessToast(savedMessage, { id: toastId });
       return;
     }
@@ -102,7 +100,7 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
     let next: Tagged<TData>;
 
     try {
-      next = await saving;
+      next = await save(values, saved.etag);
     } catch (error) {
       // `save` has shown the error and the changes stay. After a conflict the same save would
       // fail again, so the latest version is offered instead.

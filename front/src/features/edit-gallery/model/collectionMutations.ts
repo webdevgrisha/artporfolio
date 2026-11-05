@@ -9,7 +9,7 @@ import {
   galleryWorksQueryKey,
   replaceGalleryCollection,
 } from "@/entities/gallery";
-import { uploadImage } from "@/shared/api/upload";
+import { toPhotoBody } from "@/shared/lib/photoForm";
 
 import {
   getCreateCollectionErrorMessage,
@@ -29,24 +29,12 @@ interface SaveCollectionParams {
   values: CollectionFormValues;
 }
 
-/**
- * Uploads a newly picked cover, then gives the collection as the server takes it; a saved cover
- * keeps its file and sends its description alone. Rejects with `UploadError`.
- */
-async function toCollectionBody({
-  description,
-  endYear,
-  photo,
-  photoAlt,
-  startYear,
-  title,
-  workIds,
-}: CollectionFormValues): Promise<GalleryCollectionBody> {
+/** Uploads a newly picked cover, then gives the collection as the server takes it. */
+async function toCollectionBody(values: CollectionFormValues): Promise<GalleryCollectionBody> {
+  const { description, endYear, startYear, title, workIds } = values;
+
   return {
-    cover:
-      photo instanceof File
-        ? { alt: photoAlt, uploadId: await uploadImage(photo) }
-        : { alt: photoAlt },
+    cover: await toPhotoBody(values),
     description,
     endYear: endYear.trim() ? Number(endYear) : null,
     startYear: Number(startYear),

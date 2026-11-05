@@ -10,7 +10,7 @@ export const corsOptions: CorsOptions = {
   // The admin reads the ETag of a list to send it back in If-Match.
   exposedHeaders: ["ETag"],
   maxAge: 600,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   origin(origin, callback) {
     if (!origin || getEnv().corsOrigins.has(origin)) {
       callback(null, true);

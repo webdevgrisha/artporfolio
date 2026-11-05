@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import type { Photo } from "@/shared/api/photo";
+import type { Photo, PhotoBody } from "@/shared/api/photo";
+import { uploadImage } from "@/shared/api/upload";
 
 import { type ImageFieldValue, imageFieldValueSchema, toImageFieldValue } from "./imageFieldValue";
 
@@ -50,27 +51,12 @@ export function toPhotoFormValues(photo: Photo | null): PhotoFormValues {
   return { photo: toImageFieldValue(photo), photoAlt: photo?.alt ?? "" };
 }
 
-/** What a save does with the photo. */
-export type PhotoChange =
-  | { alt: string; file: File; type: "upload" }
-  | { alt: string; type: "updateAlt" };
-
-/** A change of a photo, made from the photo with the ETag `etag`. */
-export interface SavePhotoParams {
-  change: PhotoChange;
-  etag: string;
-}
-
 /**
- * The change of the submitted photo fields, or `undefined` when there is none: a picked file is
- * uploaded with its description, and a changed description of the saved photo is sent alone.
+ * The photo fields as the server takes them: uploads a newly picked file; a saved photo keeps its
+ * file and sends its description alone. Rejects with `UploadError`.
  */
-export function getPhotoChange(
-  { photo, photoAlt }: PhotoFormValues,
-  { isAltDirty }: { isAltDirty: boolean },
-): PhotoChange | undefined {
-  if (photo instanceof File) return { alt: photoAlt, file: photo, type: "upload" };
-  if (photo === null) return undefined;
-
-  return isAltDirty ? { alt: photoAlt, type: "updateAlt" } : undefined;
+export async function toPhotoBody({ photo, photoAlt }: PhotoFormValues): Promise<PhotoBody> {
+  return photo instanceof File
+    ? { alt: photoAlt, uploadId: await uploadImage(photo) }
+    : { alt: photoAlt };
 }

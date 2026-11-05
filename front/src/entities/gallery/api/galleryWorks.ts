@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { http, type Tagged } from "@/shared/api/http";
-import type { ListPhotoItem } from "@/shared/api/photo";
+import type { ListPhotoItem, PhotoBody } from "@/shared/api/photo";
 
 import {
   type GalleryWork,
@@ -29,8 +29,7 @@ export interface GalleryWorkBody {
   country: string | null;
   /** The city the work was made in; an empty string for none. */
   city: string;
-  /** A new file by its upload (see `uploadImage`), or the saved file when `uploadId` is left out. */
-  photo: { alt: string; uploadId?: string };
+  photo: PhotoBody;
   /** In the order the site shows them; a saved photo left out is deleted. */
   processPhotos: readonly ListPhotoItem[];
   /** The sections and subsections the work is shown in, at least one. */

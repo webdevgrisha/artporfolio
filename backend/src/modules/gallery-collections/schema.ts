@@ -2,8 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { minWorkYear } from "#modules/gallery-works/schema";
-import { altSchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
-import { uploadIdSchema } from "#shared/images/uploads";
+import { photoBodySchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
 
 /** A collection holds works, so it starts no earlier than a work can be dated. */
 export const minCollectionYear = minWorkYear;
@@ -22,15 +21,6 @@ export const collectionParamsSchema = z.object({
   id: collectionIdSchema,
 });
 
-/**
- * The cover of the collection: a new file by its upload, or the saved file when `uploadId` is left
- * out, so the alt text can change alone.
- */
-const coverBodySchema = z.strictObject({
-  alt: altSchema,
-  uploadId: uploadIdSchema.optional(),
-});
-
 const collectionYearSchema = z.number().int().min(minCollectionYear);
 
 /** A collection as the client sends it, to create one or to replace a saved one. Every field is sent. */
@@ -43,7 +33,7 @@ export const collectionBodySchema = z
      * Markdown. Paragraphs are separated by a blank line.
      */
     description: z.string().trim().min(1).max(2_000),
-    cover: coverBodySchema,
+    cover: photoBodySchema,
     /** The year the collection was started, which cannot be in the future. */
     startYear: collectionYearSchema,
     /** The year it was finished, after the start; null for a collection of one year. */

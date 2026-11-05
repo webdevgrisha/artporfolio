@@ -3,15 +3,17 @@ import { z } from "zod";
 
 import { type ImageFieldValue, savedImage } from "@/shared/lib/imageFieldValue";
 import {
-  getPhotoChange,
   type PhotoFormValues,
   photoFieldsShape,
   refinePhoto,
+  toPhotoBody,
   toPhotoFormValues,
 } from "@/shared/lib/photoForm";
 
+import { csrfHandler, uploadId, uploadsHandler } from "../../support/handlers";
 import { apiPhoto, imageFile } from "../../support/images";
 import { fieldErrors } from "../../support/schema";
+import { server } from "../../support/server";
 
 const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhoto);
 
@@ -49,23 +51,19 @@ describe("photo form fields", () => {
   });
 });
 
-describe("getPhotoChange", () => {
-  const file = imageFile();
+describe("toPhotoBody", () => {
+  it("uploads a picked file and refers to it with its description", async () => {
+    server.use(csrfHandler, uploadsHandler);
 
-  it("uploads a picked file with its description", () => {
-    expect(getPhotoChange({ photo: file, photoAlt: "Портрет" }, { isAltDirty: false })).toEqual({
+    await expect(toPhotoBody({ photo: imageFile(), photoAlt: "Портрет" })).resolves.toEqual({
       alt: "Портрет",
-      file,
-      type: "upload",
+      uploadId,
     });
   });
 
-  it("updates only the description of the saved photo when it was changed", () => {
-    expect(
-      getPhotoChange({ photo: savedImage, photoAlt: "Портрет" }, { isAltDirty: true }),
-    ).toEqual({ alt: "Портрет", type: "updateAlt" });
-    expect(
-      getPhotoChange({ photo: savedImage, photoAlt: "Портрет" }, { isAltDirty: false }),
-    ).toBeUndefined();
+  it("sends the description alone for the saved photo", async () => {
+    await expect(toPhotoBody({ photo: savedImage, photoAlt: "Портрет" })).resolves.toEqual({
+      alt: "Портрет",
+    });
   });
 });

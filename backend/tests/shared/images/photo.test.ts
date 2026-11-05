@@ -33,16 +33,15 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
-import { NotFoundError, PreconditionFailedError } from "#shared/http/errors";
+import { PreconditionFailedError, UnprocessableContentError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
 import {
   getPhoto,
-  photoAltBodySchema,
+  photoBodySchema,
   photoSlot,
   readPhoto,
   savePhoto,
   toPhoto,
-  updatePhotoAlt,
 } from "#shared/images/photo";
 
 const slot = photoSlot({
@@ -228,22 +227,25 @@ describe("photo", () => {
     storedAs(storedPhoto);
     const stored = { ...storedPhoto, alt: "New alt" };
 
-    await expect(updatePhotoAlt(slot, "New alt", storedTag)).resolves.toEqual({
+    await expect(savePhoto(slot, { alt: "New alt" }, storedTag)).resolves.toEqual({
+      created: false,
       data: { ...returnedPhoto, alt: "New alt" },
       etag: entityTag(stored),
     });
     expect(transaction.set).toHaveBeenCalledWith(document, { photo: stored }, { merge: true });
   });
 
-  it("cannot update the alt text without a photo", async () => {
-    await expect(updatePhotoAlt(slot, "New alt", emptyTag)).rejects.toBeInstanceOf(NotFoundError);
+  it("cannot keep the file of an empty slot", async () => {
+    await expect(savePhoto(slot, { alt: "New alt" }, emptyTag)).rejects.toBeInstanceOf(
+      UnprocessableContentError,
+    );
     expect(transaction.set).not.toHaveBeenCalled();
   });
 
   it("refuses an alt text for a photo replaced since it was read", async () => {
     storedAs({ ...storedPhoto, version: "newer-version" });
 
-    await expect(updatePhotoAlt(slot, "New alt", storedTag)).rejects.toBeInstanceOf(
+    await expect(savePhoto(slot, { alt: "New alt" }, storedTag)).rejects.toBeInstanceOf(
       PreconditionFailedError,
     );
     expect(transaction.set).not.toHaveBeenCalled();
@@ -251,12 +253,12 @@ describe("photo", () => {
 });
 
 function isValid(body: unknown): boolean {
-  return photoAltBodySchema.safeParse(body).success;
+  return photoBodySchema.safeParse(body).success;
 }
 
-describe("photo alt body", () => {
+describe("photo body", () => {
   it("trims the alt text", () => {
-    expect(photoAltBodySchema.parse({ alt: "  Портрет художницы  " })).toEqual({
+    expect(photoBodySchema.parse({ alt: "  Портрет художницы  " })).toEqual({
       alt: "Портрет художницы",
     });
   });

@@ -9,7 +9,7 @@ import {
   galleryWorksQueryKey,
   replaceGalleryWork,
 } from "@/entities/gallery";
-import { uploadImage } from "@/shared/api/upload";
+import { toPhotoBody } from "@/shared/lib/photoForm";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
 import { getCreateWorkErrorMessage, getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
@@ -28,10 +28,7 @@ interface SaveWorkParams {
   values: WorkFormValues;
 }
 
-/**
- * Uploads the newly picked files, then gives the work as the server takes it; a saved photo keeps
- * its file and sends its description alone. Rejects with `UploadError`.
- */
+/** Uploads the newly picked files, then gives the work as the server takes it. */
 async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
   const {
     collectionId,
@@ -40,8 +37,6 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     materialIds,
     month,
     paletteIds,
-    photo,
-    photoAlt,
     photos,
     sectionIds,
     title,
@@ -50,10 +45,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
 
   return {
     description,
-    photo:
-      photo instanceof File
-        ? { alt: photoAlt, uploadId: await uploadImage(photo) }
-        : { alt: photoAlt },
+    photo: await toPhotoBody(values),
     processPhotos: await toPhotoListItems(photos),
     sectionIds,
     materialIds,

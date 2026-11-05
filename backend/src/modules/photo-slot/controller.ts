@@ -3,11 +3,9 @@ import type { RequestHandler } from "express";
 import {
   getPhoto,
   type Photo,
-  type PhotoAltBody,
   type PhotoBody,
   type PhotoSlot,
   savePhoto,
-  updatePhotoAlt,
 } from "#shared/images/photo";
 import { ifMatchHeader } from "#shared/middleware/preconditions";
 
@@ -28,11 +26,5 @@ export function photoSlotController(slot: PhotoSlot) {
       .json(data);
   };
 
-  const patchAlt: RequestHandler<object, Photo, PhotoAltBody> = async (request, response) => {
-    const { data, etag } = await updatePhotoAlt(slot, request.body.alt, ifMatchHeader(request));
-
-    response.status(200).set("ETag", etag).json(data);
-  };
-
-  return { patchAlt, putPhoto, readPhoto };
+  return { putPhoto, readPhoto };
 }

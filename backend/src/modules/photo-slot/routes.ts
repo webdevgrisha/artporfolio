@@ -2,8 +2,8 @@ import { Router } from "express";
 
 import { requireAuth } from "#modules/auth/middleware";
 import { photoSlotController } from "#modules/photo-slot/controller";
-import { type PhotoSlot, photoAltBodySchema, photoBodySchema } from "#shared/images/photo";
-import { mergePatchType, requireContentType } from "#shared/middleware/content-type";
+import { type PhotoSlot, photoBodySchema } from "#shared/images/photo";
+import { requireContentType } from "#shared/middleware/content-type";
 import { requireCsrfToken } from "#shared/middleware/csrf";
 import { requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody } from "#shared/middleware/validation";
@@ -14,7 +14,7 @@ import { validateBody } from "#shared/middleware/validation";
  * replaced, never removed: the site does not show the page without it.
  */
 export function photoSlotRouter(slot: PhotoSlot): Router {
-  const { patchAlt, putPhoto, readPhoto } = photoSlotController(slot);
+  const { putPhoto, readPhoto } = photoSlotController(slot);
   const router = Router();
 
   router.get("/", readPhoto);
@@ -26,15 +26,6 @@ export function photoSlotRouter(slot: PhotoSlot): Router {
     requireIfMatch,
     validateBody(photoBodySchema),
     putPhoto,
-  );
-  router.patch(
-    "/",
-    requireAuth,
-    requireCsrfToken,
-    requireContentType(mergePatchType),
-    requireIfMatch,
-    validateBody(photoAltBodySchema),
-    patchAlt,
   );
 
   return router;

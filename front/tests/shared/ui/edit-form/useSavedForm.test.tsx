@@ -37,7 +37,7 @@ const optionsQuery = queryOptions({
   queryKey: ["options"],
 });
 
-type Save = (values: Values, etag: string) => Promise<Tagged<Values>> | null;
+type Save = (values: Values, etag: string) => Promise<Tagged<Values>>;
 
 beforeEach(() => {
   vi.clearAllMocks();

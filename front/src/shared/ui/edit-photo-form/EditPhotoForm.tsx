@@ -7,17 +7,22 @@ import { getSavePhotoErrorMessage, type Photo } from "@/shared/api/photo";
 import { type PhotoSlot, saveSlotPhoto } from "@/shared/api/photoSlot";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 import {
-  getPhotoChange,
   type PhotoFormValues,
   photoFieldsShape,
   refinePhoto,
-  type SavePhotoParams,
+  toPhotoBody,
   toPhotoFormValues,
 } from "@/shared/lib/photoForm";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 
 const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhoto);
+
+interface SavePhotoParams {
+  /** The ETag of the photo the values were made from. */
+  etag: string;
+  values: PhotoFormValues;
+}
 
 interface EditPhotoFormProps {
   className?: string;
@@ -34,23 +39,19 @@ export function EditPhotoForm({ className, label, photo, slot }: EditPhotoFormPr
   // The server returns the saved photo with its ETag, so the page need not load it again.
   const savePhoto = useReplaceResource({
     feedback: { getErrorMessage: getSavePhotoErrorMessage, toastId },
-    mutationFn: (params: SavePhotoParams) => saveSlotPhoto(slot, params),
+    mutationFn: async ({ etag, values }: SavePhotoParams) =>
+      saveSlotPhoto(slot, { body: await toPhotoBody(values), etag }),
     queryKey: slot.query.queryKey,
   });
   const form = useForm<PhotoFormValues>({
     defaultValues: toPhotoFormValues(photo.data),
     resolver: zodResolver(photoFormSchema),
   });
-  const { dirtyFields } = form.formState;
   const { editForm, saved } = useSavedForm({
     form,
     initial: photo,
     query: slot.query,
-    save: (values, etag) => {
-      const change = getPhotoChange(values, { isAltDirty: Boolean(dirtyFields.photoAlt) });
-
-      return change ? savePhoto.mutateAsync({ change, etag }) : null;
-    },
+    save: (values, etag) => savePhoto.mutateAsync({ etag, values }),
     toValues: toPhotoFormValues,
     toastId,
   });

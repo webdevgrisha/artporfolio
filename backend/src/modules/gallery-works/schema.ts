@@ -2,13 +2,12 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { countryCodes } from "#shared/geo/countries";
-import { altSchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
+import { photoBodySchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
 import {
   listPhotoSchema,
   photoListBodySchema,
   storedListPhotoSchema,
 } from "#shared/images/photo-list";
-import { uploadIdSchema } from "#shared/images/uploads";
 
 /** The earliest year a work can be dated. */
 export const minWorkYear = 1900;
@@ -98,15 +97,6 @@ const workPriceBodySchema = z
     path: ["discountPercent"],
   });
 
-/**
- * The photo of the work: a new file by its upload, or the saved file when `uploadId` is left out,
- * so the alt text can change alone.
- */
-const workPhotoBodySchema = z.strictObject({
-  alt: altSchema,
-  uploadId: uploadIdSchema.optional(),
-});
-
 /** Ids of the items of a gallery list a work refers to, at least one, each named once. */
 function referenceIdsSchema(max: number) {
   return z
@@ -144,7 +134,7 @@ export const workBodySchema = z
     country: z.enum(countryCodes).nullable(),
     /** The city the work was made in, as it is written in Russian; an empty string for none. */
     city: z.string().trim().max(maxWorkCityLength),
-    photo: workPhotoBodySchema,
+    photo: photoBodySchema,
     /** How the work was made, in the order the site shows them; a saved photo left out is deleted. */
     processPhotos: photoListBodySchema(maxWorkProcessPhotos),
     /**

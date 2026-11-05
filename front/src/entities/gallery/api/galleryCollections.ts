@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { http, type Tagged } from "@/shared/api/http";
+import type { PhotoBody } from "@/shared/api/photo";
 
 import {
   type GalleryCollection,
@@ -12,8 +13,7 @@ import {
 export interface GalleryCollectionBody {
   title: string;
   description: string;
-  /** A new file by its upload (see `uploadImage`), or the saved file when `uploadId` is left out. */
-  cover: { alt: string; uploadId?: string };
+  cover: PhotoBody;
   startYear: number;
   /** Null for a collection of one year. */
   endYear: number | null;
