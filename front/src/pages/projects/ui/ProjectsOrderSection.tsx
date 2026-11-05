@@ -12,7 +12,7 @@ export function ProjectsOrderSection() {
     <AwaitPageData
       fallback={
         <FormSkeleton className={styles.form} isNarrow>
-          <ListSkeleton rows={6} />
+          <ListSkeleton rows={9} />
         </FormSkeleton>
       }
     >

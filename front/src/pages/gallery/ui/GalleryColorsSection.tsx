@@ -13,7 +13,7 @@ export function GalleryColorsSection() {
       fallback={
         <FormSkeleton className={styles.form} isNarrow>
           <FieldSkeleton />
-          <ListSkeleton rows={6} />
+          <ListSkeleton rows={10} />
         </FormSkeleton>
       }
     >
