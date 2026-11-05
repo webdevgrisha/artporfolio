@@ -2,8 +2,15 @@
   inline-size: 4.75rem;
 }
 
+/*
+ * The actions stay at the end of a table that scrolls sideways, so a row can be edited from any
+ * scroll; the other cells pass under them, hidden by their background.
+ */
 .actionsColumn {
+  position: sticky;
+  inset-inline-end: 0;
   inline-size: 7.5rem;
+  background: var(--color-surface);
 }
 
 .muted {

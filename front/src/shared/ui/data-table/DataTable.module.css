@@ -76,9 +76,12 @@
   border-block-end: 0;
 }
 
-/* The row the pointer is over, so its actions are easy to match with it. */
+/*
+ * The row the pointer is over, so its actions are easy to match with it. On the cells, not the row,
+ * so it also covers the background of the sticky actions.
+ */
 @media (hover: hover) {
-  .row:hover {
+  .row:hover > td {
     background: var(--color-surface-disabled);
   }
 }
