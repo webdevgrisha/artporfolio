@@ -2,7 +2,6 @@ import clsx from "clsx";
 
 import type { Image } from "@/shared/api/image";
 import { MediaImage } from "./MediaImage";
-import { imageToMediaItem } from "./mediaItem";
 
 import styles from "./PhotoThumbnail.module.css";
 
@@ -21,7 +20,8 @@ export function PhotoThumbnail({ className, image }: PhotoThumbnailProps) {
     <MediaImage
       className={clsx(styles.root, className)}
       loading="lazy"
-      source={imageToMediaItem(image).source}
+      sizes="4rem"
+      source={image.sources}
     />
   ) : (
     <span className={clsx(styles.root, className)} />

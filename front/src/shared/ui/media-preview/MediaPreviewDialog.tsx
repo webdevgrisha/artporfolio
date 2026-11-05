@@ -12,12 +12,18 @@ interface MediaPreviewDialogProps {
   onClose: () => void;
 }
 
-/** Shows an item in full, with its size in pixels measured once the image loads. */
+/**
+ * Shows an item in full, with its size in pixels measured once the image loads. An image on the
+ * server loads in its largest width, so the size is that of the image.
+ */
 export function MediaPreviewDialog({ item, onClose }: MediaPreviewDialogProps) {
-  const source = item ? (item.fullSizeSource ?? item.source) : undefined;
+  const source = item?.source;
   // Kept with its image, not its item: a replaced file keeps the item but is another image, and
   // the size of the previous one must not be shown for it.
-  const [loadedSize, setLoadedSize] = React.useState<{ source: File | string; text: string }>();
+  const [loadedSize, setLoadedSize] = React.useState<{
+    source: MediaItem["source"];
+    text: string;
+  }>();
   const size = source !== undefined && loadedSize?.source === source ? loadedSize.text : undefined;
 
   return (
