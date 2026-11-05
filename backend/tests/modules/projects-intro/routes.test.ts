@@ -56,7 +56,7 @@ describe("projects intro routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ intro });
+    await expect(response.json()).resolves.toEqual(intro);
     expect(auth.verifySession).not.toHaveBeenCalled();
   });
 
@@ -68,7 +68,7 @@ describe("projects intro routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ intro });
+    await expect(response.json()).resolves.toEqual(intro);
     expect(introService.replaceProjectsIntro).toHaveBeenCalledWith(intro, etag);
   });
 

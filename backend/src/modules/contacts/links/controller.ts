@@ -1,23 +1,20 @@
 import type { RequestHandler } from "express";
 
-import type { ContactLinks, ContactLinksResponse } from "#modules/contacts/links/schema";
+import type { ContactLinks } from "#modules/contacts/links/schema";
 import { getContactLinks, replaceContactLinks } from "#modules/contacts/links/service";
 import { ifMatchHeader } from "#shared/middleware/preconditions";
 
-export const readLinks: RequestHandler<object, ContactLinksResponse> = async (
-  _request,
-  response,
-) => {
+export const readLinks: RequestHandler<object, ContactLinks> = async (_request, response) => {
   const { data, etag } = await getContactLinks();
 
-  response.status(200).set("ETag", etag).json({ links: data });
+  response.status(200).set("ETag", etag).json(data);
 };
 
-export const replaceLinks: RequestHandler<object, ContactLinksResponse, ContactLinks> = async (
+export const replaceLinks: RequestHandler<object, ContactLinks, ContactLinks> = async (
   request,
   response,
 ) => {
   const { data, etag } = await replaceContactLinks(request.body, ifMatchHeader(request));
 
-  response.status(200).set("ETag", etag).json({ links: data });
+  response.status(200).set("ETag", etag).json(data);
 };

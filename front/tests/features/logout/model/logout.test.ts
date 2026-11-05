@@ -48,7 +48,7 @@ describe("logoutAction", () => {
     server.use(
       mswHttp.post("/api/auth/logout", () => problem(502)),
       mswHttp.get("/api/auth/me", () =>
-        HttpResponse.json({ user: { email: "admin@example.com", uid: "admin" } }),
+        HttpResponse.json({ email: "admin@example.com", uid: "admin" }),
       ),
     );
 

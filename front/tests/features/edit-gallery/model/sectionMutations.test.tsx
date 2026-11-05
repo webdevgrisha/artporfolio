@@ -54,10 +54,7 @@ describe("useCreateSection", () => {
   it("creates the section the form named, only if there is none yet", async () => {
     server.use(
       mswHttp.put(path, () =>
-        HttpResponse.json(
-          { section: apiSection("Постеры") },
-          { headers: { ETag: savedEtag }, status: 201 },
-        ),
+        HttpResponse.json(apiSection("Постеры"), { headers: { ETag: savedEtag }, status: 201 }),
       ),
     );
     const createSection = setUp();

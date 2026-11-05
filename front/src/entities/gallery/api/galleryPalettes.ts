@@ -28,7 +28,7 @@ export function replaceGalleryPalettes({
 }: ReplaceGalleryPalettesParams): Promise<Tagged<GalleryPalettes>> {
   return http.putIfMatch({
     path: "/gallery-palettes",
-    body: palettes,
+    body: { palettes },
     etag,
     schema: galleryPalettesSchema,
   });

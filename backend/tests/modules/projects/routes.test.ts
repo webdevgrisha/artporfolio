@@ -107,7 +107,7 @@ describe("reading the projects", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ project });
+    await expect(response.json()).resolves.toEqual(project);
     expect(service.getProject).toHaveBeenCalledWith(id);
   });
 
@@ -134,7 +134,7 @@ describe("creating a project", () => {
 
     expect(response.status).toBe(201);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ project });
+    await expect(response.json()).resolves.toEqual(project);
     expect(service.createProject).toHaveBeenCalledWith(id, body);
     expect(service.replaceProject).not.toHaveBeenCalled();
   });
@@ -182,7 +182,7 @@ describe("replacing a project", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ project });
+    await expect(response.json()).resolves.toEqual(project);
     expect(service.replaceProject).toHaveBeenCalledWith(id, body, etag);
   });
 

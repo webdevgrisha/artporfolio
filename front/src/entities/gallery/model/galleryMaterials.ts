@@ -11,8 +11,8 @@ export const galleryMaterialSchema = z.object({
 export type GalleryMaterial = z.infer<typeof galleryMaterialSchema>;
 
 /** Every material of the gallery, sorted by title; there are none until they are first saved. */
-export const galleryMaterialsSchema = z.object({
-  materials: z.array(galleryMaterialSchema),
-});
+export const galleryMaterialsSchema = z
+  .object({ materials: z.array(galleryMaterialSchema) })
+  .transform(({ materials }) => materials);
 
 export type GalleryMaterials = z.infer<typeof galleryMaterialsSchema>;

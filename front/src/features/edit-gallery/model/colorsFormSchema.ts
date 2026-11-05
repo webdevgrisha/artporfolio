@@ -26,6 +26,6 @@ export const colorsFormSchema = z.object({
 export type ColorsFormValues = z.infer<typeof colorsFormSchema>;
 
 /** The values of the colors as stored on the server. */
-export function toColorsFormValues({ colors }: GalleryColors): ColorsFormValues {
+export function toColorsFormValues(colors: GalleryColors): ColorsFormValues {
   return { colors: colors.map(({ hex, id, title }) => ({ hex, id, title })) };
 }

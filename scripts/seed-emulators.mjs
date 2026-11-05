@@ -520,8 +520,8 @@ class Api {
     const form = new FormData();
     form.append("file", new Blob([data], { type: "image/jpeg" }), name);
 
-    const { upload } = await (await this.#send("POST", "/uploads", { form })).json();
-    return upload.id;
+    const { id } = await (await this.#send("POST", "/uploads", { form })).json();
+    return id;
   }
 
   async #send(method, path, { form, ifMatch, ifNoneMatch, json } = {}) {

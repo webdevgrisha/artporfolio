@@ -9,8 +9,3 @@ export const projectsIntroSchema = z.object({
 });
 
 export type ProjectsIntro = z.infer<typeof projectsIntroSchema>;
-
-/** The shape of every API response that returns the text. */
-export const projectsIntroResponseSchema = z.object({
-  intro: projectsIntroSchema,
-});

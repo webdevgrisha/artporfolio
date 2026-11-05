@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { QueryKey } from "@tanstack/react-query";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
@@ -10,9 +9,11 @@ import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
 import {
+  type TitleItem,
   type TitleListConfig,
   type TitleListFormValues,
   titleListFormSchema,
+  toTitleListFormValues,
 } from "../model/titleList";
 import { useRowRemoval } from "../model/useRowRemoval";
 import { describeWorkUsage, usageOf } from "../model/workUsage";
@@ -21,11 +22,11 @@ import { TitleList } from "./TitleList";
 import styles from "./TitleList.module.css";
 import { TitleListRow } from "./TitleListRow";
 
-interface EditTitleListFormProps<TData, TQueryKey extends QueryKey> {
+interface EditTitleListFormProps {
   className?: string;
   /** The list as stored on the server when the form opens, with its ETag. */
-  data: Tagged<TData>;
-  list: TitleListConfig<TData, TQueryKey>;
+  data: Tagged<TitleItem[]>;
+  list: TitleListConfig;
   /** How many works name each row, by its id. */
   usages: WorkUsages;
 }
@@ -42,17 +43,11 @@ interface Editing {
  * first if any do. The site lists the rows by title, and so does the list once
  * it is saved; the rows added since stay at its end until then.
  */
-export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
-  className,
-  data,
-  list,
-  usages,
-}: EditTitleListFormProps<TData, TQueryKey>) {
+export function EditTitleListForm({ className, data, list, usages }: EditTitleListFormProps) {
   const { max, texts } = list;
   const schema = React.useMemo(() => titleListFormSchema(list), [list]);
-  const toValues = (listData: TData): TitleListFormValues => ({ items: list.toItems(listData) });
   const form = useForm<TitleListFormValues>({
-    defaultValues: toValues(data.data),
+    defaultValues: toTitleListFormValues(data.data),
     resolver: zodResolver(schema),
   });
   const saveList = useReplaceResource({
@@ -66,7 +61,7 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
     query: list.query,
     related: [galleryWorkUsageQuery.queryKey],
     save: (values, etag) => saveList.mutateAsync({ etag, items: values.items }),
-    toValues,
+    toValues: toTitleListFormValues,
     toastId: list.toastId,
   });
   const {
@@ -81,7 +76,7 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
   const rows = useWatch({ control, name: "items" });
   const [editing, setEditing] = React.useState<Editing>();
   const addFieldRef = React.useRef<HTMLInputElement>(null);
-  const savedTitles = new Map(list.toItems(saved.data).map(({ id, title }) => [id, title]));
+  const savedTitles = new Map(saved.data.map(({ id, title }) => [id, title]));
   const removal = useRowRemoval({
     remove: (index) => {
       remove(index);

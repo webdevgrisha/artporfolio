@@ -4,7 +4,7 @@ import { http, type Tagged } from "@/shared/api/http";
 
 import {
   type GalleryCollection,
-  galleryCollectionResponseSchema,
+  galleryCollectionSchema,
   galleryCollectionsResponseSchema,
 } from "../model/galleryCollection";
 
@@ -67,15 +67,12 @@ export const galleryCollectionsQuery = queryOptions({
 /** One collection with its ETag. A save puts the saved collection here. */
 export function galleryCollectionQuery(id: string) {
   return queryOptions({
-    queryFn: async ({ signal }): Promise<Tagged<GalleryCollection>> => {
-      const { data, etag } = await http.getWithETag({
+    queryFn: ({ signal }): Promise<Tagged<GalleryCollection>> =>
+      http.getWithETag({
         path: collectionPath(id),
-        schema: galleryCollectionResponseSchema,
+        schema: galleryCollectionSchema,
         signal,
-      });
-
-      return { data: data.collection, etag };
-    },
+      }),
     queryKey: [...galleryCollectionsQueryKey, "item", id],
   });
 }
@@ -86,17 +83,15 @@ export function galleryCollectionQuery(id: string) {
  * with 409 when another collection has its title, and with 422 when the upload of the cover has
  * expired or a work no longer exists.
  */
-export async function createGalleryCollection({
+export function createGalleryCollection({
   body,
   id,
 }: CreateGalleryCollectionParams): Promise<Tagged<GalleryCollection>> {
-  const { data, etag } = await http.putIfNoneMatch({
+  return http.putIfNoneMatch({
     path: collectionPath(id),
     body,
-    schema: galleryCollectionResponseSchema,
+    schema: galleryCollectionSchema,
   });
-
-  return { data: data.collection, etag };
 }
 
 /**
@@ -105,19 +100,17 @@ export async function createGalleryCollection({
  * deleted, with 409 when another collection has its title, and with 422 when the upload of the
  * cover has expired or a work no longer exists.
  */
-export async function replaceGalleryCollection({
+export function replaceGalleryCollection({
   body,
   etag,
   id,
 }: ReplaceGalleryCollectionParams): Promise<Tagged<GalleryCollection>> {
-  const { data, etag: savedEtag } = await http.putIfMatch({
+  return http.putIfMatch({
     path: collectionPath(id),
     body,
     etag,
-    schema: galleryCollectionResponseSchema,
+    schema: galleryCollectionSchema,
   });
-
-  return { data: data.collection, etag: savedEtag };
 }
 
 /**

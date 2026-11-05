@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { http, type Tagged } from "@/shared/api/http";
 import type { ListPhotoItem } from "@/shared/api/photo";
 
-import { type Project, projectResponseSchema, projectsResponseSchema } from "../model/project";
+import { type Project, projectSchema, projectsResponseSchema } from "../model/project";
 
 /** A project as the admin saves it: every field, and the whole list of its photos. */
 export interface ProjectBody {
@@ -53,15 +53,12 @@ export const projectsQuery = queryOptions({
 /** One project with its ETag. A save puts the saved project here. */
 export function projectQuery(id: string) {
   return queryOptions({
-    queryFn: async ({ signal }): Promise<Tagged<Project>> => {
-      const { data, etag } = await http.getWithETag({
+    queryFn: ({ signal }): Promise<Tagged<Project>> =>
+      http.getWithETag({
         path: `/projects/${encodeURIComponent(id)}`,
-        schema: projectResponseSchema,
+        schema: projectSchema,
         signal,
-      });
-
-      return { data: data.project, etag };
-    },
+      }),
     queryKey: [...projectsQueryKey, "item", id],
   });
 }
@@ -71,14 +68,12 @@ export function projectQuery(id: string) {
  * with 412 when the project exists, for example created by an earlier try whose response was lost,
  * and with 422 when an upload has expired.
  */
-export async function createProject({ body, id }: CreateProjectParams): Promise<Tagged<Project>> {
-  const { data, etag } = await http.putIfNoneMatch({
+export function createProject({ body, id }: CreateProjectParams): Promise<Tagged<Project>> {
+  return http.putIfNoneMatch({
     path: `/projects/${encodeURIComponent(id)}`,
     body,
-    schema: projectResponseSchema,
+    schema: projectSchema,
   });
-
-  return { data: data.project, etag };
 }
 
 /**
@@ -86,19 +81,13 @@ export async function createProject({ body, id }: CreateProjectParams): Promise<
  * ETag. Rejected with 412 when the project has changed since `etag` was read, with 404 when it was
  * deleted, and with 422 when it names a photo or an upload that no longer exists.
  */
-export async function replaceProject({
-  body,
-  etag,
-  id,
-}: ReplaceProjectParams): Promise<Tagged<Project>> {
-  const { data, etag: savedEtag } = await http.putIfMatch({
+export function replaceProject({ body, etag, id }: ReplaceProjectParams): Promise<Tagged<Project>> {
+  return http.putIfMatch({
     path: `/projects/${encodeURIComponent(id)}`,
     body,
     etag,
-    schema: projectResponseSchema,
+    schema: projectSchema,
   });
-
-  return { data: data.project, etag: savedEtag };
 }
 
 /** Deletes the project with its photos. Rejected with 412 when it has changed since `etag` was read. */

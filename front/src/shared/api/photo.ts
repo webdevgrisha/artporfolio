@@ -34,16 +34,6 @@ export type ListPhotoItem =
   | { alt: string; id: string; uploadId?: string }
   | { alt: string; uploadId: string };
 
-/** The shape of every API response that returns a saved photo. */
-export const photoResponseSchema = z.object({
-  photo: photoSchema,
-});
-
-/** The photo of a slot as its `GET` returns it: `null` until one is uploaded. */
-export const slotPhotoResponseSchema = z.object({
-  photo: photoSchema.nullable(),
-});
-
 /** For a failed upload, alt text update or deletion of a photo. */
 export function getSavePhotoErrorMessage(error: unknown): string {
   return getSaveErrorMessage(requestErrorOf(error), {

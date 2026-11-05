@@ -30,11 +30,6 @@ export const galleryCollectionSchema = z.object({
 
 export type GalleryCollection = z.infer<typeof galleryCollectionSchema>;
 
-/** The shape of every API response that returns one collection. */
-export const galleryCollectionResponseSchema = z.object({
-  collection: galleryCollectionSchema,
-});
-
 export const galleryCollectionsResponseSchema = z.object({
   /** In the order the site shows them: the latest first. */
   collections: z.array(galleryCollectionSchema),

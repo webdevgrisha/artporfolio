@@ -28,7 +28,7 @@ export function replaceGalleryColors({
 }: ReplaceGalleryColorsParams): Promise<Tagged<GalleryColors>> {
   return http.putIfMatch({
     path: "/gallery-colors",
-    body: colors,
+    body: { colors },
     etag,
     schema: galleryColorsSchema,
   });

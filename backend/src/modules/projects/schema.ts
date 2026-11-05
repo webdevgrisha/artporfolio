@@ -80,8 +80,6 @@ export const projectsOrderBodySchema = z.strictObject({
 
 export const projectsOrderSchema = z.object({ ids: z.array(projectIdSchema) });
 
-export const projectResponseSchema = z.object({ project: projectSchema });
-
 export const projectsResponseSchema = z.object({
   /** In the order the site shows them. */
   projects: z.array(projectSchema),
@@ -92,5 +90,4 @@ export type ProjectBody = z.infer<typeof projectBodySchema>;
 export type StoredProject = z.infer<typeof storedProjectSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export type ProjectsOrder = z.infer<typeof projectsOrderSchema>;
-export type ProjectResponse = z.infer<typeof projectResponseSchema>;
 export type ProjectsResponse = z.infer<typeof projectsResponseSchema>;

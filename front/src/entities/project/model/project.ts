@@ -21,11 +21,6 @@ export const projectSchema = z.object({
 
 export type Project = z.infer<typeof projectSchema>;
 
-/** The shape of every API response that returns one project. */
-export const projectResponseSchema = z.object({
-  project: projectSchema,
-});
-
 export const projectsResponseSchema = z.object({
   /** In the order the site shows them. */
   projects: z.array(projectSchema),

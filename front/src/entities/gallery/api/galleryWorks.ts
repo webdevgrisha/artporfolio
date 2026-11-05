@@ -6,14 +6,14 @@ import type { ListPhotoItem } from "@/shared/api/photo";
 import {
   type GalleryWork,
   type GalleryWorkSummary,
-  galleryWorkResponseSchema,
+  galleryWorkSchema,
   galleryWorksResponseSchema,
   type WorkFormat,
   type WorkPrice,
   type WorkSaleStatus,
   type WorkSize,
 } from "../model/galleryWork";
-import { type GalleryWorkUsage, galleryWorkUsageResponseSchema } from "../model/galleryWorkUsage";
+import { type GalleryWorkUsage, galleryWorkUsageSchema } from "../model/galleryWorkUsage";
 
 /** A work as the admin saves it: every field at once. */
 export interface GalleryWorkBody {
@@ -100,30 +100,24 @@ export const galleryWorksQuery = queryOptions({
  * refreshes it too.
  */
 export const galleryWorkUsageQuery = queryOptions({
-  queryFn: async ({ signal }): Promise<GalleryWorkUsage> => {
-    const { usage } = await http.get({
+  queryFn: ({ signal }): Promise<GalleryWorkUsage> =>
+    http.get({
       path: "/gallery-works/usage",
-      schema: galleryWorkUsageResponseSchema,
+      schema: galleryWorkUsageSchema,
       signal,
-    });
-
-    return usage;
-  },
+    }),
   queryKey: [...galleryWorksQueryKey, "usage"],
 });
 
 /** One work with its ETag. A save puts the saved work here. */
 export function galleryWorkQuery(id: string) {
   return queryOptions({
-    queryFn: async ({ signal }): Promise<Tagged<GalleryWork>> => {
-      const { data, etag } = await http.getWithETag({
+    queryFn: ({ signal }): Promise<Tagged<GalleryWork>> =>
+      http.getWithETag({
         path: workPath(id),
-        schema: galleryWorkResponseSchema,
+        schema: galleryWorkSchema,
         signal,
-      });
-
-      return { data: data.work, etag };
-    },
+      }),
     queryKey: [...galleryWorksQueryKey, "item", id],
   });
 }
@@ -133,17 +127,15 @@ export function galleryWorkQuery(id: string) {
  * exists, for example created by an earlier try whose response was lost, and with 422 when the
  * upload of a photo has expired or a section or the collection no longer exists.
  */
-export async function createGalleryWork({
+export function createGalleryWork({
   body,
   id,
 }: CreateGalleryWorkParams): Promise<Tagged<GalleryWork>> {
-  const { data, etag } = await http.putIfNoneMatch({
+  return http.putIfNoneMatch({
     path: workPath(id),
     body,
-    schema: galleryWorkResponseSchema,
+    schema: galleryWorkSchema,
   });
-
-  return { data: data.work, etag };
 }
 
 /**
@@ -151,19 +143,17 @@ export async function createGalleryWork({
  * with 412 when the work has changed since `etag` was read, with 404 when it was deleted, and with
  * 422 when it names a process photo, an upload, a section or a collection that no longer exists.
  */
-export async function replaceGalleryWork({
+export function replaceGalleryWork({
   body,
   etag,
   id,
 }: ReplaceGalleryWorkParams): Promise<Tagged<GalleryWork>> {
-  const { data, etag: savedEtag } = await http.putIfMatch({
+  return http.putIfMatch({
     path: workPath(id),
     body,
     etag,
-    schema: galleryWorkResponseSchema,
+    schema: galleryWorkSchema,
   });
-
-  return { data: data.work, etag: savedEtag };
 }
 
 /** Deletes the work with its photos. Rejected with 412 when it has changed since `etag` was read. */

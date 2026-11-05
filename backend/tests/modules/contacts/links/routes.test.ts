@@ -63,7 +63,7 @@ describe("contact links routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ links });
+    await expect(response.json()).resolves.toEqual(links);
     expect(auth.verifySession).not.toHaveBeenCalled();
   });
 
@@ -76,7 +76,7 @@ describe("contact links routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ links: saved });
+    await expect(response.json()).resolves.toEqual(saved);
     expect(linksService.replaceContactLinks).toHaveBeenCalledWith(saved, etag);
   });
 

@@ -18,7 +18,7 @@ function uploadsApi() {
 
   return mswHttp.post("/api/uploads", () => {
     count += 1;
-    return HttpResponse.json({ upload: { id: `upload-${String(count)}` } }, { status: 201 });
+    return HttpResponse.json({ id: `upload-${String(count)}` }, { status: 201 });
   });
 }
 

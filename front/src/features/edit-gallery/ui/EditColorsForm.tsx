@@ -62,7 +62,7 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
     initial: colors,
     query: galleryColorsQuery,
     related: [galleryWorkUsageQuery.queryKey],
-    save: (values, etag) => saveColors.mutateAsync({ colors: values, etag }),
+    save: (values, etag) => saveColors.mutateAsync({ colors: values.colors, etag }),
     toValues: toColorsFormValues,
     toastId: saveColorsFeedback.toastId,
   });
@@ -80,7 +80,7 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
   // The swatch of the color being added; each new color starts from the neutral one.
   const [newHex, setNewHex] = React.useState(defaultColorHex);
   const addFieldRef = React.useRef<HTMLInputElement>(null);
-  const savedColors = new Map(saved.data.colors.map((color) => [color.id, color]));
+  const savedColors = new Map(saved.data.map((color) => [color.id, color]));
   const removal = useRowRemoval({
     remove: (index) => {
       remove(index);

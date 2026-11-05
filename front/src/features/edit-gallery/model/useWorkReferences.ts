@@ -49,9 +49,9 @@ export function useWorkReferences(): WorkReferences {
 
   return {
     collections,
-    colors: colors.data.colors,
-    materials: materials.data.materials,
-    palettes: palettes.data.palettes,
+    colors: colors.data,
+    materials: materials.data,
+    palettes: palettes.data,
     rates: rates.data.rates,
     sections,
   };

@@ -121,8 +121,6 @@ export const collectionSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 
-export const collectionResponseSchema = z.object({ collection: collectionSchema });
-
 export const collectionsResponseSchema = z.object({
   /** In the order the site shows them: the latest first. */
   collections: z.array(collectionSchema),
@@ -132,5 +130,4 @@ export type CollectionParams = z.infer<typeof collectionParamsSchema>;
 export type CollectionBody = z.infer<typeof collectionBodySchema>;
 export type StoredCollection = z.infer<typeof storedCollectionSchema>;
 export type Collection = z.infer<typeof collectionSchema>;
-export type CollectionResponse = z.infer<typeof collectionResponseSchema>;
 export type CollectionsResponse = z.infer<typeof collectionsResponseSchema>;

@@ -30,7 +30,4 @@ export const aboutTextSchema = z.object({
   creation: z.string(),
 });
 
-export const aboutTextResponseSchema = z.object({ text: aboutTextSchema });
-
 export type AboutText = z.infer<typeof aboutTextSchema>;
-export type AboutTextResponse = z.infer<typeof aboutTextResponseSchema>;

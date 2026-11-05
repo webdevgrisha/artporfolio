@@ -17,7 +17,4 @@ export const galleryIntroSchema = z.object({
   text: z.string(),
 });
 
-export const galleryIntroResponseSchema = z.object({ intro: galleryIntroSchema });
-
 export type GalleryIntro = z.infer<typeof galleryIntroSchema>;
-export type GalleryIntroResponse = z.infer<typeof galleryIntroResponseSchema>;

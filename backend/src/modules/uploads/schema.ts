@@ -7,7 +7,7 @@ export const uploadBodySchema = z.strictObject({});
 
 export const uploadResponseSchema = z.object({
   /** Valid for a day; send the id in the request that uses the photo. */
-  upload: z.object({ id: uploadIdSchema }),
+  id: uploadIdSchema,
 });
 
 export type UploadResponse = z.infer<typeof uploadResponseSchema>;

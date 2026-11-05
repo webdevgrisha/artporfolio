@@ -22,7 +22,7 @@ function countUploads() {
   server.use(
     mswHttp.post("/api/uploads", () => {
       count += 1;
-      return HttpResponse.json({ upload: { id: `upload-${String(count)}` } }, { status: 201 });
+      return HttpResponse.json({ id: `upload-${String(count)}` }, { status: 201 });
     }),
   );
 }
@@ -35,7 +35,7 @@ describe("uploadImage", () => {
         (await request.formData()).forEach((_value, name) => {
           fields.push(name);
         });
-        return HttpResponse.json({ upload: { id: "upload-1" } }, { status: 201 });
+        return HttpResponse.json({ id: "upload-1" }, { status: 201 });
       }),
     );
 

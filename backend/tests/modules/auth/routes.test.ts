@@ -91,7 +91,7 @@ describe("auth routes", () => {
     const setCookie = response.headers.get("set-cookie");
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ user: admin });
+    await expect(response.json()).resolves.toEqual(admin);
     expect(auth.createSession).toHaveBeenCalledWith("firebase-id-token");
     expect(setCookie).toContain("__session=firebase-session");
     expect(setCookie).toContain("HttpOnly");
@@ -159,7 +159,7 @@ describe("auth routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    await expect(response.json()).resolves.toEqual({ user: admin });
+    await expect(response.json()).resolves.toEqual(admin);
     expect(auth.verifySession).toHaveBeenCalledWith("firebase-session");
   });
 

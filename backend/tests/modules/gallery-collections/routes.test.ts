@@ -132,7 +132,7 @@ describe("reading the collections", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ collection });
+    await expect(response.json()).resolves.toEqual(collection);
     expect(service.getCollection).toHaveBeenCalledWith(id, "visitor");
   });
 
@@ -153,7 +153,7 @@ describe("creating a collection", () => {
 
     expect(response.status).toBe(201);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ collection });
+    await expect(response.json()).resolves.toEqual(collection);
     expect(service.createCollection).toHaveBeenCalledWith(id, body);
     expect(service.replaceCollection).not.toHaveBeenCalled();
   });
@@ -202,7 +202,7 @@ describe("replacing a collection", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ collection });
+    await expect(response.json()).resolves.toEqual(collection);
     expect(service.replaceCollection).toHaveBeenCalledWith(id, body, etag);
   });
 

@@ -82,7 +82,7 @@ describe("photo slot routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ photo });
+    await expect(response.json()).resolves.toEqual(photo);
     expect(auth.verifySession).not.toHaveBeenCalled();
   });
 
@@ -91,7 +91,7 @@ describe("photo slot routes", () => {
 
     const response = await fetch(`${server.baseUrl}/api/photo`);
 
-    await expect(response.json()).resolves.toEqual({ photo: null });
+    await expect(response.json()).resolves.toEqual(null);
   });
 
   it("returns 201 when the upload creates the photo", async () => {
@@ -100,7 +100,7 @@ describe("photo slot routes", () => {
     const response = await sendPhoto("PUT", await jsonHeaders(), { alt: "Portrait", uploadId });
 
     expect(response.status).toBe(201);
-    await expect(response.json()).resolves.toEqual({ photo });
+    await expect(response.json()).resolves.toEqual(photo);
   });
 
   it("replaces the photo with the upload and its trimmed alt text", async () => {
@@ -111,7 +111,7 @@ describe("photo slot routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ photo });
+    await expect(response.json()).resolves.toEqual(photo);
     expect(photoService.savePhoto).toHaveBeenCalledWith(slot, { alt: "Portrait", uploadId }, etag);
   });
 
@@ -185,7 +185,7 @@ describe("photo slot routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ photo });
+    await expect(response.json()).resolves.toEqual(photo);
     expect(photoService.updatePhotoAlt).toHaveBeenCalledWith(slot, "New alt", etag);
   });
 

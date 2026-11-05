@@ -27,7 +27,7 @@ describe("login", () => {
     server.use(
       mswHttp.post("/api/auth/login", async ({ request }) => {
         received = await request.json();
-        return HttpResponse.json({ user });
+        return HttpResponse.json(user);
       }),
     );
 
@@ -37,7 +37,7 @@ describe("login", () => {
   });
 
   it("does not keep the Firebase session after a sign-in", async () => {
-    server.use(mswHttp.post("/api/auth/login", () => HttpResponse.json({ user })));
+    server.use(mswHttp.post("/api/auth/login", () => HttpResponse.json(user)));
 
     await login(credentials);
 
@@ -63,7 +63,7 @@ describe("login", () => {
 
   it("signs in even when the Firebase sign-out fails", async () => {
     vi.mocked(signOut).mockRejectedValue(new Error("auth/network-request-failed"));
-    server.use(mswHttp.post("/api/auth/login", () => HttpResponse.json({ user })));
+    server.use(mswHttp.post("/api/auth/login", () => HttpResponse.json(user)));
 
     await expect(login(credentials)).resolves.toEqual(user);
   });

@@ -1,6 +1,6 @@
 import { http, type Tagged } from "@/shared/api/http";
 
-import { type AboutText, aboutTextResponseSchema } from "../model/aboutText";
+import { type AboutText, aboutTextSchema } from "../model/aboutText";
 
 interface GetAboutTextParams {
   /** Cancels the request, e.g. when its query is cancelled. */
@@ -8,12 +8,10 @@ interface GetAboutTextParams {
 }
 
 /** The texts with their ETag, which a replacement of the texts sends back. */
-export async function getAboutText({ signal }: GetAboutTextParams): Promise<Tagged<AboutText>> {
-  const { data, etag } = await http.getWithETag({
+export function getAboutText({ signal }: GetAboutTextParams): Promise<Tagged<AboutText>> {
+  return http.getWithETag({
     path: "/about/text",
-    schema: aboutTextResponseSchema,
+    schema: aboutTextSchema,
     signal,
   });
-
-  return { data: data.text, etag };
 }

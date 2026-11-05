@@ -22,5 +22,3 @@ export const galleryWorkUsageSchema = z.object({
 });
 
 export type GalleryWorkUsage = z.infer<typeof galleryWorkUsageSchema>;
-
-export const galleryWorkUsageResponseSchema = z.object({ usage: galleryWorkUsageSchema });

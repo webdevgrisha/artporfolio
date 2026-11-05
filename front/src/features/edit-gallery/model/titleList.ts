@@ -1,4 +1,4 @@
-import type { QueryKey, UseSuspenseQueryOptions } from "@tanstack/react-query";
+import type { UseSuspenseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
 import type { GalleryWorkUsage, WorkUsages } from "@/entities/gallery";
@@ -17,14 +17,14 @@ export interface TitleItem {
  * A list of titles of the gallery that is edited and saved as a whole, such as the materials: how
  * it is read and saved, its limit and the words the form names it with.
  */
-export interface TitleListConfig<TData, TQueryKey extends QueryKey = QueryKey> {
+export interface TitleListConfig {
   getSaveErrorMessage: (error: unknown) => string;
   /** The most rows the list may hold. */
   max: number;
   /** Reads the list with its ETag; a save puts the saved list here. */
-  query: UseSuspenseQueryOptions<Tagged<TData>, Error, Tagged<TData>, TQueryKey>;
+  query: UseSuspenseQueryOptions<Tagged<TitleItem[]>, Error, Tagged<TitleItem[]>, string[]>;
   /** Replaces the whole list and returns it as saved, with its new ETag. */
-  replace: (params: { etag: string; items: TitleItem[] }) => Promise<Tagged<TData>>;
+  replace: (params: { etag: string; items: TitleItem[] }) => Promise<Tagged<TitleItem[]>>;
   texts: {
     /** E.g. «Добавить материал». */
     add: string;
@@ -49,7 +49,6 @@ export interface TitleListConfig<TData, TQueryKey extends QueryKey = QueryKey> {
     /** E.g. «Не больше 100 материалов». */
     tooMany: string;
   };
-  toItems: (data: TData) => TitleItem[];
   toastId: string;
   /** How many works name each row, from the counts of every list. */
   usages: (usage: GalleryWorkUsage) => WorkUsages;
@@ -59,11 +58,12 @@ export interface TitleListFormValues {
   items: TitleItem[];
 }
 
+export function toTitleListFormValues(items: readonly TitleItem[]): TitleListFormValues {
+  return { items: items.map(({ id, title }) => ({ id, title })) };
+}
+
 /** The rules of the form of a list: a title in every row, none twice, at most `max` rows. */
-export function titleListFormSchema({
-  max,
-  texts,
-}: Pick<TitleListConfig<unknown>, "max" | "texts">) {
+export function titleListFormSchema({ max, texts }: Pick<TitleListConfig, "max" | "texts">) {
   return z.object({
     items: z
       .array(z.object({ id: z.string(), title: titleSchema }))

@@ -48,10 +48,10 @@ beforeEach(() => {
     csrfHandler,
     uploadsHandler,
     mswHttp.get("/api/pages/home/hero", () =>
-      HttpResponse.json({ hero: null }, { headers: { ETag: savedEtag } }),
+      HttpResponse.json(null, { headers: { ETag: savedEtag } }),
     ),
     mswHttp.put("/api/pages/home/hero", () =>
-      HttpResponse.json({ hero: apiImage("new.jpg") }, { headers: { ETag: savedEtag } }),
+      HttpResponse.json(apiImage("new.jpg"), { headers: { ETag: savedEtag } }),
     ),
   );
 });

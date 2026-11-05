@@ -92,10 +92,7 @@ beforeEach(() => {
 describe("useCreateCollection", () => {
   it("uploads the cover and creates the collection with its works and years", async () => {
     const puts = handlePuts(() =>
-      HttpResponse.json(
-        { collection: apiCollection("Саванна") },
-        { headers: { ETag: savedEtag }, status: 201 },
-      ),
+      HttpResponse.json(apiCollection("Саванна"), { headers: { ETag: savedEtag }, status: 201 }),
     );
     const createCollection = renderHook(() => useCreateCollection(), { wrapper }).result.current;
 
@@ -136,7 +133,7 @@ describe("useCreateCollection", () => {
 describe("useSaveCollection", () => {
   it("keeps the saved cover file and sends no end year for one year", async () => {
     const puts = handlePuts(() =>
-      HttpResponse.json({ collection: apiCollection("Саванна") }, { headers: { ETag: savedEtag } }),
+      HttpResponse.json(apiCollection("Саванна"), { headers: { ETag: savedEtag } }),
     );
     const saveCollection = renderHook(() => useSaveCollection(id), { wrapper }).result.current;
     const requests = recordRequests();

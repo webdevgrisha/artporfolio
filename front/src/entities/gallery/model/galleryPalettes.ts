@@ -11,8 +11,8 @@ export const galleryPaletteSchema = z.object({
 export type GalleryPalette = z.infer<typeof galleryPaletteSchema>;
 
 /** Every palette of the gallery, sorted by title; there are none until they are first saved. */
-export const galleryPalettesSchema = z.object({
-  palettes: z.array(galleryPaletteSchema),
-});
+export const galleryPalettesSchema = z
+  .object({ palettes: z.array(galleryPaletteSchema) })
+  .transform(({ palettes }) => palettes);
 
 export type GalleryPalettes = z.infer<typeof galleryPalettesSchema>;

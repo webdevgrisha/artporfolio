@@ -132,11 +132,6 @@ export const galleryWorkSummarySchema = galleryWorkSchema.omit({
 
 export type GalleryWorkSummary = z.infer<typeof galleryWorkSummarySchema>;
 
-/** The shape of every API response that returns one work. */
-export const galleryWorkResponseSchema = z.object({
-  work: galleryWorkSchema,
-});
-
 export const galleryWorksResponseSchema = z.object({
   /** In the order the site shows them: the latest first. */
   works: z.array(galleryWorkSummarySchema),

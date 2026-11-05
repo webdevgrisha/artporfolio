@@ -26,7 +26,7 @@ describe("loginLoader", () => {
   });
 
   it("sends a signed-in user back to the admin page they came from", async () => {
-    server.use(mswHttp.get("/api/auth/me", () => HttpResponse.json({ user })));
+    server.use(mswHttp.get("/api/auth/me", () => HttpResponse.json(user)));
 
     const response = await thrownResponse(
       loginLoader(routeArgs("/admin/login?redirectTo=%2Fadmin%2Fabout%3Ftab%3Dphoto")),
@@ -38,7 +38,7 @@ describe("loginLoader", () => {
   it.each(["https://example.com/admin/", "//example.com/admin/", "/"])(
     "never sends a signed-in user to %s",
     async (redirectTo) => {
-      server.use(mswHttp.get("/api/auth/me", () => HttpResponse.json({ user })));
+      server.use(mswHttp.get("/api/auth/me", () => HttpResponse.json(user)));
 
       const response = await thrownResponse(
         loginLoader(routeArgs(`/admin/login?${new URLSearchParams({ redirectTo }).toString()}`)),

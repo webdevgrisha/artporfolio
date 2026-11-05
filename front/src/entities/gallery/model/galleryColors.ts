@@ -13,8 +13,8 @@ export const galleryColorSchema = z.object({
 export type GalleryColor = z.infer<typeof galleryColorSchema>;
 
 /** Every color of the gallery, sorted by title; there are none until they are first saved. */
-export const galleryColorsSchema = z.object({
-  colors: z.array(galleryColorSchema),
-});
+export const galleryColorsSchema = z
+  .object({ colors: z.array(galleryColorSchema) })
+  .transform(({ colors }) => colors);
 
 export type GalleryColors = z.infer<typeof galleryColorsSchema>;

@@ -56,7 +56,4 @@ export const contactLinksSchema = z.object({
   youtube: z.string(),
 });
 
-export const contactLinksResponseSchema = z.object({ links: contactLinksSchema });
-
 export type ContactLinks = z.infer<typeof contactLinksSchema>;
-export type ContactLinksResponse = z.infer<typeof contactLinksResponseSchema>;

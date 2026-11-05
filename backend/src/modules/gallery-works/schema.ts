@@ -295,8 +295,6 @@ export const workSchema = z.object({
  */
 export const workSummarySchema = workSchema.omit({ description: true, processPhotos: true });
 
-export const workResponseSchema = z.object({ work: workSchema });
-
 export const worksResponseSchema = z.object({
   /** In the order the site shows them: the latest first. */
   works: z.array(workSummarySchema),
@@ -318,8 +316,6 @@ export const workUsageSchema = z.object({
   palettes: z.record(z.uuid(), itemUsageSchema),
 });
 
-export const workUsageResponseSchema = z.object({ usage: workUsageSchema });
-
 export type WorkFormat = (typeof workFormats)[number];
 export type WorkSaleStatus = (typeof workSaleStatuses)[number];
 export type WorkCurrency = (typeof workCurrencies)[number];
@@ -330,6 +326,4 @@ export type Work = z.infer<typeof workSchema>;
 export type WorkSummary = z.infer<typeof workSummarySchema>;
 export type ItemUsage = z.infer<typeof itemUsageSchema>;
 export type WorkUsage = z.infer<typeof workUsageSchema>;
-export type WorkUsageResponse = z.infer<typeof workUsageResponseSchema>;
-export type WorkResponse = z.infer<typeof workResponseSchema>;
 export type WorksResponse = z.infer<typeof worksResponseSchema>;

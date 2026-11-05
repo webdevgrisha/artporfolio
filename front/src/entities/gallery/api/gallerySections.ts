@@ -4,7 +4,7 @@ import { http, type Tagged } from "@/shared/api/http";
 
 import {
   type GallerySection,
-  gallerySectionResponseSchema,
+  gallerySectionSchema,
   gallerySectionsResponseSchema,
   type Subsection,
 } from "../model/gallerySection";
@@ -59,15 +59,12 @@ export const gallerySectionsQuery = queryOptions({
 /** One section with its ETag. A save puts the saved section here. */
 export function gallerySectionQuery(id: string) {
   return queryOptions({
-    queryFn: async ({ signal }): Promise<Tagged<GallerySection>> => {
-      const { data, etag } = await http.getWithETag({
+    queryFn: ({ signal }): Promise<Tagged<GallerySection>> =>
+      http.getWithETag({
         path: sectionPath(id),
-        schema: gallerySectionResponseSchema,
+        schema: gallerySectionSchema,
         signal,
-      });
-
-      return { data: data.section, etag };
-    },
+      }),
     queryKey: [...gallerySectionsQueryKey, "item", id],
   });
 }
@@ -77,17 +74,15 @@ export function gallerySectionQuery(id: string) {
  * section exists, for example created by an earlier try whose response was lost, and with 409
  * when another section has its title.
  */
-export async function createGallerySection({
+export function createGallerySection({
   body,
   id,
 }: CreateGallerySectionParams): Promise<Tagged<GallerySection>> {
-  const { data, etag } = await http.putIfNoneMatch({
+  return http.putIfNoneMatch({
     path: sectionPath(id),
     body,
-    schema: gallerySectionResponseSchema,
+    schema: gallerySectionSchema,
   });
-
-  return { data: data.section, etag };
 }
 
 /**
@@ -95,19 +90,17 @@ export async function createGallerySection({
  * with 412 when the section has changed since `etag` was read, with 404 when it was deleted, and
  * with 409 when another section has its title.
  */
-export async function replaceGallerySection({
+export function replaceGallerySection({
   body,
   etag,
   id,
 }: ReplaceGallerySectionParams): Promise<Tagged<GallerySection>> {
-  const { data, etag: savedEtag } = await http.putIfMatch({
+  return http.putIfMatch({
     path: sectionPath(id),
     body,
     etag,
-    schema: gallerySectionResponseSchema,
+    schema: gallerySectionSchema,
   });
-
-  return { data: data.section, etag: savedEtag };
 }
 
 /** Deletes the section with its subsections. Rejected with 412 when it has changed since `etag`. */

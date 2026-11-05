@@ -28,7 +28,7 @@ export function replaceGalleryMaterials({
 }: ReplaceGalleryMaterialsParams): Promise<Tagged<GalleryMaterials>> {
   return http.putIfMatch({
     path: "/gallery-materials",
-    body: materials,
+    body: { materials },
     etag,
     schema: galleryMaterialsSchema,
   });

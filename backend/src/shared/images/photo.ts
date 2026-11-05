@@ -35,17 +35,10 @@ export const storedPhotoSchema = storedImageSchema.extend({
  */
 export const photoSchema = imageSchema.extend({ alt: z.string() });
 
-export const photoResponseSchema = z.object({ photo: photoSchema });
-
-/** The photo of a slot as `GET` returns it: null until one is uploaded. */
-export const slotPhotoResponseSchema = z.object({ photo: photoSchema.nullable() });
-
 export type PhotoBody = z.infer<typeof photoBodySchema>;
 export type PhotoAltBody = z.infer<typeof photoAltBodySchema>;
 export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
 export type Photo = z.infer<typeof photoSchema>;
-export type PhotoResponse = z.infer<typeof photoResponseSchema>;
-export type SlotPhotoResponse = z.infer<typeof slotPhotoResponseSchema>;
 
 /** A single photo with its alt text, such as «My photo» or the contact photo. */
 export type PhotoSlot = ImageSlot<StoredPhoto>;

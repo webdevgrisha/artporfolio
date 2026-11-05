@@ -91,7 +91,7 @@ describe("reading the sections", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ section });
+    await expect(response.json()).resolves.toEqual(section);
     expect(service.getSection).toHaveBeenCalledWith(id);
   });
 
@@ -112,7 +112,7 @@ describe("creating a section", () => {
 
     expect(response.status).toBe(201);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ section });
+    await expect(response.json()).resolves.toEqual(section);
     expect(service.createSection).toHaveBeenCalledWith(id, body);
     expect(service.replaceSection).not.toHaveBeenCalled();
   });
@@ -162,7 +162,7 @@ describe("replacing a section", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ section });
+    await expect(response.json()).resolves.toEqual(section);
     expect(service.replaceSection).toHaveBeenCalledWith(id, body, etag);
   });
 

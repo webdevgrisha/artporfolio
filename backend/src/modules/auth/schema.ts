@@ -12,11 +12,8 @@ export const userSchema = z.object({
   uid: z.string(),
 });
 
-export const userResponseSchema = z.object({ user: userSchema });
-
 export type LoginBody = z.infer<typeof loginBodySchema>;
 export type AuthUser = z.infer<typeof userSchema>;
-export type UserResponse = z.infer<typeof userResponseSchema>;
 
 /** Who reads a public resource: the admin sees what is hidden from the visitors too. */
 export type Reader = "admin" | "visitor";

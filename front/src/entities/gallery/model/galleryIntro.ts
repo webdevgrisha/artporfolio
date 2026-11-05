@@ -9,8 +9,3 @@ export const galleryIntroSchema = z.object({
 });
 
 export type GalleryIntro = z.infer<typeof galleryIntroSchema>;
-
-/** The shape of every API response that returns the text. */
-export const galleryIntroResponseSchema = z.object({
-  intro: galleryIntroSchema,
-});

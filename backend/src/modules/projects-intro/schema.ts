@@ -17,7 +17,4 @@ export const projectsIntroSchema = z.object({
   text: z.string(),
 });
 
-export const projectsIntroResponseSchema = z.object({ intro: projectsIntroSchema });
-
 export type ProjectsIntro = z.infer<typeof projectsIntroSchema>;
-export type ProjectsIntroResponse = z.infer<typeof projectsIntroResponseSchema>;

@@ -1,18 +1,13 @@
-import {
-  type GalleryMaterials,
-  galleryMaterialsQuery,
-  maxMaterials,
-  replaceGalleryMaterials,
-} from "@/entities/gallery";
+import { galleryMaterialsQuery, maxMaterials, replaceGalleryMaterials } from "@/entities/gallery";
 
 import { getSaveMaterialsErrorMessage } from "../lib/saveErrorMessages";
 import type { TitleListConfig } from "./titleList";
 
-export const materialsList: TitleListConfig<GalleryMaterials, string[]> = {
+export const materialsList: TitleListConfig = {
   getSaveErrorMessage: getSaveMaterialsErrorMessage,
   max: maxMaterials,
   query: galleryMaterialsQuery,
-  replace: ({ etag, items }) => replaceGalleryMaterials({ etag, materials: { materials: items } }),
+  replace: ({ etag, items }) => replaceGalleryMaterials({ etag, materials: items }),
   texts: {
     add: "Добавить материал",
     duplicate: "Такой материал уже есть",
@@ -26,7 +21,6 @@ export const materialsList: TitleListConfig<GalleryMaterials, string[]> = {
     others: "материалов",
     tooMany: `Не больше ${String(maxMaterials)} материалов`,
   },
-  toItems: ({ materials }) => materials.map(({ id, title }) => ({ id, title })),
   toastId: "gallery-materials-save",
   usages: (usage) => usage.materials,
 };

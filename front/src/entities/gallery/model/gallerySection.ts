@@ -20,11 +20,6 @@ export const gallerySectionSchema = z.object({
 
 export type GallerySection = z.infer<typeof gallerySectionSchema>;
 
-/** The shape of every API response that returns one section. */
-export const gallerySectionResponseSchema = z.object({
-  section: gallerySectionSchema,
-});
-
 export const gallerySectionsResponseSchema = z.object({
   /** Sorted by title, as the site shows them. */
   sections: z.array(gallerySectionSchema),

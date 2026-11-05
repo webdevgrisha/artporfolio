@@ -82,7 +82,7 @@ describe("page routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ hero });
+    await expect(response.json()).resolves.toEqual(hero);
     expect(pageService.getPageHero).toHaveBeenCalledWith("about");
   });
 
@@ -117,14 +117,14 @@ describe("page routes", () => {
     const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(201);
-    await expect(response.json()).resolves.toEqual({ hero });
+    await expect(response.json()).resolves.toEqual(hero);
   });
 
   it("replaces the hero of a page with the upload", async () => {
     const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ hero });
+    await expect(response.json()).resolves.toEqual(hero);
     expect(response.headers.get("ETag")).toBe(savedEtag);
     expect(pageService.savePageHero).toHaveBeenCalledWith("about", uploadId, etag);
   });

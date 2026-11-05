@@ -56,7 +56,7 @@ describe("about text routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ text });
+    await expect(response.json()).resolves.toEqual(text);
     expect(auth.verifySession).not.toHaveBeenCalled();
   });
 
@@ -68,7 +68,7 @@ describe("about text routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ text });
+    await expect(response.json()).resolves.toEqual(text);
     expect(textService.replaceAboutText).toHaveBeenCalledWith(text, etag);
   });
 

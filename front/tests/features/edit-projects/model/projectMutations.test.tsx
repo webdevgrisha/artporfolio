@@ -60,10 +60,7 @@ describe("useCreateProject", () => {
   it("creates the project the form named, only if there is none yet", async () => {
     server.use(
       mswHttp.put(path, () =>
-        HttpResponse.json(
-          { project: apiProject("Слон") },
-          { headers: { ETag: savedEtag }, status: 201 },
-        ),
+        HttpResponse.json(apiProject("Слон"), { headers: { ETag: savedEtag }, status: 201 }),
       ),
     );
     const createProject = setUp();

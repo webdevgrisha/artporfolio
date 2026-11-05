@@ -1,4 +1,4 @@
-import { type QueryKey, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { galleryWorkUsageQuery } from "@/entities/gallery";
 
@@ -8,14 +8,12 @@ import { FieldSkeleton, FormSkeleton, ListSkeleton } from "@/shared/ui/skeleton"
 
 import styles from "./GalleryPage.module.css";
 
-interface TitleListSectionProps<TData, TQueryKey extends QueryKey> {
-  list: TitleListConfig<TData, TQueryKey>;
+interface TitleListSectionProps {
+  list: TitleListConfig;
 }
 
 /** A tab of a list of titles, such as the materials. */
-export function TitleListSection<TData, TQueryKey extends QueryKey>({
-  list,
-}: TitleListSectionProps<TData, TQueryKey>) {
+export function TitleListSection({ list }: TitleListSectionProps) {
   return (
     <AwaitPageData
       fallback={
@@ -30,9 +28,7 @@ export function TitleListSection<TData, TQueryKey extends QueryKey>({
   );
 }
 
-function TitleList<TData, TQueryKey extends QueryKey>({
-  list,
-}: TitleListSectionProps<TData, TQueryKey>) {
+function TitleList({ list }: TitleListSectionProps) {
   // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data } = useSuspenseQuery(list.query);
   const { data: usage } = useSuspenseQuery(galleryWorkUsageQuery);

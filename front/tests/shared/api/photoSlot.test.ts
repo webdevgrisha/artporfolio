@@ -25,7 +25,7 @@ function receive(request: Request, body: unknown) {
   };
 }
 
-function tagged(body: object) {
+function tagged(body: object | null) {
   return HttpResponse.json(body, { headers: { ETag: savedEtag } });
 }
 
@@ -34,16 +34,16 @@ beforeEach(() => {
   server.use(
     csrfHandler,
     uploadsHandler,
-    mswHttp.get("/api/contacts/photo", () => tagged({ photo: null })),
+    mswHttp.get("/api/contacts/photo", () => tagged(null)),
     mswHttp.put("/api/contacts/photo", async ({ request }) => {
       const body = (await request.json()) as { alt: string };
       receive(request, body);
-      return tagged({ photo: apiPhoto(body.alt) });
+      return tagged(apiPhoto(body.alt));
     }),
     mswHttp.patch("/api/contacts/photo", async ({ request }) => {
       const body = (await request.json()) as { alt: string };
       receive(request, body);
-      return tagged({ photo: apiPhoto(body.alt) });
+      return tagged(apiPhoto(body.alt));
     }),
   );
 });

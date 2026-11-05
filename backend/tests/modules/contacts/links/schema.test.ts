@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { contactLinksBodySchema, contactLinksResponseSchema } from "#modules/contacts/links/schema";
+import { contactLinksBodySchema, contactLinksSchema } from "#modules/contacts/links/schema";
 
 const links = {
   email: "artist@example.com",
@@ -79,8 +79,8 @@ describe("contact links body", () => {
 
 describe("contact links response", () => {
   it("describes links saved under older rules", () => {
-    const response = { links: { ...links, linkedin: "linkedin.com/in/artist" } };
+    const saved = { ...links, linkedin: "linkedin.com/in/artist" };
 
-    expect(contactLinksResponseSchema.safeParse(response).success).toBe(true);
+    expect(contactLinksSchema.safeParse(saved).success).toBe(true);
   });
 });

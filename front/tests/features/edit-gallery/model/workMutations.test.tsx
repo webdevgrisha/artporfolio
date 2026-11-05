@@ -110,10 +110,7 @@ beforeEach(() => {
 describe("useCreateWork", () => {
   it("uploads the photo and creates the work with its size and year as numbers", async () => {
     const puts = handlePuts(() =>
-      HttpResponse.json(
-        { work: apiWork("Стрекоза") },
-        { headers: { ETag: savedEtag }, status: 201 },
-      ),
+      HttpResponse.json(apiWork("Стрекоза"), { headers: { ETag: savedEtag }, status: 201 }),
     );
     const createWork = renderHook(() => useCreateWork(), { wrapper }).result.current;
 
@@ -165,7 +162,7 @@ describe("useSaveWork", () => {
   it("sends the chosen collection by id", async () => {
     const collectionId = "77777777-7777-4777-8777-777777777777";
     const puts = handlePuts(() =>
-      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+      HttpResponse.json(apiWork("Стрекоза"), { headers: { ETag: savedEtag } }),
     );
     const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
 
@@ -178,7 +175,7 @@ describe("useSaveWork", () => {
 
   it("sends a set with its count of works as a number", async () => {
     const puts = handlePuts(() =>
-      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+      HttpResponse.json(apiWork("Стрекоза"), { headers: { ETag: savedEtag } }),
     );
     const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
 
@@ -196,7 +193,7 @@ describe("useSaveWork", () => {
 
   it("sends a hidden work, and the chosen country by its code", async () => {
     const puts = handlePuts(() =>
-      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+      HttpResponse.json(apiWork("Стрекоза"), { headers: { ETag: savedEtag } }),
     );
     const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
 
@@ -214,7 +211,7 @@ describe("useSaveWork", () => {
 
   it("sends the sale status, the price in dollars and the discount as numbers", async () => {
     const puts = handlePuts(() =>
-      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+      HttpResponse.json(apiWork("Стрекоза"), { headers: { ETag: savedEtag } }),
     );
     const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
 
@@ -235,7 +232,7 @@ describe("useSaveWork", () => {
 
   it("keeps the saved photo file and sends its description alone", async () => {
     const puts = handlePuts(() =>
-      HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
+      HttpResponse.json(apiWork("Стрекоза"), { headers: { ETag: savedEtag } }),
     );
     const saveWork = renderHook(() => useSaveWork(id), { wrapper }).result.current;
     const requests = recordRequests();

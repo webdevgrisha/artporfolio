@@ -9,8 +9,3 @@ export const contactLinksSchema = z.object({
 });
 
 export type ContactLinks = z.infer<typeof contactLinksSchema>;
-
-/** The shape of every API response that returns the links. */
-export const contactLinksResponseSchema = z.object({
-  links: contactLinksSchema,
-});

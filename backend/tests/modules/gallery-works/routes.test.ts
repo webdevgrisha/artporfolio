@@ -173,7 +173,7 @@ describe("reading the works", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ usage });
+    await expect(response.json()).resolves.toEqual(usage);
     expect(service.getWorkUsage).toHaveBeenCalledWith("visitor");
     expect(service.getWork).not.toHaveBeenCalled();
   });
@@ -183,7 +183,7 @@ describe("reading the works", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ work });
+    await expect(response.json()).resolves.toEqual(work);
     expect(service.getWork).toHaveBeenCalledWith(id, "visitor");
   });
 
@@ -204,7 +204,7 @@ describe("creating a work", () => {
 
     expect(response.status).toBe(201);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ work });
+    await expect(response.json()).resolves.toEqual(work);
     expect(service.createWork).toHaveBeenCalledWith(id, body);
     expect(service.replaceWork).not.toHaveBeenCalled();
   });
@@ -252,7 +252,7 @@ describe("replacing a work", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(savedEtag);
-    await expect(response.json()).resolves.toEqual({ work });
+    await expect(response.json()).resolves.toEqual(work);
     expect(service.replaceWork).toHaveBeenCalledWith(id, body, etag);
   });
 

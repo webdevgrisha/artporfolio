@@ -63,8 +63,6 @@ export const sectionSchema = storedSectionSchema.extend({
   id: z.string(),
 });
 
-export const sectionResponseSchema = z.object({ section: sectionSchema });
-
 export const sectionsResponseSchema = z.object({
   /** Sorted by title. */
   sections: z.array(sectionSchema),
@@ -74,5 +72,4 @@ export type SectionParams = z.infer<typeof sectionParamsSchema>;
 export type SectionBody = z.infer<typeof sectionBodySchema>;
 export type StoredSection = z.infer<typeof storedSectionSchema>;
 export type Section = z.infer<typeof sectionSchema>;
-export type SectionResponse = z.infer<typeof sectionResponseSchema>;
 export type SectionsResponse = z.infer<typeof sectionsResponseSchema>;

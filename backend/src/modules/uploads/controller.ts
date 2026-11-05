@@ -7,5 +7,5 @@ import { uploadedFile } from "#shared/middleware/upload";
 export const createUpload: RequestHandler<object, UploadResponse> = async (request, response) => {
   const id = await saveUpload(uploadedFile(request));
 
-  response.status(201).json({ upload: { id } });
+  response.status(201).json({ id });
 };
