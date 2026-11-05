@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
@@ -7,6 +7,8 @@ export default defineConfig({
       reporter: ["text", "html"],
       reportsDirectory: "coverage",
     },
+    // These need the emulators: see vitest.integration.config.ts.
+    exclude: [...configDefaults.exclude, "tests/integration/**"],
     // The environment the API expects at runtime; see .env.example.
     env: {
       ADMIN_UID: "admin-uid",
