@@ -1,8 +1,6 @@
-import { queryOptions } from "@tanstack/react-query";
-
 import { http, type Tagged } from "@/shared/api/http";
 
-import { type GalleryColors, galleryColorsSchema } from "../model/galleryColors";
+import { type GalleryColors, galleryColorsSchema } from "../../model/galleryColors";
 
 interface ReplaceGalleryColorsParams {
   /** The ETag of the colors the new list was made from. */
@@ -10,13 +8,6 @@ interface ReplaceGalleryColorsParams {
   /** In any order: the server sorts them by title. A saved color left out is deleted. */
   colors: GalleryColors;
 }
-
-/** Every color with the ETag of the list. A save puts the saved list here. */
-export const galleryColorsQuery = queryOptions({
-  queryFn: (): Promise<Tagged<GalleryColors>> =>
-    http.getWithETag({ path: "/gallery-colors", schema: galleryColorsSchema }),
-  queryKey: ["gallery", "colors"],
-});
 
 /**
  * Replaces every color and returns them as saved (trimmed, sorted by title) with their new
@@ -27,7 +18,7 @@ export function replaceGalleryColors({
   colors,
 }: ReplaceGalleryColorsParams): Promise<Tagged<GalleryColors>> {
   return http.putIfMatch({
-    path: "/gallery-colors",
+    path: "/gallery/colors",
     body: { colors },
     etag,
     schema: galleryColorsSchema,

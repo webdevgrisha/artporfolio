@@ -1,4 +1,5 @@
-export { currencyRatesQuery, replaceCurrencyRates } from "./api/currencyRates";
+export { currencyRatesQuery } from "./api/currencyRatesQuery";
+export { replaceCurrencyRates } from "./api/replaceCurrencyRates";
 export { currencyLabels } from "./model/currencyLabels";
 export {
   type Currency,

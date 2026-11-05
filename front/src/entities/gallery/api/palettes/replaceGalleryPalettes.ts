@@ -1,8 +1,6 @@
-import { queryOptions } from "@tanstack/react-query";
-
 import { http, type Tagged } from "@/shared/api/http";
 
-import { type GalleryPalettes, galleryPalettesSchema } from "../model/galleryPalettes";
+import { type GalleryPalettes, galleryPalettesSchema } from "../../model/galleryPalettes";
 
 interface ReplaceGalleryPalettesParams {
   /** The ETag of the palettes the new list was made from. */
@@ -10,13 +8,6 @@ interface ReplaceGalleryPalettesParams {
   /** In any order: the server sorts them by title. A saved palette left out is deleted. */
   palettes: GalleryPalettes;
 }
-
-/** Every palette with the ETag of the list. A save puts the saved list here. */
-export const galleryPalettesQuery = queryOptions({
-  queryFn: (): Promise<Tagged<GalleryPalettes>> =>
-    http.getWithETag({ path: "/gallery-palettes", schema: galleryPalettesSchema }),
-  queryKey: ["gallery", "palettes"],
-});
 
 /**
  * Replaces every palette and returns them as saved (trimmed, sorted by title) with their new
@@ -27,7 +18,7 @@ export function replaceGalleryPalettes({
   palettes,
 }: ReplaceGalleryPalettesParams): Promise<Tagged<GalleryPalettes>> {
   return http.putIfMatch({
-    path: "/gallery-palettes",
+    path: "/gallery/palettes",
     body: { palettes },
     etag,
     schema: galleryPalettesSchema,
