@@ -68,6 +68,9 @@
 
 @media (width >= 75rem) {
   .sidebar {
+    /* The avatar with the name stands in the middle of the column: as far from both of its edges. */
+    --sidebar-gutter: var(--layout-space-8);
+
     position: sticky;
     inset-block: 0 auto;
     visibility: visible;
