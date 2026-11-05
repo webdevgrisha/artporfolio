@@ -70,6 +70,23 @@ export function discountError(text: string, priceText: string): string | null {
     : null;
 }
 
+/**
+ * The price and the discount as typed, as numbers: to show what they come to while typing. Null
+ * while the price is empty, or either has an error.
+ */
+export function parseTypedPrice(
+  price: string,
+  discountPercent: string,
+): { amount: number; discount: number | null } | null {
+  if (price.trim() === "" || priceError(price) !== null) return null;
+  if (discountError(discountPercent, price) !== null) return null;
+
+  return {
+    amount: parseWholeNumber(price),
+    discount: discountPercent.trim() === "" ? null : parseWholeNumber(discountPercent),
+  };
+}
+
 /** The amount after the discount, rounded to a whole unit, as the server computes it. */
 export function discountedAmount(amount: number, discountPercent: number | null): number {
   return discountPercent === null ? amount : Math.round((amount * (100 - discountPercent)) / 100);

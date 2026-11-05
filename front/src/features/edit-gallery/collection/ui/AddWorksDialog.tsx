@@ -17,7 +17,7 @@ import {
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { SearchInput } from "@/shared/ui/search-input";
 
-import { formatWorkDate } from "../../work/model/workFormSchema";
+import { formatWorkDate } from "../../work/model/workDisplay";
 import { matchesWorkQuery } from "../../work/model/worksTableView";
 import styles from "./AddWorksDialog.module.css";
 

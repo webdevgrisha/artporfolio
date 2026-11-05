@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import type { GalleryWork } from "@/entities/gallery";
 import {
-  emptyWorkFormValues,
   formatWorkDate,
   formatWorkFormat,
   formatWorkSize,
   monthOptions,
+} from "@/features/edit-gallery/work/model/workDisplay";
+import {
+  emptyWorkFormValues,
   toPartCount,
   toWorkFormValues,
   toWorkSize,

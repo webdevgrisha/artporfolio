@@ -33,7 +33,6 @@ export {
 export {
   type GalleryCollection,
   maxCollectionWorks,
-  minCollectionYear,
 } from "./model/galleryCollection";
 export { type GalleryColor, type GalleryColors, maxColors } from "./model/galleryColors";
 export type { GalleryIntro } from "./model/galleryIntro";

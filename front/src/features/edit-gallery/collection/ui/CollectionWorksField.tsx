@@ -9,7 +9,7 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
-import { formatWorkDate } from "../../work/model/workFormSchema";
+import { formatWorkDate } from "../../work/model/workDisplay";
 import { AddWorksDialog } from "./AddWorksDialog";
 import styles from "./CollectionWorksField.module.css";
 

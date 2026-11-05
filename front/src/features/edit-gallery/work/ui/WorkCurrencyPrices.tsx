@@ -1,12 +1,6 @@
 import { type CurrencyRates, currencies, currencyLabels } from "@/entities/currency";
 
-import {
-  discountError,
-  discountedPriceIn,
-  formatPrice,
-  parseWholeNumber,
-  priceError,
-} from "../model/workPrice";
+import { discountedPriceIn, formatPrice, parseTypedPrice } from "../model/workPrice";
 import styles from "./WorkCurrencyPrices.module.css";
 
 interface WorkCurrencyPricesProps {
@@ -28,17 +22,9 @@ export function WorkCurrencyPrices({ discountPercent, price, rates }: WorkCurren
     return rate === undefined ? [] : [{ currency, rate }];
   });
 
-  if (
-    price.trim() === "" ||
-    priceError(price) !== null ||
-    discountError(discountPercent, price) !== null ||
-    shown.length === 0
-  ) {
-    return null;
-  }
+  const typed = parseTypedPrice(price, discountPercent);
 
-  const amount = parseWholeNumber(price);
-  const discount = discountPercent.trim() === "" ? null : parseWholeNumber(discountPercent);
+  if (typed === null || shown.length === 0) return null;
 
   return (
     <dl className={styles.root}>
@@ -46,7 +32,7 @@ export function WorkCurrencyPrices({ discountPercent, price, rates }: WorkCurren
         <div key={currency} className={styles.item}>
           <dt>{currencyLabels[currency]}</dt>
           <dd className={styles.value}>
-            {formatPrice(discountedPriceIn(amount, rate, discount), currency)}
+            {formatPrice(discountedPriceIn(typed.amount, rate, typed.discount), currency)}
           </dd>
         </div>
       ))}

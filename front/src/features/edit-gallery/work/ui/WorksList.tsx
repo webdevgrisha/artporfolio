@@ -21,7 +21,7 @@ import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import { useDeleteWork, useDeletingWorkIds } from "../model/useDeleteWork";
-import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workFormSchema";
+import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workDisplay";
 import { formatPrice } from "../model/workPrice";
 import { titlesOf } from "../model/workReferences";
 import { formatSaleStatus } from "../model/workSaleStatus";
