@@ -6,6 +6,7 @@
   "scripts": {
     "dev:front": "pnpm --filter front dev",
     "dev:backend": "pnpm --filter artportfolio-backend build && firebase emulators:start --only auth,firestore,functions,storage",
+    "dev:backend:watch": "pnpm --filter artportfolio-backend build:watch",
     "emulators": "pnpm build && firebase emulators:start --only auth,firestore,functions,hosting,storage",
     "emulators:admin": "node scripts/create-emulator-admin.mjs",
     "emulators:seed": "node scripts/create-emulator-admin.mjs && node scripts/seed-emulators.mjs",
