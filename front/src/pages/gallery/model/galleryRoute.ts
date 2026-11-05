@@ -11,6 +11,7 @@ import {
   gallerySectionsQuery,
   galleryWorkQuery,
   galleryWorksQuery,
+  galleryWorkUsageQuery,
 } from "@/entities/gallery";
 import { fetchFresh, loadPageData } from "@/shared/api/pageData";
 
@@ -21,16 +22,16 @@ export function galleryIntroLoader() {
 }
 
 // The lists that works name tell how many works name each item, and warn before one they name is
-// removed, so their pages load every work too.
+// removed, so their pages load the counts too (not the works: the server counts them).
 
 export function gallerySectionsLoader() {
-  return loadPageData(fetchFresh(gallerySectionsQuery), fetchFresh(galleryWorksQuery));
+  return loadPageData(fetchFresh(gallerySectionsQuery), fetchFresh(galleryWorkUsageQuery));
 }
 
 export function gallerySectionLoader({ params }: LoaderFunctionArgs) {
   return loadPageData(
     fetchFresh(gallerySectionQuery(params.id ?? "")),
-    fetchFresh(galleryWorksQuery),
+    fetchFresh(galleryWorkUsageQuery),
   );
 }
 
@@ -86,16 +87,16 @@ export function galleryCollectionLoader({ params }: LoaderFunctionArgs) {
   );
 }
 
-// As the sections, these lists load every work too.
+// As the sections, these lists load the counts of works too.
 
 export function galleryMaterialsLoader() {
-  return loadPageData(fetchFresh(galleryMaterialsQuery), fetchFresh(galleryWorksQuery));
+  return loadPageData(fetchFresh(galleryMaterialsQuery), fetchFresh(galleryWorkUsageQuery));
 }
 
 export function galleryColorsLoader() {
-  return loadPageData(fetchFresh(galleryColorsQuery), fetchFresh(galleryWorksQuery));
+  return loadPageData(fetchFresh(galleryColorsQuery), fetchFresh(galleryWorkUsageQuery));
 }
 
 export function galleryPalettesLoader() {
-  return loadPageData(fetchFresh(galleryPalettesQuery), fetchFresh(galleryWorksQuery));
+  return loadPageData(fetchFresh(galleryPalettesQuery), fetchFresh(galleryWorkUsageQuery));
 }

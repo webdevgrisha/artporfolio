@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { WorkUsage } from "./workUsage";
+import type { WorkUsage } from "@/entities/gallery";
 
 /** The row waiting for the confirmation of its removal, and how the works use it. */
 interface PendingRemoval {

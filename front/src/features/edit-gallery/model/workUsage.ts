@@ -1,51 +1,12 @@
-/**
- * How the works use some items of a gallery list, such as a material or a section with its
- * subsections: a work names at least one item of each such list, so removing items it names may
- * leave it with none.
- */
-export interface WorkUsage {
-  /** The works that name any of the items. */
-  count: number;
-  /** Of those, the works that name nothing else of the list: they cannot be saved until fixed. */
-  onlyCount: number;
-}
-
-/** How the works, given by the ids each one names in the list, use the items with the `ids`. */
-export function workUsage(
-  worksIds: readonly (readonly string[])[],
-  ids: ReadonlySet<string>,
-): WorkUsage {
-  const usage: WorkUsage = { count: 0, onlyCount: 0 };
-
-  for (const workIds of worksIds) {
-    if (!workIds.some((id) => ids.has(id))) continue;
-
-    usage.count += 1;
-    if (workIds.every((id) => ids.has(id))) usage.onlyCount += 1;
-  }
-
-  return usage;
-}
-
-/** How the works, given by the ids each one names in the list, use each item of it, by its id. */
-export function workUsageById(worksIds: readonly (readonly string[])[]): Map<string, WorkUsage> {
-  const usages = new Map<string, WorkUsage>();
-
-  for (const workIds of worksIds) {
-    for (const id of workIds) {
-      const usage = usages.get(id) ?? { count: 0, onlyCount: 0 };
-
-      usage.count += 1;
-      if (workIds.length === 1) usage.onlyCount += 1;
-      usages.set(id, usage);
-    }
-  }
-
-  return usages;
-}
+import type { WorkUsage, WorkUsages } from "@/entities/gallery";
 
 /** The usage of an item no work names. */
 export const noWorkUsage: WorkUsage = { count: 0, onlyCount: 0 };
+
+/** The usage of the item `id`; none for an item the counts don't know yet, such as a new one. */
+export function usageOf(usages: WorkUsages, id: string): WorkUsage {
+  return usages[id] ?? noWorkUsage;
+}
 
 const pluralRules = new Intl.PluralRules("ru");
 

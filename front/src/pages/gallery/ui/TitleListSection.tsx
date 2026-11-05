@@ -1,6 +1,6 @@
 import { type QueryKey, useSuspenseQuery } from "@tanstack/react-query";
 
-import { galleryWorksQuery } from "@/entities/gallery";
+import { galleryWorkUsageQuery } from "@/entities/gallery";
 
 import { EditTitleListForm, type TitleListConfig } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
@@ -35,7 +35,14 @@ function TitleList<TData, TQueryKey extends QueryKey>({
 }: TitleListSectionProps<TData, TQueryKey>) {
   // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data } = useSuspenseQuery(list.query);
-  const { data: works } = useSuspenseQuery(galleryWorksQuery);
+  const { data: usage } = useSuspenseQuery(galleryWorkUsageQuery);
 
-  return <EditTitleListForm className={styles.form} list={list} data={data} works={works} />;
+  return (
+    <EditTitleListForm
+      className={styles.form}
+      list={list}
+      data={data}
+      usages={list.usages(usage)}
+    />
+  );
 }

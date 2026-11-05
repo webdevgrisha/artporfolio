@@ -27,6 +27,7 @@ export {
   galleryWorkQuery,
   galleryWorksQuery,
   galleryWorksQueryKey,
+  galleryWorkUsageQuery,
   replaceGalleryWork,
 } from "./api/galleryWorks";
 export {
@@ -75,3 +76,4 @@ export {
   workFormats,
   workSaleStatuses,
 } from "./model/galleryWork";
+export type { GalleryWorkUsage, WorkUsage, WorkUsages } from "./model/galleryWorkUsage";

@@ -73,7 +73,7 @@ export function CreateSectionForm({ className }: CreateSectionFormProps) {
         onRevert={() => reset()}
         onSubmit={handleSubmit(create)}
       >
-        <SectionFields isSaving={isSaving} savedSubsections={[]} works={[]} />
+        <SectionFields isSaving={isSaving} savedSubsections={[]} usages={{}} />
       </EditForm>
     </FormProvider>
   );

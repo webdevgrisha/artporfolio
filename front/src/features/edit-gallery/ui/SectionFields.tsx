@@ -2,7 +2,7 @@ import clsx from "clsx";
 import React from "react";
 import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import { type GalleryWorkSummary, maxSubsections, type Subsection } from "@/entities/gallery";
+import { maxSubsections, type Subsection, type WorkUsages } from "@/entities/gallery";
 import { Button } from "@/shared/ui/button";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
@@ -11,7 +11,7 @@ import { FieldError, FieldHint } from "@/shared/ui/field";
 import { newSubsection, type SectionFormValues } from "../model/sectionFormSchema";
 import { maxTitleLength } from "../model/titles";
 import { useRowRemoval } from "../model/useRowRemoval";
-import { describeWorkUsage, formatWorkCount, noWorkUsage, workUsageById } from "../model/workUsage";
+import { describeWorkUsage, formatWorkCount, noWorkUsage, usageOf } from "../model/workUsage";
 import styles from "./SectionFields.module.css";
 
 interface SectionFieldsProps {
@@ -19,8 +19,8 @@ interface SectionFieldsProps {
   isSaving: boolean;
   /** The subsections of the saved section, to mark the changed ones; none for a new section. */
   savedSubsections: readonly Subsection[];
-  /** Every work, to count the works in each saved subsection; none for a new section. */
-  works: readonly GalleryWorkSummary[];
+  /** How many works each saved subsection has, by its id; none for a new section. */
+  usages: WorkUsages;
 }
 
 /**
@@ -32,7 +32,7 @@ export function SectionFields({
   className,
   isSaving,
   savedSubsections,
-  works,
+  usages,
 }: SectionFieldsProps) {
   const { control, register, setFocus, setValue } = useFormContext<SectionFormValues>();
   const { dirtyFields, errors, isSubmitted } = useFormState({ control });
@@ -47,7 +47,6 @@ export function SectionFields({
   const savedTitles = new Map(savedSubsections.map(({ id, title }) => [id, title]));
   const listError = errors.subsections?.message ?? errors.subsections?.root?.message;
   const isFull = fields.length >= maxSubsections;
-  const usages = React.useMemo(() => workUsageById(works.map((work) => work.sectionIds)), [works]);
   const removal = useRowRemoval({
     remove: (index) => {
       remove(index);
@@ -103,7 +102,7 @@ export function SectionFields({
             {fields.map((field, index) => {
               const row = rows[index];
               const label = `Подраздел ${String(index + 1)}`;
-              const usage = row ? (usages.get(row.id) ?? noWorkUsage) : noWorkUsage;
+              const usage = row ? usageOf(usages, row.id) : noWorkUsage;
               const isSaved = row !== undefined && savedTitles.has(row.id);
 
               return (

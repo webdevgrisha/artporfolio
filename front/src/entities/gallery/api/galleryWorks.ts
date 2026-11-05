@@ -13,6 +13,7 @@ import {
   type WorkSaleStatus,
   type WorkSize,
 } from "../model/galleryWork";
+import { type GalleryWorkUsage, galleryWorkUsageResponseSchema } from "../model/galleryWorkUsage";
 
 /** A work as the admin saves it: every field at once. */
 export interface GalleryWorkBody {
@@ -91,6 +92,24 @@ export const galleryWorksQuery = queryOptions({
     return works;
   },
   queryKey: [...galleryWorksQueryKey, "list"],
+});
+
+/**
+ * How many works name each section, material, color and palette: the numbers alone, so a list
+ * shows its counts without loading every work. Under the key of the works, so any change of a work
+ * refreshes it too.
+ */
+export const galleryWorkUsageQuery = queryOptions({
+  queryFn: async ({ signal }): Promise<GalleryWorkUsage> => {
+    const { usage } = await http.get({
+      path: "/gallery-works/usage",
+      schema: galleryWorkUsageResponseSchema,
+      signal,
+    });
+
+    return usage;
+  },
+  queryKey: [...galleryWorksQueryKey, "usage"],
 });
 
 /** One work with its ETag. A save puts the saved work here. */

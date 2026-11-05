@@ -3,29 +3,17 @@ import { describe, expect, it } from "vitest";
 import {
   describeWorkUsage,
   formatWorkCount,
-  workUsage,
-  workUsageById,
+  usageOf,
 } from "@/features/edit-gallery/model/workUsage";
 
 const names = { item: "материал", others: "материалов" };
 
-describe("workUsage", () => {
-  it("counts the works that name any of the items, and those that name nothing else", () => {
-    const works = [["oil"], ["oil", "canvas"], ["canvas"], ["watercolor", "paper"]];
+describe("usageOf", () => {
+  it("gives the usage of the item, and none for an item the counts don't know", () => {
+    const usages = { oil: { count: 2, onlyCount: 1 } };
 
-    expect(workUsage(works, new Set(["oil"]))).toEqual({ count: 2, onlyCount: 1 });
-    expect(workUsage(works, new Set(["oil", "canvas"]))).toEqual({ count: 3, onlyCount: 3 });
-    expect(workUsage(works, new Set(["gouache"]))).toEqual({ count: 0, onlyCount: 0 });
-  });
-});
-
-describe("workUsageById", () => {
-  it("counts the works of each item, as workUsage does for one", () => {
-    const usages = workUsageById([["oil"], ["oil", "canvas"], ["canvas"]]);
-
-    expect(usages.get("oil")).toEqual({ count: 2, onlyCount: 1 });
-    expect(usages.get("canvas")).toEqual({ count: 2, onlyCount: 1 });
-    expect(usages.get("gouache")).toBeUndefined();
+    expect(usageOf(usages, "oil")).toEqual({ count: 2, onlyCount: 1 });
+    expect(usageOf(usages, "gouache")).toEqual({ count: 0, onlyCount: 0 });
   });
 });
 

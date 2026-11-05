@@ -28,5 +28,5 @@ export const materialsList: TitleListConfig<GalleryMaterials, string[]> = {
   },
   toItems: ({ materials }) => materials.map(({ id, title }) => ({ id, title })),
   toastId: "gallery-materials-save",
-  workIds: (work) => work.materialIds,
+  usages: (usage) => usage.materials,
 };

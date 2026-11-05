@@ -1,7 +1,7 @@
 import type { QueryKey, UseSuspenseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
-import type { GalleryWorkSummary } from "@/entities/gallery";
+import type { GalleryWorkUsage, WorkUsages } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 
 import { refineUniqueTitles, titleSchema } from "./titles";
@@ -51,8 +51,8 @@ export interface TitleListConfig<TData, TQueryKey extends QueryKey = QueryKey> {
   };
   toItems: (data: TData) => TitleItem[];
   toastId: string;
-  /** The ids of the rows a work names. */
-  workIds: (work: GalleryWorkSummary) => readonly string[];
+  /** How many works name each row, from the counts of every list. */
+  usages: (usage: GalleryWorkUsage) => WorkUsages;
 }
 
 export interface TitleListFormValues {

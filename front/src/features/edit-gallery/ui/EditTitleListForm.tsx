@@ -3,7 +3,7 @@ import type { QueryKey } from "@tanstack/react-query";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
-import { type GalleryWorkSummary, galleryWorksQuery } from "@/entities/gallery";
+import { galleryWorkUsageQuery, type WorkUsages } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
@@ -15,7 +15,7 @@ import {
   titleListFormSchema,
 } from "../model/titleList";
 import { useRowRemoval } from "../model/useRowRemoval";
-import { describeWorkUsage, noWorkUsage, workUsageById } from "../model/workUsage";
+import { describeWorkUsage, usageOf } from "../model/workUsage";
 import { AddTitleField } from "./AddTitleField";
 import { TitleList } from "./TitleList";
 import styles from "./TitleList.module.css";
@@ -26,8 +26,8 @@ interface EditTitleListFormProps<TData, TQueryKey extends QueryKey> {
   /** The list as stored on the server when the form opens, with its ETag. */
   data: Tagged<TData>;
   list: TitleListConfig<TData, TQueryKey>;
-  /** Every work, to count the works that name each row. */
-  works: readonly GalleryWorkSummary[];
+  /** How many works name each row, by its id. */
+  usages: WorkUsages;
 }
 
 /** The row being renamed: the key of its row and the title the renaming started from. */
@@ -46,7 +46,7 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
   className,
   data,
   list,
-  works,
+  usages,
 }: EditTitleListFormProps<TData, TQueryKey>) {
   const { max, texts } = list;
   const schema = React.useMemo(() => titleListFormSchema(list), [list]);
@@ -64,7 +64,7 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
     form,
     initial: data,
     query: list.query,
-    related: [galleryWorksQuery.queryKey],
+    related: [galleryWorkUsageQuery.queryKey],
     save: (values, etag) => saveList.mutateAsync({ etag, items: values.items }),
     toValues,
     toastId: list.toastId,
@@ -82,8 +82,6 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
   const [editing, setEditing] = React.useState<Editing>();
   const addFieldRef = React.useRef<HTMLInputElement>(null);
   const savedTitles = new Map(list.toItems(saved.data).map(({ id, title }) => [id, title]));
-  const { workIds } = list;
-  const usages = React.useMemo(() => workUsageById(works.map(workIds)), [works, workIds]);
   const removal = useRowRemoval({
     remove: (index) => {
       remove(index);
@@ -158,13 +156,11 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
                   isModified={isTitleModified}
                   isTitleModified={isTitleModified}
                   isSaving={editForm.isSaving}
-                  workCount={
-                    savedTitle === undefined ? undefined : (usages.get(row.id) ?? noWorkUsage).count
-                  }
+                  workCount={savedTitle === undefined ? undefined : usageOf(usages, row.id).count}
                   onStartEdit={() => setEditing({ key: field.id, startTitle: row.title })}
                   onFinishEdit={() => finishEdit(index)}
                   onCancelEdit={() => cancelEdit(index)}
-                  onRemove={() => removal.request(index, usages.get(row.id) ?? noWorkUsage)}
+                  onRemove={() => removal.request(index, usageOf(usages, row.id))}
                 />
               );
             })}

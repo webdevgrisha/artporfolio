@@ -29,5 +29,5 @@ export const palettesList: TitleListConfig<GalleryPalettes, string[]> = {
   },
   toItems: ({ palettes }) => palettes.map(({ id, title }) => ({ id, title })),
   toastId: "gallery-palettes-save",
-  workIds: (work) => work.paletteIds,
+  usages: (usage) => usage.palettes,
 };

@@ -4,10 +4,10 @@ import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "reac
 
 import {
   type GalleryColors,
-  type GalleryWorkSummary,
   galleryColorsQuery,
-  galleryWorksQuery,
+  galleryWorkUsageQuery,
   maxColors,
+  type WorkUsages,
 } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { ColorSwatch, ColorSwatchInput } from "@/shared/ui/color-swatch";
@@ -23,7 +23,7 @@ import {
 } from "../model/colorsFormSchema";
 import { useRowRemoval } from "../model/useRowRemoval";
 import { saveColorsFeedback, useSaveColors } from "../model/useSaveColors";
-import { describeWorkUsage, noWorkUsage, workUsageById } from "../model/workUsage";
+import { describeWorkUsage, usageOf } from "../model/workUsage";
 import { AddTitleField } from "./AddTitleField";
 import { TitleList } from "./TitleList";
 import styles from "./TitleList.module.css";
@@ -33,8 +33,8 @@ interface EditColorsFormProps {
   className?: string;
   /** The colors as stored on the server when the form opens, with their ETag. */
   colors: Tagged<GalleryColors>;
-  /** Every work, to count the works of each color. */
-  works: readonly GalleryWorkSummary[];
+  /** How many works have each color, by its id. */
+  usages: WorkUsages;
 }
 
 /** The color being edited: the key of its row and the title and swatch the editing started from. */
@@ -51,7 +51,7 @@ interface Editing {
  * the list once it is saved; the colors added since stay at its end until then. A color tells how
  * many works have it, and its removal asks first if any do.
  */
-export function EditColorsForm({ className, colors, works }: EditColorsFormProps) {
+export function EditColorsForm({ className, colors, usages }: EditColorsFormProps) {
   const form = useForm<ColorsFormValues>({
     defaultValues: toColorsFormValues(colors.data),
     resolver: zodResolver(colorsFormSchema),
@@ -61,7 +61,7 @@ export function EditColorsForm({ className, colors, works }: EditColorsFormProps
     form,
     initial: colors,
     query: galleryColorsQuery,
-    related: [galleryWorksQuery.queryKey],
+    related: [galleryWorkUsageQuery.queryKey],
     save: (values, etag) => saveColors.mutateAsync({ colors: values, etag }),
     toValues: toColorsFormValues,
     toastId: saveColorsFeedback.toastId,
@@ -81,7 +81,6 @@ export function EditColorsForm({ className, colors, works }: EditColorsFormProps
   const [newHex, setNewHex] = React.useState(defaultColorHex);
   const addFieldRef = React.useRef<HTMLInputElement>(null);
   const savedColors = new Map(saved.data.colors.map((color) => [color.id, color]));
-  const usages = React.useMemo(() => workUsageById(works.map((work) => work.colorIds)), [works]);
   const removal = useRowRemoval({
     remove: (index) => {
       remove(index);
@@ -199,10 +198,8 @@ export function EditColorsForm({ className, colors, works }: EditColorsFormProps
                   }
                   onFinishEdit={() => finishEdit(index)}
                   onCancelEdit={() => cancelEdit(index)}
-                  workCount={
-                    savedColor === undefined ? undefined : (usages.get(row.id) ?? noWorkUsage).count
-                  }
-                  onRemove={() => removal.request(index, usages.get(row.id) ?? noWorkUsage)}
+                  workCount={savedColor === undefined ? undefined : usageOf(usages, row.id).count}
+                  onRemove={() => removal.request(index, usageOf(usages, row.id))}
                 />
               );
             })}

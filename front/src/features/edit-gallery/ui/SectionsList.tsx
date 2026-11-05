@@ -1,7 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import React from "react";
-
-import type { GallerySection, GalleryWorkSummary } from "@/entities/gallery";
+import type { GallerySection, WorkUsage, WorkUsages } from "@/entities/gallery";
 import { gallerySectionPath, routes } from "@/shared/config/routes";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import {
@@ -11,29 +10,17 @@ import {
   RowActions,
   type TableRow,
 } from "@/shared/ui/data-table";
-
 import { matchesSectionQuery, sectionsSortableColumns } from "../model/sectionsTableView";
 import { useDeleteSection, useDeletingSectionIds } from "../model/useDeleteSection";
-import { describeWorkUsage, noWorkUsage, type WorkUsage, workUsage } from "../model/workUsage";
+import { describeWorkUsage, usageOf } from "../model/workUsage";
 import styles from "./SectionsList.module.css";
 
 interface SectionsListProps {
   className?: string;
   /** Sorted by title, as the site shows them. */
   sections: readonly GallerySection[];
-  /** Every work, to count the works in each section. */
-  works: readonly GalleryWorkSummary[];
-}
-
-/** How the works use the section: a work in any of its subsections is in the section too. */
-function sectionUsage(
-  { id, subsections }: GallerySection,
-  works: readonly GalleryWorkSummary[],
-): WorkUsage {
-  return workUsage(
-    works.map((work) => work.sectionIds),
-    new Set([id, ...subsections.map((subsection) => subsection.id)]),
-  );
+  /** How many works each section has, its subsections' included, by its id. */
+  usages: WorkUsages;
 }
 
 /**
@@ -60,14 +47,10 @@ function deletionDescription({ subsections }: GallerySection, usage: WorkUsage):
  * titles of the subsections too. A section opens by the pencil and is deleted after a
  * confirmation.
  */
-export function SectionsList({ className, sections, works }: SectionsListProps) {
+export function SectionsList({ className, sections, usages }: SectionsListProps) {
   const deletion = useDeleteSection();
   const deletingIds = useDeletingSectionIds();
   const [deleted, setDeleted] = React.useState<GallerySection>();
-  const usages = React.useMemo(
-    () => new Map(sections.map((section) => [section.id, sectionUsage(section, works)])),
-    [sections, works],
-  );
 
   const columns = React.useMemo<ColumnDef<TableRow<GallerySection>>[]>(
     () => [
@@ -96,7 +79,7 @@ export function SectionsList({ className, sections, works }: SectionsListProps) 
         id: "works",
         header: "Работ",
         meta: { className: styles.countColumn },
-        accessorFn: (row) => (usages.get(row.item.id) ?? noWorkUsage).count,
+        accessorFn: (row) => usageOf(usages, row.item.id).count,
         // The largest first: the useful start.
         sortDescFirst: true,
       },
@@ -130,9 +113,7 @@ export function SectionsList({ className, sections, works }: SectionsListProps) 
       <ConfirmDialog
         isOpen={deleted !== undefined}
         title={`Удалить раздел «${deleted?.title ?? ""}»?`}
-        description={
-          deleted ? deletionDescription(deleted, usages.get(deleted.id) ?? noWorkUsage) : ""
-        }
+        description={deleted ? deletionDescription(deleted, usageOf(usages, deleted.id)) : ""}
         cancelLabel="Отмена"
         confirmLabel="Удалить"
         onCancel={() => setDeleted(undefined)}

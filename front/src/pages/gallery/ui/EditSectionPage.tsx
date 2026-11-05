@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
-import { gallerySectionQuery, galleryWorksQuery } from "@/entities/gallery";
+import { gallerySectionQuery, galleryWorkUsageQuery } from "@/entities/gallery";
 import { EditSectionForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton } from "@/shared/ui/skeleton";
@@ -38,7 +38,7 @@ interface EditSectionProps {
 function EditSection({ id }: EditSectionProps) {
   // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: section } = useSuspenseQuery(gallerySectionQuery(id));
-  const { data: works } = useSuspenseQuery(galleryWorksQuery);
+  const { data: usage } = useSuspenseQuery(galleryWorkUsageQuery);
 
-  return <EditSectionForm className={styles.form} section={section} works={works} />;
+  return <EditSectionForm className={styles.form} section={section} usages={usage.sections} />;
 }

@@ -3,9 +3,9 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import {
   type GallerySection,
-  type GalleryWorkSummary,
   gallerySectionQuery,
-  galleryWorksQuery,
+  galleryWorkUsageQuery,
+  type WorkUsages,
 } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
@@ -22,11 +22,11 @@ interface EditSectionFormProps {
   className?: string;
   /** The section as stored on the server when the form opens, with its ETag. */
   section: Tagged<GallerySection>;
-  /** Every work, to count the works in each subsection. */
-  works: readonly GalleryWorkSummary[];
+  /** How many works each section and subsection has, by its id. */
+  usages: WorkUsages;
 }
 
-export function EditSectionForm({ className, section, works }: EditSectionFormProps) {
+export function EditSectionForm({ className, section, usages }: EditSectionFormProps) {
   const form = useForm<SectionFormValues>({
     defaultValues: toSectionFormValues(section.data),
     resolver: zodResolver(sectionFormSchema),
@@ -36,7 +36,7 @@ export function EditSectionForm({ className, section, works }: EditSectionFormPr
     form,
     initial: section,
     query: gallerySectionQuery(section.data.id),
-    related: [galleryWorksQuery.queryKey],
+    related: [galleryWorkUsageQuery.queryKey],
     // The server replaces the section with all its subsections at once.
     save: (values, etag) => saveSection.mutateAsync({ etag, values }),
     toValues: toSectionFormValues,
@@ -50,7 +50,7 @@ export function EditSectionForm({ className, section, works }: EditSectionFormPr
         <SectionFields
           isSaving={editForm.isSaving}
           savedSubsections={saved.data.subsections}
-          works={works}
+          usages={usages}
         />
       </EditForm>
     </FormProvider>
