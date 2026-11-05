@@ -1,5 +1,5 @@
 // Fills the running emulators with demo content through the API, as the admin would: page heroes,
-// the About page, the contacts, the projects with their photos, and the gallery text, sections,
+// the About page, the contacts, the currency rates, the projects with their photos, and the gallery text, sections,
 // materials, colors, palettes, collections and works. Every run first empties the Firestore emulator, so the admin
 // always starts from the same content. The images are drawn here, so the result is the same on
 // every machine and needs no network.
@@ -239,6 +239,9 @@ const gallerySections = [
 
 /** The sections the works are in, one after another. */
 const workSections = ["Пейзаж", "Графика", "Портрет", "Натюрморт", "Рекламные", "Театральные"];
+
+/** How many units of each currency one US dollar buys. */
+const currencyRates = { EUR: 0.92, GBP: 0.79, PLN: 3.65, CHF: 0.88, CNY: 7.1, RUB: 80, BYN: 3.2 };
 
 const galleryMaterials = ["Акварель", "Гуашь", "Карандаш", "Масло", "Тушь", "Холст", "Бумага"];
 
@@ -602,6 +605,12 @@ async function seedContacts(api) {
   console.log("  contacts: links, photo");
 }
 
+async function seedCurrencies(api) {
+  await api.put("/currencies", { rates: currencyRates });
+
+  console.log(`  currencies: ${String(Object.keys(currencyRates).length)} rates`);
+}
+
 async function seedProjects(api) {
   await api.put("/projects-intro", { text: projectsIntro });
 
@@ -786,6 +795,7 @@ console.log(`Seeding ${apiUrl} as ${email}`);
 await seedHeroes(api);
 await seedAbout(api);
 await seedContacts(api);
+await seedCurrencies(api);
 await seedProjects(api);
 await seedGallery(api);
 console.log(`Done in ${String(Math.round((Date.now() - startedAt) / 1000))} s`);
