@@ -4,8 +4,9 @@ import { z } from "zod";
 
 import { UnprocessableContentError } from "#shared/http/errors";
 import { altSchema, type Photo, storedPhotoSchema, toPhoto } from "#shared/images/photo";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
-import { publishUpload, uploadIdSchema } from "#shared/images/uploads";
+import type { ImageFiles } from "#shared/images/saving";
+import type { StoredImage } from "#shared/images/stored-image";
+import { uploadIdSchema } from "#shared/images/uploads";
 
 /** Stays the same when the file is replaced. */
 const listPhotoIdSchema = z.uuid();
@@ -68,21 +69,12 @@ interface PlannedPhoto {
   uploadId: string | undefined;
 }
 
-/**
- * A new list whose files are already copied from their uploads, waiting to be saved. The caller
- * builds the list from the saved one inside its transaction, then either finishes or discards it.
- */
+/** A new list whose files are already copied from their uploads, waiting to be saved. */
 export interface PhotoListDraft {
   /** The new list from the saved one; rejects a saved photo that is not there with 422. */
   build(saved: StoredListPhoto[]): StoredListPhoto[];
-  /** Removes the copied files, when the new list was not saved. */
-  discard(): Promise<void>;
-  /**
-   * Once the new list is saved, removes the files it no longer uses: the deleted photos and the
-   * replaced versions. The uploads stay until the bucket deletes them, so a save repeated after a
-   * lost response can still refer to them.
-   */
-  finish(saved: StoredListPhoto[], photos: StoredListPhoto[]): Promise<void>;
+  /** Once the list is saved, names the files it no longer uses: deleted photos, replaced versions. */
+  removeUnused(saved: StoredListPhoto[], photos: StoredListPhoto[]): void;
 }
 
 function toPlannedPhoto({ alt, id, uploadId }: ListPhotoItem): PlannedPhoto {
@@ -92,10 +84,10 @@ function toPlannedPhoto({ alt, id, uploadId }: ListPhotoItem): PlannedPhoto {
 
 /**
  * Copies the new files of `items` from their uploads into `folder`, one photo at a time: every
- * version of a photo lives under `{folder}/{photo id}`, so deleting the photo removes them all. If
- * copying fails, the copies made so far are removed.
+ * version of a photo lives under `{folder}/{photo id}`, so deleting the photo removes them all.
  */
 export async function preparePhotoList(
+  files: ImageFiles,
   items: ListPhotoItem[],
   folder: string,
 ): Promise<PhotoListDraft> {
@@ -104,16 +96,6 @@ export async function preparePhotoList(
 
   function photoFolder(id: string): string {
     return `${folder}/${id}`;
-  }
-
-  function versionFolder(id: string, version: string): string {
-    return `${photoFolder(id)}/${version}`;
-  }
-
-  async function discard(): Promise<void> {
-    await Promise.all(
-      [...images].map(([id, image]) => deleteImageFilesOrWarn(versionFolder(id, image.version))),
-    );
   }
 
   function build(saved: StoredListPhoto[]): StoredListPhoto[] {
@@ -137,29 +119,23 @@ export async function preparePhotoList(
     });
   }
 
-  async function finish(saved: StoredListPhoto[], photos: StoredListPhoto[]): Promise<void> {
+  function removeUnused(saved: StoredListPhoto[], photos: StoredListPhoto[]): void {
     const keptIds = new Set(photos.map((photo) => photo.id));
-    const unusedFolders = saved.flatMap((photo) => {
+
+    for (const photo of saved) {
       if (!keptIds.has(photo.id)) {
-        return [photoFolder(photo.id)];
-      }
-
-      return images.has(photo.id) ? [versionFolder(photo.id, photo.version)] : [];
-    });
-
-    await Promise.all(unusedFolders.map(deleteImageFilesOrWarn));
-  }
-
-  try {
-    for (const { id, uploadId } of planned) {
-      if (uploadId) {
-        images.set(id, await publishUpload(uploadId, photoFolder(id)));
+        files.removeAfterSave(photoFolder(photo.id));
+      } else if (images.has(photo.id)) {
+        files.removeAfterSave(`${photoFolder(photo.id)}/${photo.version}`);
       }
     }
-  } catch (error) {
-    await discard();
-    throw error;
   }
 
-  return { build, discard, finish };
+  for (const { id, uploadId } of planned) {
+    if (uploadId) {
+      images.set(id, await files.publish(uploadId, photoFolder(id)));
+    }
+  }
+
+  return { build, removeUnused };
 }

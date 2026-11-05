@@ -28,14 +28,9 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import type { StoredPhoto } from "#shared/images/photo";
-import {
-  type PhotoListDraft,
-  preparePhotoList,
-  type StoredListPhoto,
-} from "#shared/images/photo-list";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
-import { publishUpload } from "#shared/images/uploads";
+import { preparePhotoList } from "#shared/images/photo-list";
+import { saveWithImages } from "#shared/images/saving";
+import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
 
 /** Every file of the work; deleting the work removes the folder. */
 function workFolder(id: string): string {
@@ -162,29 +157,10 @@ export async function getWork(id: string, reader: Reader): Promise<Tagged<Work>>
 }
 
 /**
- * The new file of the photo, copied from its upload, or `undefined` when the photo keeps its saved
- * file.
- */
-async function publishPhoto(
-  id: string,
-  uploadId: string | undefined,
-): Promise<StoredImage | undefined> {
-  return uploadId === undefined ? undefined : publishUpload(uploadId, photoFolder(id));
-}
-
-/** Removes the copied file of a photo that was not saved. */
-async function discardPhoto(id: string, image: StoredImage | undefined): Promise<void> {
-  if (image) {
-    await deleteImageFilesOrWarn(photoVersionFolder(id, image.version));
-  }
-}
-
-/**
  * Creates the work `id`, which the client chose; rejects it with 412 once a work has that id, such
  * as one an earlier try of the same request created. A new work has no saved photos, so its photo
  * needs an upload and a process photo cannot name an id, or it is rejected with 422, as it is for a
- * section, a material, a color, a palette or a collection that does not exist. The files are copied
- * from their uploads first; if saving fails, the copies are removed.
+ * section, a material, a color, a palette or a collection that does not exist.
  */
 export async function createWork(id: string, body: WorkBody): Promise<Tagged<Work>> {
   const { alt, uploadId } = body.photo;
@@ -193,21 +169,10 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
     throw new UnprocessableContentError("A new work needs an uploaded photo");
   }
 
-  const image = await publishUpload(uploadId, photoFolder(id));
-  let draft: PhotoListDraft;
-
-  try {
-    draft = await preparePhotoList(body.processPhotos, processPhotosFolder(id));
-  } catch (error) {
-    await discardPhoto(id, image);
-    throw error;
-  }
-
-  let work: StoredWork;
-  let known: KnownData;
-
-  try {
-    [work, known] = await firestore().runTransaction(async (transaction) => {
+  return saveWithImages(async (files) => {
+    const image = await files.publish(uploadId, photoFolder(id));
+    const draft = await preparePhotoList(files, body.processPhotos, processPhotosFolder(id));
+    const [work, known] = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(workDocument(id))).exists) {
         throw new PreconditionFailedError("The work already exists");
       }
@@ -226,47 +191,27 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
       };
 
       transaction.create(workDocument(id), created);
-      return [created, references];
+      return [created, references] as const;
     });
-  } catch (error) {
-    await Promise.all([discardPhoto(id, image), draft.discard()]);
-    throw error;
-  }
 
-  // A new work has no older files to remove, and the uploads stay until the bucket deletes them.
-
-  return toSavedWork(id, work, known);
+    return toSavedWork(id, work, known);
+  });
 }
 
 /**
- * Replaces the work while it is still the one the client read (`ifMatch`). New files are copied
- * from their uploads first and the replaced ones are removed once the work is saved, so the site
- * never links to missing files; if saving fails, the copies are removed and the work stays as it
- * was. The process photos are saved as one list: a saved photo left out is deleted, see
- * preparePhotoList. A section, a material, a color, a palette or a collection that does not exist
- * is rejected with 422. Moving the work to another collection changes both collections.
+ * Replaces the work while it is still the one the client read (`ifMatch`). The process photos are
+ * saved as one list: a saved photo left out is deleted, see preparePhotoList. A section, a
+ * material, a color, a palette or a collection that does not exist is rejected with 422. Moving
+ * the work to another collection changes both collections.
  */
-export async function replaceWork(
-  id: string,
-  body: WorkBody,
-  ifMatch: string,
-): Promise<Tagged<Work>> {
-  const image = await publishPhoto(id, body.photo.uploadId);
-  let draft: PhotoListDraft;
+export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promise<Tagged<Work>> {
+  const { alt, uploadId } = body.photo;
 
-  try {
-    draft = await preparePhotoList(body.processPhotos, processPhotosFolder(id));
-  } catch (error) {
-    await discardPhoto(id, image);
-    throw error;
-  }
-
-  let previous: { photo: StoredPhoto; processPhotos: StoredListPhoto[] };
-  let work: StoredWork;
-  let known: KnownData;
-
-  try {
-    [previous, work, known] = await firestore().runTransaction(async (transaction) => {
+  return saveWithImages(async (files) => {
+    const image =
+      uploadId === undefined ? undefined : await files.publish(uploadId, photoFolder(id));
+    const draft = await preparePhotoList(files, body.processPhotos, processPhotosFolder(id));
+    const [previous, work, known] = await firestore().runTransaction(async (transaction) => {
       const document = workDocument(id);
       const current = readWork(await transaction.get(document));
       const references = await readKnownData(transaction);
@@ -277,26 +222,23 @@ export async function replaceWork(
       const next: StoredWork = {
         ...current,
         ...body,
-        photo: { ...(image ?? current.photo), alt: body.photo.alt },
+        photo: { ...(image ?? current.photo), alt },
         processPhotos: draft.build(current.processPhotos),
         updatedAt: Timestamp.now(),
       };
 
       transaction.set(document, next);
-      return [current, next, references];
+      return [current, next, references] as const;
     });
-  } catch (error) {
-    await Promise.all([discardPhoto(id, image), draft.discard()]);
-    throw error;
-  }
 
-  if (image) {
-    await deleteImageFilesOrWarn(photoVersionFolder(id, previous.photo.version));
-  }
+    if (image) {
+      files.removeAfterSave(photoVersionFolder(id, previous.photo.version));
+    }
 
-  await draft.finish(previous.processPhotos, work.processPhotos);
+    draft.removeUnused(previous.processPhotos, work.processPhotos);
 
-  return toSavedWork(id, work, known);
+    return toSavedWork(id, work, known);
+  });
 }
 
 /** Deletes the work while it is still the one the client read, and then all its files. */

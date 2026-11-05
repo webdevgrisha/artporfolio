@@ -14,7 +14,8 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { preparePhotoList, type StoredListPhoto, toListPhoto } from "#shared/images/photo-list";
+import { preparePhotoList, toListPhoto } from "#shared/images/photo-list";
+import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
 import { titleKey } from "#shared/text/titles";
 
@@ -106,16 +107,13 @@ export async function getProject(id: string): Promise<Tagged<Project>> {
 /**
  * Creates the project `id`, which the client chose, at the top of the list; rejects it with 412
  * once a project has that id, such as one an earlier try of the same request created, and with 409
- * when another project has its title. The photo
- * files are copied from their uploads first; if saving fails, the copies are removed. Every photo
- * of a new project is new: a photo `id` refers to nothing, so it is rejected with 422.
+ * when another project has its title. Every photo of a new project is new: a photo `id` refers to
+ * nothing, so it is rejected with 422.
  */
-export async function createProject(id: string, body: ProjectBody): Promise<Tagged<Project>> {
-  const draft = await preparePhotoList(body.photos, photosFolder(id));
-  let project: StoredProject;
-
-  try {
-    project = await firestore().runTransaction(async (transaction) => {
+export function createProject(id: string, body: ProjectBody): Promise<Tagged<Project>> {
+  return saveWithImages(async (files) => {
+    const draft = await preparePhotoList(files, body.photos, photosFolder(id));
+    const project = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(projectDocument(id))).exists) {
         throw new PreconditionFailedError("The project already exists");
       }
@@ -137,32 +135,24 @@ export async function createProject(id: string, body: ProjectBody): Promise<Tagg
       transaction.create(projectDocument(id), created);
       return created;
     });
-  } catch (error) {
-    await draft.discard();
-    throw error;
-  }
 
-  // A new project has no older files to remove, and the uploads stay until the bucket deletes them.
-
-  return toSavedProject(id, project);
+    return toSavedProject(id, project);
+  });
 }
 
 /**
  * Replaces the project while it is still the one the client read (`ifMatch`); it keeps its place
  * in the list. The photos are saved as one list: a saved photo left out is deleted, see
- * preparePhotoList. If anything fails, the copies are removed and the project stays as it was.
+ * preparePhotoList.
  */
-export async function replaceProject(
+export function replaceProject(
   id: string,
   body: ProjectBody,
   ifMatch: string,
 ): Promise<Tagged<Project>> {
-  const draft = await preparePhotoList(body.photos, photosFolder(id));
-  let savedPhotos: StoredListPhoto[];
-  let project: StoredProject;
-
-  try {
-    [savedPhotos, project] = await firestore().runTransaction(async (transaction) => {
+  return saveWithImages(async (files) => {
+    const draft = await preparePhotoList(files, body.photos, photosFolder(id));
+    const [savedPhotos, project] = await firestore().runTransaction(async (transaction) => {
       const document = projectDocument(id);
       const current = readProject(await transaction.get(document));
 
@@ -177,16 +167,13 @@ export async function replaceProject(
       };
 
       transaction.set(document, next);
-      return [current.photos, next];
+      return [current.photos, next] as const;
     });
-  } catch (error) {
-    await draft.discard();
-    throw error;
-  }
 
-  await draft.finish(savedPhotos, project.photos);
+    draft.removeUnused(savedPhotos, project.photos);
 
-  return toSavedProject(id, project);
+    return toSavedProject(id, project);
+  });
 }
 
 /** Deletes the project while it is still the one the client read, and then all its files. */

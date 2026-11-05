@@ -3,8 +3,8 @@ import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
-import { publishUpload } from "#shared/images/uploads";
+import { saveWithImages } from "#shared/images/saving";
+import type { StoredImage } from "#shared/images/stored-image";
 
 /** How a field of a document stores its image: the image alone, or with more, such as an alt text. */
 export interface SlotField<TStored extends StoredImage> {
@@ -80,29 +80,23 @@ export function changeSlot<TStored extends StoredImage>(
 }
 
 /**
- * Puts the uploaded image in the slot, before removing the previous one, so the site never links
- * to missing files. `toStored` adds what the field keeps besides the image. If the image cannot be
- * saved, its copy is removed. The upload is kept either way, see uploads.ts.
+ * Puts the uploaded image in the slot, replacing the previous one. `toStored` adds what the field
+ * keeps besides the image.
  */
-export async function fillSlot<TStored extends StoredImage>(
+export function fillSlot<TStored extends StoredImage>(
   slot: ImageSlot<TStored>,
   uploadId: string,
   ifMatch: string,
   toStored: (image: StoredImage) => TStored,
 ): Promise<FilledSlot<TStored>> {
-  const stored = toStored(await publishUpload(uploadId, slot.folder));
-  let changed: ChangedSlot<TStored>;
+  return saveWithImages(async (files) => {
+    const stored = toStored(await files.publish(uploadId, slot.folder));
+    const { etag, previous } = await changeSlot(slot, ifMatch, () => stored);
 
-  try {
-    changed = await changeSlot(slot, ifMatch, () => stored);
-  } catch (error) {
-    await deleteImageFilesOrWarn(versionFolder(slot, stored.version));
-    throw error;
-  }
+    if (previous) {
+      files.removeAfterSave(versionFolder(slot, previous.version));
+    }
 
-  if (changed.previous) {
-    await deleteImageFilesOrWarn(versionFolder(slot, changed.previous.version));
-  }
-
-  return { created: changed.previous === null, data: stored, etag: changed.etag };
+    return { created: previous === null, data: stored, etag };
+  });
 }

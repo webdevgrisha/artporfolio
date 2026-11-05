@@ -24,8 +24,8 @@ import {
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { toPhoto } from "#shared/images/photo";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
-import { publishUpload } from "#shared/images/uploads";
+import { saveWithImages } from "#shared/images/saving";
+import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
 import { byTitle, titleKey } from "#shared/text/titles";
 
 /** Every file of the collection; deleting the collection removes the folder. */
@@ -188,36 +188,26 @@ export async function getCollection(id: string, reader: Reader): Promise<Tagged<
   return toSavedCollection(id, readCollection(snapshot), idsInOrder(members.docs, reader));
 }
 
-/** Removes the copied file of a cover that was not saved. */
-async function discardCover(id: string, image: StoredImage | undefined): Promise<void> {
-  if (image) {
-    await deleteImageFilesOrWarn(coverVersionFolder(id, image.version));
-  }
-}
-
 /**
  * Creates the collection `id`, which the client chose, with its works; rejects it with 412 once a
  * collection has that id, such as one an earlier try of the same request created, and with 409
  * when another collection has its title. A new collection has no saved cover, so its cover needs an
- * upload, or it is rejected with 422, as it is for a work that does not exist. The file is copied
- * from its upload first; if saving fails, the copy is removed.
+ * upload, or it is rejected with 422, as it is for a work that does not exist.
  */
 export async function createCollection(
   id: string,
   body: CollectionBody,
 ): Promise<Tagged<Collection>> {
   const { cover, workIds, ...fields } = body;
+  const { uploadId } = cover;
 
-  if (cover.uploadId === undefined) {
+  if (uploadId === undefined) {
     throw new UnprocessableContentError("A new collection needs an uploaded cover");
   }
 
-  const image = await publishUpload(cover.uploadId, coverFolder(id));
-  let collection: StoredCollection;
-  let members: string[];
-
-  try {
-    [collection, members] = await firestore().runTransaction(async (transaction) => {
+  return saveWithImages(async (files) => {
+    const image = await files.publish(uploadId, coverFolder(id));
+    const [collection, members] = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(collectionDocument(id))).exists) {
         throw new PreconditionFailedError("The collection already exists");
       }
@@ -235,66 +225,58 @@ export async function createCollection(
 
       transaction.create(collectionDocument(id), created);
       moveWorks(transaction, id, [], ordered);
-      return [created, ordered];
+      return [created, ordered] as const;
     });
-  } catch (error) {
-    await discardCover(id, image);
-    throw error;
-  }
 
-  return toSavedCollection(id, collection, members);
+    return toSavedCollection(id, collection, members);
+  });
 }
 
 /**
  * Replaces the collection and its works while it is still the one the client read (`ifMatch`);
  * rejects it with 409 when another collection has its title and with 422 for a work that does not
- * exist. A new cover is copied from its upload first and the replaced one is removed once the
- * collection is saved, so the site never links to a missing file; if saving fails, the copy is
- * removed and the collection stays as it was.
+ * exist.
  */
-export async function replaceCollection(
+export function replaceCollection(
   id: string,
   body: CollectionBody,
   ifMatch: string,
 ): Promise<Tagged<Collection>> {
   const { cover, workIds, ...fields } = body;
-  const image =
-    cover.uploadId === undefined ? undefined : await publishUpload(cover.uploadId, coverFolder(id));
-  let previous: StoredCollection;
-  let collection: StoredCollection;
-  let members: string[];
+  const { uploadId } = cover;
 
-  try {
-    [previous, collection, members] = await firestore().runTransaction(async (transaction) => {
-      const document = collectionDocument(id);
-      const current = readCollection(await transaction.get(document));
-      const currentWorkIds = idsInOrder((await transaction.get(membersQuery(id))).docs, "admin");
+  return saveWithImages(async (files) => {
+    const image =
+      uploadId === undefined ? undefined : await files.publish(uploadId, coverFolder(id));
+    const [previous, collection, members] = await firestore().runTransaction(
+      async (transaction) => {
+        const document = collectionDocument(id);
+        const current = readCollection(await transaction.get(document));
+        const currentWorkIds = idsInOrder((await transaction.get(membersQuery(id))).docs, "admin");
 
-      assertIfMatch(ifMatch, toCollection(id, current, currentWorkIds));
-      assertTitleIsFree(id, body.title, await transaction.get(collectionsCollection()));
+        assertIfMatch(ifMatch, toCollection(id, current, currentWorkIds));
+        assertTitleIsFree(id, body.title, await transaction.get(collectionsCollection()));
 
-      const ordered = await readWorks(transaction, workIds);
-      const next: StoredCollection = {
-        ...current,
-        ...fields,
-        cover: { ...(image ?? current.cover), alt: cover.alt },
-        updatedAt: Timestamp.now(),
-      };
+        const ordered = await readWorks(transaction, workIds);
+        const next: StoredCollection = {
+          ...current,
+          ...fields,
+          cover: { ...(image ?? current.cover), alt: cover.alt },
+          updatedAt: Timestamp.now(),
+        };
 
-      transaction.set(document, next);
-      moveWorks(transaction, id, currentWorkIds, ordered);
-      return [current, next, ordered];
-    });
-  } catch (error) {
-    await discardCover(id, image);
-    throw error;
-  }
+        transaction.set(document, next);
+        moveWorks(transaction, id, currentWorkIds, ordered);
+        return [current, next, ordered] as const;
+      },
+    );
 
-  if (image) {
-    await deleteImageFilesOrWarn(coverVersionFolder(id, previous.cover.version));
-  }
+    if (image) {
+      files.removeAfterSave(coverVersionFolder(id, previous.cover.version));
+    }
 
-  return toSavedCollection(id, collection, members);
+    return toSavedCollection(id, collection, members);
+  });
 }
 
 /**
