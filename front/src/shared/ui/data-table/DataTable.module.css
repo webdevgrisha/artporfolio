@@ -17,8 +17,10 @@
   justify-content: flex-end;
 }
 
+/* Its own size, not its content: the summary and the clear button never push the buttons down. */
 .search {
   flex: 1 1 20rem;
+  min-inline-size: 0;
 }
 
 /* The filters share a line; on a phone they go two in a line, so the table stays close. */
