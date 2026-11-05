@@ -38,7 +38,6 @@ export function AdminLayout() {
       <div className={styles.content} inert={mobileMenu.isOpen}>
         <AdminHeader
           email={user.email}
-          adminRole="Админ"
           menuButton={
             <MobileMenuButton
               ref={mobileMenu.toggleRef}
