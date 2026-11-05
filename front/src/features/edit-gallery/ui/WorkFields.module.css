@@ -87,7 +87,7 @@
 }
 
 /* The prices in other currencies need the room, and end on the line of the group. */
-.priceBox:has(fieldset) {
+.priceBox:has(dl) {
   inline-size: 100%;
 }
 

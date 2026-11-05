@@ -112,14 +112,13 @@ function toPrice(price: StoredWork["price"], rates: Record<string, number>): Wor
     return null;
   }
 
-  const { amount, currency, discountPercent, overrides } = price;
+  const { amount, currency, discountPercent } = price;
 
   return {
     amount,
     currency,
     discountPercent,
     finalAmount: discountedAmount(amount, discountPercent),
-    overrides,
     prices: pricesIn(price, rates),
   };
 }

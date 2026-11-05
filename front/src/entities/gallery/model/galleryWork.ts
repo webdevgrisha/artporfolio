@@ -63,8 +63,6 @@ export const workPriceSchema = z.object({
   discountPercent: z.number().nullable(),
   /** The amount after the discount, which the server computes. */
   finalAmount: z.number(),
-  /** The prices set by hand in other currencies, before the discount, by currency code. */
-  overrides: z.record(z.string(), z.number()),
 });
 
 export type WorkPrice = z.infer<typeof workPriceSchema>;

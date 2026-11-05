@@ -668,50 +668,21 @@ describe("the price of a work", () => {
   });
 
   it("saves the price without the amount after the discount, which it computes", async () => {
-    const price = { amount: 500, currency: "USD", discountPercent: 10, overrides: {} } as const;
+    const price = { amount: 500, currency: "USD", discountPercent: 10 } as const;
     const { data } = await createWork(newId, { ...body, price });
 
     expect(data.price).toEqual({ ...price, finalAmount: 450, prices: {} });
     expect(works.get(newId)?.price).toEqual(price);
   });
 
-  it("keeps the prices set by hand in other currencies", async () => {
-    const price = {
-      amount: 500,
-      currency: "USD",
-      discountPercent: null,
-      overrides: { EUR: 450, PLN: 2000 },
-    } as const;
-    const { data } = await createWork(newId, { ...body, price });
-
-    expect(data.price?.overrides).toEqual({ EUR: 450, PLN: 2000 });
-    expect(works.get(newId)?.price).toEqual(price);
-  });
-
-  it("reads a price saved before prices could be set by hand as having none", async () => {
-    works.set(elephantId, {
-      ...storedWork(elephantId, "Слон", 2024, 3),
-      price: { amount: 500, currency: "USD", discountPercent: null },
-    });
-
-    const { data } = await getWork(elephantId, "admin");
-
-    expect(data.price?.overrides).toEqual({});
-  });
-
   it("returns the price in the other currencies, computed and not stored", async () => {
     lists.set("site/currencies", { rates: { EUR: 0.8899, PLN: 3.9097 } });
-    const price = {
-      amount: 1500,
-      currency: "USD",
-      discountPercent: 20,
-      overrides: { PLN: 5800 },
-    } as const;
+    const price = { amount: 1500, currency: "USD", discountPercent: 20 } as const;
     const { data } = await createWork(newId, { ...body, price });
 
     expect(data.price?.prices).toEqual({
-      EUR: { amount: 1500, finalAmount: 1200, source: "rate" },
-      PLN: { amount: 5800, finalAmount: 4640, source: "manual" },
+      EUR: { amount: 1400, finalAmount: 1120 },
+      PLN: { amount: 6000, finalAmount: 4800 },
     });
     expect(works.get(newId)?.price).toEqual(price);
   });
@@ -719,7 +690,7 @@ describe("the price of a work", () => {
   it("changes the tag of a work when a rate changes, so a change made before is refused", async () => {
     works.set(elephantId, {
       ...storedWork(elephantId, "Слон", 2024, 3),
-      price: { amount: 500, currency: "USD", discountPercent: null, overrides: {} },
+      price: { amount: 500, currency: "USD", discountPercent: null },
     });
     lists.set("site/currencies", { rates: { EUR: 0.9 } });
     const { etag } = await getWork(elephantId, "admin");
@@ -733,7 +704,7 @@ describe("the price of a work", () => {
   });
 
   it("gives the full amount as the final one when there is no discount", async () => {
-    const price = { amount: 500, currency: "USD", discountPercent: null, overrides: {} } as const;
+    const price = { amount: 500, currency: "USD", discountPercent: null } as const;
     const { data } = await createWork(newId, { ...body, price });
 
     expect(data.price?.finalAmount).toBe(500);
@@ -742,7 +713,7 @@ describe("the price of a work", () => {
   it("rounds the amount after the discount to a whole dollar", async () => {
     const { data } = await createWork(newId, {
       ...body,
-      price: { amount: 999, currency: "USD", discountPercent: 15, overrides: {} },
+      price: { amount: 999, currency: "USD", discountPercent: 15 },
     });
 
     // 999 × 0.85 = 849.15
@@ -756,7 +727,7 @@ describe("the price of a work", () => {
       elephantId,
       {
         ...withoutPrice,
-        price: { amount: 500, currency: "USD", discountPercent: null, overrides: {} },
+        price: { amount: 500, currency: "USD", discountPercent: null },
       },
       etag,
     );

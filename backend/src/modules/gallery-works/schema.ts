@@ -1,7 +1,6 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
-import { currencies } from "#modules/currencies/schema";
 import { countryCodes } from "#shared/geo/countries";
 import { altSchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
 import {
@@ -86,26 +85,18 @@ export function discountedAmount(amount: number, discountPercent: number | null)
 /**
  * What the work costs, in whole units of the currency (dollars, without cents), and the percent
  * taken off it, if any. The price after the discount is not sent: the API computes it, and it is
- * never 0, which would make the work free. `overrides` are the prices set by hand in other
- * currencies; a currency left out follows its rate. The discount takes the same percent off them.
+ * never 0, which would make the work free.
  */
 const workPriceBodySchema = z
   .strictObject({
     amount: z.number().int().min(1).max(maxWorkPrice),
     currency: z.enum(workCurrencies),
     discountPercent: z.number().int().min(minWorkDiscount).max(maxWorkDiscount).nullable(),
-    overrides: z.partialRecord(z.enum(currencies), z.number().int().min(1).max(maxWorkPrice)),
   })
-  .refine(
-    ({ amount, discountPercent, overrides }) =>
-      [amount, ...Object.values(overrides)].every(
-        (price) => discountedAmount(price, discountPercent) >= 1,
-      ),
-    {
-      message: "The price after the discount is 0",
-      path: ["discountPercent"],
-    },
-  );
+  .refine(({ amount, discountPercent }) => discountedAmount(amount, discountPercent) >= 1, {
+    message: "The price after the discount is 0",
+    path: ["discountPercent"],
+  });
 
 /**
  * The photo of the work: a new file by its upload, or the saved file when `uploadId` is left out,
@@ -227,8 +218,6 @@ export const storedWorkSchema = z.object({
       amount: z.number(),
       currency: z.enum(workCurrencies),
       discountPercent: z.number().nullable(),
-      /** A price saved before prices could be set by hand has none. */
-      overrides: z.record(z.string(), z.number()).default({}),
     })
     .nullable()
     .default(null),
@@ -282,11 +271,9 @@ export const workSchema = z.object({
       discountPercent: z.number().nullable(),
       /** The amount after the discount, rounded to a whole unit; computed, not stored. */
       finalAmount: z.number(),
-      /** The prices set by hand in other currencies, before the discount, by currency code. */
-      overrides: z.record(z.string(), z.number()),
       /**
-       * The price in every other currency in use, by currency code: the one set by hand, or else
-       * the one by the rate, rounded up to a step. Computed, not stored.
+       * The price in every other currency in use, by currency code: the one by the rate, rounded
+       * up to a step. Computed, not stored.
        */
       prices: z.record(
         z.string(),
@@ -294,7 +281,6 @@ export const workSchema = z.object({
           amount: z.number(),
           /** The amount after the same percent as the price in dollars. */
           finalAmount: z.number(),
-          source: z.enum(["manual", "rate"]),
         }),
       ),
     })

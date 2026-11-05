@@ -41,7 +41,7 @@ const work = {
   saleStatus: "available",
   price: null,
 };
-const price = { amount: 500, currency: "USD", discountPercent: null, overrides: {} };
+const price = { amount: 500, currency: "USD", discountPercent: null };
 
 function isValid(body: unknown): boolean {
   return workBodySchema.safeParse(body).success;
@@ -230,26 +230,6 @@ describe("work body", () => {
     expect(isValid({ ...work, published: false })).toBe(true);
     expect(isValid({ ...work, published: undefined })).toBe(false);
     expect(isValid({ ...work, published: "yes" })).toBe(false);
-  });
-
-  it("takes prices set by hand, whole and within the limits, in the listed currencies", () => {
-    function withOverrides(overrides: unknown) {
-      return { ...work, price: { ...price, overrides } };
-    }
-
-    expect(isValid(withOverrides({ EUR: 450, PLN: 2000 }))).toBe(true);
-    expect(isValid(withOverrides({ EUR: maxWorkPrice }))).toBe(true);
-    expect(isValid(withOverrides({ EUR: 0 }))).toBe(false);
-    expect(isValid(withOverrides({ EUR: 450.5 }))).toBe(false);
-    expect(isValid(withOverrides({ EUR: maxWorkPrice + 1 }))).toBe(false);
-    expect(isValid(withOverrides({ USD: 450 }))).toBe(false);
-    expect(isValid({ ...work, price: { ...price, overrides: undefined } })).toBe(false);
-  });
-
-  it("refuses a discount that leaves nothing of a price set by hand", () => {
-    expect(
-      isValid({ ...work, price: { ...price, discountPercent: 99, overrides: { EUR: 1 } } }),
-    ).toBe(false);
   });
 
   it("takes each sale status, whatever the price", () => {

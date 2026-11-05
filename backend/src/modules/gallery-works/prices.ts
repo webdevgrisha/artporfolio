@@ -7,33 +7,25 @@ type StoredPrice = NonNullable<StoredWork["price"]>;
 type CurrencyPrices = NonNullable<Work["price"]>["prices"];
 
 /**
- * The price of a work in every other currency: the one set by hand, or else the one by the rate. A
- * currency with neither is left out. The same percent is taken off each, and what is left is not
- * rounded to a step, so the discount a visitor reads adds up.
+ * The price of a work in every currency with a rate. The same percent is taken off each, and what
+ * is left is not rounded to a step, so the discount a visitor reads adds up; it is never 0, which
+ * would make the work free in a currency worth more than the dollar.
  */
 export function pricesIn(
-  { amount, discountPercent, overrides }: StoredPrice,
+  { amount, discountPercent }: StoredPrice,
   rates: Record<string, number>,
 ): CurrencyPrices {
   const prices: CurrencyPrices = {};
 
   for (const currency of currencies) {
-    const override = overrides[currency];
     const rate = rates[currency];
 
-    if (override !== undefined) {
-      prices[currency] = {
-        amount: override,
-        finalAmount: discountedAmount(override, discountPercent),
-        source: "manual",
-      };
-    } else if (rate !== undefined) {
+    if (rate !== undefined) {
       const suggested = suggestedPrice(amount, rate);
 
       prices[currency] = {
         amount: suggested,
-        finalAmount: discountedAmount(suggested, discountPercent),
-        source: "rate",
+        finalAmount: Math.max(1, discountedAmount(suggested, discountPercent)),
       };
     }
   }

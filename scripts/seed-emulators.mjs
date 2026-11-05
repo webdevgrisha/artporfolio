@@ -774,12 +774,7 @@ async function seedGallery(api) {
       price:
         work.price === undefined
           ? null
-          : {
-              amount: work.price,
-              currency: "USD",
-              discountPercent: work.discountPercent ?? null,
-              overrides: {},
-            },
+          : { amount: work.price, currency: "USD", discountPercent: work.discountPercent ?? null },
     });
   }
 

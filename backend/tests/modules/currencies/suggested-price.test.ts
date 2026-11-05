@@ -7,7 +7,9 @@ describe("suggestedPrice", () => {
     expect(suggestedPrice(430, 1)).toBe(450);
     expect(suggestedPrice(375, 1)).toBe(400);
     expect(suggestedPrice(1825, 1)).toBe(2000);
-    expect(suggestedPrice(18, 1)).toBe(20);
+    expect(suggestedPrice(2095, 1)).toBe(2200);
+    expect(suggestedPrice(1335, 1)).toBe(1400);
+    expect(suggestedPrice(17, 1)).toBe(18);
   });
 
   it("keeps a price already on a step", () => {
@@ -17,13 +19,13 @@ describe("suggestedPrice", () => {
   });
 
   it("goes on to the next power of ten", () => {
-    expect(suggestedPrice(901, 1)).toBe(1000);
-    expect(suggestedPrice(9100, 1)).toBe(10_000);
+    expect(suggestedPrice(951, 1)).toBe(1000);
+    expect(suggestedPrice(9600, 1)).toBe(10_000);
     expect(suggestedPrice(115_000, 1)).toBe(120_000);
   });
 
   it("applies the rate first", () => {
-    expect(suggestedPrice(1500, 0.8899)).toBe(1500);
+    expect(suggestedPrice(1500, 0.8899)).toBe(1400);
     expect(suggestedPrice(1500, 3.9097)).toBe(6000);
     expect(suggestedPrice(1500, 158.3779)).toBe(250_000);
   });

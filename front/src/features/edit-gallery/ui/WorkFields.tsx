@@ -428,7 +428,7 @@ export function WorkFields({
             discountPercent={discountPercent}
             sourceIds={`${headingId}-price ${headingId}-discount`}
           />
-          <WorkCurrencyPrices rates={rates} isSaving={isSaving} />
+          <WorkCurrencyPrices price={price} discountPercent={discountPercent} rates={rates} />
         </div>
       </section>
 

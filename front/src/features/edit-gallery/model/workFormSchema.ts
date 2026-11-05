@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import { currencies } from "@/entities/currency";
 import {
   type GalleryWork,
   maxWorkCityLength,
@@ -21,13 +20,7 @@ import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/p
 import { photoListRowsSchema, toPhotoListRows } from "@/shared/lib/photoListForm";
 
 import { toIdSet } from "./idSet";
-import {
-  type CurrencyPriceValues,
-  currencyPriceError,
-  discountError,
-  priceError,
-  toCurrencyPriceValues,
-} from "./workPrice";
+import { discountError, priceError } from "./workPrice";
 import { yearSchema } from "./yearField";
 
 // Mirror the server rules in backend/src/modules/gallery-works/schema.ts.
@@ -118,16 +111,9 @@ function refinePartCount(
   }
 }
 
-/**
- * Checks the price, the discount and the prices set by hand, which may all be empty: a work may
- * have no price. Without a price the prices set by hand are not shown, nor saved.
- */
+/** Checks the price and the discount, which may both be empty: a work may have no price. */
 function refinePrice(
-  {
-    currencyPrices,
-    discountPercent,
-    price,
-  }: { currencyPrices: CurrencyPriceValues; discountPercent: string; price: string },
+  { discountPercent, price }: { discountPercent: string; price: string },
   context: z.RefinementCtx,
 ): void {
   const priceMessage = priceError(price);
@@ -139,18 +125,6 @@ function refinePrice(
 
   if (discountMessage !== null) {
     context.addIssue({ code: "custom", message: discountMessage, path: ["discountPercent"] });
-  }
-
-  if (price.trim() === "") {
-    return;
-  }
-
-  for (const currency of currencies) {
-    const message = currencyPriceError(currencyPrices[currency], discountPercent);
-
-    if (message !== null) {
-      context.addIssue({ code: "custom", message, path: ["currencyPrices", currency] });
-    }
   }
 }
 
@@ -216,8 +190,6 @@ export const workFormSchema = z
     price: z.string(),
     /** The percent taken off the price, as typed; empty for none. */
     discountPercent: z.string(),
-    /** The prices set by hand in other currencies, as typed; empty for one that follows its rate. */
-    currencyPrices: z.record(z.enum(currencies), z.string()),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)
@@ -251,7 +223,6 @@ export const emptyWorkFormValues: WorkFormValues = {
   saleStatus: "available",
   price: "",
   discountPercent: "",
-  currencyPrices: toCurrencyPriceValues({}),
 };
 
 /** The values of a work as stored on the server. */
@@ -299,7 +270,6 @@ export function toWorkFormValues({
     price: price === null ? "" : String(price.amount),
     discountPercent:
       price === null || price.discountPercent === null ? "" : String(price.discountPercent),
-    currencyPrices: toCurrencyPriceValues(price?.overrides ?? {}),
   };
 }
 

@@ -1,5 +1,8 @@
 /** The steps a price rounds up to, repeated at every power of ten: 120, 1 200, 12 000… */
-const priceSteps = [100, 120, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1_000];
+const priceSteps = [
+  100, 110, 120, 130, 140, 150, 160, 180, 200, 220, 250, 280, 300, 350, 400, 450, 500, 550, 600,
+  650, 700, 750, 800, 850, 900, 950, 1_000,
+];
 
 /** The nearest step at or above the value; below 10 the steps would not be whole, so a whole unit. */
 function roundUpToStep(value: number): number {
