@@ -46,9 +46,8 @@ export const router = createBrowserRouter([
             Component: AdminLayout,
             HydrateFallback: AdminLayoutSkeleton,
             loader: requireSession,
-            // The session is checked once, on entering the admin, so moving between its pages
-            // waits for no extra request. Most pages load public data, so a session that expires
-            // later is found by the next change, whose toast says so.
+            // The session is checked once here, on entering the admin, so moving between its pages
+            // waits for no extra request; the layout checks it behind each move (useSessionCheck).
             shouldRevalidate: () => false,
             children: [
               {
