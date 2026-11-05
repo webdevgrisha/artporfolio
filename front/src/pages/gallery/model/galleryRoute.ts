@@ -42,6 +42,7 @@ export function galleryWorksLoader() {
     fetchFresh(galleryWorksQuery),
     fetchFresh(gallerySectionsQuery),
     fetchFresh(galleryMaterialsQuery),
+    fetchFresh(galleryCollectionsQuery),
   );
 }
 

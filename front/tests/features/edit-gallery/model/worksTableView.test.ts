@@ -4,6 +4,7 @@ import type { GalleryWork } from "@/entities/gallery";
 import {
   compareWorkDates,
   compareWorkSizes,
+  formatWorkPlace,
   matchesWorkQuery,
 } from "@/features/edit-gallery/model/worksTableView";
 
@@ -39,5 +40,19 @@ describe("compareWorkDates", () => {
     expect(compareWorkDates(dated(2023, 12), dated(2024, 1))).toBeLessThan(0);
     expect(compareWorkDates(dated(2024, 5), dated(2024, 3))).toBeGreaterThan(0);
     expect(compareWorkDates(dated(2024, 5), dated(2024, 5))).toBe(0);
+  });
+});
+
+describe("formatWorkPlace", () => {
+  const placed = (country: string | null, city: string) => ({ city, country }) as GalleryWork;
+
+  it("names the country in Russian, then the city", () => {
+    expect(formatWorkPlace(placed("PL", "Краков"))).toBe("Польша, Краков");
+  });
+
+  it("leaves out the part that isn't given", () => {
+    expect(formatWorkPlace(placed("PL", ""))).toBe("Польша");
+    expect(formatWorkPlace(placed(null, "Краков"))).toBe("Краков");
+    expect(formatWorkPlace(placed(null, ""))).toBe("");
   });
 });

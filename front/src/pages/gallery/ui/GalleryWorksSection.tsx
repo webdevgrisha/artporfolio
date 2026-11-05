@@ -1,6 +1,11 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { galleryMaterialsQuery, gallerySectionsQuery, galleryWorksQuery } from "@/entities/gallery";
+import {
+  galleryCollectionsQuery,
+  galleryMaterialsQuery,
+  gallerySectionsQuery,
+  galleryWorksQuery,
+} from "@/entities/gallery";
 import { WorksList } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { TableSkeleton } from "@/shared/ui/skeleton";
@@ -18,6 +23,14 @@ function GalleryWorks() {
   const { data: works } = useSuspenseQuery(galleryWorksQuery);
   const { data: sections } = useSuspenseQuery(gallerySectionsQuery);
   const { data: materials } = useSuspenseQuery(galleryMaterialsQuery);
+  const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);
 
-  return <WorksList works={works} sections={sections} materials={materials.data.materials} />;
+  return (
+    <WorksList
+      works={works}
+      sections={sections}
+      materials={materials.data.materials}
+      collections={collections}
+    />
+  );
 }

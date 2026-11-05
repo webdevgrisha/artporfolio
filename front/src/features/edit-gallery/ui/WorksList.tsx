@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
 import type {
+  GalleryCollection,
   GalleryMaterial,
   GallerySection,
   GalleryWork,
@@ -28,6 +29,7 @@ import { sectionLabels } from "../model/workSections";
 import {
   compareWorkDates,
   compareWorkSizes,
+  formatWorkPlace,
   matchesWorkQuery,
   worksSortableColumns,
 } from "../model/worksTableView";
@@ -41,6 +43,8 @@ interface WorksListProps {
   sections: readonly GallerySection[];
   /** The materials of the gallery, to name the materials of each work. */
   materials: readonly GalleryMaterial[];
+  /** The collections of the gallery, to name the collection of each work. */
+  collections: readonly GalleryCollection[];
 }
 
 const collator = new Intl.Collator("ru", { sensitivity: "base" });
@@ -53,10 +57,15 @@ const saleStatusClassNames: Record<WorkSaleStatus, string | undefined> = {
 };
 
 /** Every work, in a table; a work opens by the pencil and is deleted after a confirmation. */
-export function WorksList({ className, materials, sections, works }: WorksListProps) {
+export function WorksList({ className, collections, materials, sections, works }: WorksListProps) {
   const deletion = useDeleteWork();
   const deletingIds = useDeletingWorkIds();
   const [deleted, setDeleted] = React.useState<GalleryWork>();
+
+  const collectionTitles = React.useMemo(
+    () => new Map(collections.map(({ id, title }) => [id, title])),
+    [collections],
+  );
 
   const columns = React.useMemo<ColumnDef<TableRow<GalleryWork>>[]>(
     () => [
@@ -88,6 +97,20 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         enableSorting: false,
         cell: ({ row: { original } }) =>
           sectionLabels(original.item.sectionIds, sections).join(", "),
+      },
+      {
+        id: "collection",
+        header: "Коллекция",
+        meta: { className: styles.collectionColumn },
+        // Works on their own stay last either way.
+        accessorFn: (row) =>
+          row.item.collectionId === null ? undefined : collectionTitles.get(row.item.collectionId),
+        sortingFn: (a, b) =>
+          collator.compare(a.getValue<string>("collection"), b.getValue<string>("collection")),
+        sortUndefined: "last",
+        // Muted, as the form names it, so the works of collections stand out.
+        cell: ({ getValue }) =>
+          getValue<string | undefined>() ?? <span className={styles.muted}>Без коллекции</span>,
       },
       {
         id: "materials",
@@ -129,18 +152,7 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         cell: ({ row: { original } }) => {
           const { price } = original.item;
 
-          // A muted dash for no price, so the cell doesn't read as not loaded; a screen reader
-          // hears the words instead of «тире».
-          if (price === null) {
-            return (
-              <>
-                <span className={styles.muted} aria-hidden="true">
-                  —
-                </span>
-                <VisuallyHidden>Без цены</VisuallyHidden>
-              </>
-            );
-          }
+          if (price === null) return <NoValue label="Без цены" />;
 
           // The discount under the price, muted.
           return (
@@ -176,6 +188,18 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         sortDescFirst: true,
         cell: ({ row: { original } }) => formatWorkDate(original.item),
       },
+      {
+        id: "place",
+        header: "Место",
+        meta: { className: styles.placeColumn },
+        // Works without a place stay last either way.
+        accessorFn: (row) => formatWorkPlace(row.item) || undefined,
+        sortingFn: (a, b) =>
+          collator.compare(a.getValue<string>("place"), b.getValue<string>("place")),
+        sortUndefined: "last",
+        cell: ({ getValue }) =>
+          getValue<string | undefined>() ?? <NoValue label="Место не указано" />,
+      },
       actionsColumn((work) => (
         <RowActions
           title={work.title}
@@ -185,7 +209,7 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         />
       )),
     ],
-    [deletingIds, materials, sections],
+    [collectionTitles, deletingIds, materials, sections],
   );
 
   return (
@@ -215,6 +239,21 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
           setDeleted(undefined);
         }}
       />
+    </>
+  );
+}
+
+/**
+ * A muted dash for a value a work doesn't have, so the cell doesn't read as not loaded; a screen
+ * reader hears `label` instead of «тире».
+ */
+function NoValue({ label }: { label: string }) {
+  return (
+    <>
+      <span className={styles.muted} aria-hidden="true">
+        —
+      </span>
+      <VisuallyHidden>{label}</VisuallyHidden>
     </>
   );
 }
