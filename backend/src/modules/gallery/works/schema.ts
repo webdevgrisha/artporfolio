@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
+import { discountedAmount } from "#modules/gallery/works/prices";
 import { countryCodes } from "#shared/geo/countries";
 import { type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
 import {
@@ -75,11 +76,6 @@ const workSizeSchema = z.strictObject({
   width: workSideSchema,
   height: workSideSchema,
 });
-
-/** The amount after the discount, rounded to a whole unit of the currency. */
-export function discountedAmount(amount: number, discountPercent: number | null): number {
-  return discountPercent === null ? amount : Math.round((amount * (100 - discountPercent)) / 100);
-}
 
 /**
  * What the work costs, in whole units of the currency (dollars, without cents), and the percent

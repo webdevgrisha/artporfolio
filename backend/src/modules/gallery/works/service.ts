@@ -1,21 +1,18 @@
-import { type DocumentSnapshot, Timestamp, type Transaction } from "firebase-admin/firestore";
+import { type DocumentSnapshot, Timestamp } from "firebase-admin/firestore";
 
 import type { Reader } from "#modules/auth/schema";
-import { currencyRates } from "#modules/currencies/resource";
-import { collectionDocument } from "#modules/gallery/collections/document";
-import { maxCollectionWorks } from "#modules/gallery/collections/schema";
 import { colorIdsIn, galleryColors } from "#modules/gallery/colors/resource";
 import { galleryMaterials, materialIdsIn } from "#modules/gallery/materials/resource";
 import { galleryPalettes, paletteIdsIn } from "#modules/gallery/palettes/resource";
-import {
-  sectionGroupsIn,
-  sectionIdsIn,
-  sectionsCollection,
-} from "#modules/gallery/sections/service";
+import { sectionGroupsIn, sectionsCollection } from "#modules/gallery/sections/service";
 import { workDocument, worksCollection } from "#modules/gallery/works/document";
-import { pricesIn } from "#modules/gallery/works/prices";
 import {
-  discountedAmount,
+  assertReferencesExist,
+  type KnownData,
+  readKnownData,
+} from "#modules/gallery/works/references";
+import { toWork, toWorkSummary } from "#modules/gallery/works/representation";
+import {
   type StoredWork,
   storedWorkSchema,
   type Work,
@@ -26,32 +23,19 @@ import {
 import { ownGroups, usageByItem } from "#modules/gallery/works/usage";
 import { firestore } from "#shared/firebase/firestore";
 import {
-  ConflictError,
   NotFoundError,
   PreconditionFailedError,
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { type StoredPhoto, toPhoto } from "#shared/images/photo";
+import type { StoredPhoto } from "#shared/images/photo";
 import {
   type PhotoListDraft,
   preparePhotoList,
   type StoredListPhoto,
-  toListPhoto,
 } from "#shared/images/photo-list";
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
 import { publishUpload } from "#shared/images/uploads";
-
-/** What a work is returned by: the saved items of each list it refers to, and the rates. */
-interface KnownData {
-  /** Every section and subsection. */
-  sections: Set<string>;
-  materials: Set<string>;
-  colors: Set<string>;
-  palettes: Set<string>;
-  /** How many units of each currency in use one US dollar buys. */
-  rates: Record<string, number>;
-}
 
 /** Every file of the work; deleting the work removes the folder. */
 function workFolder(id: string): string {
@@ -80,100 +64,6 @@ function readWork(snapshot: DocumentSnapshot): StoredWork {
   return storedWorkSchema.parse(snapshot.data());
 }
 
-const centimetresPerInch = 2.54;
-
-/**
- * A side in inches, rounded to hundredths. A side measured in inches with two decimals and saved in
- * centimetres comes back as measured: 16 inches are stored as 40.64 cm and read as 16 again.
- */
-function toInches(centimetres: number): number {
-  return Math.round((centimetres / centimetresPerInch) * 100) / 100;
-}
-
-/**
- * The price as the API returns it, with the amount after the discount rounded to a whole unit, and
- * the price in every other currency in use.
- */
-function toPrice(price: StoredWork["price"], rates: Record<string, number>): Work["price"] {
-  if (price === null) {
-    return null;
-  }
-
-  const { amount, currency, discountPercent } = price;
-
-  return {
-    amount,
-    currency,
-    discountPercent,
-    finalAmount: discountedAmount(amount, discountPercent),
-    prices: pricesIn(price, rates),
-  };
-}
-
-/**
- * The stored work as the list of works returns it, with download URLs and ISO 8601 dates. A
- * section, a material, a color or a palette deleted since the work was saved is left out (`known`,
- * the ids that exist).
- */
-function toWorkSummary(
-  id: string,
-  {
-    city,
-    collectionId,
-    colorIds,
-    country,
-    createdAt,
-    format,
-    materialIds,
-    month,
-    paletteIds,
-    partCount,
-    photo,
-    price,
-    published,
-    saleStatus,
-    sectionIds,
-    size,
-    title,
-    updatedAt,
-    year,
-  }: StoredWork,
-  known: KnownData,
-): WorkSummary {
-  return {
-    city,
-    collectionId,
-    colorIds: colorIds.filter((colorId) => known.colors.has(colorId)),
-    country,
-    createdAt: createdAt.toDate().toISOString(),
-    format,
-    id,
-    materialIds: materialIds.filter((materialId) => known.materials.has(materialId)),
-    month,
-    paletteIds: paletteIds.filter((paletteId) => known.palettes.has(paletteId)),
-    partCount,
-    photo: toPhoto(photo),
-    price: toPrice(price, known.rates),
-    published,
-    saleStatus,
-    sectionIds: sectionIds.filter((sectionId) => known.sections.has(sectionId)),
-    size,
-    sizeInches: { width: toInches(size.width), height: toInches(size.height) },
-    title,
-    updatedAt: updatedAt.toDate().toISOString(),
-    year,
-  };
-}
-
-/** The stored work as the API returns it alone: its summary, its description and process photos. */
-function toWork(id: string, work: StoredWork, known: KnownData): Work {
-  return {
-    ...toWorkSummary(id, work, known),
-    description: work.description,
-    processPhotos: work.processPhotos.map(toListPhoto),
-  };
-}
-
 /**
  * The work as the API returns it, tagged by that representation: deleting a section, a material, a
  * color or a palette the work refers to, or changing a rate, changes what is returned, and so its
@@ -191,81 +81,6 @@ function toSavedWork(id: string, work: StoredWork, known: KnownData): Tagged<Wor
  */
 function assertWorkIfMatch(ifMatch: string, id: string, work: StoredWork, known: KnownData): void {
   assertIfMatch(ifMatch, toWork(id, work, known));
-}
-
-/** Everything a work is returned by, read in `transaction` when there is one. */
-async function readKnownData(transaction?: Transaction): Promise<KnownData> {
-  const [sections, materials, colors, palettes, rates] = await Promise.all([
-    transaction ? transaction.get(sectionsCollection()) : sectionsCollection().get(),
-    transaction ? transaction.get(galleryMaterials.document()) : galleryMaterials.document().get(),
-    transaction ? transaction.get(galleryColors.document()) : galleryColors.document().get(),
-    transaction ? transaction.get(galleryPalettes.document()) : galleryPalettes.document().get(),
-    transaction ? transaction.get(currencyRates.document()) : currencyRates.document().get(),
-  ]);
-
-  return {
-    colors: colorIdsIn(colors),
-    materials: materialIdsIn(materials),
-    palettes: paletteIdsIn(palettes),
-    rates: currencyRates.read(rates).rates,
-    sections: sectionIdsIn(sections),
-  };
-}
-
-/** Rejects with 422 an id the work names that is not one of `known`, saying what it should be. */
-function assertKnown(ids: string[], known: Set<string>, kind: string): void {
-  const unknown = ids.find((id) => !known.has(id));
-
-  if (unknown !== undefined) {
-    throw new UnprocessableContentError(`There is no ${kind} ${unknown}`);
-  }
-}
-
-/**
- * Rejects with 409 a work moved into a collection that already holds the most works it may, as
- * saving the collection would refuse them too.
- */
-async function assertCollectionHasRoom(
-  transaction: Transaction,
-  collectionId: string,
-): Promise<void> {
-  const members = worksCollection().where("collectionId", "==", collectionId).count();
-  const { count } = (await transaction.get(members)).data();
-
-  if (count >= maxCollectionWorks) {
-    throw new ConflictError(`The collection already has ${String(maxCollectionWorks)} works`);
-  }
-}
-
-/**
- * Rejects with 422 a section, a material, a color, a palette (`known`, read in the transaction) or
- * a collection the work names that does not exist, such as one deleted while the form was open,
- * and with 409 a move into a full collection (`currentCollectionId`, the collection the work is in
- * now). Read in the transaction, so a change made meanwhile is caught too.
- */
-async function assertReferencesExist(
-  transaction: Transaction,
-  body: WorkBody,
-  currentCollectionId: string | null,
-  known: KnownData,
-): Promise<void> {
-  const collection =
-    body.collectionId === null
-      ? null
-      : await transaction.get(collectionDocument(body.collectionId));
-
-  assertKnown(body.sectionIds, known.sections, "section");
-  assertKnown(body.materialIds, known.materials, "material");
-  assertKnown(body.colorIds, known.colors, "color");
-  assertKnown(body.paletteIds, known.palettes, "palette");
-
-  if (collection?.exists === false) {
-    throw new UnprocessableContentError(`There is no collection ${String(body.collectionId)}`);
-  }
-
-  if (body.collectionId !== null && body.collectionId !== currentCollectionId) {
-    await assertCollectionHasRoom(transaction, body.collectionId);
-  }
 }
 
 /** The latest month first; works of one month, the latest created first. */
