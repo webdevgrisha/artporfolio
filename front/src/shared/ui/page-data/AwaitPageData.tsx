@@ -11,17 +11,17 @@ interface AwaitPageDataProps {
 }
 
 /**
- * Shows the skeleton of a page until the data its loader started loading (loadFresh, loadCached) is
- * in the cache, then the page. A failed load goes to the error boundary of the route, unless the
+ * Shows the page once the data its loader started loading (loadFresh, loadCached) is in the cache,
+ * and its skeleton until then, which only a slow load gets to. A failed load goes to the error boundary of the route, unless the
  * page is already showing the cache. Its own boundary shows the skeleton even during a navigation,
  * which keeps the boundaries already shown.
  */
 export function AwaitPageData({ children, fallback }: AwaitPageDataProps) {
-  const { isCached = false, loading } = useLoaderData<PageData>();
+  const { isReady, loading } = useLoaderData<PageData>();
 
   return (
     <React.Suspense fallback={fallback}>
-      <Loaded isCached={isCached} loading={loading}>
+      <Loaded isReady={isReady} loading={loading}>
         {children}
       </Loaded>
     </React.Suspense>
@@ -30,12 +30,12 @@ export function AwaitPageData({ children, fallback }: AwaitPageDataProps) {
 
 interface LoadedProps {
   children: ReactNode;
-  isCached: boolean;
+  isReady: boolean;
   loading: Promise<void>;
 }
 
-function Loaded({ children, isCached, loading }: LoadedProps) {
-  if (!isCached) {
+function Loaded({ children, isReady, loading }: LoadedProps) {
+  if (!isReady) {
     React.use(loading);
   }
 
