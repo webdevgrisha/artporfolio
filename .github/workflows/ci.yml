@@ -46,6 +46,7 @@ jobs:
   # does not block an urgent deploy. Ignored advisories are listed in package.json, pnpm.auditConfig:
   # both are in @grpc/grpc-js, which only the Node build of Firestore uses; the front bundles the
   # browser build of Firebase Auth, and Firestore pins grpc-js to ~1.9 even in its latest version.
+  # pnpm.overrides lifts glob under rimraf 5, which google-gax lists but never loads, to a fixed one.
   audit:
     name: Audit production dependencies
     runs-on: ubuntu-latest
