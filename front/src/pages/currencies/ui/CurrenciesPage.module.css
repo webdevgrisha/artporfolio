@@ -2,7 +2,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: var(--layout-space-8);
+  padding: var(--frame-padding);
 }
 
 /* Fills the frame so the form actions sit at its bottom. */

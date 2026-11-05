@@ -2,7 +2,7 @@
 .root {
   inline-size: min(40rem, 100% - 2 * var(--space-4));
   max-block-size: min(48rem, 100% - 2 * var(--space-4));
-  padding: var(--space-8);
+  padding: var(--space-4);
   color: var(--color-text);
   background: var(--color-surface);
   border: 0;
@@ -76,6 +76,10 @@
 }
 
 @media (width >= 40rem) {
+  .root {
+    padding: var(--space-8);
+  }
+
   .count {
     flex-basis: auto;
     margin-inline-end: auto;

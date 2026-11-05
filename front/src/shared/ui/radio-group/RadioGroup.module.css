@@ -60,5 +60,5 @@
 
 /* The field of the chosen option, under its title. */
 .details {
-  padding: var(--space-2) var(--space-6) var(--space-4);
+  padding: var(--space-2) var(--row-gutter) var(--space-4);
 }

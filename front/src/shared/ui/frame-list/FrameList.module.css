@@ -3,11 +3,20 @@
  * which is painted under the content: the frame keeps that pixel free, so the rows never cover it.
  */
 .frame {
+  /* A phone gives the room to the text of the rows. */
+  --row-gutter: var(--space-3);
+
   display: flex;
   flex-direction: column;
   padding: 1px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
+}
+
+@media (width >= 40rem) {
+  .frame {
+    --row-gutter: var(--space-6);
+  }
 }
 
 /* The same 2px frames as the text fields; an error takes precedence by coming later. */
@@ -42,7 +51,7 @@
 
 .item + .item::before {
   display: block;
-  margin-inline: var(--space-6);
+  margin-inline: var(--row-gutter);
   content: "";
   border-block-start: 1px solid var(--color-divider);
 }
@@ -53,7 +62,7 @@
   gap: var(--space-2);
   align-items: center;
   min-block-size: var(--control-size);
-  padding-inline: var(--space-6);
+  padding-inline: var(--row-gutter);
 }
 
 @media (hover: hover) {
@@ -79,7 +88,7 @@
 }
 
 .empty {
-  padding: var(--space-3) var(--space-6);
+  padding: var(--space-3) var(--row-gutter);
   margin: 0;
   color: var(--color-text-muted);
 }
