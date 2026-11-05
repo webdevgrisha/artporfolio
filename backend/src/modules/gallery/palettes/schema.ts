@@ -1,13 +1,14 @@
 import { z } from "zod";
 
-import { findRepeats } from "#shared/text/titles";
+import { byTitle, findRepeats } from "#shared/text/titles";
 
 /** The most palettes the gallery may have, a few kinds of coloring; raise it when needed. */
 export const maxPalettes = 30;
 
 /**
  * Every palette of the gallery, as the client sends it to replace them all: a saved palette left
- * out is deleted. The palettes come in any order: the site and the admin list them by title.
+ * out is deleted. The palettes come in any order, and are kept sorted by title, as the site and the
+ * admin list them.
  */
 export const galleryPalettesBodySchema = z
   .strictObject({
@@ -29,7 +30,8 @@ export const galleryPalettesBodySchema = z
         path: ["palettes", index, field],
       });
     }
-  });
+  })
+  .transform(({ palettes }) => ({ palettes: palettes.toSorted(byTitle) }));
 
 /**
  * The palettes as stored in Firestore and as the API returns them, sorted by title. Only their

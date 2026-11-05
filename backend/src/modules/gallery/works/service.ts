@@ -1,12 +1,12 @@
 import { type DocumentSnapshot, Timestamp, type Transaction } from "firebase-admin/firestore";
 
 import type { Reader } from "#modules/auth/schema";
-import { ratesDocument, ratesIn } from "#modules/currencies/service";
+import { currencyRates } from "#modules/currencies/resource";
 import { collectionDocument } from "#modules/gallery/collections/document";
 import { maxCollectionWorks } from "#modules/gallery/collections/schema";
-import { colorIdsIn, colorsDocument } from "#modules/gallery/colors/service";
-import { materialIdsIn, materialsDocument } from "#modules/gallery/materials/service";
-import { paletteIdsIn, palettesDocument } from "#modules/gallery/palettes/service";
+import { colorIdsIn, galleryColors } from "#modules/gallery/colors/resource";
+import { galleryMaterials, materialIdsIn } from "#modules/gallery/materials/resource";
+import { galleryPalettes, paletteIdsIn } from "#modules/gallery/palettes/resource";
 import {
   sectionGroupsIn,
   sectionIdsIn,
@@ -197,17 +197,17 @@ function assertWorkIfMatch(ifMatch: string, id: string, work: StoredWork, known:
 async function readKnownData(transaction?: Transaction): Promise<KnownData> {
   const [sections, materials, colors, palettes, rates] = await Promise.all([
     transaction ? transaction.get(sectionsCollection()) : sectionsCollection().get(),
-    transaction ? transaction.get(materialsDocument()) : materialsDocument().get(),
-    transaction ? transaction.get(colorsDocument()) : colorsDocument().get(),
-    transaction ? transaction.get(palettesDocument()) : palettesDocument().get(),
-    transaction ? transaction.get(ratesDocument()) : ratesDocument().get(),
+    transaction ? transaction.get(galleryMaterials.document()) : galleryMaterials.document().get(),
+    transaction ? transaction.get(galleryColors.document()) : galleryColors.document().get(),
+    transaction ? transaction.get(galleryPalettes.document()) : galleryPalettes.document().get(),
+    transaction ? transaction.get(currencyRates.document()) : currencyRates.document().get(),
   ]);
 
   return {
     colors: colorIdsIn(colors),
     materials: materialIdsIn(materials),
     palettes: paletteIdsIn(palettes),
-    rates: ratesIn(rates),
+    rates: currencyRates.read(rates).rates,
     sections: sectionIdsIn(sections),
   };
 }
@@ -307,9 +307,9 @@ export async function getWorkUsage(reader: Reader): Promise<Tagged<WorkUsage>> {
   const [{ docs }, sections, materials, colors, palettes] = await Promise.all([
     worksCollection().get(),
     sectionsCollection().get(),
-    materialsDocument().get(),
-    colorsDocument().get(),
-    palettesDocument().get(),
+    galleryMaterials.document().get(),
+    galleryColors.document().get(),
+    galleryPalettes.document().get(),
   ]);
   const works = docs.map(readWork).filter((work) => isVisibleTo(work, reader));
   const data: WorkUsage = {

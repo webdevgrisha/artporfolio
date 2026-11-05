@@ -1,13 +1,14 @@
 import { z } from "zod";
 
-import { findRepeats } from "#shared/text/titles";
+import { byTitle, findRepeats } from "#shared/text/titles";
 
 /** The most materials the gallery may have; raise it when the artist needs more. */
 export const maxMaterials = 100;
 
 /**
  * Every material of the gallery, as the client sends it to replace them all: a saved material left
- * out is deleted. The materials come in any order: the site and the admin list them by title.
+ * out is deleted. The materials come in any order, and are kept sorted by title, as the site and the
+ * admin list them.
  */
 export const galleryMaterialsBodySchema = z
   .strictObject({
@@ -29,7 +30,8 @@ export const galleryMaterialsBodySchema = z
         path: ["materials", index, field],
       });
     }
-  });
+  })
+  .transform(({ materials }) => ({ materials: materials.toSorted(byTitle) }));
 
 /**
  * The materials as stored in Firestore and as the API returns them, sorted by title. Only their

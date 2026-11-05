@@ -2,7 +2,7 @@ import { aboutDocument } from "#modules/about/document";
 import { aboutPhoto } from "#modules/about/photo";
 import { readProcessPhotos } from "#modules/about/process-photos/service";
 import type { AboutResponse } from "#modules/about/schema";
-import { readAboutText } from "#modules/about/text/service";
+import { aboutText } from "#modules/about/text/resource";
 import { readPhoto, toPhoto } from "#shared/images/photo";
 import { toListPhoto } from "#shared/images/photo-list";
 
@@ -12,7 +12,7 @@ export async function getAbout(): Promise<AboutResponse> {
   const photo = readPhoto(aboutPhoto, snapshot);
 
   return {
-    text: readAboutText(snapshot),
+    text: aboutText.read(snapshot),
     photo: photo && toPhoto(photo),
     processPhotos: readProcessPhotos(snapshot).map(toListPhoto),
   };

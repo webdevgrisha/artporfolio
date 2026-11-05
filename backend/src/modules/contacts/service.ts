@@ -1,5 +1,5 @@
 import { contactsDocument } from "#modules/contacts/document";
-import { readContactLinks } from "#modules/contacts/links/service";
+import { contactLinks } from "#modules/contacts/links/resource";
 import { contactPhoto } from "#modules/contacts/photo";
 import type { ContactsResponse } from "#modules/contacts/schema";
 import { readPhoto, toPhoto } from "#shared/images/photo";
@@ -10,7 +10,7 @@ export async function getContacts(): Promise<ContactsResponse> {
   const photo = readPhoto(contactPhoto, snapshot);
 
   return {
-    links: readContactLinks(snapshot),
+    links: contactLinks.read(snapshot),
     photo: photo && toPhoto(photo),
   };
 }
