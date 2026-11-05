@@ -40,7 +40,7 @@ interface TooltipProps {
  */
 export function Tooltip({ children, className, content }: TooltipProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const { context, floatingStyles, placement, refs } = useFloating({
+  const { context, elements, floatingStyles, placement, refs } = useFloating({
     middleware: [offset(triggerGap), flip(), shift({ padding: viewportPadding })],
     onOpenChange: setIsOpen,
     open: isOpen,
@@ -55,6 +55,9 @@ export function Tooltip({ children, className, content }: TooltipProps) {
     useDismiss(context),
   ]);
   const { isMounted, status } = useTransitionStatus(context, { duration: transitionDuration });
+  // A modal dialog is in the top layer and makes the rest of the page inert, so no z-index lifts a
+  // tooltip in <body> above it: a trigger in a dialog keeps its tooltip in that dialog.
+  const portalRoot = elements.domReference?.closest("dialog") ?? null;
 
   return (
     <>
@@ -67,7 +70,7 @@ export function Tooltip({ children, className, content }: TooltipProps) {
         {children}
       </span>
       {isMounted ? (
-        <FloatingPortal>
+        <FloatingPortal root={portalRoot}>
           <span
             ref={refs.setFloating}
             className={styles.tooltip}

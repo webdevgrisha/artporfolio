@@ -2,8 +2,14 @@
   display: inline-flex;
 }
 
+/*
+ * As wide as its text, up to the viewport less the 8px padding Tooltip.tsx keeps from each edge; a
+ * longer text, such as the title of a work, wraps.
+ */
 .tooltip {
   z-index: var(--layer-tooltip);
+  inline-size: max-content;
+  max-inline-size: min(24rem, calc(100vw - 16px));
 }
 
 .content {
@@ -12,7 +18,7 @@
   font-size: var(--font-size-sm);
   line-height: 1.4;
   color: var(--color-text-inverse);
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   background: var(--color-surface-inverse);
   transition:
     opacity var(--motion-duration-standard) var(--motion-easing-standard),
