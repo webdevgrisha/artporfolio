@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { colorsFormSchema } from "@/features/edit-gallery/model/colorsFormSchema";
-import { materialsList } from "@/features/edit-gallery/model/materialsList";
-import { palettesList } from "@/features/edit-gallery/model/palettesList";
-import { sectionFormSchema } from "@/features/edit-gallery/model/sectionFormSchema";
-import { titleListFormSchema } from "@/features/edit-gallery/model/titleList";
+import { colorsFormSchema } from "@/features/edit-gallery/lists/model/colorsFormSchema";
+import { materialsList } from "@/features/edit-gallery/lists/model/materialsList";
+import { palettesList } from "@/features/edit-gallery/lists/model/palettesList";
+import { titleListFormSchema } from "@/features/edit-gallery/lists/model/titleList";
+import { sectionFormSchema } from "@/features/edit-gallery/section/model/sectionFormSchema";
 
 const materialsFormSchema = titleListFormSchema(materialsList);
 const palettesFormSchema = titleListFormSchema(palettesList);
