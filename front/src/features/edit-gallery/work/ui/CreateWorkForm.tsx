@@ -8,7 +8,8 @@ import { galleryWorkPath } from "@/shared/config/routes";
 import { EditForm } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 import type { WorkReferences } from "../model/useWorkReferences";
-import { emptyWorkFormValues, type WorkFormValues, workFormSchema } from "../model/workFormSchema";
+import { type WorkFormValues, workFormSchema } from "../model/workFormSchema";
+import { emptyWorkFormValues } from "../model/workFormValues";
 import { useCreateWork } from "../model/workMutations";
 import { WorkFields } from "./WorkFields";
 

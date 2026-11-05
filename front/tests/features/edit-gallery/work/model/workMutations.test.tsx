@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { GalleryWork } from "@/entities/gallery";
-import { emptyWorkFormValues } from "@/features/edit-gallery/work/model/workFormSchema";
+import { emptyWorkFormValues } from "@/features/edit-gallery/work/model/workFormValues";
 import { useCreateWork, useSaveWork } from "@/features/edit-gallery/work/model/workMutations";
 import { savedImage } from "@/shared/lib/imageFieldValue";
 

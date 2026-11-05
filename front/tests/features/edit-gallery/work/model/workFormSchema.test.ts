@@ -7,13 +7,13 @@ import {
   formatWorkSize,
   monthOptions,
 } from "@/features/edit-gallery/work/model/workDisplay";
+import { workFormSchema } from "@/features/edit-gallery/work/model/workFormSchema";
 import {
   emptyWorkFormValues,
   toPartCount,
   toWorkFormValues,
   toWorkSize,
-  workFormSchema,
-} from "@/features/edit-gallery/work/model/workFormSchema";
+} from "@/features/edit-gallery/work/model/workFormValues";
 import {
   discountedAmount,
   discountedPriceIn,

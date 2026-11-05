@@ -9,10 +9,7 @@ import {
   replaceGallerySection,
 } from "@/entities/gallery";
 
-import {
-  getCreateSectionErrorMessage,
-  getSaveSectionErrorMessage,
-} from "../../lib/saveErrorMessages";
+import { getCreateSectionErrorMessage, getSaveSectionErrorMessage } from "../lib/saveErrorMessages";
 import type { SectionFormValues } from "./sectionFormSchema";
 
 interface CreateSectionParams {

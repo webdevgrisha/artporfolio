@@ -2,7 +2,7 @@ import { galleryColorsQuery, replaceGalleryColors } from "@/entities/gallery";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
-import { getSaveColorsErrorMessage } from "../../lib/saveErrorMessages";
+import { getSaveColorsErrorMessage } from "../lib/saveErrorMessages";
 
 export const saveColorsFeedback: MutationFeedback = {
   getErrorMessage: getSaveColorsErrorMessage,

@@ -1,28 +1,20 @@
 import { z } from "zod";
 
 import {
-  type GalleryWork,
   maxWorkCityLength,
   maxWorkColors,
   maxWorkMaterials,
   maxWorkPalettes,
   maxWorkProcessPhotos,
   maxWorkSections,
-  maxWorkSetSize,
-  maxWorkSide,
-  minWorkSetSize,
-  type WorkFormat,
-  type WorkSize,
   workFormats,
   workSaleStatuses,
 } from "@/entities/gallery";
-import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
-import { photoListRowsSchema, toPhotoListRows } from "@/shared/lib/photoListForm";
-
-import { toIdSet } from "../../model/idSet";
+import { photoFieldsShape, refinePhoto } from "@/shared/lib/photoForm";
+import { photoListRowsSchema } from "@/shared/lib/photoListForm";
 import { yearSchema } from "../../model/yearField";
-import { formatSide } from "./workDisplay";
-import { discountError, priceError } from "./workPrice";
+import { refineMonth, refinePartCount, refinePrice } from "./workFormRefinements";
+import { sideSchema } from "./workSide";
 
 // Mirror the server rules in backend/src/modules/gallery/works/schema.ts.
 export const workMaxLengths = {
@@ -30,99 +22,6 @@ export const workMaxLengths = {
   city: maxWorkCityLength,
   title: 100,
 } as const;
-
-/** A side as typed: digits with at most two decimals, after a point or a comma, such as «29,7». */
-const sidePattern = /^\d+(?:[.,]\d{1,2})?$/;
-
-/** The number a side field holds; the field has been checked against `sidePattern`. */
-export function parseSide(text: string): number {
-  return Number(text.trim().replace(",", "."));
-}
-
-// Each step runs only on what the previous one accepted, so a field shows one error at a time.
-const sideSchema = z
-  .string()
-  .trim()
-  .min(1, "Введите размер")
-  .pipe(z.string().regex(sidePattern, "Введите число, например 29,7"))
-  .pipe(
-    z
-      .string()
-      .refine((text) => parseSide(text) > 0, "Размер больше нуля")
-      .refine(
-        (text) => parseSide(text) <= maxWorkSide,
-        `Не больше ${maxWorkSide.toLocaleString("ru")}`,
-      ),
-  );
-
-/** Whether the month has not come yet; read when the form is checked. */
-function isFutureMonth(year: number, month: number): boolean {
-  const now = new Date();
-
-  return year === now.getFullYear() && month > now.getMonth() + 1;
-}
-
-/**
- * Rejects a month to come in this year. A year to come has its own error, and the month is checked
- * only once both fields hold a value.
- */
-function refineMonth(
-  { month, year }: { month: string; year: string },
-  context: z.RefinementCtx,
-): void {
-  if (/^\d{4}$/.test(year.trim()) && month && isFutureMonth(Number(year), Number(month))) {
-    context.addIssue({ code: "custom", message: "Этот месяц ещё не наступил", path: ["month"] });
-  }
-}
-
-/** What is wrong with the count of works of a set as typed, or null when it is a valid count. */
-function partCountError(text: string): string | null {
-  if (text === "") {
-    return "Введите количество";
-  }
-
-  if (!/^\d+$/.test(text)) {
-    return "Введите целое число";
-  }
-
-  const count = Number(text);
-
-  return count < minWorkSetSize || count > maxWorkSetSize
-    ? `От ${String(minWorkSetSize)} до ${String(maxWorkSetSize)}`
-    : null;
-}
-
-/**
- * Checks the count of works of a set, which only a set has: while another format is chosen, the
- * field is hidden and its text is kept but not checked.
- */
-function refinePartCount(
-  { format, partCount }: { format: WorkFormat; partCount: string },
-  context: z.RefinementCtx,
-): void {
-  const message = format === "set" ? partCountError(partCount.trim()) : null;
-
-  if (message !== null) {
-    context.addIssue({ code: "custom", message, path: ["partCount"] });
-  }
-}
-
-/** Checks the price and the discount, which may both be empty: a work may have no price. */
-function refinePrice(
-  { discountPercent, price }: { discountPercent: string; price: string },
-  context: z.RefinementCtx,
-): void {
-  const priceMessage = priceError(price);
-  const discountMessage = discountError(discountPercent, price);
-
-  if (priceMessage !== null) {
-    context.addIssue({ code: "custom", message: priceMessage, path: ["price"] });
-  }
-
-  if (discountMessage !== null) {
-    context.addIssue({ code: "custom", message: discountMessage, path: ["discountPercent"] });
-  }
-}
 
 export const workFormSchema = z
   .object({
@@ -194,87 +93,3 @@ export const workFormSchema = z
   .superRefine(refinePrice);
 
 export type WorkFormValues = z.infer<typeof workFormSchema>;
-
-/** The values of a new work: every field empty. */
-export const emptyWorkFormValues: WorkFormValues = {
-  description: "",
-  height: "",
-  month: "",
-  title: "",
-  width: "",
-  year: "",
-  country: "",
-  city: "",
-  ...toPhotoFormValues(null),
-  photos: [],
-  sectionIds: [],
-  materialIds: [],
-  colorIds: [],
-  paletteIds: [],
-  // A new work is made to be shown.
-  published: true,
-  collectionId: "",
-  format: "single",
-  partCount: "",
-  saleStatus: "available",
-  price: "",
-  discountPercent: "",
-};
-
-/** The values of a work as stored on the server. */
-export function toWorkFormValues({
-  city,
-  collectionId,
-  colorIds,
-  country,
-  description,
-  format,
-  materialIds,
-  month,
-  paletteIds,
-  partCount,
-  photo,
-  price,
-  processPhotos,
-  published,
-  saleStatus,
-  sectionIds,
-  size,
-  title,
-  year,
-}: GalleryWork): WorkFormValues {
-  return {
-    description,
-    height: formatSide(size.height),
-    month: String(month),
-    title,
-    width: formatSide(size.width),
-    year: String(year),
-    country: country ?? "",
-    city,
-    ...toPhotoFormValues(photo),
-    photos: toPhotoListRows(processPhotos),
-    sectionIds: toIdSet(sectionIds),
-    materialIds: toIdSet(materialIds),
-    colorIds: toIdSet(colorIds),
-    paletteIds: toIdSet(paletteIds),
-    published,
-    collectionId: collectionId ?? "",
-    format,
-    partCount: partCount === null ? "" : String(partCount),
-    saleStatus,
-    price: price === null ? "" : String(price.amount),
-    discountPercent:
-      price === null || price.discountPercent === null ? "" : String(price.discountPercent),
-  };
-}
-
-/** The count of works of a set the form holds, once it has been checked; null for another format. */
-export function toPartCount({ format, partCount }: WorkFormValues): number | null {
-  return format === "set" ? Number(partCount.trim()) : null;
-}
-
-/** The size the form holds, once it has been checked. */
-export function toWorkSize({ height, width }: WorkFormValues): WorkSize {
-  return { height: parseSide(height), width: parseSide(width) };
-}

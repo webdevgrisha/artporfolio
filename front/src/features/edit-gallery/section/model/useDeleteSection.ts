@@ -8,7 +8,7 @@ import {
 
 import { usePendingIds } from "@/shared/lib/usePendingIds";
 
-import { getDeleteSectionErrorMessage } from "../../lib/saveErrorMessages";
+import { getDeleteSectionErrorMessage } from "../lib/saveErrorMessages";
 
 const deleteSectionMutationKey = [...gallerySectionsQueryKey, "delete"] as const;
 

@@ -14,7 +14,7 @@ import { toPhotoBody } from "@/shared/lib/photoForm";
 import {
   getCreateCollectionErrorMessage,
   getSaveCollectionErrorMessage,
-} from "../../lib/saveErrorMessages";
+} from "../lib/saveErrorMessages";
 import type { CollectionFormValues } from "./collectionFormSchema";
 
 interface CreateCollectionParams {

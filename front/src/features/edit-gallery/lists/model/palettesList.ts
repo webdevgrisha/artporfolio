@@ -1,6 +1,6 @@
 import { galleryPalettesQuery, maxPalettes, replaceGalleryPalettes } from "@/entities/gallery";
 
-import { getSavePalettesErrorMessage } from "../../lib/saveErrorMessages";
+import { getSavePalettesErrorMessage } from "../lib/saveErrorMessages";
 import type { TitleListConfig } from "./titleList";
 
 /** The palettes: the coloring of a work as a whole. */

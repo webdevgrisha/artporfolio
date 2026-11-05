@@ -4,20 +4,21 @@ import type {
   GalleryMaterial,
   GallerySection,
   GalleryWorkSummary,
-  WorkSaleStatus,
 } from "@/entities/gallery";
 import { galleryWorkPath } from "@/shared/config/routes";
 import { compareText } from "@/shared/lib/compareText";
 import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
-import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workDisplay";
-import { formatPrice } from "../model/workPrice";
+import { formatWorkDate, formatWorkSize } from "../model/workDisplay";
 import { titlesOf } from "../model/workReferences";
-import { formatSaleStatus } from "../model/workSaleStatus";
 import { sectionLabels } from "../model/workSections";
 import { compareWorkDates, compareWorkSizes, formatWorkPlace } from "../model/worksTableView";
 import { NoValue } from "./NoValue";
+import { WorkFormatCell } from "./WorkFormatCell";
+import { WorkPriceCell } from "./WorkPriceCell";
+import { WorkSaleStatusCell } from "./WorkSaleStatusCell";
 import styles from "./WorksList.module.css";
+import { WorkTitleCell } from "./WorkTitleCell";
 
 interface WorksColumnsParams {
   /** The collections of the gallery, to name the collection of each work. */
@@ -30,13 +31,6 @@ interface WorksColumnsParams {
   /** The sections of the gallery, to name the sections of each work. */
   sections: readonly GallerySection[];
 }
-
-const saleStatusClassNames: Record<WorkSaleStatus, string | undefined> = {
-  available: styles.available,
-  reserved: styles.reserved,
-  sold: styles.sold,
-  notForSale: styles.notForSale,
-};
 
 /** The columns of the table of works. */
 export function worksColumns({
@@ -62,13 +56,7 @@ export function worksColumns({
       header: "Название",
       accessorFn: (row) => row.item.title,
       sortingFn: (a, b) => compareText(a.original.item.title, b.original.item.title),
-      // A hidden work says so under its title, muted, as the discount is under the price.
-      cell: ({ row: { original } }) => (
-        <>
-          {original.item.title}
-          {original.item.published ? null : <div className={styles.muted}>скрыта</div>}
-        </>
-      ),
+      cell: ({ row: { original } }) => <WorkTitleCell work={original.item} />,
     },
     {
       id: "sections",
@@ -113,12 +101,7 @@ export function worksColumns({
       header: "Формат",
       meta: { className: styles.formatColumn },
       enableSorting: false,
-      // A single work, the usual one, muted, so the diptychs and the sets stand out.
-      cell: ({ row: { original } }) => (
-        <span className={original.item.format === "single" ? styles.muted : undefined}>
-          {formatWorkFormat(original.item)}
-        </span>
-      ),
+      cell: ({ row: { original } }) => <WorkFormatCell work={original.item} />,
     },
     {
       id: "price",
@@ -128,34 +111,14 @@ export function worksColumns({
       accessorFn: (row) => row.item.price?.finalAmount,
       sortingFn: "basic",
       sortUndefined: "last",
-      cell: ({ row: { original } }) => {
-        const { price } = original.item;
-
-        if (price === null) return <NoValue label="Без цены" />;
-
-        // The discount under the price, muted.
-        return (
-          <>
-            {formatPrice(price.finalAmount, price.currency)}
-            {price.discountPercent === null ? null : (
-              <div className={styles.muted}>
-                −{price.discountPercent}% от {formatPrice(price.amount, price.currency)}
-              </div>
-            )}
-          </>
-        );
-      },
+      cell: ({ row: { original } }) => <WorkPriceCell price={original.item.price} />,
     },
     {
       id: "saleStatus",
       header: "Статус",
       meta: { className: styles.saleStatusColumn },
       enableSorting: false,
-      cell: ({ row: { original } }) => (
-        <span className={saleStatusClassNames[original.item.saleStatus]}>
-          {formatSaleStatus(original.item.saleStatus)}
-        </span>
-      ),
+      cell: ({ row: { original } }) => <WorkSaleStatusCell saleStatus={original.item.saleStatus} />,
     },
     {
       id: "date",

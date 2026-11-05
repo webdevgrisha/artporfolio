@@ -9,7 +9,7 @@ import {
 
 import { usePendingIds } from "@/shared/lib/usePendingIds";
 
-import { getDeleteWorkErrorMessage } from "../../lib/saveErrorMessages";
+import { getDeleteWorkErrorMessage } from "../lib/saveErrorMessages";
 
 const deleteWorkMutationKey = [...galleryWorksQueryKey, "delete"] as const;
 

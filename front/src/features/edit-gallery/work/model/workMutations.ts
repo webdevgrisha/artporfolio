@@ -12,8 +12,9 @@ import {
 import { toPhotoBody } from "@/shared/lib/photoForm";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
-import { getCreateWorkErrorMessage, getSaveWorkErrorMessage } from "../../lib/saveErrorMessages";
-import { toPartCount, toWorkSize, type WorkFormValues } from "./workFormSchema";
+import { getCreateWorkErrorMessage, getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
+import type { WorkFormValues } from "./workFormSchema";
+import { toPartCount, toWorkSize } from "./workFormValues";
 import { toWorkPrice } from "./workPrice";
 
 interface CreateWorkParams {

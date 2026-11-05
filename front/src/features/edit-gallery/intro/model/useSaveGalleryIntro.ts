@@ -2,7 +2,7 @@ import { galleryIntroQuery, replaceGalleryIntro } from "@/entities/gallery";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
-import { getSaveIntroErrorMessage } from "../../lib/saveErrorMessages";
+import { getSaveIntroErrorMessage } from "../lib/saveErrorMessages";
 
 export const saveGalleryIntroFeedback: MutationFeedback = {
   getErrorMessage: getSaveIntroErrorMessage,

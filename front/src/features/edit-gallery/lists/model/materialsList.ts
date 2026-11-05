@@ -1,6 +1,6 @@
 import { galleryMaterialsQuery, maxMaterials, replaceGalleryMaterials } from "@/entities/gallery";
 
-import { getSaveMaterialsErrorMessage } from "../../lib/saveErrorMessages";
+import { getSaveMaterialsErrorMessage } from "../lib/saveErrorMessages";
 import type { TitleListConfig } from "./titleList";
 
 export const materialsList: TitleListConfig = {

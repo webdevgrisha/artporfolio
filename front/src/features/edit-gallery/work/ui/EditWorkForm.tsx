@@ -5,7 +5,8 @@ import { type GalleryWork, galleryWorkQuery } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { type WorkReferences, workReferenceQueries } from "../model/useWorkReferences";
-import { toWorkFormValues, type WorkFormValues, workFormSchema } from "../model/workFormSchema";
+import { type WorkFormValues, workFormSchema } from "../model/workFormSchema";
+import { toWorkFormValues } from "../model/workFormValues";
 import { saveWorkToastId, useSaveWork } from "../model/workMutations";
 import { WorkFields } from "./WorkFields";
 
