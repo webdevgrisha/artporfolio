@@ -1,26 +1,19 @@
 import type { WorkSaleStatus } from "@/entities/gallery";
 
-/** The statuses to choose from, for sale first, as most works are. */
-export const workSaleStatusOptions: readonly { label: string; value: WorkSaleStatus }[] = [
-  { label: "В продаже", value: "available" },
-  { label: "Забронирована", value: "reserved" },
-  { label: "Продана", value: "sold" },
-  { label: "Не продаётся", value: "notForSale" },
-];
+/** What the admin reads for each status, in the form and in the table. */
+const saleStatusLabels: Record<WorkSaleStatus, string> = {
+  available: "В продаже",
+  reserved: "Забронирована",
+  sold: "Продана",
+  notForSale: "Не продаётся",
+};
 
-/**
- * The status as the admin reads it beside the price: «продана», «забронирована», «не продаётся»;
- * nothing for a work for sale, the usual one.
- */
-export function formatSaleStatus(saleStatus: WorkSaleStatus): string | null {
-  switch (saleStatus) {
-    case "available":
-      return null;
-    case "reserved":
-      return "забронирована";
-    case "sold":
-      return "продана";
-    case "notForSale":
-      return "не продаётся";
-  }
+/** The statuses to choose from, for sale first, as most works are. */
+export const workSaleStatusOptions: readonly { label: string; value: WorkSaleStatus }[] = (
+  ["available", "reserved", "sold", "notForSale"] as const
+).map((value) => ({ label: saleStatusLabels[value], value }));
+
+/** The status as the admin reads it in the table, the same as in the form. */
+export function formatSaleStatus(saleStatus: WorkSaleStatus): string {
+  return saleStatusLabels[saleStatus];
 }

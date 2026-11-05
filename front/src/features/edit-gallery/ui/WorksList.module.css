@@ -1,15 +1,40 @@
-/* The title, the sections and the materials share the rest of the row. */
+/*
+ * Every column has the room for its usual values, the title at least 13rem; a narrower screen
+ * scrolls the table instead of breaking words such as «Театральные». A wider one gives the rest to
+ * the title.
+ */
 .table {
-  min-inline-size: 75rem;
+  min-inline-size: 105rem;
 }
 
 .photoColumn {
   inline-size: 6rem;
 }
 
-/* Room for «100 × 70,5 см», which a long title never squeezes. */
+/* Room for «Постеры › Театральные» on one line; several sections go on the next lines. */
+.sectionsColumn {
+  inline-size: 16rem;
+}
+
+/* Room for «Акварель, Бумага» on one line. */
+.materialsColumn {
+  inline-size: 12.5rem;
+}
+
+/* Room for «30,5 × 40,6 см» on one line, which a long title never squeezes. */
 .sizeColumn {
-  inline-size: 10rem;
+  inline-size: 11rem;
+}
+
+/* Room for «−10% от 100 000 $» on one line. */
+.priceColumn {
+  inline-size: 11.5rem;
+}
+
+/* Room for «Забронирована»; a status is one label, never broken. */
+.saleStatusColumn {
+  inline-size: 11.5rem;
+  white-space: nowrap;
 }
 
 /* Room for «сентябрь 2024», on one line: the month and the year read as one date. */
@@ -18,12 +43,7 @@
   white-space: nowrap;
 }
 
-/* Room for «−10% от 100 000 $» on one line. */
-.priceColumn {
-  inline-size: 11rem;
-}
-
-/* The format under the size; the discount and the status under the price. */
+/* The format under the size; the discount under the price. */
 .muted {
   color: var(--color-text-muted);
 }

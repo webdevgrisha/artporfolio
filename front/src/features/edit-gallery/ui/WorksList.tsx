@@ -71,6 +71,7 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
       {
         id: "sections",
         header: "Разделы",
+        meta: { className: styles.sectionsColumn },
         enableSorting: false,
         cell: ({ row: { original } }) =>
           sectionLabels(original.item.sectionIds, sections).join(", "),
@@ -78,6 +79,7 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
       {
         id: "materials",
         header: "Материалы",
+        meta: { className: styles.materialsColumn },
         enableSorting: false,
         cell: ({ row: { original } }) => titlesOf(original.item.materialIds, materials).join(", "),
       },
@@ -110,10 +112,9 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         sortingFn: "basic",
         sortUndefined: "last",
         cell: ({ row: { original } }) => {
-          const { price, saleStatus } = original.item;
-          const status = formatSaleStatus(saleStatus);
+          const { price } = original.item;
 
-          // The discount and the status under the price, muted; a work for sale has no status.
+          // The discount under the price, muted.
           return (
             <>
               {price === null ? null : formatPrice(price.finalAmount, price.currency)}
@@ -122,10 +123,16 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
                   −{price.discountPercent}% от {formatPrice(price.amount, price.currency)}
                 </div>
               )}
-              {status === null ? null : <div className={styles.muted}>{status}</div>}
             </>
           );
         },
+      },
+      {
+        id: "saleStatus",
+        header: "Статус",
+        meta: { className: styles.saleStatusColumn },
+        enableSorting: false,
+        cell: ({ row: { original } }) => formatSaleStatus(original.item.saleStatus),
       },
       {
         id: "date",

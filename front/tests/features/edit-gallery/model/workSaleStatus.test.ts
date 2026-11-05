@@ -14,10 +14,9 @@ describe("the sale status of a work", () => {
     expect(workSaleStatusOptions[0]).toEqual({ label: "В продаже", value: "available" });
   });
 
-  it("shows the status beside the price, nothing for a work for sale", () => {
-    expect(formatSaleStatus("available")).toBeNull();
-    expect(formatSaleStatus("reserved")).toBe("забронирована");
-    expect(formatSaleStatus("sold")).toBe("продана");
-    expect(formatSaleStatus("notForSale")).toBe("не продаётся");
+  it("shows every status in the table as the form names it", () => {
+    for (const { label, value } of workSaleStatusOptions) {
+      expect(formatSaleStatus(value)).toBe(label);
+    }
   });
 });
