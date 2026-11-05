@@ -165,6 +165,7 @@ const resources: Resource[] = [
     body: { ...links, email: " artist@example.com " },
     data: links,
     empty: { email: "", instagram: "", linkedin: "", youtube: "" },
+    field: "links",
     invalid: { ...links, youtube: "https://example.com/video" },
     path: "site/contacts",
     url: "/api/contacts/links",

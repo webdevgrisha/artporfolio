@@ -55,7 +55,7 @@ describe("contacts service", () => {
   });
 
   it("returns the links and the photo from one read of the document", async () => {
-    stored({ ...links, photo: storedPhoto });
+    stored({ links, photo: storedPhoto });
 
     await expect(getContacts()).resolves.toEqual({
       links,
