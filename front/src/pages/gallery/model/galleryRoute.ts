@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
 
+import { currencyRatesQuery } from "@/entities/currency";
 import {
   galleryCollectionQuery,
   galleryCollectionsQuery,
@@ -54,6 +55,7 @@ export function newGalleryWorkLoader() {
     fetchFresh(galleryColorsQuery),
     fetchFresh(galleryPalettesQuery),
     fetchFresh(galleryCollectionsQuery),
+    fetchFresh(currencyRatesQuery),
   );
 }
 
@@ -65,6 +67,7 @@ export function galleryWorkLoader({ params }: LoaderFunctionArgs) {
     fetchFresh(galleryColorsQuery),
     fetchFresh(galleryPalettesQuery),
     fetchFresh(galleryCollectionsQuery),
+    fetchFresh(currencyRatesQuery),
   );
 }
 

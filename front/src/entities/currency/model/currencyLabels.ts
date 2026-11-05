@@ -1,6 +1,6 @@
-import type { Currency } from "@/entities/currency";
+import type { Currency } from "./currencyRates";
 
-/** The label of the field of each currency. */
+/** Each currency as the admin reads it. */
 export const currencyLabels: Record<Currency, string> = {
   AUD: "Австралийский доллар, AUD",
   BYN: "Белорусский рубль, BYN",

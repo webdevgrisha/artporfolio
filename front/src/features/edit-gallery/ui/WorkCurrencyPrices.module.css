@@ -1,0 +1,13 @@
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  margin-block-start: var(--space-4);
+}
+
+/* Room for the longest label on one line. */
+@media (width >= 40rem) {
+  .fields {
+    grid-template-columns: repeat(2, 15rem);
+  }
+}

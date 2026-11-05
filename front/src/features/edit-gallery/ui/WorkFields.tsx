@@ -44,6 +44,7 @@ import {
 import { toCollectionOptions, toTitleOptions } from "../model/workReferences";
 import { workSaleStatusOptions } from "../model/workSaleStatus";
 import { SectionsField } from "./SectionsField";
+import { WorkCurrencyPrices } from "./WorkCurrencyPrices";
 import styles from "./WorkFields.module.css";
 
 interface WorkFieldsProps {
@@ -61,7 +62,7 @@ interface WorkFieldsProps {
 export function WorkFields({
   className,
   isSaving,
-  references: { collections, colors, materials, palettes, sections },
+  references: { collections, colors, materials, palettes, rates, sections },
   savedPhoto,
   savedProcessPhotos,
 }: WorkFieldsProps) {
@@ -427,6 +428,7 @@ export function WorkFields({
             discountPercent={discountPercent}
             sourceIds={`${headingId}-price ${headingId}-discount`}
           />
+          <WorkCurrencyPrices rates={rates} isSaving={isSaving} />
         </div>
       </section>
 

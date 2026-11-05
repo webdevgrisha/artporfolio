@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { type CurrencyRates, currencyRatesQuery } from "@/entities/currency";
 import {
   type GalleryCollection,
   type GalleryColor,
@@ -19,6 +20,8 @@ export interface WorkReferences {
   colors: readonly GalleryColor[];
   materials: readonly GalleryMaterial[];
   palettes: readonly GalleryPalette[];
+  /** How many units of each currency in use one US dollar buys. */
+  rates: CurrencyRates["rates"];
   sections: readonly GallerySection[];
 }
 
@@ -29,6 +32,7 @@ export const workReferenceQueryKeys = [
   galleryColorsQuery.queryKey,
   galleryPalettesQuery.queryKey,
   galleryCollectionsQuery.queryKey,
+  currencyRatesQuery.queryKey,
 ];
 
 /**
@@ -41,12 +45,14 @@ export function useWorkReferences(): WorkReferences {
   const { data: colors } = useSuspenseQuery(galleryColorsQuery);
   const { data: palettes } = useSuspenseQuery(galleryPalettesQuery);
   const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);
+  const { data: rates } = useSuspenseQuery(currencyRatesQuery);
 
   return {
     collections,
     colors: colors.data.colors,
     materials: materials.data.materials,
     palettes: palettes.data.palettes,
+    rates: rates.data.rates,
     sections,
   };
 }

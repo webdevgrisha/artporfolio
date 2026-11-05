@@ -1,13 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormState } from "react-hook-form";
 
-import { type CurrencyRates, currencies, currencyRatesQuery } from "@/entities/currency";
+import {
+  type CurrencyRates,
+  currencies,
+  currencyLabels,
+  currencyRatesQuery,
+} from "@/entities/currency";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { Fieldset } from "@/shared/ui/fieldset";
 import { Input } from "@/shared/ui/input";
 
-import { currencyLabels } from "../model/currencyFields";
 import {
   type CurrencyRatesFormValues,
   currencyRatesFormSchema,

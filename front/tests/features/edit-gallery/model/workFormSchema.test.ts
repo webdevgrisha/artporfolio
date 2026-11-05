@@ -13,8 +13,11 @@ import {
   workFormSchema,
 } from "@/features/edit-gallery/model/workFormSchema";
 import {
+  currencyPriceError,
+  currencyPriceHint,
   discountedAmount,
   formatPrice,
+  toCurrencyPriceValues,
   toWorkPrice,
 } from "@/features/edit-gallery/model/workPrice";
 
@@ -244,20 +247,23 @@ describe("the place in the form", () => {
   });
 });
 
+const noPrices = toCurrencyPriceValues({});
+
 describe("the price in the form", () => {
   it("takes a work without a price or a discount", () => {
     expect(fieldErrors(workFormSchema, { ...work, price: "", discountPercent: "" })).toEqual({});
-    expect(toWorkPrice({ price: " ", discountPercent: "" })).toBeNull();
+    expect(toWorkPrice({ currencyPrices: noPrices, price: " ", discountPercent: "" })).toBeNull();
   });
 
   it("takes a price in whole dollars, split into thousands or not", () => {
     expect(fieldErrors(workFormSchema, { ...work, price: "1500" })).toEqual({});
     expect(fieldErrors(workFormSchema, { ...work, price: "1 500" })).toEqual({});
     expect(fieldErrors(workFormSchema, { ...work, price: "1\u00a0500" })).toEqual({});
-    expect(toWorkPrice({ price: "1 500", discountPercent: "" })).toEqual({
+    expect(toWorkPrice({ currencyPrices: noPrices, price: "1 500", discountPercent: "" })).toEqual({
       amount: 1500,
       currency: "USD",
       discountPercent: null,
+      overrides: {},
     });
   });
 
@@ -303,11 +309,22 @@ describe("the price in the form", () => {
   it("shows a saved price and discount and reads them back", () => {
     const values = toWorkFormValues({
       ...savedWork,
-      price: { amount: 1500, currency: "USD", discountPercent: 10, finalAmount: 1350 },
+      price: {
+        amount: 1500,
+        currency: "USD",
+        discountPercent: 10,
+        finalAmount: 1350,
+        overrides: {},
+      },
     });
 
     expect(values).toMatchObject({ discountPercent: "10", price: "1500" });
-    expect(toWorkPrice(values)).toEqual({ amount: 1500, currency: "USD", discountPercent: 10 });
+    expect(toWorkPrice(values)).toEqual({
+      amount: 1500,
+      currency: "USD",
+      discountPercent: 10,
+      overrides: {},
+    });
   });
 
   it("computes the price after the discount as the server does, in whole dollars", () => {
@@ -319,6 +336,66 @@ describe("the price in the form", () => {
 
   it("shows a price in dollars, split into thousands", () => {
     expect(formatPrice(1500, "USD").replace(/\s/g, " ")).toBe("1 500 $");
+  });
+});
+
+describe("the prices in other currencies in the form", () => {
+  it("keeps only the fields filled in, as whole numbers", () => {
+    const currencyPrices = { ...noPrices, EUR: "1 500", PLN: " " };
+
+    expect(toWorkPrice({ currencyPrices, price: "1500", discountPercent: "" })?.overrides).toEqual({
+      EUR: 1500,
+    });
+  });
+
+  it("shows saved prices and reads them back", () => {
+    const values = toWorkFormValues({
+      ...savedWork,
+      price: {
+        amount: 1500,
+        currency: "USD",
+        discountPercent: null,
+        finalAmount: 1500,
+        overrides: { PLN: 5800 },
+      },
+    });
+
+    expect(values.currencyPrices).toMatchObject({ EUR: "", PLN: "5800" });
+    expect(toWorkPrice(values)?.overrides).toEqual({ PLN: 5800 });
+  });
+
+  it("checks a price set by hand as the price in dollars", () => {
+    const currencyPrices = { ...noPrices, EUR: "12,5" };
+
+    expect(fieldErrors(workFormSchema, { ...work, price: "1500", currencyPrices })).toEqual({
+      "currencyPrices.EUR": ["Введите целое число, например 1 500"],
+    });
+  });
+
+  it("does not check them without a price: they are not saved then", () => {
+    const currencyPrices = { ...noPrices, EUR: "12,5" };
+
+    expect(fieldErrors(workFormSchema, { ...work, price: "", currencyPrices })).toEqual({});
+  });
+
+  it("refuses a discount that leaves nothing of a price set by hand", () => {
+    expect(currencyPriceError("1", "99")).toBe("Итоговая цена получается 0, уменьшите скидку");
+    expect(currencyPriceError("100", "99")).toBeNull();
+    expect(currencyPriceError("", "99")).toBeNull();
+  });
+
+  it("says where a price comes from, and what the discount leaves of it", () => {
+    function hint(text: string, suggested: number | null, discountPercent = "") {
+      return currencyPriceHint({ discountPercent, suggested, text }).replace(/\s/g, " ");
+    }
+
+    expect(hint("", 450)).toBe("По курсу");
+    expect(hint("", 450, "10")).toBe("По курсу. Со скидкой 405");
+    expect(hint("5800", 6000)).toBe("Вручную. По курсу 6 000");
+    expect(hint("5800", 6000, "10")).toBe("Вручную. По курсу 6 000. Со скидкой 5 220");
+    expect(hint("5800", null)).toBe("Вручную. Курс не задан");
+    expect(hint("abc", 6000, "10")).toBe("Вручную. По курсу 6 000");
+    expect(hint("", 450, "200")).toBe("По курсу");
   });
 });
 

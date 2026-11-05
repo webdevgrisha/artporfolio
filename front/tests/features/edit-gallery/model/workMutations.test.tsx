@@ -227,7 +227,7 @@ describe("useSaveWork", () => {
       expect.objectContaining({
         body: expect.objectContaining({
           saleStatus: "sold",
-          price: { amount: 1500, currency: "USD", discountPercent: 10 },
+          price: { amount: 1500, currency: "USD", discountPercent: 10, overrides: {} },
         }),
       }),
     ]);

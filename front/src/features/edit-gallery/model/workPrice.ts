@@ -1,3 +1,4 @@
+import { type Currency, currencies } from "@/entities/currency";
 import {
   maxWorkDiscount,
   maxWorkPrice,
@@ -69,16 +70,52 @@ export function discountError(text: string, priceText: string): string | null {
     : null;
 }
 
+/**
+ * What is wrong with a price set by hand as typed, or null when it is empty or a valid price. The
+ * discount takes the same percent off it, and may not leave nothing to pay either.
+ */
+export function currencyPriceError(text: string, discountText: string): string | null {
+  const error = priceError(text);
+
+  if (error !== null || text.trim() === "") {
+    return error;
+  }
+
+  const percent = parseWholeNumber(discountText);
+
+  // A discount that is not valid has its own error.
+  return percent >= minWorkDiscount &&
+    percent <= maxWorkDiscount &&
+    discountedAmount(parseWholeNumber(text), percent) < 1
+    ? "Итоговая цена получается 0, уменьшите скидку"
+    : null;
+}
+
 /** The amount after the discount, rounded to a whole unit, as the server computes it. */
 export function discountedAmount(amount: number, discountPercent: number | null): number {
   return discountPercent === null ? amount : Math.round((amount * (100 - discountPercent)) / 100);
 }
 
+/** The prices set by hand as the form holds them; an empty field follows the rate. */
+export type CurrencyPriceValues = Record<Currency, string>;
+
+/** The fields of the prices set by hand, from the saved ones. */
+export function toCurrencyPriceValues(overrides: WorkPrice["overrides"]): CurrencyPriceValues {
+  const values = currencies.map((currency): [Currency, string] => [
+    currency,
+    String(overrides[currency] ?? ""),
+  ]);
+
+  return Object.fromEntries(values) as CurrencyPriceValues;
+}
+
 /** The price the form holds, once it has been checked; null when the field is empty. */
 export function toWorkPrice({
+  currencyPrices,
   discountPercent,
   price,
 }: {
+  currencyPrices: CurrencyPriceValues;
   discountPercent: string;
   price: string;
 }): Omit<WorkPrice, "finalAmount"> | null {
@@ -90,7 +127,45 @@ export function toWorkPrice({
     amount: parseWholeNumber(price),
     currency: workFormCurrency,
     discountPercent: discountPercent.trim() === "" ? null : parseWholeNumber(discountPercent),
+    overrides: Object.fromEntries(
+      currencies
+        .filter((currency) => currencyPrices[currency].trim() !== "")
+        .map((currency) => [currency, parseWholeNumber(currencyPrices[currency])]),
+    ),
   };
+}
+
+/** What a field of a price in another currency says about it, under the field. */
+export function currencyPriceHint({
+  discountPercent,
+  suggested,
+  text,
+}: {
+  /** The percent taken off, as typed; only a valid one is used. */
+  discountPercent: string;
+  /** The price by the rate; null for a currency without a rate. */
+  suggested: number | null;
+  /** The price set by hand, as typed. */
+  text: string;
+}): string {
+  const isByRate = text.trim() === "";
+  const byRate =
+    suggested === null ? "Курс не задан" : `По курсу ${suggested.toLocaleString("ru")}`;
+  const source = isByRate ? "По курсу" : `Вручную. ${byRate}`;
+  const amount = isByRate ? suggested : parseWholeNumber(text);
+  const percent = parseWholeNumber(discountPercent);
+
+  if (
+    amount === null ||
+    Number.isNaN(amount) ||
+    Number.isNaN(percent) ||
+    percent < minWorkDiscount ||
+    percent > maxWorkDiscount
+  ) {
+    return source;
+  }
+
+  return `${source}. Со скидкой ${discountedAmount(amount, percent).toLocaleString("ru")}`;
 }
 
 /** A price as the admin reads it, in whole units: «1 500 $». */
