@@ -183,6 +183,10 @@ export const router = createBrowserRouter([
                     ],
                   },
                   {
+                    path: routes.currencies,
+                    lazy: () => import("@/pages/currencies").then((page) => page.currenciesRoute),
+                  },
+                  {
                     path: routes.personalization,
                     lazy: () =>
                       import("@/pages/personalization").then((page) => page.personalizationRoute),

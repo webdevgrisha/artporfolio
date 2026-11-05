@@ -6,6 +6,7 @@ export const routes = {
   contactLinks: "/admin/contacts/links",
   contactPhoto: "/admin/contacts/photo",
   contacts: "/admin/contacts",
+  currencies: "/admin/currencies",
   gallery: "/admin/gallery",
   galleryCollectionNew: "/admin/gallery/collections/new",
   galleryCollections: "/admin/gallery/collections",
@@ -79,5 +80,6 @@ export const adminNavigation = [
   { title: "О сайте", to: routes.about },
   { title: "Контакты", to: routes.contacts },
   { title: "Страницы", to: routes.sitePages },
+  { title: "Валюты", to: routes.currencies },
   { title: "Персонализация", to: routes.personalization },
 ] as const;
