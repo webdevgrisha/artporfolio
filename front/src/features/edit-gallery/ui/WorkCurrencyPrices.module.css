@@ -5,16 +5,15 @@
   margin-block-start: var(--space-4);
 }
 
-/* Room for the longest label on one line. */
 @media (width >= 40rem) {
   .fields {
-    grid-template-columns: repeat(2, minmax(0, 15rem));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Fewer rows to look through once three columns fit in the 48rem of a group, in their frame. */
+/* Fewer rows to look through once three columns have room for the longest label on one line. */
 @media (width >= 84rem) {
   .fields {
-    grid-template-columns: repeat(3, 13.75rem);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
