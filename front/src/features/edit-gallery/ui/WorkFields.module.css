@@ -73,8 +73,8 @@
 }
 
 /*
- * The price, the discount and the price after it in one light frame, so the result reads as theirs;
- * as wide as its fields, not the whole line.
+ * The price, the discount and the price after it in one frame, so the result reads as theirs; drawn
+ * as the other frames of the form, and as wide as its fields, not the whole line.
  */
 .priceBox {
   display: flex;
@@ -83,7 +83,7 @@
   inline-size: fit-content;
   max-inline-size: 100%;
   padding: var(--space-6);
-  border: 1px solid var(--color-divider);
+  border: 1px solid var(--color-border);
 }
 
 /* Room for «100 000 000». */
