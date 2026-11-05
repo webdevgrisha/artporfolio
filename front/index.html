@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ArtPortfolio</title>
+    <script>
+      // Before the first paint, so a dark page does not flash white. The key is in features/toggle-theme.
+      try {
+        if (localStorage.getItem("theme") === "dark") {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch {
+        // Blocked storage: the page stays light.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
