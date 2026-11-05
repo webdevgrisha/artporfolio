@@ -2,9 +2,9 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { countryCodes } from "#shared/geo/countries";
-import { photoBodySchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
+import { type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
 import {
-  listPhotoSchema,
+  type ListPhoto,
   photoListBodySchema,
   storedListPhotoSchema,
 } from "#shared/images/photo-list";
@@ -211,100 +211,96 @@ export const storedWorkSchema = z.object({
   updatedAt: z.instanceof(Timestamp),
 });
 
+export type WorkParams = z.infer<typeof workParamsSchema>;
+export type WorkBody = z.infer<typeof workBodySchema>;
+export type StoredWork = z.infer<typeof storedWorkSchema>;
+
+/** The price of a work in a currency other than the one it is set in. */
+export interface CurrencyPrice {
+  /** By the rate, rounded up to a step. */
+  amount: number;
+  /** The amount after the same percent as the price in dollars. */
+  finalAmount: number;
+}
+
+/** The price of a work as the API returns it. */
+export interface WorkPrice {
+  /** In whole units of the currency, before the discount. */
+  amount: number;
+  currency: (typeof workCurrencies)[number];
+  discountPercent: number | null;
+  /** The amount after the discount, rounded to a whole unit; computed, not stored. */
+  finalAmount: number;
+  /** The price in every other currency in use, by currency code; computed, not stored. */
+  prices: Record<string, CurrencyPrice>;
+}
+
 /** A work as the API returns it. */
-export const workSchema = z.object({
-  id: workIdSchema,
+export interface Work {
+  id: string;
   /** Whether the site shows the work. */
-  published: z.boolean(),
-  title: z.string(),
-  description: z.string(),
+  published: boolean;
+  title: string;
+  description: string;
   /** In centimetres. */
-  size: z.object({ width: z.number(), height: z.number() }),
+  size: { width: number; height: number };
   /** The same size in inches, computed from the centimetres for the site; not stored. */
-  sizeInches: z.object({ width: z.number(), height: z.number() }),
-  year: z.number(),
+  sizeInches: { width: number; height: number };
+  year: number;
   /** 1 for January. */
-  month: z.number(),
+  month: number;
   /** The country the work was made in, by its ISO 3166-1 alpha-2 code, or null for none. */
-  country: z.string().nullable(),
+  country: string | null;
   /** The city the work was made in; an empty string for none. */
-  city: z.string(),
-  photo: photoSchema,
+  city: string;
+  photo: Photo;
   /** In the order the site shows them. */
-  processPhotos: z.array(listPhotoSchema),
+  processPhotos: ListPhoto[];
   /** The sections and subsections the work is shown in; a deleted one is left out. */
-  sectionIds: z.array(z.uuid()),
+  sectionIds: string[];
   /** The materials the work is made of; a deleted one is left out. */
-  materialIds: z.array(z.uuid()),
+  materialIds: string[];
   /** The colors of the work; a deleted one is left out. */
-  colorIds: z.array(z.uuid()),
+  colorIds: string[];
   /** The palettes of the work; a deleted one is left out. */
-  paletteIds: z.array(z.uuid()),
+  paletteIds: string[];
   /** Null for a work on its own. */
-  collectionId: z.uuid().nullable(),
-  format: z.enum(workFormats),
+  collectionId: string | null;
+  format: (typeof workFormats)[number];
   /** How many works the set has; null for any other format. */
-  partCount: z.number().nullable(),
-  saleStatus: z.enum(workSaleStatuses),
+  partCount: number | null;
+  saleStatus: (typeof workSaleStatuses)[number];
   /** Null for a work without a price. */
-  price: z
-    .object({
-      /** In whole units of the currency, before the discount. */
-      amount: z.number(),
-      currency: z.enum(workCurrencies),
-      discountPercent: z.number().nullable(),
-      /** The amount after the discount, rounded to a whole unit; computed, not stored. */
-      finalAmount: z.number(),
-      /**
-       * The price in every other currency in use, by currency code: the one by the rate, rounded
-       * up to a step. Computed, not stored.
-       */
-      prices: z.record(
-        z.string(),
-        z.object({
-          amount: z.number(),
-          /** The amount after the same percent as the price in dollars. */
-          finalAmount: z.number(),
-        }),
-      ),
-    })
-    .nullable(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-});
+  price: WorkPrice | null;
+  /** ISO 8601. */
+  createdAt: string;
+  /** ISO 8601. */
+  updatedAt: string;
+}
 
 /**
  * A work in the list of works: everything but its description and its process photos, the heavy
  * parts that only the page of one work needs. A list of many works stays light.
  */
-export const workSummarySchema = workSchema.omit({ description: true, processPhotos: true });
+export type WorkSummary = Omit<Work, "description" | "processPhotos">;
 
-export const worksResponseSchema = z.object({
+export interface WorksResponse {
   /** In the order the site shows them: the latest first. */
-  works: z.array(workSummarySchema),
-});
+  works: WorkSummary[];
+}
 
 /** How the works use one item of a gallery list, such as a material or a section. */
-export const itemUsageSchema = z.object({
+export interface ItemUsage {
   /** The works that name the item, or for a section, the section or any of its subsections. */
-  count: z.number(),
+  count: number;
   /** Of those, the works that name nothing else of the list: removing the item leaves them none. */
-  onlyCount: z.number(),
-});
+  onlyCount: number;
+}
 
 /** How the works use each item of each gallery list a work names, by the id of the item. */
-export const workUsageSchema = z.object({
-  sections: z.record(z.uuid(), itemUsageSchema),
-  materials: z.record(z.uuid(), itemUsageSchema),
-  colors: z.record(z.uuid(), itemUsageSchema),
-  palettes: z.record(z.uuid(), itemUsageSchema),
-});
-
-export type WorkParams = z.infer<typeof workParamsSchema>;
-export type WorkBody = z.infer<typeof workBodySchema>;
-export type StoredWork = z.infer<typeof storedWorkSchema>;
-export type Work = z.infer<typeof workSchema>;
-export type WorkSummary = z.infer<typeof workSummarySchema>;
-export type ItemUsage = z.infer<typeof itemUsageSchema>;
-export type WorkUsage = z.infer<typeof workUsageSchema>;
-export type WorksResponse = z.infer<typeof worksResponseSchema>;
+export interface WorkUsage {
+  sections: Record<string, ItemUsage>;
+  materials: Record<string, ItemUsage>;
+  colors: Record<string, ItemUsage>;
+  palettes: Record<string, ItemUsage>;
+}

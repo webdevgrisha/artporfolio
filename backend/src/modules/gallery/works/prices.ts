@@ -1,10 +1,8 @@
 import { currencies } from "#modules/currencies/schema";
 import { suggestedPrice } from "#modules/currencies/suggested-price";
-import { discountedAmount, type StoredWork, type Work } from "#modules/gallery/works/schema";
+import { discountedAmount, type StoredWork, type WorkPrice } from "#modules/gallery/works/schema";
 
 type StoredPrice = NonNullable<StoredWork["price"]>;
-
-type CurrencyPrices = NonNullable<Work["price"]>["prices"];
 
 /**
  * The price of a work in every currency with a rate. The same percent is taken off each, and what
@@ -14,8 +12,8 @@ type CurrencyPrices = NonNullable<Work["price"]>["prices"];
 export function pricesIn(
   { amount, discountPercent }: StoredPrice,
   rates: Record<string, number>,
-): CurrencyPrices {
-  const prices: CurrencyPrices = {};
+): WorkPrice["prices"] {
+  const prices: WorkPrice["prices"] = {};
 
   for (const currency of currencies) {
     const rate = rates[currency];

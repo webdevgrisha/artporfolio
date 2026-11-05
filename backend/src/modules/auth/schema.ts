@@ -6,14 +6,13 @@ export const loginBodySchema = z
   })
   .strict();
 
-/** The signed-in admin. */
-export const userSchema = z.object({
-  email: z.email().nullable(),
-  uid: z.string(),
-});
-
 export type LoginBody = z.infer<typeof loginBodySchema>;
-export type AuthUser = z.infer<typeof userSchema>;
+
+/** The signed-in admin. */
+export interface AuthUser {
+  email: string | null;
+  uid: string;
+}
 
 /** Who reads a public resource: the admin sees what is hidden from the visitors too. */
 export type Reader = "admin" | "visitor";

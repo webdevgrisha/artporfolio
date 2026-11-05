@@ -2,7 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import {
-  listPhotoSchema,
+  type ListPhoto,
   photoListBodySchema,
   storedListPhotoSchema,
 } from "#shared/images/photo-list";
@@ -60,17 +60,6 @@ export const storedProjectSchema = z.object({
   updatedAt: z.instanceof(Timestamp),
 });
 
-/** A project as the API returns it. */
-export const projectSchema = z.object({
-  id: projectIdSchema,
-  title: z.string(),
-  description: z.string(),
-  link: z.string(),
-  photos: z.array(listPhotoSchema),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-});
-
 /** The order of the projects: every project, once, in the order the site shows them. */
 export const projectsOrderBodySchema = z.strictObject({
   ids: z
@@ -78,16 +67,25 @@ export const projectsOrderBodySchema = z.strictObject({
     .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once"),
 });
 
-export const projectsOrderSchema = z.object({ ids: z.array(projectIdSchema) });
-
-export const projectsResponseSchema = z.object({
-  /** In the order the site shows them. */
-  projects: z.array(projectSchema),
-});
-
 export type ProjectParams = z.infer<typeof projectParamsSchema>;
 export type ProjectBody = z.infer<typeof projectBodySchema>;
 export type StoredProject = z.infer<typeof storedProjectSchema>;
-export type Project = z.infer<typeof projectSchema>;
-export type ProjectsOrder = z.infer<typeof projectsOrderSchema>;
-export type ProjectsResponse = z.infer<typeof projectsResponseSchema>;
+export type ProjectsOrder = z.infer<typeof projectsOrderBodySchema>;
+
+/** A project as the API returns it. */
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
+  photos: ListPhoto[];
+  /** ISO 8601. */
+  createdAt: string;
+  /** ISO 8601. */
+  updatedAt: string;
+}
+
+export interface ProjectsResponse {
+  /** In the order the site shows them. */
+  projects: Project[];
+}

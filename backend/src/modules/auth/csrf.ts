@@ -1,17 +1,14 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { RequestHandler } from "express";
-import { z } from "zod";
 
 import { readSessionCookie } from "#modules/auth/session-cookie";
 import { getEnv } from "#shared/config/env";
 import { ForbiddenError, UnauthorizedError } from "#shared/http/errors";
 
 /** The client sends the token back in the X-CSRF-Token header of every change. */
-export const csrfTokenResponseSchema = z.object({
-  csrfToken: z.string(),
-});
-
-export type CsrfTokenResponse = z.infer<typeof csrfTokenResponseSchema>;
+export interface CsrfTokenResponse {
+  csrfToken: string;
+}
 
 /**
  * The token of a session is an HMAC of its cookie. Only a page allowed to read the API responses

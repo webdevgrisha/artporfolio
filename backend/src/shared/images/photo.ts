@@ -4,7 +4,7 @@ import { z } from "zod";
 import { UnprocessableContentError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
 import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
-import { imageSchema, storedImageSchema, toImage } from "#shared/images/stored-image";
+import { type Image, storedImageSchema, toImage } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
 
 /** The text alternative of a photo. */
@@ -31,11 +31,12 @@ export const storedPhotoSchema = storedImageSchema.extend({
  * A photo as the API returns it, with download URLs in place of the stored paths. The alt text is
  * returned as it was saved, even if the rules have changed since.
  */
-export const photoSchema = imageSchema.extend({ alt: z.string() });
+export interface Photo extends Image {
+  alt: string;
+}
 
 export type PhotoBody = z.infer<typeof photoBodySchema>;
 export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
-export type Photo = z.infer<typeof photoSchema>;
 
 /** A single photo with its alt text, such as «My photo» or the contact photo. */
 export type PhotoSlot = ImageSlot<StoredPhoto>;

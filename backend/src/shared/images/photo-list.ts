@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { UnprocessableContentError } from "#shared/http/errors";
-import { altSchema, photoSchema, storedPhotoSchema, toPhoto } from "#shared/images/photo";
+import { altSchema, type Photo, storedPhotoSchema, toPhoto } from "#shared/images/photo";
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
 import { publishUpload, uploadIdSchema } from "#shared/images/uploads";
 
@@ -16,7 +16,9 @@ export const storedListPhotoSchema = storedPhotoSchema.extend({
 });
 
 /** A photo of a list, such as the process photos, as the API returns it. */
-export const listPhotoSchema = photoSchema.extend({ id: listPhotoIdSchema });
+export interface ListPhoto extends Photo {
+  id: string;
+}
 
 /** One photo of the new list: a saved one by its id, a new file by its upload, or both to replace the file. */
 const listPhotoItemSchema = z
@@ -50,7 +52,6 @@ export function photoListBodySchema(maxPhotos: number) {
 }
 
 export type StoredListPhoto = z.infer<typeof storedListPhotoSchema>;
-export type ListPhoto = z.infer<typeof listPhotoSchema>;
 export type ListPhotoItem = z.infer<typeof listPhotoItemSchema>;
 
 /** The stored photo as the API returns it, with download URLs. */

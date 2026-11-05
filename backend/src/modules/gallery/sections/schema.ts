@@ -58,18 +58,16 @@ export const storedSectionSchema = z.object({
   subsections: z.array(subsectionSchema),
 });
 
-/** A section as the API returns it. */
-export const sectionSchema = storedSectionSchema.extend({
-  id: z.string(),
-});
-
-export const sectionsResponseSchema = z.object({
-  /** Sorted by title. */
-  sections: z.array(sectionSchema),
-});
-
 export type SectionParams = z.infer<typeof sectionParamsSchema>;
 export type SectionBody = z.infer<typeof sectionBodySchema>;
 export type StoredSection = z.infer<typeof storedSectionSchema>;
-export type Section = z.infer<typeof sectionSchema>;
-export type SectionsResponse = z.infer<typeof sectionsResponseSchema>;
+
+/** A section as the API returns it. */
+export interface Section extends StoredSection {
+  id: string;
+}
+
+export interface SectionsResponse {
+  /** Sorted by title. */
+  sections: Section[];
+}

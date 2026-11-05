@@ -30,35 +30,33 @@ export const storedImageSchema = z.object({
 });
 
 /** An image file as the API returns it, ready for a srcset. */
-const imageSourceSchema = z.object({
+export interface ImageSource {
   /** The file never changes, so the download URL is cached for a year. */
-  url: z.url(),
-  width: z.number().int().positive(),
-});
+  url: string;
+  width: number;
+}
 
 /**
  * The image as the API returns it, with download URLs in place of the stored paths: resized
  * without cropping to the widths 320, 640, 960, 1280 and 1920 (never wider than the original) and
  * encoded as AVIF and WebP, each ordered by width.
  */
-export const imageSchema = z.object({
-  fileName: z.string(),
+export interface Image {
+  fileName: string;
   /** Size of the uploaded file, in bytes. */
-  fileSize: z.number().int().positive(),
+  fileSize: number;
   /** Size of the largest image. */
-  width: z.number().int().positive(),
-  height: z.number().int().positive(),
+  width: number;
+  height: number;
   /** URL of the uploaded file, from the site's origin; only the admin can download it. */
-  original: z.string(),
-  sources: z.object({ avif: z.array(imageSourceSchema), webp: z.array(imageSourceSchema) }),
+  original: string;
+  sources: { avif: ImageSource[]; webp: ImageSource[] };
   /** Changes with every upload. */
-  version: z.string(),
-});
+  version: string;
+}
 
 export type StoredImageFile = z.infer<typeof storedImageFileSchema>;
 export type StoredImage = z.infer<typeof storedImageSchema>;
-export type ImageSource = z.infer<typeof imageSourceSchema>;
-export type Image = z.infer<typeof imageSchema>;
 
 function toImageSource({ path, token, width }: StoredImageFile): ImageSource {
   return { url: downloadUrl({ path, token }), width };

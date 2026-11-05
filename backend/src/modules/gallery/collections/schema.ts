@@ -2,7 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { minWorkYear } from "#modules/gallery/works/schema";
-import { photoBodySchema, photoSchema, storedPhotoSchema } from "#shared/images/photo";
+import { type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
 
 /** A collection holds works, so it starts no earlier than a work can be dated. */
 export const minCollectionYear = minWorkYear;
@@ -96,28 +96,28 @@ export const storedCollectionSchema = z.object({
   updatedAt: z.instanceof(Timestamp),
 });
 
-/** A collection as the API returns it. */
-export const collectionSchema = z.object({
-  id: collectionIdSchema,
-  title: z.string(),
-  description: z.string(),
-  cover: photoSchema,
-  startYear: z.number(),
-  /** Null for a collection of one year. */
-  endYear: z.number().nullable(),
-  /** In the order the site shows them: the latest first. */
-  workIds: z.array(z.uuid()),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-});
-
-export const collectionsResponseSchema = z.object({
-  /** In the order the site shows them: the latest first. */
-  collections: z.array(collectionSchema),
-});
-
 export type CollectionParams = z.infer<typeof collectionParamsSchema>;
 export type CollectionBody = z.infer<typeof collectionBodySchema>;
 export type StoredCollection = z.infer<typeof storedCollectionSchema>;
-export type Collection = z.infer<typeof collectionSchema>;
-export type CollectionsResponse = z.infer<typeof collectionsResponseSchema>;
+
+/** A collection as the API returns it. */
+export interface Collection {
+  id: string;
+  title: string;
+  description: string;
+  cover: Photo;
+  startYear: number;
+  /** Null for a collection of one year. */
+  endYear: number | null;
+  /** In the order the site shows them: the latest first. */
+  workIds: string[];
+  /** ISO 8601. */
+  createdAt: string;
+  /** ISO 8601. */
+  updatedAt: string;
+}
+
+export interface CollectionsResponse {
+  /** In the order the site shows them: the latest first. */
+  collections: Collection[];
+}
