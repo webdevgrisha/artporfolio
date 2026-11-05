@@ -29,6 +29,7 @@ import { sectionLabels } from "../model/workSections";
 import {
   compareWorkDates,
   compareWorkSizes,
+  createWorkFilters,
   formatWorkPlace,
   matchesWorkQuery,
   worksSortableColumns,
@@ -65,6 +66,11 @@ export function WorksList({ className, collections, materials, sections, works }
   const collectionTitles = React.useMemo(
     () => new Map(collections.map(({ id, title }) => [id, title])),
     [collections],
+  );
+
+  const filters = React.useMemo(
+    () => createWorkFilters(collections, materials, sections),
+    [collections, materials, sections],
   );
 
   const columns = React.useMemo<ColumnDef<TableRow<GalleryWorkSummary>>[]>(
@@ -219,6 +225,7 @@ export function WorksList({ className, collections, materials, sections, works }
         tableClassName={styles.table}
         caption="Все работы"
         columns={columns}
+        filters={filters}
         items={works}
         getId={(work) => work.id}
         matches={matchesWorkQuery}

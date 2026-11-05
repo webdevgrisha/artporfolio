@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import type { GalleryWorkSummary } from "@/entities/gallery";
+import type {
+  GalleryCollection,
+  GalleryMaterial,
+  GallerySection,
+  GalleryWorkSummary,
+} from "@/entities/gallery";
 import {
   compareWorkDates,
   compareWorkSizes,
+  createWorkFilters,
   formatWorkPlace,
   matchesWorkQuery,
 } from "@/features/edit-gallery/model/worksTableView";
@@ -18,6 +24,52 @@ describe("matchesWorkQuery", () => {
 
   it("matches every work while the query is empty", () => {
     expect(matchesWorkQuery(work, "")).toBe(true);
+  });
+});
+
+describe("createWorkFilters", () => {
+  const collections = [{ id: "c1", title: "Звери" }] as GalleryCollection[];
+  const materials = [{ id: "m1", title: "Масло" }] as GalleryMaterial[];
+  const sections = [
+    { id: "s1", subsections: [{ id: "s1a", title: "Пейзаж" }], title: "Живопись" },
+    { id: "s2", subsections: [], title: "Постеры" },
+  ] as GallerySection[];
+  const filters = createWorkFilters(collections, materials, sections);
+
+  function fits(id: string, fields: Partial<GalleryWorkSummary>, value: string): boolean {
+    const filter = filters.find((candidate) => candidate.id === id);
+
+    return filter?.matches(fields as GalleryWorkSummary, value) ?? false;
+  }
+
+  it("finds the works of a section and of its subsections", () => {
+    expect(fits("section", { sectionIds: ["s1"] }, "s1")).toBe(true);
+    expect(fits("section", { sectionIds: ["s1a"] }, "s1")).toBe(true);
+    expect(fits("section", { sectionIds: ["s2"] }, "s1")).toBe(false);
+  });
+
+  it("finds only the works of a subsection, not those of its section", () => {
+    expect(fits("section", { sectionIds: ["s1a"] }, "s1a")).toBe(true);
+    expect(fits("section", { sectionIds: ["s1"] }, "s1a")).toBe(false);
+  });
+
+  it("finds the works of a collection and the works on their own", () => {
+    const none = filters
+      .find(({ id }) => id === "collection")
+      ?.options.find(({ label }) => label === "Без коллекции");
+
+    expect(none?.value).toBeTruthy();
+    expect(fits("collection", { collectionId: "c1" }, "c1")).toBe(true);
+    expect(fits("collection", { collectionId: null }, "c1")).toBe(false);
+    expect(fits("collection", { collectionId: null }, none?.value ?? "")).toBe(true);
+    expect(fits("collection", { collectionId: "c1" }, none?.value ?? "")).toBe(false);
+  });
+
+  it("finds the works by their status and their material", () => {
+    expect(fits("status", { saleStatus: "sold" }, "sold")).toBe(true);
+    expect(fits("status", { saleStatus: "available" }, "sold")).toBe(false);
+    expect(fits("material", { materialIds: ["m1"] }, "m1")).toBe(true);
+    expect(fits("material", { materialIds: [] }, "m1")).toBe(false);
   });
 });
 
