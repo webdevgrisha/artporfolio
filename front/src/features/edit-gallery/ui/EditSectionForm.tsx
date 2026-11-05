@@ -3,7 +3,7 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import {
   type GallerySection,
-  type GalleryWork,
+  type GalleryWorkSummary,
   gallerySectionQuery,
   galleryWorksQuery,
 } from "@/entities/gallery";
@@ -23,7 +23,7 @@ interface EditSectionFormProps {
   /** The section as stored on the server when the form opens, with its ETag. */
   section: Tagged<GallerySection>;
   /** Every work, to count the works in each subsection. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 export function EditSectionForm({ className, section, works }: EditSectionFormProps) {

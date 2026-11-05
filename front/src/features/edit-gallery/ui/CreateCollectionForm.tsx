@@ -3,7 +3,7 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
+import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
 import { galleryCollectionPath } from "@/shared/config/routes";
 import { EditForm, useCreateConflict } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
@@ -21,7 +21,7 @@ interface CreateCollectionFormProps {
   /** The collections of the gallery, to name the one a work to add is in now. */
   collections: readonly GalleryCollection[];
   /** Every work of the gallery, in the order the site shows them, to add to the collection. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 /** A new collection; once it is created, its edit page opens in place of this one. */

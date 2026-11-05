@@ -3,7 +3,7 @@ import type { QueryKey } from "@tanstack/react-query";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
-import { type GalleryWork, galleryWorksQuery } from "@/entities/gallery";
+import { type GalleryWorkSummary, galleryWorksQuery } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
@@ -27,7 +27,7 @@ interface EditTitleListFormProps<TData, TQueryKey extends QueryKey> {
   data: Tagged<TData>;
   list: TitleListConfig<TData, TQueryKey>;
   /** Every work, to count the works that name each row. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 /** The row being renamed: the key of its row and the title the renaming started from. */

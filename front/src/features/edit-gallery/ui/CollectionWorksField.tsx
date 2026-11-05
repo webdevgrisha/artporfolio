@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
+import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
 import { Button } from "@/shared/ui/button";
 import { Fieldset } from "@/shared/ui/fieldset";
 import { Frame, FrameEmpty, FrameList, FrameListItem, FrameRow } from "@/shared/ui/frame-list";
@@ -27,7 +27,7 @@ interface CollectionWorksFieldProps {
   /** The works of the collection, by id. */
   value: readonly string[];
   /** Every work of the gallery, in the order the site shows them. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 /**

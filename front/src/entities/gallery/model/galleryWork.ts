@@ -121,6 +121,17 @@ export const galleryWorkSchema = z.object({
 
 export type GalleryWork = z.infer<typeof galleryWorkSchema>;
 
+/**
+ * A work in the list of works: everything but its description and its process photos, which only
+ * the page of one work loads.
+ */
+export const galleryWorkSummarySchema = galleryWorkSchema.omit({
+  description: true,
+  processPhotos: true,
+});
+
+export type GalleryWorkSummary = z.infer<typeof galleryWorkSummarySchema>;
+
 /** The shape of every API response that returns one work. */
 export const galleryWorkResponseSchema = z.object({
   work: galleryWorkSchema,
@@ -128,5 +139,5 @@ export const galleryWorkResponseSchema = z.object({
 
 export const galleryWorksResponseSchema = z.object({
   /** In the order the site shows them: the latest first. */
-  works: z.array(galleryWorkSchema),
+  works: z.array(galleryWorkSummarySchema),
 });

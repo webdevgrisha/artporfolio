@@ -53,6 +53,7 @@ export {
 } from "./model/gallerySection";
 export {
   type GalleryWork,
+  type GalleryWorkSummary,
   maxWorkCityLength,
   maxWorkColors,
   maxWorkDiscount,

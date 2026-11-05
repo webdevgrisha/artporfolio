@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useController, useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
+import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
 import type { Photo } from "@/shared/api/photo";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
@@ -23,7 +23,7 @@ interface CollectionFieldsProps {
   /** The cover of the saved collection, shown while the cover field keeps it; none for a new one. */
   savedCover: Photo | null;
   /** Every work of the gallery, in the order the site shows them. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 /** The fields of a collection form; they read the form from its context. */

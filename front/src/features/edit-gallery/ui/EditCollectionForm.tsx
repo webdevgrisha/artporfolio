@@ -3,7 +3,7 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import {
   type GalleryCollection,
-  type GalleryWork,
+  type GalleryWorkSummary,
   galleryCollectionQuery,
   galleryCollectionsQuery,
   galleryWorksQuery,
@@ -26,7 +26,7 @@ interface EditCollectionFormProps {
   /** The collections of the gallery, to name the one a work to add is in now. */
   collections: readonly GalleryCollection[];
   /** Every work of the gallery, in the order the site shows them, to add to the collection. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 export function EditCollectionForm({

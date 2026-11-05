@@ -4,7 +4,7 @@ import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "reac
 
 import {
   type GalleryColors,
-  type GalleryWork,
+  type GalleryWorkSummary,
   galleryColorsQuery,
   galleryWorksQuery,
   maxColors,
@@ -34,7 +34,7 @@ interface EditColorsFormProps {
   /** The colors as stored on the server when the form opens, with their ETag. */
   colors: Tagged<GalleryColors>;
   /** Every work, to count the works of each color. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 /** The color being edited: the key of its row and the title and swatch the editing started from. */

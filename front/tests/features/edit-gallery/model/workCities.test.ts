@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import type { GalleryWork } from "@/entities/gallery";
+import type { GalleryWorkSummary } from "@/entities/gallery";
 import { citiesOf, countryOptions } from "@/features/edit-gallery/model/workCities";
 
-const made = (country: string | null, city: string) => ({ city, country }) as GalleryWork;
+const made = (country: string | null, city: string) => ({ city, country }) as GalleryWorkSummary;
 const works = [
   made("BY", "Минск"),
   made(null, ""),

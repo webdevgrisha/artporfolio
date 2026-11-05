@@ -5,6 +5,7 @@ import type { ListPhotoItem } from "@/shared/api/photo";
 
 import {
   type GalleryWork,
+  type GalleryWorkSummary,
   galleryWorkResponseSchema,
   galleryWorksResponseSchema,
   type WorkFormat,
@@ -75,9 +76,12 @@ function workPath(id: string): string {
   return `/gallery-works/${encodeURIComponent(id)}`;
 }
 
-/** Every work in the order the site shows them. */
+/**
+ * Every work in the order the site shows them, each by its summary: the description and the process
+ * photos come with one work alone (`galleryWorkQuery`).
+ */
 export const galleryWorksQuery = queryOptions({
-  queryFn: async ({ signal }): Promise<GalleryWork[]> => {
+  queryFn: async ({ signal }): Promise<GalleryWorkSummary[]> => {
     const { works } = await http.get({
       path: "/gallery-works",
       schema: galleryWorksResponseSchema,

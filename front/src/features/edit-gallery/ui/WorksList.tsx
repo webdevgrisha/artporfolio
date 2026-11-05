@@ -5,7 +5,7 @@ import type {
   GalleryCollection,
   GalleryMaterial,
   GallerySection,
-  GalleryWork,
+  GalleryWorkSummary,
   WorkSaleStatus,
 } from "@/entities/gallery";
 import { galleryWorkPath, routes } from "@/shared/config/routes";
@@ -38,7 +38,7 @@ import styles from "./WorksList.module.css";
 interface WorksListProps {
   className?: string;
   /** In the order the site shows them: the latest first. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
   /** The sections of the gallery, to name the sections of each work. */
   sections: readonly GallerySection[];
   /** The materials of the gallery, to name the materials of each work. */
@@ -60,14 +60,14 @@ const saleStatusClassNames: Record<WorkSaleStatus, string | undefined> = {
 export function WorksList({ className, collections, materials, sections, works }: WorksListProps) {
   const deletion = useDeleteWork();
   const deletingIds = useDeletingWorkIds();
-  const [deleted, setDeleted] = React.useState<GalleryWork>();
+  const [deleted, setDeleted] = React.useState<GalleryWorkSummary>();
 
   const collectionTitles = React.useMemo(
     () => new Map(collections.map(({ id, title }) => [id, title])),
     [collections],
   );
 
-  const columns = React.useMemo<ColumnDef<TableRow<GalleryWork>>[]>(
+  const columns = React.useMemo<ColumnDef<TableRow<GalleryWorkSummary>>[]>(
     () => [
       positionColumn({ isSortable: true }),
       {

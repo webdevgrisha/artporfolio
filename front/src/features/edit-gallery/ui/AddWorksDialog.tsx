@@ -2,7 +2,7 @@ import clsx from "clsx";
 import React from "react";
 import { createPortal } from "react-dom";
 
-import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
+import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
 import { useModalDialog } from "@/shared/lib/useModalDialog";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -33,7 +33,7 @@ interface AddWorksChoiceProps {
   /** Gets the chosen works, by id. */
   onAdd: (ids: string[]) => void;
   /** The works to choose from, in the order the site shows them. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 interface AddWorksDialogProps extends AddWorksChoiceProps {
@@ -89,7 +89,9 @@ function AddWorksChoice({
   }
 
   /** Where the work is now, unless it is on its own or was taken out of this collection. */
-  function currentCollection({ collectionId: workCollectionId }: GalleryWork): string | undefined {
+  function currentCollection({
+    collectionId: workCollectionId,
+  }: GalleryWorkSummary): string | undefined {
     if (workCollectionId === null || workCollectionId === collectionId) return undefined;
 
     return collectionTitles.get(workCollectionId);

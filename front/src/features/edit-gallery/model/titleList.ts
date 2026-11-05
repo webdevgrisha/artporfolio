@@ -1,7 +1,7 @@
 import type { QueryKey, UseSuspenseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
-import type { GalleryWork } from "@/entities/gallery";
+import type { GalleryWorkSummary } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 
 import { refineUniqueTitles, titleSchema } from "./titles";
@@ -52,7 +52,7 @@ export interface TitleListConfig<TData, TQueryKey extends QueryKey = QueryKey> {
   toItems: (data: TData) => TitleItem[];
   toastId: string;
   /** The ids of the rows a work names. */
-  workIds: (work: GalleryWork) => readonly string[];
+  workIds: (work: GalleryWorkSummary) => readonly string[];
 }
 
 export interface TitleListFormValues {

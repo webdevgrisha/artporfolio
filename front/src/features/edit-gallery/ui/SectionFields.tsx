@@ -2,7 +2,7 @@ import clsx from "clsx";
 import React from "react";
 import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import { type GalleryWork, maxSubsections, type Subsection } from "@/entities/gallery";
+import { type GalleryWorkSummary, maxSubsections, type Subsection } from "@/entities/gallery";
 import { Button } from "@/shared/ui/button";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
@@ -20,7 +20,7 @@ interface SectionFieldsProps {
   /** The subsections of the saved section, to mark the changed ones; none for a new section. */
   savedSubsections: readonly Subsection[];
   /** Every work, to count the works in each saved subsection; none for a new section. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 /**

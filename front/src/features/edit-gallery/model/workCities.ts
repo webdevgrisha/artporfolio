@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { type GalleryWork, galleryWorksQuery } from "@/entities/gallery";
+import { type GalleryWorkSummary, galleryWorksQuery } from "@/entities/gallery";
 import { countryCodes, countryName } from "@/shared/lib/countries";
 
 const collator = new Intl.Collator("ru", { sensitivity: "base" });
@@ -17,7 +17,7 @@ export const countryOptions: readonly { label: string; value: string }[] = [
  * The cities the works were made in, each once and alphabetically, so a city is typed alike; only
  * those of the country `country` names, unless it is empty.
  */
-export function citiesOf(works: readonly GalleryWork[], country: string): string[] {
+export function citiesOf(works: readonly GalleryWorkSummary[], country: string): string[] {
   const cities = new Set(
     works
       .filter((work) => work.city !== "" && (country === "" || work.country === country))

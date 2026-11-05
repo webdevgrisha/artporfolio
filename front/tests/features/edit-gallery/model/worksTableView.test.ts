@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { GalleryWork } from "@/entities/gallery";
+import type { GalleryWorkSummary } from "@/entities/gallery";
 import {
   compareWorkDates,
   compareWorkSizes,
@@ -8,7 +8,7 @@ import {
   matchesWorkQuery,
 } from "@/features/edit-gallery/model/worksTableView";
 
-const work = { title: "Слон на закате" } as GalleryWork;
+const work = { title: "Слон на закате" } as GalleryWorkSummary;
 
 describe("matchesWorkQuery", () => {
   it("finds the query in the title, in any case, ignoring spaces around it", () => {
@@ -22,7 +22,8 @@ describe("matchesWorkQuery", () => {
 });
 
 describe("compareWorkSizes", () => {
-  const sized = (width: number, height: number) => ({ size: { height, width } }) as GalleryWork;
+  const sized = (width: number, height: number) =>
+    ({ size: { height, width } }) as GalleryWorkSummary;
 
   it("compares the areas, then the widths", () => {
     expect(compareWorkSizes(sized(30, 40), sized(50, 70))).toBeLessThan(0);
@@ -34,7 +35,7 @@ describe("compareWorkSizes", () => {
 });
 
 describe("compareWorkDates", () => {
-  const dated = (year: number, month: number) => ({ month, year }) as GalleryWork;
+  const dated = (year: number, month: number) => ({ month, year }) as GalleryWorkSummary;
 
   it("compares the years, then the months", () => {
     expect(compareWorkDates(dated(2023, 12), dated(2024, 1))).toBeLessThan(0);
@@ -44,7 +45,8 @@ describe("compareWorkDates", () => {
 });
 
 describe("formatWorkPlace", () => {
-  const placed = (country: string | null, city: string) => ({ city, country }) as GalleryWork;
+  const placed = (country: string | null, city: string) =>
+    ({ city, country }) as GalleryWorkSummary;
 
   it("names the country in Russian, then the city", () => {
     expect(formatWorkPlace(placed("PL", "Краков"))).toBe("Польша, Краков");

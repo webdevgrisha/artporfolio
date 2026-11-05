@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   deleteGalleryWork,
-  type GalleryWork,
+  type GalleryWorkSummary,
   galleryCollectionsQueryKey,
   galleryWorksQueryKey,
 } from "@/entities/gallery";
@@ -29,7 +29,7 @@ export function useDeleteWork() {
         toastId: "gallery-work-delete",
       },
     },
-    mutationFn: ({ id }: GalleryWork) => deleteGalleryWork({ etag: "*", id }),
+    mutationFn: ({ id }: GalleryWorkSummary) => deleteGalleryWork({ etag: "*", id }),
     mutationKey: deleteWorkMutationKey,
     onSettled: () =>
       Promise.all([

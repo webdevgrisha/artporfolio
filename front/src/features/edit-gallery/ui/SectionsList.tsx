@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
-import type { GallerySection, GalleryWork } from "@/entities/gallery";
+import type { GallerySection, GalleryWorkSummary } from "@/entities/gallery";
 import { gallerySectionPath, routes } from "@/shared/config/routes";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import {
@@ -22,13 +22,13 @@ interface SectionsListProps {
   /** Sorted by title, as the site shows them. */
   sections: readonly GallerySection[];
   /** Every work, to count the works in each section. */
-  works: readonly GalleryWork[];
+  works: readonly GalleryWorkSummary[];
 }
 
 /** How the works use the section: a work in any of its subsections is in the section too. */
 function sectionUsage(
   { id, subsections }: GallerySection,
-  works: readonly GalleryWork[],
+  works: readonly GalleryWorkSummary[],
 ): WorkUsage {
   return workUsage(
     works.map((work) => work.sectionIds),
