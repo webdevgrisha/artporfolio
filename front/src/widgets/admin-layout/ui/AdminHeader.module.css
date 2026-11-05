@@ -16,9 +16,17 @@
   margin-inline-start: auto;
 }
 
+/* A phone has no room for it beside the menu button; the role is enough there. */
 .email {
+  display: none;
   min-inline-size: 0;
   overflow-wrap: anywhere;
+}
+
+@media (width >= 40rem) {
+  .email {
+    display: inline;
+  }
 }
 
 .role {
