@@ -50,6 +50,22 @@ describe("CORS", () => {
     },
   );
 
+  it("allows every header a change sends: the CSRF token and the preconditions", async () => {
+    const response = await fetch(`${server.baseUrl}/api/gallery-works/id`, {
+      headers: {
+        "Access-Control-Request-Headers": "content-type,if-match,if-none-match,x-csrf-token",
+        "Access-Control-Request-Method": "PUT",
+        Origin: "http://localhost:5173",
+      },
+      method: "OPTIONS",
+    });
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-headers")?.toLowerCase().split(",")).toEqual(
+      expect.arrayContaining(["content-type", "if-match", "if-none-match", "x-csrf-token"]),
+    );
+  });
+
   it("rejects requests from an origin outside the allowlist", async () => {
     const response = await fetch(`${server.baseUrl}/api/health`, {
       headers: { Origin: "https://attacker.example" },
