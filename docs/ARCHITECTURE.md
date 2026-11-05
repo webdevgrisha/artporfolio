@@ -120,46 +120,50 @@ backend/src/
 ├── server.ts           Express app: global middleware and top-level module routers
 ├── modules/            one folder per domain
 │   ├── about/          the whole About page for the site; document.ts is the Firestore document shared below
-│   │   ├── text/       the texts, mounted by the about router
+│   │   ├── text/       the texts: schema.ts and resource.ts
 │   │   ├── photo.ts    «My photo», a photo slot mounted by the about router
 │   │   └── process-photos/  the ordered process photos, mounted by the about router
-│   ├── auth/           routes, controller, service, schema, middleware (requireAuth)
+│   ├── auth/           the session and its cookie, CSRF tokens, protectChanges, requireAuth
 │   ├── contacts/       the whole contacts page for the site; document.ts is the Firestore document shared below
-│   │   ├── links/      the contact links, mounted by the contacts router
+│   │   ├── links/      the contact links: schema.ts and resource.ts
 │   │   └── photo.ts    the contact photo, a photo slot mounted by the contacts router
 │   ├── currencies/     the rates of the currencies against the US dollar, set by hand
-│   ├── gallery/collections/ the collections of the gallery, each a Firestore document with its cover and years
-│   ├── gallery/colors/ the colors of the gallery, one list sorted by title
-│   ├── gallery/intro/  the text above the works in the gallery
-│   ├── gallery/materials/ the materials of the gallery, one list sorted by title
-│   ├── gallery/palettes/ the palettes of the gallery (pastel, bright…), one list sorted by title
-│   ├── gallery/sections/ the sections of the gallery, each a Firestore document with its subsections
-│   ├── gallery/works/  the works of the gallery, each a Firestore document; sizes stored in cm, returned in cm and inches; prices in other currencies computed from the rates on reading
+│   ├── gallery/        routes.ts mounts everything below under /api/gallery
+│   │   ├── collections/ the collections, each a Firestore document with its cover and years
+│   │   ├── colors/     the colors, one list sorted by title
+│   │   ├── intro/      the text above the works
+│   │   ├── materials/  the materials, one list sorted by title
+│   │   ├── palettes/   the palettes (pastel, bright…), one list sorted by title
+│   │   ├── sections/   the sections, each a Firestore document with its subsections
+│   │   └── works/      the works, each a Firestore document; representation.ts is what the API returns (sizes in cm and inches), prices.ts the prices computed from the rates, references.ts what a work refers to
 │   ├── health/
+│   ├── originals/      GET /api/originals, the uploaded files, for the admin alone
 │   ├── pages/          the pages of the public site and their main photos (heroes)
 │   ├── photo-slot/     the routes of one photo slot, for the slot a module names
 │   ├── projects/       the projects, each a Firestore document of its own, and their order
-│   ├── projects/intro/ the text above the projects
+│   │   └── intro/      the text above the projects
 │   └── uploads/        POST /api/uploads, the only multipart route
 └── shared/             no knowledge of the domain
-    ├── config/         env, cookies, cors
+    ├── config/         env, cors
     ├── firebase/       Firebase Admin clients: app, auth, firestore, storage
-    ├── http/           HttpError, entity tags, cookie helpers, Express request typing
-    ├── images/         image processing with sharp, uploads, image files in Cloud Storage, photo slots, photo lists
-    ├── middleware/     csrf, content-type, preconditions (If-Match), validation, upload, error
+    ├── http/           HttpError, entity tags, Problem Details, documentResource, Express request typing
+    ├── images/         image processing with sharp, uploads, stored images, saving with files, photo slots, photo lists
+    ├── middleware/     content-type, preconditions (If-Match), validation, upload, error
     └── text/           titles: compared whatever the case, sorted in the Russian alphabet
 ```
 
 - A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. The request flow is route → middleware → controller → service.
-- `shared/` never imports `modules/`; Biome enforces it. A module may use another module, as `contacts` uses `requireAuth` from `auth`.
+- Data the site reads as a whole and the admin replaces as a whole, kept in one document, is a `documentResource` (`shared/http/document-resource.ts`): the intros, the colors, materials and palettes, the rates, the About texts, the contact links. Such a module has only `schema.ts` and `resource.ts`, which says where the data lives; its routes are `documentResourceRouter(resource, bodySchema)`. A change replaces only the fields of the resource (`mergeFields`), so what else the document holds stays.
+- `shared/` never imports `modules/`; Biome enforces it. A module may use another module, as `originals` uses `requireAuth` from `auth`.
 - `server.ts` mounts only top-level modules. A submodule is mounted by its parent's router, as `contacts` mounts `links`. A photo slot is mounted as `photoSlotRouter(contactPhoto)` (`modules/photo-slot`).
 - Each part of a page that the admin saves on its own is a resource of its own, with its own `GET` and `PUT`: `/api/about/text`, `/api/about/photo`, `/api/about/process-photos`. A `PUT` replaces the whole resource at its URL (RFC 9110 §9.3.4), never a part of a larger one. The page itself (`GET /api/about`) is a read-only aggregate, so the site reads it in one request.
-- A single image is an `ImageSlot` from `shared/images/slot.ts`: a Firestore document, a field, the schema of what the field stores, and a Storage folder. Filling, replacing and clearing a slot are shared. A page hero stores the image alone; a photo with alt text (the contact photo, «My photo») is a `PhotoSlot` from `shared/images/photo.ts`, which adds the alt text and its update. The module only names its slot (`modules/contacts/photo.ts`).
-- Data read from Firestore is checked for its shape only (`stored…Schema`): limits and formats are checked once, when the API writes the data. Tightening a rule later then never makes saved data unreadable. For the same reason the response schemas describe the shape of the data, not the rules of its request.
-- A photo is uploaded once (`shared/images/uploads.ts`): it is encoded and kept privately under `uploads/{id}` with a manifest, which is written last. A change that uses it copies it into a new version folder of its content (`publishUpload`) before Firestore is written, and replaced files are deleted last, so the site never links to missing files. Uploads, used or not, are deleted by the bucket's lifecycle rule (`storage.lifecycle.json`) a day after they were made: a used one stays, so a change repeated after its response was lost can still refer to it. Every change that reads and writes a document runs in a transaction.
+- A single image is an `ImageSlot` from `shared/images/slot.ts`: a Firestore document, a field, the schema of what the field stores, and a Storage folder. Filling and replacing a slot are shared. A page hero stores the image alone; a photo with alt text (the contact photo, «My photo») is a `PhotoSlot` from `shared/images/photo.ts`, which adds the alt text and its update. The module only names its slot (`modules/contacts/photo.ts`).
+- Data read from Firestore is checked for its shape only (`stored…Schema`): limits and formats are checked once, when the API writes the data. Tightening a rule later then never makes saved data unreadable. Zod runs only on what comes in, request bodies and stored data. What the API returns is described by plain TypeScript types in `schema.ts`.
+- A photo is uploaded once (`shared/images/uploads.ts`): it is encoded and kept privately under `uploads/{id}` with a manifest, which is written last. A change that uses it copies it into a new version folder of its content (`publishUpload`) before Firestore is written, and replaced files are deleted last, so the site never links to missing files. That order lives in one place, `saveWithImages` (`shared/images/saving.ts`): a service copies files and writes inside it, and if the save fails, the copies are removed. Uploads, used or not, are deleted by the bucket's lifecycle rule (`storage.lifecycle.json`) a day after they were made: a used one stays, so a change repeated after its response was lost can still refer to it. Every change that reads and writes a document runs in a transaction.
 - Every change of the content is conditional. A resource's `GET` returns the `ETag` of what it returns (`entityTag` in `shared/http/etag.ts`), so a change of the response, such as a deleted material a work refers to or the date of a save, changes the tag, and a strong 304 is never stale; the change checks `If-Match` against the same representation (RFC 9110 §8.8.3; an empty photo slot is `null`); `PUT` and `DELETE` need it in `If-Match` (`requireIfMatch`): 428 without it, 412 once the resource has changed (`assertIfMatch`, in the transaction that writes). The response to a change carries the new `ETag`. A collection edited as a whole, such as the process photos, is replaced by one `PUT` of the full list: an item names a saved element by `id`, a new file by `uploadId`, or both to replace a file; a saved element left out is deleted. The photos of such a list, of the process photos or of a project, are saved by `preparePhotoList` (`shared/images/photo-list.ts`). A photo in the body of a change is `{ alt, uploadId? }` (`photoBodySchema`): without `uploadId` the file stays and only the alt text changes. A single resource is returned as itself, without a wrapper; a list as an object with a named array (`{ works: […] }`).
 - A collection whose elements are edited one at a time, such as the projects, keeps each element in its own Firestore document at `/:id`. The client picks the id of a new element (a UUID) and creates it with `PUT` and `If-None-Match: *` (201); the server answers 412 once the id is taken, so a create repeated after a lost response never makes a second element. `PUT` with `If-Match` and `DELETE` change it. Its order is a resource of its own (`/api/projects/order`, the ids in order) stored as a `position` in each document; the `ETag` of an element leaves the position out, so reordering does not outdate an open edit form. The server dates each element: `createdAt` once, `updatedAt` on every save of the element, not on a move.
 - A hidden work (`published: false`) is the admin's alone. The public `GET`s of works and collections pass `identifyReader` (`modules/auth/middleware.ts`): without a session the reader is a visitor, who gets only published works (a hidden one is 404, and the `workIds` of a collection leave it out); with a valid session the reader is the admin, who gets them all in an answer marked `Cache-Control: private, no-cache`; an ended session is 401. The answer depends on the cookie, so it carries `Vary: Cookie`.
+- Every change goes through `protectChanges` (`modules/auth/middleware.ts`), which `server.ts` mounts in front of the routes: a method other than `GET`, `HEAD` and `OPTIONS` needs the admin's session and its CSRF token, so a new route is protected without asking for it. Only `/api/health` and `/api/auth` are mounted before it.
 - The session is the `__session` cookie: Firebase Hosting passes the function no other cookie. The CSRF token is an HMAC of that cookie, issued by `GET /api/auth/csrf` and sent back in `X-CSRF-Token`, so every tab of a session has the same token and a new session gets a new one. Login needs no token: there is no session yet, and only the admin can sign in.
 - Global Express typing lives with its owner: `modules/auth/express.d.ts` declares `Locals.auth`, `shared/http/express.d.ts` declares `Request.file` and `rawBody`.
 - Code imports through subpath imports (`#modules/auth/service`, `#shared/http/errors`). There are no barrel files.
@@ -170,6 +174,7 @@ backend/src/
 
 ## Tests
 
+- `pnpm test` needs no outside service. `tests/document-resources.test.ts` checks every document resource from one table, through the real `server`. `tests/integration` runs against the real Firestore and Storage emulators: transactions, file copies, two saves at once. Run it with `pnpm test:emulators` (needs Java 21 and free ports 5502 and 5503). CI runs it too.
 - Backend tests live in `backend/tests`, mirroring `src` (`tests/modules/contacts/links/service.test.ts` tests `src/modules/contacts/links/service.ts`), and run with Vitest. Their environment is set in `backend/vitest.config.ts`.
 - `backend/tests/support` holds shared helpers: `startTestServer` runs an Express app on a free port, `adminHeaders` returns the session cookie and CSRF header of a signed-in admin, `apiImage` returns a complete image for mocked services, `routeApp` builds the app for a route test: the global middleware, the auth routes and the router under test. Import them with a relative path ending in `.js`.
 - Frontend tests live in `front/tests`, mirroring `src` in the same way, and run with Vitest in happy-dom (`front/vitest.config.ts`). They cover the logic: form schemas, the changes a save sends, the save functions, error messages, route loaders and actions, and hooks. Components are not tested yet.
