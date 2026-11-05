@@ -11,7 +11,6 @@ export { ErrorIcon } from "./ErrorIcon";
 export { ExternalLinkIcon } from "./ExternalLinkIcon";
 export { EyeIcon } from "./EyeIcon";
 export { EyeOffIcon } from "./EyeOffIcon";
-export { HeartIcon } from "./HeartIcon";
 export type { IconProps } from "./IconBase";
 export { MenuIcon } from "./MenuIcon";
 export { PlusIcon } from "./PlusIcon";
