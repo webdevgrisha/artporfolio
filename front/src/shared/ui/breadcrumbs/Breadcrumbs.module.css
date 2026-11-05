@@ -26,6 +26,19 @@
   transition: color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
+/* Tall enough to tap; the height of a link replaces the gap between the lines. */
+@media (pointer: coarse) {
+  .list {
+    row-gap: 0;
+  }
+
+  .link {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--min-tap-target-size);
+  }
+}
+
 .link:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 2px;

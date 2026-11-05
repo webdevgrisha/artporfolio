@@ -79,6 +79,7 @@
 }
 
 .chipRemove {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -89,6 +90,15 @@
   cursor: pointer;
   background: none;
   border: 0;
+}
+
+/* The chip keeps its size; only the area a finger can hit grows. */
+@media (pointer: coarse) {
+  .chipRemove::after {
+    position: absolute;
+    inset: calc((1.75rem - var(--min-tap-target-size)) / 2);
+    content: "";
+  }
 }
 
 .chipRemove:disabled {

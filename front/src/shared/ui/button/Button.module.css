@@ -24,6 +24,13 @@
   }
 }
 
+/* A finger needs more room than a pointer. */
+@media (pointer: coarse) {
+  .root {
+    min-block-size: var(--min-tap-target-size);
+  }
+}
+
 .root:active:not(:disabled) {
   color: var(--color-text-inverse);
   background: var(--color-surface-inverse);

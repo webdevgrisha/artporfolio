@@ -16,7 +16,7 @@
 /* A subsection starts under the title of its section. */
 .subsection {
   min-block-size: var(--min-tap-target-size);
-  padding-inline-start: calc(2 * var(--space-6));
+  padding-inline-start: calc(2 * var(--row-gutter));
 }
 
 /* Over the label, so it only opens the subsections. */
@@ -33,6 +33,13 @@
   cursor: pointer;
   background: none;
   border: 0;
+}
+
+@media (pointer: coarse) {
+  .toggle {
+    inline-size: var(--min-tap-target-size);
+    block-size: var(--min-tap-target-size);
+  }
 }
 
 .toggle:focus-visible {
