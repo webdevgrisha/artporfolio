@@ -123,11 +123,7 @@ export function DataTable<TItem>({
           onChange={changeQuery}
         />
         {/* Here and not by the filters: its line never moves the table once a filter is chosen. */}
-        {isFiltered ? (
-          <Button variant="text" onClick={() => clearFilters()}>
-            Сбросить фильтры
-          </Button>
-        ) : null}
+        {isFiltered ? <Button onClick={() => clearFilters()}>Сбросить фильтры</Button> : null}
         <ButtonLink to={addLink.to}>{addLink.label}</ButtonLink>
       </div>
 
@@ -151,7 +147,7 @@ export function DataTable<TItem>({
       ) : rows.length === 0 ? (
         <div className={styles.empty}>
           <p>{query ? `Ничего не найдено по запросу «${query}»` : "Ничего не найдено"}</p>
-          <Button variant="text" onClick={() => clearFilters({ query: "" })}>
+          <Button onClick={() => clearFilters({ query: "" })}>
             {isFiltered ? "Сбросить поиск и фильтры" : "Сбросить поиск"}
           </Button>
         </div>
