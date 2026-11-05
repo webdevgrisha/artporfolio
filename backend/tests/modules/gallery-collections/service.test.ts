@@ -93,6 +93,7 @@ import {
   PreconditionFailedError,
   UnprocessableContentError,
 } from "#shared/http/errors";
+import { entityTag } from "#shared/http/etag";
 
 const animalsId = "11111111-1111-4111-8111-111111111111";
 const seaId = "22222222-2222-4222-8222-222222222222";
@@ -295,6 +296,18 @@ describe("the works of a collection", () => {
     expect(collectionOf(whaleId)).toBe(seaId);
     // Moving a work does not edit it.
     expect(works.get(foxId)?.updatedAt).toBe(seededAt);
+  });
+
+  it("changes the tag with the date of every save, even of the same values", async () => {
+    const before = await readTag(animalsId);
+    const { data, etag } = await replaceCollection(animalsId, body, before);
+    // A later save, a millisecond on at least.
+    vi.useFakeTimers({ now: Date.now() + 1, toFake: ["Date"] });
+    const { etag: again } = await replaceCollection(animalsId, body, etag);
+    vi.useRealTimers();
+
+    expect(etag).toBe(entityTag(data));
+    expect(again).not.toBe(etag);
   });
 
   it("returns the tag a later read gives", async () => {

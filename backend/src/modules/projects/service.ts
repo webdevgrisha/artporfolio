@@ -54,14 +54,6 @@ function readProject(snapshot: DocumentSnapshot): StoredProject {
 }
 
 /**
- * What the client edits, which the entity tag of a project follows. The position is left out:
- * reordering the projects must not make an open edit form outdated.
- */
-function editedContent({ description, link, photos, title }: StoredProject) {
-  return { description, link, photos, title };
-}
-
-/**
  * Rejects with 409 a title that another project has, whatever the case: the visitor tells the
  * projects apart by their titles.
  */
@@ -91,8 +83,14 @@ function toProject(
   };
 }
 
+/**
+ * The project as the API returns it, tagged by that representation. It has no position: reordering
+ * the projects does not make an open edit form outdated.
+ */
 function toSavedProject(id: string, project: StoredProject): SavedProject {
-  return { data: toProject(id, project), etag: entityTag(editedContent(project)), id };
+  const data = toProject(id, project);
+
+  return { data, etag: entityTag(data), id };
 }
 
 /** Every project in the order the site shows them, tagged by the stored list. */
@@ -173,7 +171,7 @@ export async function replaceProject(
       const document = projectDocument(id);
       const current = readProject(await transaction.get(document));
 
-      assertIfMatch(ifMatch, editedContent(current));
+      assertIfMatch(ifMatch, toProject(id, current));
       assertTitleIsFree(id, body.title, await transaction.get(orderedProjects()));
 
       const next: StoredProject = {
@@ -201,7 +199,7 @@ export async function deleteProject(id: string, ifMatch: string): Promise<void> 
   await firestore().runTransaction(async (transaction) => {
     const document = projectDocument(id);
 
-    assertIfMatch(ifMatch, editedContent(readProject(await transaction.get(document))));
+    assertIfMatch(ifMatch, toProject(id, readProject(await transaction.get(document))));
     transaction.delete(document);
   });
 

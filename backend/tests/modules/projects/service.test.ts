@@ -190,6 +190,17 @@ describe("getProject", () => {
     await expect(getProject(photoId)).rejects.toBeInstanceOf(NotFoundError);
   });
 
+  it("changes the tag with the date of every save, even of the same values", async () => {
+    const { data, etag } = await replaceProject(elephantId, body, await readTag(elephantId));
+    // A later save, a millisecond on at least.
+    vi.useFakeTimers({ now: Date.now() + 1, toFake: ["Date"] });
+    const { etag: again } = await replaceProject(elephantId, body, etag);
+    vi.useRealTimers();
+
+    expect(etag).toBe(entityTag(data));
+    expect(again).not.toBe(etag);
+  });
+
   it("keeps the tag when only the position changes", async () => {
     const before = await readTag(elephantId);
 

@@ -93,6 +93,7 @@ import {
   PreconditionFailedError,
   UnprocessableContentError,
 } from "#shared/http/errors";
+import { entityTag } from "#shared/http/etag";
 
 const elephantId = "11111111-1111-4111-8111-111111111111";
 const tigerId = "22222222-2222-4222-8222-222222222222";
@@ -655,6 +656,28 @@ describe("the price of a work", () => {
     );
 
     expect(priced).not.toBe(etag);
+  });
+});
+
+describe("the entity tag of a work", () => {
+  it("is the tag of what is returned, which a later read gives again", async () => {
+    const { data, etag } = await getWork(elephantId, "admin");
+
+    expect(etag).toBe(entityTag(data));
+    await expect(readTag(elephantId)).resolves.toBe(etag);
+  });
+
+  it("changes when a material the work refers to is deleted, outdating a form opened before", async () => {
+    const before = await readTag(elephantId);
+
+    lists.set("site/galleryMaterials", { materials: [{ id: canvasId, title: "Холст" }] });
+
+    expect((await getWork(elephantId, "admin")).data.materialIds).toEqual([]);
+    expect(await readTag(elephantId)).not.toBe(before);
+    await expect(
+      replaceWork(elephantId, { ...body, photo: { alt: "Слон" } }, before),
+    ).rejects.toBeInstanceOf(PreconditionFailedError);
+    await expect(deleteWork(elephantId, before)).rejects.toBeInstanceOf(PreconditionFailedError);
   });
 });
 

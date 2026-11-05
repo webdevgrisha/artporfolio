@@ -83,51 +83,6 @@ function readWork(snapshot: DocumentSnapshot): StoredWork {
   return storedWorkSchema.parse(snapshot.data());
 }
 
-/** What the client edits, which the entity tag of a work follows. */
-function editedContent({
-  city,
-  collectionId,
-  colorIds,
-  country,
-  description,
-  format,
-  materialIds,
-  month,
-  paletteIds,
-  partCount,
-  photo,
-  price,
-  processPhotos,
-  published,
-  saleStatus,
-  sectionIds,
-  size,
-  title,
-  year,
-}: StoredWork) {
-  return {
-    city,
-    collectionId,
-    colorIds,
-    country,
-    description,
-    format,
-    materialIds,
-    month,
-    paletteIds,
-    partCount,
-    photo,
-    price,
-    processPhotos,
-    published,
-    saleStatus,
-    sectionIds,
-    size,
-    title,
-    year,
-  };
-}
-
 const centimetresPerInch = 2.54;
 
 /**
@@ -213,17 +168,32 @@ function toWork(
   };
 }
 
+/**
+ * The work as the API returns it, tagged by that representation: deleting a section, a material, a
+ * color or a palette the work refers to changes what is returned, and so its tag, without changing
+ * the stored work.
+ */
 function toSavedWork(id: string, work: StoredWork, known: KnownIds): SavedWork {
-  return { data: toWork(id, work, known), etag: entityTag(editedContent(work)), id };
+  const data = toWork(id, work, known);
+
+  return { data, etag: entityTag(data), id };
 }
 
-/** The ids of everything a work may refer to. */
-async function readKnownIds(): Promise<KnownIds> {
+/**
+ * Rejects with 412 a change of the work unless `ifMatch` names the tag of the work as it is
+ * returned now.
+ */
+function assertWorkIfMatch(ifMatch: string, id: string, work: StoredWork, known: KnownIds): void {
+  assertIfMatch(ifMatch, toWork(id, work, known));
+}
+
+/** The ids of everything a work may refer to, read in `transaction` when there is one. */
+async function readKnownIds(transaction?: Transaction): Promise<KnownIds> {
   const [sections, materials, colors, palettes] = await Promise.all([
-    sectionsCollection().get(),
-    materialsDocument().get(),
-    colorsDocument().get(),
-    palettesDocument().get(),
+    transaction ? transaction.get(sectionsCollection()) : sectionsCollection().get(),
+    transaction ? transaction.get(materialsDocument()) : materialsDocument().get(),
+    transaction ? transaction.get(colorsDocument()) : colorsDocument().get(),
+    transaction ? transaction.get(palettesDocument()) : palettesDocument().get(),
   ]);
 
   return {
@@ -260,29 +230,21 @@ async function assertCollectionHasRoom(
 }
 
 /**
- * Rejects with 422 a section, a material, a color, a palette or a collection the work names that
- * does not exist, such as one deleted while the form was open, and with 409 a move into a full
- * collection (`currentCollectionId`, the collection the work is in now). Read in the transaction,
- * so a change made meanwhile is caught too.
+ * Rejects with 422 a section, a material, a color, a palette (`known`, read in the transaction) or
+ * a collection the work names that does not exist, such as one deleted while the form was open,
+ * and with 409 a move into a full collection (`currentCollectionId`, the collection the work is in
+ * now). Read in the transaction, so a change made meanwhile is caught too.
  */
 async function assertReferencesExist(
   transaction: Transaction,
   body: WorkBody,
   currentCollectionId: string | null,
-): Promise<KnownIds> {
-  const [sections, materials, colors, palettes, collection] = await Promise.all([
-    transaction.get(sectionsCollection()),
-    transaction.get(materialsDocument()),
-    transaction.get(colorsDocument()),
-    transaction.get(palettesDocument()),
-    body.collectionId === null ? null : transaction.get(collectionDocument(body.collectionId)),
-  ]);
-  const known: KnownIds = {
-    colors: colorIdsIn(colors),
-    materials: materialIdsIn(materials),
-    palettes: paletteIdsIn(palettes),
-    sections: sectionIdsIn(sections),
-  };
+  known: KnownIds,
+): Promise<void> {
+  const collection =
+    body.collectionId === null
+      ? null
+      : await transaction.get(collectionDocument(body.collectionId));
 
   assertKnown(body.sectionIds, known.sections, "section");
   assertKnown(body.materialIds, known.materials, "material");
@@ -296,8 +258,6 @@ async function assertReferencesExist(
   if (body.collectionId !== null && body.collectionId !== currentCollectionId) {
     await assertCollectionHasRoom(transaction, body.collectionId);
   }
-
-  return known;
 }
 
 /** The latest month first; works of one month, the latest created first. */
@@ -391,7 +351,9 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
         throw new PreconditionFailedError("The work already exists");
       }
 
-      const references = await assertReferencesExist(transaction, body, null);
+      const references = await readKnownIds(transaction);
+
+      await assertReferencesExist(transaction, body, null, references);
 
       const now = Timestamp.now();
       const created: StoredWork = {
@@ -442,10 +404,10 @@ export async function replaceWork(id: string, body: WorkBody, ifMatch: string): 
     [previous, work, known] = await firestore().runTransaction(async (transaction) => {
       const document = workDocument(id);
       const current = readWork(await transaction.get(document));
+      const references = await readKnownIds(transaction);
 
-      assertIfMatch(ifMatch, editedContent(current));
-
-      const references = await assertReferencesExist(transaction, body, current.collectionId);
+      assertWorkIfMatch(ifMatch, id, current, references);
+      await assertReferencesExist(transaction, body, current.collectionId, references);
 
       const next: StoredWork = {
         ...current,
@@ -476,8 +438,9 @@ export async function replaceWork(id: string, body: WorkBody, ifMatch: string): 
 export async function deleteWork(id: string, ifMatch: string): Promise<void> {
   await firestore().runTransaction(async (transaction) => {
     const document = workDocument(id);
+    const current = readWork(await transaction.get(document));
 
-    assertIfMatch(ifMatch, editedContent(readWork(await transaction.get(document))));
+    assertWorkIfMatch(ifMatch, id, current, await readKnownIds(transaction));
     transaction.delete(document);
   });
 

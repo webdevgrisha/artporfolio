@@ -66,14 +66,6 @@ function readCollection(snapshot: DocumentSnapshot): StoredCollection {
   return storedCollectionSchema.parse(snapshot.data());
 }
 
-/** What the client edits, which the entity tag of a collection follows: its works included. */
-function editedContent(
-  { cover, description, endYear, startYear, title }: StoredCollection,
-  workIds: string[],
-) {
-  return { cover, description, endYear, startYear, title, workIds };
-}
-
 /** The stored collection as the API returns it, with download URLs and ISO 8601 dates. */
 function toCollection(
   id: string,
@@ -93,16 +85,15 @@ function toCollection(
   };
 }
 
+/** The collection as the API returns it, tagged by that representation, its works included. */
 function toSavedCollection(
   id: string,
   collection: StoredCollection,
   workIds: string[],
 ): SavedCollection {
-  return {
-    data: toCollection(id, collection, workIds),
-    etag: entityTag(editedContent(collection, workIds)),
-    id,
-  };
+  const data = toCollection(id, collection, workIds);
+
+  return { data, etag: entityTag(data), id };
 }
 
 /**
@@ -280,7 +271,7 @@ export async function replaceCollection(
       const current = readCollection(await transaction.get(document));
       const currentWorkIds = idsInOrder((await transaction.get(membersQuery(id))).docs, "admin");
 
-      assertIfMatch(ifMatch, editedContent(current, currentWorkIds));
+      assertIfMatch(ifMatch, toCollection(id, current, currentWorkIds));
       assertTitleIsFree(id, body.title, await transaction.get(collectionsCollection()));
 
       const ordered = await readWorks(transaction, workIds);
@@ -317,7 +308,7 @@ export async function deleteCollection(id: string, ifMatch: string): Promise<voi
     const current = readCollection(await transaction.get(document));
     const currentWorkIds = idsInOrder((await transaction.get(membersQuery(id))).docs, "admin");
 
-    assertIfMatch(ifMatch, editedContent(current, currentWorkIds));
+    assertIfMatch(ifMatch, toCollection(id, current, currentWorkIds));
     transaction.delete(document);
     moveWorks(transaction, id, currentWorkIds, []);
   });
