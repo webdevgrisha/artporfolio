@@ -1,10 +1,9 @@
 import { Router } from "express";
-
+import { requireCsrfToken } from "#modules/auth/csrf";
 import { requireAuth } from "#modules/auth/middleware";
 import { putHero, readHero, readPages } from "#modules/pages/controller";
 import { heroBodySchema, pageParamsSchema } from "#modules/pages/schema";
 import { requireContentType } from "#shared/middleware/content-type";
-import { requireCsrfToken } from "#shared/middleware/csrf";
 import { requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody, validateParams } from "#shared/middleware/validation";
 

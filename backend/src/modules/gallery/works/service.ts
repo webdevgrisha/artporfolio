@@ -12,6 +12,7 @@ import {
   sectionIdsIn,
   sectionsCollection,
 } from "#modules/gallery/sections/service";
+import { workDocument, worksCollection } from "#modules/gallery/works/document";
 import { pricesIn } from "#modules/gallery/works/prices";
 import {
   discountedAmount,
@@ -38,7 +39,7 @@ import {
   type StoredListPhoto,
   toListPhoto,
 } from "#shared/images/photo-list";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
+import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
 import { publishUpload } from "#shared/images/uploads";
 
 /** What a work is returned by: the saved items of each list it refers to, and the rates. */
@@ -50,15 +51,6 @@ interface KnownData {
   palettes: Set<string>;
   /** How many units of each currency in use one US dollar buys. */
   rates: Record<string, number>;
-}
-
-/** Every work; a collection reads it to find its works. */
-export function worksCollection() {
-  return firestore().collection("galleryWorks");
-}
-
-function workDocument(id: string) {
-  return worksCollection().doc(id);
 }
 
 /** Every file of the work; deleting the work removes the folder. */

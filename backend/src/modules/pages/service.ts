@@ -2,7 +2,12 @@ import { type Page, type PageId, pageIds } from "#modules/pages/schema";
 import { firestore } from "#shared/firebase/firestore";
 import type { Tagged } from "#shared/http/etag";
 import { fillSlot, getSlot, type ImageSlot, readSlot, type SlotField } from "#shared/images/slot";
-import { type Image, type StoredImage, storedImageSchema, toImage } from "#shared/images/storage";
+import {
+  type Image,
+  type StoredImage,
+  storedImageSchema,
+  toImage,
+} from "#shared/images/stored-image";
 
 /** A hero is the image alone: a background under the page title, so it has no alt text. */
 const heroField: SlotField<StoredImage> = { field: "hero", schema: storedImageSchema };

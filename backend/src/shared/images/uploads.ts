@@ -17,7 +17,7 @@ import {
   immutableCacheControl,
   type StoredImage,
   type StoredImageFile,
-} from "#shared/images/storage";
+} from "#shared/images/stored-image";
 import type { UploadedFile } from "#shared/middleware/upload";
 
 /**

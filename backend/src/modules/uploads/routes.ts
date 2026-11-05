@@ -1,9 +1,8 @@
 import { Router } from "express";
-
+import { requireCsrfToken } from "#modules/auth/csrf";
 import { requireAuth } from "#modules/auth/middleware";
 import { createUpload } from "#modules/uploads/controller";
 import { maxSourceFileSize } from "#shared/images/processing";
-import { requireCsrfToken } from "#shared/middleware/csrf";
 import { parseUpload } from "#shared/middleware/upload";
 
 export const uploadsRouter = Router();

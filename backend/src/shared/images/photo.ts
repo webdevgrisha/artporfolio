@@ -4,7 +4,7 @@ import { z } from "zod";
 import { UnprocessableContentError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
 import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
-import { imageSchema, storedImageSchema, toImage } from "#shared/images/storage";
+import { imageSchema, storedImageSchema, toImage } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
 
 /** The text alternative of a photo. */

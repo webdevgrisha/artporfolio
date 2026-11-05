@@ -15,7 +15,7 @@ import {
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { preparePhotoList, type StoredListPhoto, toListPhoto } from "#shared/images/photo-list";
-import { deleteImageFilesOrWarn } from "#shared/images/storage";
+import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
 import { titleKey } from "#shared/text/titles";
 
 function projectsCollection() {

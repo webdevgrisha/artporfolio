@@ -2,11 +2,10 @@ import type { RequestHandler, Response } from "express";
 
 import type { AuthUser, Reader } from "#modules/auth/schema";
 import { verifySession } from "#modules/auth/service";
-import { sessionCookie } from "#shared/config/cookies";
-import { readCookie } from "#shared/http/cookies";
+import { readSessionCookie } from "#modules/auth/session-cookie";
 
 export const requireAuth: RequestHandler = async (request, response, next) => {
-  const sessionValue = readCookie(request, sessionCookie.name);
+  const sessionValue = readSessionCookie(request);
 
   response.locals.auth = await verifySession(sessionValue);
   next();
@@ -20,7 +19,7 @@ export const requireAuth: RequestHandler = async (request, response, next) => {
  * shared cache keys it by the cookie and never keeps the admin's.
  */
 export const identifyReader: RequestHandler = async (request, response, next) => {
-  const sessionValue = readCookie(request, sessionCookie.name);
+  const sessionValue = readSessionCookie(request);
 
   response.vary("Cookie");
 

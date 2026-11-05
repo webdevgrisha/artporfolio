@@ -1,10 +1,9 @@
 import { Router } from "express";
-
+import { requireCsrfToken } from "#modules/auth/csrf";
 import { requireAuth } from "#modules/auth/middleware";
 import { readIntro, replaceIntro } from "#modules/projects/intro/controller";
 import { projectsIntroBodySchema } from "#modules/projects/intro/schema";
 import { requireContentType } from "#shared/middleware/content-type";
-import { requireCsrfToken } from "#shared/middleware/csrf";
 import { requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody } from "#shared/middleware/validation";
 

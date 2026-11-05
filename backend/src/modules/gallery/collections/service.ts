@@ -13,7 +13,8 @@ import {
   type StoredCollection,
   storedCollectionSchema,
 } from "#modules/gallery/collections/schema";
-import { isVisibleTo, worksCollection, worksInOrder } from "#modules/gallery/works/service";
+import { worksCollection } from "#modules/gallery/works/document";
+import { isVisibleTo, worksInOrder } from "#modules/gallery/works/service";
 import { firestore } from "#shared/firebase/firestore";
 import {
   ConflictError,
@@ -23,7 +24,7 @@ import {
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { toPhoto } from "#shared/images/photo";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
+import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
 import { publishUpload } from "#shared/images/uploads";
 import { byTitle, titleKey } from "#shared/text/titles";
 

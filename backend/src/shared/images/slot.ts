@@ -3,7 +3,7 @@ import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
+import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
 import { publishUpload } from "#shared/images/uploads";
 
 /** How a field of a document stores its image: the image alone, or with more, such as an alt text. */

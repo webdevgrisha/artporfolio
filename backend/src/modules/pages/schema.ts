@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { imageSchema } from "#shared/images/storage";
+import { imageSchema } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
 
 /** A page as the API returns it. */

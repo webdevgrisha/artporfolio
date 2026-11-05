@@ -11,7 +11,7 @@ const logger = vi.hoisted(() => ({ warn: vi.fn() }));
 vi.mock("#shared/firebase/storage", () => storage);
 vi.mock("firebase-functions/logger", () => logger);
 
-import { deleteImageFilesOrWarn, toImage } from "#shared/images/storage";
+import { deleteImageFilesOrWarn, toImage } from "#shared/images/stored-image";
 
 const storedImage = {
   fileName: "photo.png",

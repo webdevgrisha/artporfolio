@@ -1,5 +1,5 @@
 import { Router } from "express";
-
+import { requireCsrfToken } from "#modules/auth/csrf";
 import { identifyReader, requireAuth } from "#modules/auth/middleware";
 import {
   putCollection,
@@ -9,7 +9,6 @@ import {
 } from "#modules/gallery/collections/controller";
 import { collectionBodySchema, collectionParamsSchema } from "#modules/gallery/collections/schema";
 import { requireContentType } from "#shared/middleware/content-type";
-import { requireCsrfToken } from "#shared/middleware/csrf";
 import { requireIfMatch, requireIfMatchOrCreateOnly } from "#shared/middleware/preconditions";
 import { validateBody, validateParams } from "#shared/middleware/validation";
 

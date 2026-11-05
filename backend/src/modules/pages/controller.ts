@@ -2,7 +2,7 @@ import type { RequestHandler } from "express";
 
 import type { HeroBody, PageParams, PagesResponse } from "#modules/pages/schema";
 import { getPageHero, getPages, savePageHero } from "#modules/pages/service";
-import type { Image } from "#shared/images/storage";
+import type { Image } from "#shared/images/stored-image";
 import { ifMatchHeader } from "#shared/middleware/preconditions";
 
 export const readPages: RequestHandler<object, PagesResponse> = async (_request, response) => {

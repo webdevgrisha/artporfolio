@@ -1,4 +1,4 @@
-import type { Image } from "#shared/images/storage";
+import type { Image } from "#shared/images/stored-image";
 
 /** An image as the API returns it, for responses of mocked services. */
 export function apiImage(fileName: string): Image {

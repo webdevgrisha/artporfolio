@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { UnprocessableContentError } from "#shared/http/errors";
 import { altSchema, photoSchema, storedPhotoSchema, toPhoto } from "#shared/images/photo";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
+import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/stored-image";
 import { publishUpload, uploadIdSchema } from "#shared/images/uploads";
 
 /** Stays the same when the file is replaced. */
