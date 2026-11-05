@@ -17,6 +17,7 @@ import {
   titleListFormSchema,
   toTitleListFormValues,
 } from "../model/titleList";
+import { useRowEditing } from "../model/useRowEditing";
 import { AddTitleField } from "./AddTitleField";
 import { TitleList } from "./TitleList";
 import styles from "./TitleList.module.css";
@@ -29,12 +30,6 @@ interface EditTitleListFormProps {
   list: TitleListConfig;
   /** How many works name each row, by its id. */
   usages: WorkUsages;
-}
-
-/** The row being renamed: the key of its row and the title the renaming started from. */
-interface Editing {
-  key: string;
-  startTitle: string;
 }
 
 /**
@@ -74,33 +69,24 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
   // `fields` gives every row a stable key; the values come from `rows`, which also follow typing.
   const { append, fields, remove } = useFieldArray({ control, name: "items" });
   const rows = useWatch({ control, name: "items" });
-  const [editing, setEditing] = React.useState<Editing>();
+  const { rowEditing, stopEditing } = useRowEditing<string>({
+    restore: (index, startTitle) =>
+      setValue(`items.${index}.title`, startTitle, {
+        shouldDirty: true,
+        shouldValidate: isSubmitted,
+      }),
+    validate: (index) => void trigger(`items.${index}.title`),
+  });
   const addFieldRef = React.useRef<HTMLInputElement>(null);
   const savedTitles = new Map(saved.data.map(({ id, title }) => [id, title]));
   const focusAfterUpdate = useFocusAfterUpdate();
   const removal = useRowRemoval((index) => {
     remove(index);
-    setEditing(undefined);
+    stopEditing();
     // The row and its buttons are gone; the next row is added from the field above.
     focusAfterUpdate(() => addFieldRef.current?.focus());
   });
   const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
-
-  function finishEdit(index: number) {
-    setEditing(undefined);
-    // A row with an invalid title stays open until it is fixed.
-    void trigger(`items.${index}.title`);
-  }
-
-  function cancelEdit(index: number) {
-    if (editing) {
-      setValue(`items.${index}.title`, editing.startTitle, {
-        shouldDirty: true,
-        shouldValidate: isSubmitted,
-      });
-    }
-    setEditing(undefined);
-  }
 
   return (
     <FormProvider {...form}>
@@ -137,23 +123,22 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
               return (
                 <TitleListRow
                   key={field.id}
-                  title={row.title}
+                  row={{
+                    isNew: savedTitle === undefined,
+                    title: row.title,
+                    workCount: savedTitle === undefined ? undefined : usageOf(usages, row.id).count,
+                  }}
                   titleField={register(`items.${index}.title`)}
                   labels={{
                     field: texts.rowField(savedTitle ?? row.title),
                     remove: `Удалить ${row.title || texts.rowFallback}`,
                     edit: `Переименовать ${row.title}`,
                   }}
+                  editing={rowEditing(field.id, index, row.title, Boolean(titleError))}
                   error={titleError}
-                  isEditing={editing?.key === field.id || Boolean(titleError)}
-                  isNew={savedTitle === undefined}
                   isModified={isTitleModified}
                   isTitleModified={isTitleModified}
                   isSaving={editForm.isSaving}
-                  workCount={savedTitle === undefined ? undefined : usageOf(usages, row.id).count}
-                  onStartEdit={() => setEditing({ key: field.id, startTitle: row.title })}
-                  onFinishEdit={() => finishEdit(index)}
-                  onCancelEdit={() => cancelEdit(index)}
                   onRemove={() => removal.request(index, usageOf(usages, row.id))}
                 />
               );
