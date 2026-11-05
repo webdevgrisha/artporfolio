@@ -1,5 +1,3 @@
-import { queryOptions } from "@tanstack/react-query";
-
 import { http, type Tagged } from "@/shared/api/http";
 import type { ListPhoto, ListPhotoItem } from "@/shared/api/photo";
 
@@ -11,19 +9,6 @@ interface ReplaceProcessPhotosParams {
   /** In the order the site shows them; a saved photo left out is deleted. */
   processPhotos: readonly ListPhotoItem[];
 }
-
-/** The process photos with the ETag of their list. A save puts the saved list here. */
-export const processPhotosQuery = queryOptions({
-  queryFn: async (): Promise<Tagged<ListPhoto[]>> => {
-    const { data, etag } = await http.getWithETag({
-      path: "/about/process-photos",
-      schema: processPhotosResponseSchema,
-    });
-
-    return { data: data.processPhotos, etag };
-  },
-  queryKey: ["about", "process-photos"],
-});
 
 /**
  * Replaces the whole list at once: the server saves all of it or nothing, and returns the saved

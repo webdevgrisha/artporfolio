@@ -1,5 +1,3 @@
-import { queryOptions } from "@tanstack/react-query";
-
 import { http, type Tagged } from "@/shared/api/http";
 
 import { type AboutText, aboutTextSchema } from "../model/aboutText";
@@ -9,13 +7,6 @@ interface ReplaceAboutTextParams {
   etag: string;
   text: AboutText;
 }
-
-/** The About texts with their ETag. A save puts the saved texts here. */
-export const aboutTextQuery = queryOptions({
-  queryFn: (): Promise<Tagged<AboutText>> =>
-    http.getWithETag({ path: "/about/text", schema: aboutTextSchema }),
-  queryKey: ["about", "text"],
-});
 
 /**
  * Replaces all texts and returns the values saved by the server (trimmed) with their new ETag.
