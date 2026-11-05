@@ -1,5 +1,6 @@
 import clsx from "clsx";
-import { NavLink } from "react-router";
+import React from "react";
+import { NavLink, useLocation } from "react-router";
 
 import styles from "./TabNav.module.css";
 
@@ -21,8 +22,22 @@ interface TabNavProps {
  * open section gets `aria-current="page"` from `NavLink`.
  */
 export function TabNav({ className, items, label }: TabNavProps) {
+  const rootRef = React.useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+
+  // On a phone the tabs scroll sideways, so the open one is brought into view. Only the tabs
+  // scroll, as `scrollIntoView` would move the page too.
+  React.useEffect(() => {
+    const root = rootRef.current;
+    const current = root?.querySelector<HTMLElement>(`[href="${pathname}"]`);
+
+    if (root && current) {
+      root.scrollLeft = current.offsetLeft - (root.clientWidth - current.offsetWidth) / 2;
+    }
+  }, [pathname]);
+
   return (
-    <nav className={clsx(styles.root, className)} aria-label={label}>
+    <nav ref={rootRef} className={clsx(styles.root, className)} aria-label={label}>
       {items.map((item) => (
         <NavLink key={item.to} className={styles.tab} to={item.to}>
           {item.label}
