@@ -3,6 +3,7 @@ import { useController, useFormContext, useFormState, useWatch } from "react-hoo
 
 import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
 import type { Photo } from "@/shared/api/photo";
+import { useClearField } from "@/shared/lib/useClearField";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Input } from "@/shared/ui/input";
 import { PhotoFields } from "@/shared/ui/photo-fields";
@@ -34,8 +35,9 @@ export function CollectionFields({
   savedCover,
   works,
 }: CollectionFieldsProps) {
-  const { control, register, setFocus, setValue } = useFormContext<CollectionFormValues>();
-  const { dirtyFields, errors, isSubmitted } = useFormState({ control });
+  const { control, register } = useFormContext<CollectionFormValues>();
+  const { dirtyFields, errors } = useFormState({ control });
+  const clearField = useClearField<CollectionFormValues>();
   const title = useWatch({ control, name: "title" });
   // After a refused submit, react-hook-form focuses the first invalid field in the order the
   // fields were registered, so they are registered here in the order of the form. The picker of
@@ -46,12 +48,6 @@ export function CollectionFields({
   const startYearField = register("startYear", { deps: ["endYear"] });
   const endYearField = register("endYear");
   const { field: worksField } = useController({ control, name: "workIds" });
-
-  function clearTitle() {
-    // After the first submit, fields are revalidated on change; clearing is a change too.
-    setValue("title", "", { shouldDirty: true, shouldValidate: isSubmitted });
-    setFocus("title");
-  }
 
   return (
     <div className={clsx(styles.root, className)}>
@@ -67,7 +63,7 @@ export function CollectionFields({
           isModified={Boolean(dirtyFields.title)}
           hasValue={Boolean(title)}
           clearLabel="Очистить название"
-          onClear={clearTitle}
+          onClear={() => clearField("title")}
           {...titleField}
         />
         <Textarea

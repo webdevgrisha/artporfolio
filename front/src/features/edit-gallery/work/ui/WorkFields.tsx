@@ -4,6 +4,7 @@ import { useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import { maxWorkProcessPhotos } from "@/entities/gallery";
 import type { ListPhoto, Photo } from "@/shared/api/photo";
+import { useClearField } from "@/shared/lib/useClearField";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { PhotoFields } from "@/shared/ui/photo-fields";
 import { PhotoListField } from "@/shared/ui/photo-list-field";
@@ -36,8 +37,9 @@ export function WorkFields({
   savedPhoto,
   savedProcessPhotos,
 }: WorkFieldsProps) {
-  const { control, register, setFocus, setValue } = useFormContext<WorkFormValues>();
-  const { dirtyFields, errors, isSubmitted } = useFormState({ control });
+  const { control, register } = useFormContext<WorkFormValues>();
+  const { dirtyFields, errors } = useFormState({ control });
+  const clearField = useClearField<WorkFormValues>();
   const title = useWatch({ control, name: "title" });
   // After a refused submit, react-hook-form focuses the first invalid field in the order the
   // fields were registered. The groups below render, and so register, in the order of the form;
@@ -45,12 +47,6 @@ export function WorkFields({
   const titleField = register("title");
   const descriptionField = register("description");
   const headingId = React.useId();
-
-  function clearTitle() {
-    // After the first submit, fields are revalidated on change; clearing is a change too.
-    setValue("title", "", { shouldDirty: true, shouldValidate: isSubmitted });
-    setFocus("title");
-  }
 
   // The fields in groups under headings, in one column: a form is read and filled top to bottom.
   return (
@@ -69,7 +65,7 @@ export function WorkFields({
           isModified={Boolean(dirtyFields.title)}
           hasValue={Boolean(title)}
           clearLabel="Очистить название"
-          onClear={clearTitle}
+          onClear={() => clearField("title")}
           {...titleField}
         />
         <Textarea

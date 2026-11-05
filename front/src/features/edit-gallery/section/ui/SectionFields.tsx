@@ -3,6 +3,7 @@ import React from "react";
 import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import { maxSubsections, type Subsection, type WorkUsages } from "@/entities/gallery";
+import { useClearField } from "@/shared/lib/useClearField";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { Button } from "@/shared/ui/button";
 import { ClearableInput } from "@/shared/ui/clearable-input";
@@ -34,8 +35,9 @@ export function SectionFields({
   savedSubsections,
   usages,
 }: SectionFieldsProps) {
-  const { control, register, setFocus, setValue } = useFormContext<SectionFormValues>();
-  const { dirtyFields, errors, isSubmitted } = useFormState({ control });
+  const { control, register, setFocus } = useFormContext<SectionFormValues>();
+  const { dirtyFields, errors } = useFormState({ control });
+  const clearField = useClearField<SectionFormValues>();
   // `fields` gives every row a stable key; the values come from `rows`, which also follow typing.
   const { append, fields, remove } = useFieldArray({ control, name: "subsections" });
   const [title, rows] = useWatch({ control, name: ["title", "subsections"] });
@@ -61,12 +63,6 @@ export function SectionFields({
   });
   const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
 
-  function clearTitle() {
-    // After the first submit, fields are revalidated on change; clearing is a change too.
-    setValue("title", "", { shouldDirty: true, shouldValidate: isSubmitted });
-    setFocus("title");
-  }
-
   return (
     <div className={clsx(styles.root, className)}>
       <ClearableInput
@@ -78,7 +74,7 @@ export function SectionFields({
         isModified={Boolean(dirtyFields.title)}
         hasValue={Boolean(title)}
         clearLabel="Очистить название"
-        onClear={clearTitle}
+        onClear={() => clearField("title")}
         {...register("title")}
       />
 

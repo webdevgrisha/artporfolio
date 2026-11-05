@@ -3,6 +3,7 @@ import { useController, useFormContext, useFormState, useWatch } from "react-hoo
 
 import type { Photo } from "@/shared/api/photo";
 import type { PhotoFormValues } from "@/shared/lib/photoForm";
+import { useClearField } from "@/shared/lib/useClearField";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { ImagePicker } from "@/shared/ui/image-picker";
 
@@ -21,9 +22,9 @@ interface PhotoFieldsProps {
  * the form spreads `photoFieldsShape` into its schema.
  */
 export function PhotoFields({ className, isSaving, label, serverPhoto }: PhotoFieldsProps) {
-  const { clearErrors, control, register, setError, setFocus, setValue } =
-    useFormContext<PhotoFormValues>();
-  const { dirtyFields, errors, isSubmitted } = useFormState({ control });
+  const { clearErrors, control, register, setError } = useFormContext<PhotoFormValues>();
+  const { dirtyFields, errors } = useFormState({ control });
+  const clearField = useClearField<PhotoFormValues>();
   // A controller registers the field: react-hook-form resets only registered fields, so without
   // it a save would not update the photo's saved value and a revert would bring back the old one.
   const { field: photoField } = useController({ control, name: "photo" });
@@ -37,12 +38,6 @@ export function PhotoFields({ className, isSaving, label, serverPhoto }: PhotoFi
     } else {
       clearErrors("root.photoRejection");
     }
-  }
-
-  function clearPhotoAlt() {
-    // After the first submit, fields are revalidated on change; clearing is a change too.
-    setValue("photoAlt", "", { shouldDirty: true, shouldValidate: isSubmitted });
-    setFocus("photoAlt");
   }
 
   return (
@@ -67,7 +62,7 @@ export function PhotoFields({ className, isSaving, label, serverPhoto }: PhotoFi
           isModified={Boolean(dirtyFields.photoAlt)}
           hasValue={Boolean(photoAlt)}
           clearLabel="Очистить описание фото"
-          onClear={clearPhotoAlt}
+          onClear={() => clearField("photoAlt")}
           {...register("photoAlt")}
         />
       )}
