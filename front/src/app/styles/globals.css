@@ -16,7 +16,8 @@
 @layer base {
   :root {
     --color-text: #000;
-    --color-text-muted: #767676;
+    /* 4.5:1 on the surface and on --color-surface-disabled, the hover of a table row: 5.1 and 4.7. */
+    --color-text-muted: #6e6e6e;
     --color-text-inverse: #fff;
     --color-surface: #fff;
     --color-surface-hover: #e0e0e0;
