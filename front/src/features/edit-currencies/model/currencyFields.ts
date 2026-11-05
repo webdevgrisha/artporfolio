@@ -12,4 +12,5 @@ export const currencyLabels: Record<Currency, string> = {
   JPY: "Японская иена, JPY",
   PLN: "Польский злотый, PLN",
   RUB: "Российский рубль, RUB",
+  UAH: "Украинская гривна, UAH",
 };

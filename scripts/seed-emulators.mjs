@@ -252,6 +252,7 @@ const currencyRates = {
   CNY: 7.1,
   RUB: 80,
   BYN: 3.2,
+  UAH: 41,
 };
 
 const galleryMaterials = ["Акварель", "Гуашь", "Карандаш", "Масло", "Тушь", "Холст", "Бумага"];

@@ -12,6 +12,7 @@ export const currencies = [
   "CNY",
   "RUB",
   "BYN",
+  "UAH",
 ] as const;
 
 export type Currency = (typeof currencies)[number];
