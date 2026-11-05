@@ -37,12 +37,6 @@ interface ReplaceGalleryCollectionParams {
   id: string;
 }
 
-interface DeleteGalleryCollectionParams {
-  /** The ETag of the collection as the admin saw it, or `*` for whatever version is saved. */
-  etag: string;
-  id: string;
-}
-
 /** Every query of the collections starts with this key, so a change can refresh them all. */
 export const galleryCollectionsQueryKey = ["gallery", "collections"] as const;
 
@@ -112,12 +106,8 @@ export function replaceGalleryCollection({
 }
 
 /**
- * Deletes the collection with its cover; its works stay, each on its own. Rejected with 412 when
- * it has changed since `etag` was read.
+ * Deletes the collection with its cover; its works stay, each on its own.
  */
-export async function deleteGalleryCollection({
-  etag,
-  id,
-}: DeleteGalleryCollectionParams): Promise<void> {
-  await http.deleteResourceIfMatch({ path: collectionPath(id), etag });
+export function deleteGalleryCollection(id: string): Promise<void> {
+  return http.deleteResource({ path: collectionPath(id) });
 }

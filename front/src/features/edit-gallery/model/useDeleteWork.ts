@@ -29,7 +29,7 @@ export function useDeleteWork() {
         toastId: "gallery-work-delete",
       },
     },
-    mutationFn: ({ id }: GalleryWorkSummary) => deleteGalleryWork({ etag: "*", id }),
+    mutationFn: ({ id }: GalleryWorkSummary) => deleteGalleryWork(id),
     mutationKey: deleteWorkMutationKey,
     onSettled: () =>
       Promise.all([

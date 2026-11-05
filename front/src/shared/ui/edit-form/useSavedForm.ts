@@ -3,7 +3,7 @@ import React from "react";
 import type { FieldValues, UseFormReturn } from "react-hook-form";
 
 import type { Tagged } from "@/shared/api/http";
-import { HttpError } from "@/shared/api/httpError";
+import { HttpError, isPreconditionFailed } from "@/shared/api/httpError";
 import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import { savedMessage, showErrorToast, showSuccessToast } from "@/shared/ui/toast";
 
@@ -38,11 +38,6 @@ function getLoadLatestErrorMessage(error: unknown): string {
     error,
     "Данные изменили в другой вкладке, но загрузить их не удалось. Обновите страницу",
   );
-}
-
-/** The server refused the save: the resource has changed since the form read it. */
-function isConflict(error: unknown): boolean {
-  return error instanceof HttpError && error.status === 412;
 }
 
 /**
@@ -104,7 +99,7 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
     } catch (error) {
       // `save` has shown the error and the changes stay. After a conflict the same save would
       // fail again, so the latest version is offered instead.
-      if (isConflict(error)) await loadLatest();
+      if (isPreconditionFailed(error)) await loadLatest();
       return;
     }
 

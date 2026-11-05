@@ -75,7 +75,8 @@ describe("useSaveProcessPhotos", () => {
 
 describe("saveProcessPhotosFeedback", () => {
   it.each([
-    [new HttpError(412), "Фото уже изменили в другой вкладке"],
+    // The form asks about a conflict in its dialog.
+    [new HttpError(412), null],
     [
       new UploadError("etude.png", new HttpError(400)),
       "Сервер не принял фото «etude.png». Попробуйте другой файл",

@@ -73,7 +73,7 @@ export const saveWorkToastId = "gallery-work-save";
  * Creates a work from the form: uploads its photos, then sends the work in one request, which the
  * server saves all or nothing.
  * A retry never doubles it: the server refuses
- * an id it already has with 412, and the form offers to open what is saved (useCreateConflict).
+ * an id it already has with 412, and the form opens what is saved.
  */
 export function useCreateWork() {
   const queryClient = useQueryClient();

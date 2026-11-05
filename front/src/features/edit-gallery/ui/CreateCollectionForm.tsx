@@ -2,10 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-
 import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
+import { isPreconditionFailed } from "@/shared/api/httpError";
 import { galleryCollectionPath } from "@/shared/config/routes";
-import { EditForm, useCreateConflict } from "@/shared/ui/edit-form";
+import { EditForm } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 
 import {
@@ -42,29 +42,27 @@ export function CreateCollectionForm({ className, collections, works }: CreateCo
     reset,
   } = form;
   const isSaving = createCollection.isPending;
-  const { conflict, onCreateError } = useCreateConflict(() => {
+
+  function openCreated() {
     const path = galleryCollectionPath(id);
 
     allowNextNavigation(path);
+    // Back from the edit page leads to the list, not to an empty form again.
     void navigate(path, { replace: true });
-  });
+  }
 
   function create(values: CollectionFormValues) {
     // On failure the mutation shows the error and the values stay for another try; if an earlier
-    // try already saved the data, the form offers to open it.
+    // try already saved the data, its response was lost, so the saved data opens.
     createCollection.mutate(
       { id, values },
       {
-        onError: onCreateError,
+        onError: (error) => {
+          if (isPreconditionFailed(error)) openCreated();
+        },
         // Called only while this form is open: once the user has left it, perhaps for another new
         // collection, the created one just appears in the list.
-        onSuccess: (collection) => {
-          const path = galleryCollectionPath(collection.id);
-
-          allowNextNavigation(path);
-          // Back from the edit page leads to the list, not to an empty form again.
-          void navigate(path, { replace: true });
-        },
+        onSuccess: openCreated,
       },
     );
   }
@@ -74,7 +72,6 @@ export function CreateCollectionForm({ className, collections, works }: CreateCo
     <FormProvider {...form}>
       <EditForm
         className={className}
-        conflict={conflict}
         hasUnsavedChanges={isDirty}
         isSaving={isSaving}
         onRevert={() => reset()}

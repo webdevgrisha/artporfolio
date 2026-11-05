@@ -29,12 +29,6 @@ interface ReplaceGallerySectionParams {
   id: string;
 }
 
-interface DeleteGallerySectionParams {
-  /** The ETag of the section as the admin saw it, or `*` for whatever version is saved. */
-  etag: string;
-  id: string;
-}
-
 /** Every query of the sections starts with this key, so a change can refresh them all. */
 export const gallerySectionsQueryKey = ["gallery", "sections"] as const;
 
@@ -101,10 +95,7 @@ export function replaceGallerySection({
   });
 }
 
-/** Deletes the section with its subsections. Rejected with 412 when it has changed since `etag`. */
-export async function deleteGallerySection({
-  etag,
-  id,
-}: DeleteGallerySectionParams): Promise<void> {
-  await http.deleteResourceIfMatch({ path: sectionPath(id), etag });
+/** Deletes the section with its subsections. */
+export function deleteGallerySection(id: string): Promise<void> {
+  return http.deleteResource({ path: sectionPath(id) });
 }

@@ -42,7 +42,7 @@ export const saveProjectToastId = "project-save";
  * Creates a project from the form: uploads the picked files, then sends the project in one
  * request, which the server saves all or nothing. The new project is at the top of the list.
  * A retry never doubles it: the server refuses
- * an id it already has with 412, and the form offers to open what is saved (useCreateConflict).
+ * an id it already has with 412, and the form opens what is saved.
  */
 export function useCreateProject() {
   const queryClient = useQueryClient();

@@ -32,9 +32,7 @@ interface ConditionalBodyOptions<TBody extends object, TSchema extends ZodType>
   etag: string;
 }
 
-interface ConditionalOptions extends HttpOptions {
-  /** The tag of the representation the change was made against, sent in If-Match. */
-  etag: string;
+interface DeleteOptions extends HttpOptions {
   path: string;
 }
 
@@ -178,19 +176,14 @@ class Http {
   }
 
   /**
-   * A DELETE of the resource itself, such as a project, that applies only while it still has the
-   * tag `etag`; the server rejects it with 412 otherwise. The resource is gone afterwards, so the
+   * A DELETE of the resource itself, such as a project, whatever version is saved: a table names a
+   * resource by its title, and its rows have no tags. The resource is gone afterwards, so the
    * response has neither content nor a tag.
    */
-  async deleteResourceIfMatch({
-    etag,
-    headers,
-    path,
-    ...options
-  }: ConditionalOptions): Promise<void> {
+  async deleteResource({ headers, path, ...options }: DeleteOptions): Promise<void> {
     await this.request(path, {
       ...options,
-      headers: withIfMatch(headers, etag),
+      headers: withIfMatch(headers, "*"),
       method: "DELETE",
     });
   }

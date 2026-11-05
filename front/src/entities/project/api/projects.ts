@@ -27,12 +27,6 @@ interface ReplaceProjectParams {
   id: string;
 }
 
-interface DeleteProjectParams {
-  /** The ETag of the project as the admin saw it, or `*` for whatever version is saved. */
-  etag: string;
-  id: string;
-}
-
 /** Every query of the projects starts with this key, so a change can refresh them all. */
 export const projectsQueryKey = ["projects"] as const;
 
@@ -88,7 +82,7 @@ export function replaceProject({ body, etag, id }: ReplaceProjectParams): Promis
   });
 }
 
-/** Deletes the project with its photos. Rejected with 412 when it has changed since `etag` was read. */
-export async function deleteProject({ etag, id }: DeleteProjectParams): Promise<void> {
-  await http.deleteResourceIfMatch({ path: `/projects/${encodeURIComponent(id)}`, etag });
+/** Deletes the project with its photos. */
+export function deleteProject(id: string): Promise<void> {
+  return http.deleteResource({ path: `/projects/${encodeURIComponent(id)}` });
 }

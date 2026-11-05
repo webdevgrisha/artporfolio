@@ -187,11 +187,6 @@ export const router = createBrowserRouter([
                     lazy: () => import("@/pages/currencies").then((page) => page.currenciesRoute),
                   },
                   {
-                    path: routes.personalization,
-                    lazy: () =>
-                      import("@/pages/personalization").then((page) => page.personalizationRoute),
-                  },
-                  {
                     path: routes.sitePages,
                     lazy: () => import("@/pages/site-pages").then((page) => page.sitePagesRoute),
                   },

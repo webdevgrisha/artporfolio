@@ -1,28 +1,20 @@
 import { maxCollectionWorks } from "@/entities/gallery";
-import { HttpError } from "@/shared/api/httpError";
+import { isPreconditionFailed } from "@/shared/api/httpError";
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
-export function getSaveIntroErrorMessage(error: unknown): string {
+export function getSaveIntroErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(error, {
-    byStatus: {
-      400: "Сервер не принял текст. Проверьте его и попробуйте ещё раз",
-      // The text was changed since this page loaded it, for example in another tab.
-      412: "Текст уже изменили в другой вкладке",
-    },
     fallback: "Не удалось сохранить текст. Попробуйте ещё раз",
   });
 }
 
-export function getSaveSectionErrorMessage(error: unknown): string {
+export function getSaveSectionErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(error, {
     byStatus: {
-      400: "Сервер не принял раздел. Проверьте поля и попробуйте ещё раз",
       404: "Раздел уже удалён",
       // Another section has this title, whatever the case.
       409: "Раздел с таким названием уже есть",
-      // The section was changed since this page loaded it, for example in another tab.
-      412: "Раздел уже изменили в другой вкладке",
     },
     fallback: "Не удалось сохранить раздел. Попробуйте ещё раз",
   });
@@ -30,15 +22,13 @@ export function getSaveSectionErrorMessage(error: unknown): string {
 
 /**
  * A new section: 412 says an earlier try already saved it although its response was lost
- * (useCreateConflict).
+ * and the form opens it.
  */
-export function getCreateSectionErrorMessage(error: unknown): string {
-  return error instanceof HttpError && error.status === 412
-    ? "Раздел уже сохранён"
-    : getSaveSectionErrorMessage(error);
+export function getCreateSectionErrorMessage(error: unknown): string | null {
+  return isPreconditionFailed(error) ? "Раздел уже сохранён" : getSaveSectionErrorMessage(error);
 }
 
-export function getDeleteSectionErrorMessage(error: unknown): string {
+export function getDeleteSectionErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(error, {
     byStatus: {
       404: "Раздел уже удалён",
@@ -47,50 +37,32 @@ export function getDeleteSectionErrorMessage(error: unknown): string {
   });
 }
 
-export function getSaveMaterialsErrorMessage(error: unknown): string {
+export function getSaveMaterialsErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(error, {
-    byStatus: {
-      400: "Сервер не принял материалы. Проверьте их и попробуйте ещё раз",
-      // The materials were changed since this page loaded them, for example in another tab.
-      412: "Материалы уже изменили в другой вкладке",
-    },
     fallback: "Не удалось сохранить материалы. Попробуйте ещё раз",
   });
 }
 
-export function getSaveColorsErrorMessage(error: unknown): string {
+export function getSaveColorsErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(error, {
-    byStatus: {
-      400: "Сервер не принял цвета. Проверьте их и попробуйте ещё раз",
-      // The colors were changed since this page loaded them, for example in another tab.
-      412: "Цвета уже изменили в другой вкладке",
-    },
     fallback: "Не удалось сохранить цвета. Попробуйте ещё раз",
   });
 }
 
-export function getSavePalettesErrorMessage(error: unknown): string {
+export function getSavePalettesErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(error, {
-    byStatus: {
-      400: "Сервер не принял палитры. Проверьте их и попробуйте ещё раз",
-      // The palettes were changed since this page loaded them, for example in another tab.
-      412: "Палитры уже изменили в другой вкладке",
-    },
     fallback: "Не удалось сохранить палитры. Попробуйте ещё раз",
   });
 }
 
-export function getSaveWorkErrorMessage(error: unknown): string {
+export function getSaveWorkErrorMessage(error: unknown): string | null {
   if (error instanceof UploadError) return getUploadErrorMessage(error);
 
   return getSaveErrorMessage(error, {
     byStatus: {
-      400: "Сервер не принял работу. Проверьте поля и попробуйте ещё раз",
       404: "Работа уже удалена",
       // The chosen collection already holds the most works it may.
       409: `В коллекции уже ${String(maxCollectionWorks)} работ, больше добавить нельзя`,
-      // The work was changed since this page loaded it, for example in another tab.
-      412: "Работу уже изменили в другой вкладке",
       // A section, a list item or the collection was deleted, or an upload expired: it is kept for
       // a day and the work is sent right after it, so that is rare.
       422: "Что-то из выбранного или фото уже удалены. Обновите страницу и внесите изменения заново",
@@ -101,15 +73,13 @@ export function getSaveWorkErrorMessage(error: unknown): string {
 
 /**
  * A new work: 412 says an earlier try already saved it although its response was lost
- * (useCreateConflict).
+ * and the form opens it.
  */
-export function getCreateWorkErrorMessage(error: unknown): string {
-  return error instanceof HttpError && error.status === 412
-    ? "Работа уже сохранена"
-    : getSaveWorkErrorMessage(error);
+export function getCreateWorkErrorMessage(error: unknown): string | null {
+  return isPreconditionFailed(error) ? "Работа уже сохранена" : getSaveWorkErrorMessage(error);
 }
 
-export function getDeleteWorkErrorMessage(error: unknown): string {
+export function getDeleteWorkErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(error, {
     byStatus: {
       404: "Работа уже удалена",
@@ -118,7 +88,7 @@ export function getDeleteWorkErrorMessage(error: unknown): string {
   });
 }
 
-export function getDeleteCollectionErrorMessage(error: unknown): string {
+export function getDeleteCollectionErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(error, {
     byStatus: {
       404: "Коллекция уже удалена",
@@ -127,18 +97,14 @@ export function getDeleteCollectionErrorMessage(error: unknown): string {
   });
 }
 
-export function getSaveCollectionErrorMessage(error: unknown): string {
+export function getSaveCollectionErrorMessage(error: unknown): string | null {
   if (error instanceof UploadError) return getUploadErrorMessage(error);
 
   return getSaveErrorMessage(error, {
     byStatus: {
-      400: "Сервер не принял коллекцию. Проверьте поля и попробуйте ещё раз",
       404: "Коллекция уже удалена",
       // Another collection has this title, whatever the case.
       409: "Коллекция с таким названием уже есть",
-      // The collection or its works were changed since this page loaded them, for example in
-      // another tab.
-      412: "Коллекцию или её работы уже изменили в другой вкладке",
       // A work was deleted, or the upload of the cover expired: it is kept for a day and the
       // collection is sent right after it, so that is rare.
       422: "Работа или обложка уже удалены. Обновите страницу и внесите изменения заново",
@@ -149,10 +115,10 @@ export function getSaveCollectionErrorMessage(error: unknown): string {
 
 /**
  * A new collection: 412 says an earlier try already saved it although its response was lost
- * (useCreateConflict).
+ * and the form opens it.
  */
-export function getCreateCollectionErrorMessage(error: unknown): string {
-  return error instanceof HttpError && error.status === 412
+export function getCreateCollectionErrorMessage(error: unknown): string | null {
+  return isPreconditionFailed(error)
     ? "Коллекция уже сохранена"
     : getSaveCollectionErrorMessage(error);
 }

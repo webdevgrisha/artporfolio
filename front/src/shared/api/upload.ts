@@ -64,7 +64,7 @@ export function requestErrorOf(error: unknown): unknown {
   return error instanceof UploadError ? error.cause : error;
 }
 
-export function getUploadErrorMessage({ cause, fileName }: UploadError): string {
+export function getUploadErrorMessage({ cause, fileName }: UploadError): string | null {
   return getSaveErrorMessage(cause, {
     byStatus: {
       400: `Сервер не принял фото «${fileName}». Попробуйте другой файл`,

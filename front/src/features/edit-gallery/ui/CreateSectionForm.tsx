@@ -3,8 +3,9 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
+import { isPreconditionFailed } from "@/shared/api/httpError";
 import { gallerySectionPath, routes } from "@/shared/config/routes";
-import { EditForm, useCreateConflict } from "@/shared/ui/edit-form";
+import { EditForm } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 
 import {
@@ -37,20 +38,24 @@ export function CreateSectionForm({ className }: CreateSectionFormProps) {
     reset,
   } = form;
   const isSaving = createSection.isPending;
-  const { conflict, onCreateError } = useCreateConflict(() => {
+
+  function openCreated() {
     const path = gallerySectionPath(id);
 
     allowNextNavigation(path);
+    // Back from the edit page leads to the list, not to an empty form again.
     void navigate(path, { replace: true });
-  });
+  }
 
   function create(values: SectionFormValues) {
     // On failure the mutation shows the error and the values stay for another try; if an earlier
-    // try already saved the data, the form offers to open it.
+    // try already saved the data, its response was lost, so the saved data opens.
     createSection.mutate(
       { id, values },
       {
-        onError: onCreateError,
+        onError: (error) => {
+          if (isPreconditionFailed(error)) openCreated();
+        },
         // Called only while this form is open: once the user has left it, the created section
         // just appears in the list.
         onSuccess: () => {
@@ -67,7 +72,6 @@ export function CreateSectionForm({ className }: CreateSectionFormProps) {
     <FormProvider {...form}>
       <EditForm
         className={className}
-        conflict={conflict}
         hasUnsavedChanges={isDirty}
         isSaving={isSaving}
         onRevert={() => reset()}

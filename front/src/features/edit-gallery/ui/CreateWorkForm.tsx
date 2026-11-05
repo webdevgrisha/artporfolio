@@ -3,8 +3,9 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
+import { isPreconditionFailed } from "@/shared/api/httpError";
 import { galleryWorkPath } from "@/shared/config/routes";
-import { EditForm, useCreateConflict } from "@/shared/ui/edit-form";
+import { EditForm } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 import type { WorkReferences } from "../model/useWorkReferences";
 import { emptyWorkFormValues, type WorkFormValues, workFormSchema } from "../model/workFormSchema";
@@ -35,29 +36,27 @@ export function CreateWorkForm({ className, references }: CreateWorkFormProps) {
     reset,
   } = form;
   const isSaving = createWork.isPending;
-  const { conflict, onCreateError } = useCreateConflict(() => {
+
+  function openCreated() {
     const path = galleryWorkPath(id);
 
     allowNextNavigation(path);
+    // Back from the edit page leads to the list, not to an empty form again.
     void navigate(path, { replace: true });
-  });
+  }
 
   function create(values: WorkFormValues) {
     // On failure the mutation shows the error and the values stay for another try; if an earlier
-    // try already saved the data, the form offers to open it.
+    // try already saved the data, its response was lost, so the saved data opens.
     createWork.mutate(
       { id, values },
       {
-        onError: onCreateError,
+        onError: (error) => {
+          if (isPreconditionFailed(error)) openCreated();
+        },
         // Called only while this form is open: once the user has left it, perhaps for another new
         // work, the created one just appears in the list.
-        onSuccess: (work) => {
-          const path = galleryWorkPath(work.id);
-
-          allowNextNavigation(path);
-          // Back from the edit page leads to the list, not to an empty form again.
-          void navigate(path, { replace: true });
-        },
+        onSuccess: openCreated,
       },
     );
   }
@@ -67,7 +66,6 @@ export function CreateWorkForm({ className, references }: CreateWorkFormProps) {
     <FormProvider {...form}>
       <EditForm
         className={className}
-        conflict={conflict}
         hasUnsavedChanges={isDirty}
         isSaving={isSaving}
         onRevert={() => reset()}

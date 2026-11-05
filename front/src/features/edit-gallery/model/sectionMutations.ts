@@ -34,7 +34,7 @@ export const saveSectionToastId = "gallery-section-save";
 
 /**
  * Creates a section from the form. A retry never doubles it: the server refuses an id it already
- * has with 412, and the form offers to open what is saved (useCreateConflict).
+ * has with 412, and the form opens what is saved.
  */
 export function useCreateSection() {
   const queryClient = useQueryClient();

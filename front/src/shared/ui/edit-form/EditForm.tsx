@@ -7,14 +7,9 @@ import { useReportUnsavedChanges } from "@/shared/ui/unsaved-changes";
 
 import styles from "./EditForm.module.css";
 
-/**
- * A save refused with 412: the data changed since the form read it, e.g. in another tab, or a form
- * that creates data finds it already saved, by an earlier try whose response was lost.
- */
+/** A save refused with 412: the data changed since the form read it, e.g. in another tab. */
 export interface EditFormConflict {
   isOpen: boolean;
-  /** `changed` by default; `exists` for a form that creates the data. */
-  reason?: "changed" | "exists";
   /**
    * Closes the question and keeps the changes in the form, so they can be copied before the latest
    * version is taken; saving them would be refused again.
@@ -24,26 +19,11 @@ export interface EditFormConflict {
   onTakeLatest: () => void;
 }
 
-const conflictTexts = {
-  changed: {
-    confirmLabel: "Загрузить",
-    description:
-      "Ваши изменения сохранить нельзя: их нужно внести заново в актуальную версию. Чтобы не набирать текст снова, скопируйте его, затем ещё раз нажмите «Сохранить» и «Загрузить».",
-    title: "Данные изменили в другой вкладке",
-  },
-  exists: {
-    confirmLabel: "Открыть",
-    description:
-      "Прошлая попытка уже сохранила эти данные, но ответ сервера не дошёл. Откройте сохранённую версию и, если в форме есть изменения после той попытки, внесите их заново. Чтобы не набирать текст снова, скопируйте его, затем ещё раз нажмите «Сохранить» и «Открыть».",
-    title: "Это уже сохранено",
-  },
-} satisfies Record<NonNullable<EditFormConflict["reason"]>, object>;
-
 export interface EditFormProps {
   /** The fields. */
   children: ReactNode;
   className?: string;
-  /** The question after a save refused with 412, from `useSavedForm` or `useCreateConflict`. */
+  /** The question after a save refused with 412, from `useSavedForm`. */
   conflict?: EditFormConflict;
   hasUnsavedChanges: boolean;
   isSaving: boolean;
@@ -81,8 +61,10 @@ export function EditForm({
       {conflict && (
         <ConfirmDialog
           isOpen={conflict.isOpen}
-          {...conflictTexts[conflict.reason ?? "changed"]}
+          title="Данные изменили в другой вкладке"
+          description="Ваши изменения сохранить нельзя: их нужно внести заново в актуальную версию. Чтобы не набирать текст снова, скопируйте его, затем ещё раз нажмите «Сохранить» и «Загрузить»."
           cancelLabel="Не сейчас"
+          confirmLabel="Загрузить"
           onCancel={conflict.onKeep}
           onConfirm={conflict.onTakeLatest}
         />

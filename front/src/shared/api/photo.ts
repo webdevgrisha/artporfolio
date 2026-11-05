@@ -41,12 +41,10 @@ export type ListPhotoItem =
   | { alt: string; uploadId: string };
 
 /** For a failed upload or update of a photo. */
-export function getSavePhotoErrorMessage(error: unknown): string {
+export function getSavePhotoErrorMessage(error: unknown): string | null {
   return getSaveErrorMessage(requestErrorOf(error), {
     byStatus: {
       400: "Сервер не принял фото. Попробуйте другой файл",
-      // The photo was changed since this page loaded it, for example in another tab.
-      412: "Фото уже изменили в другой вкладке",
       413: `Фото больше ${formatFileSize(imageUploadRules.maxFileSize)}`,
       // The upload is kept for a day; the photo is sent right after it, so this is rare.
       422: "Загрузка фото устарела. Выберите фото ещё раз",

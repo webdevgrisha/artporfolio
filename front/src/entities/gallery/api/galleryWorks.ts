@@ -63,12 +63,6 @@ interface ReplaceGalleryWorkParams {
   id: string;
 }
 
-interface DeleteGalleryWorkParams {
-  /** The ETag of the work as the admin saw it, or `*` for whatever version is saved. */
-  etag: string;
-  id: string;
-}
-
 /** Every query of the works starts with this key, so a change can refresh them all. */
 export const galleryWorksQueryKey = ["gallery", "works"] as const;
 
@@ -152,7 +146,7 @@ export function replaceGalleryWork({
   });
 }
 
-/** Deletes the work with its photos. Rejected with 412 when it has changed since `etag` was read. */
-export async function deleteGalleryWork({ etag, id }: DeleteGalleryWorkParams): Promise<void> {
-  await http.deleteResourceIfMatch({ path: workPath(id), etag });
+/** Deletes the work with its photos. */
+export function deleteGalleryWork(id: string): Promise<void> {
+  return http.deleteResource({ path: workPath(id) });
 }

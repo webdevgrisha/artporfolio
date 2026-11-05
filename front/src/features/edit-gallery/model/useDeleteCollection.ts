@@ -29,7 +29,7 @@ export function useDeleteCollection() {
         toastId: "gallery-collection-delete",
       },
     },
-    mutationFn: ({ id }: GalleryCollection) => deleteGalleryCollection({ etag: "*", id }),
+    mutationFn: ({ id }: GalleryCollection) => deleteGalleryCollection(id),
     mutationKey: deleteCollectionMutationKey,
     onSettled: () =>
       Promise.all([

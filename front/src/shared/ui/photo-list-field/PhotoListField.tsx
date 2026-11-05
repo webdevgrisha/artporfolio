@@ -29,7 +29,9 @@ function toFileItem(key: string, file: File): SortableMediaItem {
 function toMediaItem(key: string, row: PhotoListRow): SortableMediaItem {
   if (row.status === "new") return toFileItem(key, row.file);
 
-  return row.file ? toFileItem(key, row.file) : { ...imageToMediaItem(row.photo), id: key };
+  return row.file
+    ? { ...toFileItem(key, row.file), isSaved: true }
+    : { ...imageToMediaItem(row.photo), id: key, isSaved: true };
 }
 
 /**

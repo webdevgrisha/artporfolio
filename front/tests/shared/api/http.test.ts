@@ -153,7 +153,7 @@ describe("http entity tags", () => {
     expect(result).toEqual({ data: { name: "Холст" }, etag: '"new-tag"' });
   });
 
-  it("deletes a resource with If-Match, expecting no ETag back", async () => {
+  it("deletes whatever version is saved, expecting no ETag back", async () => {
     let request: Request | undefined;
     server.use(
       mswHttp.delete("/api/items/1", ({ request: received }) => {
@@ -162,8 +162,8 @@ describe("http entity tags", () => {
       }),
     );
 
-    await expect(http.deleteResourceIfMatch({ etag, path: "/items/1" })).resolves.toBeUndefined();
-    expect(request?.headers.get("If-Match")).toBe(etag);
+    await expect(http.deleteResource({ path: "/items/1" })).resolves.toBeUndefined();
+    expect(request?.headers.get("If-Match")).toBe("*");
     expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
   });
 

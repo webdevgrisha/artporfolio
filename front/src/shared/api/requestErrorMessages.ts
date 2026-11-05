@@ -1,4 +1,4 @@
-import { HttpError } from "./httpError";
+import { HttpError, isPreconditionFailed } from "./httpError";
 import { NetworkError } from "./networkError";
 
 export const networkErrorMessage =
@@ -40,12 +40,15 @@ export interface SaveErrorMessages {
 
 /**
  * The message for a failed change, such as a save or a deletion: an expired session first, then
- * the messages of the change for its statuses, then no connection or a server error.
+ * the messages of the change for its statuses, then no connection or a server error. `null` for a
+ * conflict with no message of its own: the form asks about it in its dialog.
  */
-export function getSaveErrorMessage(error: unknown, messages: SaveErrorMessages): string {
+export function getSaveErrorMessage(error: unknown, messages: SaveErrorMessages): string | null {
   if (isSessionExpiredError(error)) return sessionExpiredMessage;
 
   const statusMessage = error instanceof HttpError ? messages.byStatus?.[error.status] : undefined;
 
-  return statusMessage ?? getRequestErrorMessage(error, messages.fallback);
+  if (statusMessage) return statusMessage;
+
+  return isPreconditionFailed(error) ? null : getRequestErrorMessage(error, messages.fallback);
 }

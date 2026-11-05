@@ -27,7 +27,7 @@ export function useDeleteSection() {
         toastId: "gallery-section-delete",
       },
     },
-    mutationFn: ({ id }: GallerySection) => deleteGallerySection({ etag: "*", id }),
+    mutationFn: ({ id }: GallerySection) => deleteGallerySection(id),
     mutationKey: deleteSectionMutationKey,
     onSettled: () => queryClient.invalidateQueries({ queryKey: gallerySectionsQueryKey }),
   });

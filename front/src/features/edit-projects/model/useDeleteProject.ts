@@ -23,7 +23,7 @@ export function useDeleteProject() {
         toastId: "project-delete",
       },
     },
-    mutationFn: ({ id }: Project) => deleteProject({ etag: "*", id }),
+    mutationFn: ({ id }: Project) => deleteProject(id),
     mutationKey: deleteProjectMutationKey,
     onSettled: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey }),
   });
