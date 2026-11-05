@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-import { formatFileSize } from "@/shared/lib/formatFileSize";
-
-import { imageSchema, imageUploadRules } from "./image";
-import { getSaveErrorMessage } from "./requestErrorMessages";
-import { requestErrorOf } from "./upload";
+import { imageSchema } from "./image";
 
 /**
  * A single photo with its description, such as «Моё фото» or the contacts photo
@@ -39,16 +35,3 @@ export type ListPhoto = z.infer<typeof listPhotoSchema>;
 export type ListPhotoItem =
   | { alt: string; id: string; uploadId?: string }
   | { alt: string; uploadId: string };
-
-/** For a failed upload or update of a photo. */
-export function getSavePhotoErrorMessage(error: unknown): string | null {
-  return getSaveErrorMessage(requestErrorOf(error), {
-    byStatus: {
-      400: "Сервер не принял фото. Попробуйте другой файл",
-      413: `Фото больше ${formatFileSize(imageUploadRules.maxFileSize)}`,
-      // The upload is kept for a day; the photo is sent right after it, so this is rare.
-      422: "Загрузка фото устарела. Выберите фото ещё раз",
-    },
-    fallback: "Не удалось сохранить фото. Попробуйте ещё раз",
-  });
-}

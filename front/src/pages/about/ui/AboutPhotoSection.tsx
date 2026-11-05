@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { aboutPhoto } from "@/entities/about";
-import { EditAboutPhotoForm } from "@/features/edit-about";
+import { EditPhotoForm } from "@/features/edit-photo";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
 
@@ -24,5 +24,5 @@ export function AboutPhotoSection() {
 function AboutPhoto() {
   const { data: photo } = useSuspenseQuery(aboutPhoto.query);
 
-  return <EditAboutPhotoForm className={styles.form} photo={photo} />;
+  return <EditPhotoForm className={styles.form} label="Моё фото" photo={photo} slot={aboutPhoto} />;
 }

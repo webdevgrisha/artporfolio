@@ -2,8 +2,8 @@ import type { UIMatch } from "react-router";
 
 import { galleryCollectionQuery, gallerySectionQuery, galleryWorkQuery } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
-import { type BreadcrumbItem, QueryTitle } from "@/shared/ui/breadcrumbs";
-import type { AdminPageHandle } from "@/widgets/admin-layout";
+import type { BreadcrumbItem } from "@/shared/ui/breadcrumbs";
+import { type AdminPageHandle, QueryTitle } from "@/widgets/admin-layout";
 
 /** The pages above a section: the list it is opened from. */
 const sectionsCrumbs: BreadcrumbItem[] = [
