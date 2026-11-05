@@ -1,8 +1,4 @@
-import {
-  type DocumentReference,
-  type DocumentSnapshot,
-  FieldValue,
-} from "firebase-admin/firestore";
+import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
 import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
@@ -27,8 +23,7 @@ export interface ImageSlot<TStored extends StoredImage> extends SlotField<TStore
 }
 
 /** What the slot stores after a change, with its tag, and what it stored before. */
-export interface ChangedSlot<TStored extends StoredImage, TNext extends TStored | null>
-  extends Tagged<TNext> {
+export interface ChangedSlot<TStored extends StoredImage> extends Tagged<TStored> {
   previous: TStored | null;
 }
 
@@ -60,16 +55,15 @@ export async function getSlot<TStored extends StoredImage>(
 }
 
 /**
- * Replaces what the slot stores with `next(current)`, `null` to empty it. One transaction reads
- * the slot, checks that it is still what the client read (`ifMatch`) and writes the change:
- * concurrent requests, such as a delete and an alt update, would otherwise leave a broken image
- * or files that nothing links to.
+ * Replaces what the slot stores with `next(current)`. One transaction reads the slot, checks that
+ * it is still what the client read (`ifMatch`) and writes the change: concurrent requests, such as
+ * two saves of one photo, would otherwise leave files that nothing links to.
  */
-export function changeSlot<TStored extends StoredImage, TNext extends TStored | null>(
+export function changeSlot<TStored extends StoredImage>(
   slot: ImageSlot<TStored>,
   ifMatch: string,
-  next: (current: TStored | null) => TNext,
-): Promise<ChangedSlot<TStored, TNext>> {
+  next: (current: TStored | null) => TStored,
+): Promise<ChangedSlot<TStored>> {
   return firestore().runTransaction(async (transaction) => {
     const document = slot.document();
     const previous = readSlot(slot, await transaction.get(document));
@@ -78,12 +72,8 @@ export function changeSlot<TStored extends StoredImage, TNext extends TStored | 
 
     const stored = next(previous);
 
-    if (stored) {
-      // Merging keeps the other fields of the document.
-      transaction.set(document, { [slot.field]: stored }, { merge: true });
-    } else if (previous) {
-      transaction.update(document, { [slot.field]: FieldValue.delete() });
-    }
+    // Merging keeps the other fields of the document.
+    transaction.set(document, { [slot.field]: stored }, { merge: true });
 
     return { data: stored, etag: entityTag(stored), previous };
   });
@@ -101,7 +91,7 @@ export async function fillSlot<TStored extends StoredImage>(
   toStored: (image: StoredImage) => TStored,
 ): Promise<FilledSlot<TStored>> {
   const stored = toStored(await publishUpload(uploadId, slot.folder));
-  let changed: ChangedSlot<TStored, TStored>;
+  let changed: ChangedSlot<TStored>;
 
   try {
     changed = await changeSlot(slot, ifMatch, () => stored);

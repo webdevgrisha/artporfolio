@@ -27,11 +27,6 @@ import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage
 import { publishUpload } from "#shared/images/uploads";
 import { byTitle, titleKey } from "#shared/text/titles";
 
-/** A saved collection with the id it is known by. */
-export interface SavedCollection extends Tagged<Collection> {
-  id: string;
-}
-
 /** Every file of the collection; deleting the collection removes the folder. */
 function collectionFolder(id: string): string {
   return `galleryCollections/${id}`;
@@ -90,10 +85,10 @@ function toSavedCollection(
   id: string,
   collection: StoredCollection,
   workIds: string[],
-): SavedCollection {
+): Tagged<Collection> {
   const data = toCollection(id, collection, workIds);
 
-  return { data, etag: entityTag(data), id };
+  return { data, etag: entityTag(data) };
 }
 
 /**
@@ -183,7 +178,7 @@ export async function listCollections(reader: Reader): Promise<Tagged<Collection
 }
 
 /** The collection `id` with the works `reader` sees. */
-export async function getCollection(id: string, reader: Reader): Promise<SavedCollection> {
+export async function getCollection(id: string, reader: Reader): Promise<Tagged<Collection>> {
   const [snapshot, members] = await Promise.all([
     collectionDocument(id).get(),
     membersQuery(id).get(),
@@ -206,7 +201,10 @@ async function discardCover(id: string, image: StoredImage | undefined): Promise
  * upload, or it is rejected with 422, as it is for a work that does not exist. The file is copied
  * from its upload first; if saving fails, the copy is removed.
  */
-export async function createCollection(id: string, body: CollectionBody): Promise<SavedCollection> {
+export async function createCollection(
+  id: string,
+  body: CollectionBody,
+): Promise<Tagged<Collection>> {
   const { cover, workIds, ...fields } = body;
 
   if (cover.uploadId === undefined) {
@@ -257,7 +255,7 @@ export async function replaceCollection(
   id: string,
   body: CollectionBody,
   ifMatch: string,
-): Promise<SavedCollection> {
+): Promise<Tagged<Collection>> {
   const { cover, workIds, ...fields } = body;
   const image =
     cover.uploadId === undefined ? undefined : await publishUpload(cover.uploadId, coverFolder(id));

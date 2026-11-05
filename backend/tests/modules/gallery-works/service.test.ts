@@ -168,6 +168,13 @@ function storedWork(id: string, title: string, year: number, month: number, crea
     materialIds: [oilId, deletedMaterialId],
     colorIds: [blackId, deletedColorId],
     paletteIds: [pastelId, deletedPaletteId],
+    published: true,
+    country: null,
+    city: "",
+    format: "single",
+    partCount: null,
+    saleStatus: "available",
+    price: null,
     collectionId: null,
     size: { width: 50, height: 70 },
     title,
@@ -600,12 +607,6 @@ describe("the collection of a work", () => {
 });
 
 describe("the format of a work", () => {
-  it("reads a work saved before formats as a single work", async () => {
-    const { data } = await getWork(elephantId, "admin");
-
-    expect(data).toMatchObject({ format: "single", partCount: null });
-  });
-
   it("saves a set with its count of works", async () => {
     const { data } = await createWork(newId, { ...body, format: "set", partCount: 12 });
 
@@ -615,12 +616,6 @@ describe("the format of a work", () => {
 });
 
 describe("the place of a work", () => {
-  it("reads a work saved before places as a work without a country and a city", async () => {
-    const { data } = await getWork(elephantId, "admin");
-
-    expect(data).toMatchObject({ city: "", country: null });
-  });
-
   it("saves the country and the city", async () => {
     const { data } = await createWork(newId, { ...body, city: "Варшава", country: "PL" });
 
@@ -630,12 +625,6 @@ describe("the place of a work", () => {
 });
 
 describe("whether the site shows a work", () => {
-  it("reads a work saved before works could be hidden as shown", async () => {
-    const { data } = await getWork(elephantId, "admin");
-
-    expect(data.published).toBe(true);
-  });
-
   it("saves a hidden work, and lists it for the admin", async () => {
     const { data } = await createWork(newId, { ...body, published: false });
 
@@ -646,12 +635,6 @@ describe("whether the site shows a work", () => {
 });
 
 describe("the sale status of a work", () => {
-  it("reads a work saved before sale statuses as a work for sale", async () => {
-    const { data } = await getWork(elephantId, "admin");
-
-    expect(data.saleStatus).toBe("available");
-  });
-
   it("saves the sale status", async () => {
     const { data } = await createWork(newId, { ...body, saleStatus: "sold" });
 
@@ -661,12 +644,6 @@ describe("the sale status of a work", () => {
 });
 
 describe("the price of a work", () => {
-  it("reads a work saved before prices as a work without a price", async () => {
-    const { data } = await getWork(elephantId, "admin");
-
-    expect(data.price).toBeNull();
-  });
-
   it("saves the price without the amount after the discount, which it computes", async () => {
     const price = { amount: 500, currency: "USD", discountPercent: 10 } as const;
     const { data } = await createWork(newId, { ...body, price });
@@ -760,9 +737,8 @@ describe("the entity tag of a work", () => {
 
 describe("getWork", () => {
   it("returns the work with its id", async () => {
-    const { data, id } = await getWork(elephantId, "admin");
+    const { data } = await getWork(elephantId, "admin");
 
-    expect(id).toBe(elephantId);
     expect(data).toMatchObject({ id: elephantId, title: "Слон", year: 2023 });
   });
 

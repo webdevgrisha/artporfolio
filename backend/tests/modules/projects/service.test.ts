@@ -180,9 +180,8 @@ describe("listProjects", () => {
 
 describe("getProject", () => {
   it("returns the project with its id", async () => {
-    const { data, id } = await getProject(elephantId);
+    const { data } = await getProject(elephantId);
 
-    expect(id).toBe(elephantId);
     expect(data).toMatchObject({ id: elephantId, title: "Слон" });
   });
 

@@ -92,7 +92,6 @@ describe("reading the sections", () => {
     await expect(getSection(postersId)).resolves.toEqual({
       data: { id: postersId, ...posters },
       etag: entityTag(posters),
-      id: postersId,
     });
   });
 
@@ -115,7 +114,6 @@ describe("creating a section", () => {
     await expect(createSection(newId, painting)).resolves.toEqual({
       data: { id: newId, ...stored },
       etag: entityTag(stored),
-      id: newId,
     });
     expect(sections.get(newId)).toEqual(stored);
   });
@@ -155,7 +153,6 @@ describe("replacing a section", () => {
     await expect(replaceSection(postersId, next, entityTag(posters))).resolves.toEqual({
       data: { id: postersId, ...next },
       etag: entityTag(next),
-      id: postersId,
     });
     expect(sections.get(postersId)).toEqual(next);
   });

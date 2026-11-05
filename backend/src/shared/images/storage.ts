@@ -96,6 +96,7 @@ export function toImage({
 /** Leftover files only take space, so a failed cleanup must not fail the request. */
 export async function deleteImageFilesOrWarn(folder: string): Promise<void> {
   await deleteFolder(folder).catch((error: unknown) => {
-    logWarning("Could not delete image files", { error, folder });
+    // The error goes last, on its own: inside an object the logger would drop its message.
+    logWarning(`Could not delete the image files in ${folder}`, error);
   });
 }

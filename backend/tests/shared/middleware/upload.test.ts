@@ -2,26 +2,17 @@ import express, { type RequestHandler } from "express";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { errorHandler } from "#shared/middleware/error";
 import { parseUpload } from "#shared/middleware/upload";
+import { moveBodyToRawBody, readMultipartLikeCloudFunctions } from "../../support/routeApp.js";
 import { startTestServer, type TestServer } from "../../support/testServer.js";
 
 let server: TestServer;
 
 const echoUpload: RequestHandler = (request, response) => {
-  response.json({
-    body: request.body,
-    file: { name: request.file?.name, size: request.file?.size },
-  });
+  response.json({ name: request.file?.name, size: request.file?.size });
 };
 
-// Cloud Functions reads the body before Express does and leaves it in request.rawBody.
-const readBodyLikeCloudFunctions = express.raw({ type: "multipart/form-data" });
-const moveBodyToRawBody: RequestHandler = (request, _response, next) => {
-  request.rawBody = request.body as Buffer;
-  next();
-};
-
-function upload(path: string, body: FormData | string, contentType?: string) {
-  return fetch(`${server.baseUrl}${path}`, {
+function upload(body: FormData | string, contentType?: string) {
+  return fetch(server.baseUrl, {
     body,
     method: "POST",
     ...(contentType ? { headers: { "Content-Type": contentType } } : {}),
@@ -46,8 +37,7 @@ beforeAll(async () => {
   const testApp = express();
   const parse = parseUpload({ fileField: "file", maxFileSize: 10 });
 
-  testApp.post("/stream", parse, echoUpload);
-  testApp.post("/raw-body", readBodyLikeCloudFunctions, moveBodyToRawBody, parse, echoUpload);
+  testApp.post("/", readMultipartLikeCloudFunctions, moveBodyToRawBody, parse, echoUpload);
   testApp.use(errorHandler);
 
   server = await startTestServer(testApp);
@@ -56,50 +46,39 @@ beforeAll(async () => {
 afterAll(() => server.close());
 
 describe("upload middleware", () => {
-  it.each(["/stream", "/raw-body"])("parses the file and text fields at %s", async (path) => {
-    const response = await upload(path, form({ alt: "Портрет", file: new Blob(["12345"]) }));
+  it("parses the file", async () => {
+    const response = await upload(form({ file: new Blob(["12345"]) }));
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
-      body: { alt: "Портрет" },
-      file: { name: "фото.png", size: 5 },
-    });
+    await expect(response.json()).resolves.toEqual({ name: "фото.png", size: 5 });
   });
 
-  it("keeps a __proto__ field as a plain field", async () => {
-    const data = form({ file: new Blob(["1"]) });
-    data.append("__proto__", "polluted");
+  it("rejects a text field", async () => {
+    const response = await upload(form({ alt: "Портрет", file: new Blob(["12345"]) }));
 
-    const response = await upload("/stream", data);
-    const { body } = (await response.json()) as { body: object };
-
-    expect(response.status).toBe(200);
-    expect(Object.getOwnPropertyDescriptor(body, "__proto__")?.value).toBe("polluted");
+    expect(response.status).toBe(400);
   });
 
   it("rejects a file name longer than 255 characters", async () => {
-    const response = await upload(
-      "/stream",
-      form({ file: new Blob(["1"]) }, `${"a".repeat(252)}.png`),
-    );
+    const response = await upload(form({ file: new Blob(["1"]) }, `${"a".repeat(252)}.png`));
 
     expect(response.status).toBe(400);
   });
 
   it("rejects a file over the size limit", async () => {
-    const response = await upload("/stream", form({ file: new Blob(["12345678901"]) }));
+    const response = await upload(form({ file: new Blob(["12345678901"]) }));
 
     expect(response.status).toBe(413);
   });
 
   it("requires a file", async () => {
-    const response = await upload("/stream", form({ alt: "Портрет" }));
+    const response = await upload(new FormData());
 
     expect(response.status).toBe(400);
   });
 
   it("rejects a file in an unexpected field", async () => {
-    const response = await upload("/stream", form({ image: new Blob(["12345"]) }));
+    const response = await upload(form({ image: new Blob(["12345"]) }));
 
     expect(response.status).toBe(400);
   });
@@ -108,39 +87,36 @@ describe("upload middleware", () => {
     const data = form({ file: new Blob(["1"]) });
     data.append("file", new Blob(["2"]), "second.png");
 
-    const response = await upload("/stream", data);
+    const response = await upload(data);
 
     expect(response.status).toBe(400);
   });
 
   it("rejects a body that is not multipart/form-data", async () => {
-    const response = await upload("/stream", "{}", "application/json");
+    const response = await upload("{}", "application/json");
 
     expect(response.status).toBe(415);
   });
 
   it("rejects a multipart body without a boundary", async () => {
-    const response = await upload("/stream", "{}", "multipart/form-data");
+    const response = await upload("{}", "multipart/form-data");
 
     expect(response.status).toBe(400);
   });
 
-  it.each(["/stream", "/raw-body"])(
-    "rejects a body that ends inside the file at %s",
-    async (path) => {
-      const truncated = [
-        "--boundary",
-        'Content-Disposition: form-data; name="file"; filename="photo.png"',
-        "Content-Type: image/png",
-        "",
-        "123",
-      ].join("\r\n");
+  it("rejects a body that ends inside the file", async () => {
+    const truncated = [
+      "--boundary",
+      'Content-Disposition: form-data; name="file"; filename="photo.png"',
+      "Content-Type: image/png",
+      "",
+      "123",
+    ].join("\r\n");
 
-      const response = await upload(path, truncated, "multipart/form-data; boundary=boundary");
+    const response = await upload(truncated, "multipart/form-data; boundary=boundary");
 
-      expect(response.status).toBe(400);
-      // The server is still up and answers the next upload.
-      expect((await upload(path, form({ file: new Blob(["1"]) }))).status).toBe(200);
-    },
-  );
+    expect(response.status).toBe(400);
+    // The server is still up and answers the next upload.
+    expect((await upload(form({ file: new Blob(["1"]) }))).status).toBe(200);
+  });
 });

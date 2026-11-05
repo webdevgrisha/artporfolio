@@ -175,16 +175,14 @@ export const workBodySchema = z
  * makes a saved work unreadable.
  */
 export const storedWorkSchema = z.object({
-  /** A work saved before works could be hidden is shown. */
-  published: z.boolean().default(true),
+  published: z.boolean(),
   title: z.string(),
   description: z.string(),
   size: z.object({ width: z.number(), height: z.number() }),
   year: z.number(),
   month: z.number(),
-  /** A work saved before places were added has no country and no city. */
-  country: z.string().nullable().default(null),
-  city: z.string().default(""),
+  country: z.string().nullable(),
+  city: z.string(),
   photo: storedPhotoSchema,
   processPhotos: z.array(storedListPhotoSchema),
   /** May name a section deleted since; the API leaves such ids out. */
@@ -197,20 +195,16 @@ export const storedWorkSchema = z.object({
   paletteIds: z.array(z.string()),
   /** Always a saved collection: deleting a collection takes its works out of it. */
   collectionId: z.string().nullable(),
-  /** A work saved before formats were added is a single work. */
-  format: z.enum(workFormats).default("single"),
-  partCount: z.number().nullable().default(null),
-  /** A work saved before sale statuses were added is for sale. */
-  saleStatus: z.enum(workSaleStatuses).default("available"),
-  /** A work saved before prices were added has none. */
+  format: z.enum(workFormats),
+  partCount: z.number().nullable(),
+  saleStatus: z.enum(workSaleStatuses),
   price: z
     .object({
       amount: z.number(),
       currency: z.enum(workCurrencies),
       discountPercent: z.number().nullable(),
     })
-    .nullable()
-    .default(null),
+    .nullable(),
   /** Set by the server when the work is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the work. */
@@ -306,9 +300,6 @@ export const workUsageSchema = z.object({
   palettes: z.record(z.uuid(), itemUsageSchema),
 });
 
-export type WorkFormat = (typeof workFormats)[number];
-export type WorkSaleStatus = (typeof workSaleStatuses)[number];
-export type WorkCurrency = (typeof workCurrencies)[number];
 export type WorkParams = z.infer<typeof workParamsSchema>;
 export type WorkBody = z.infer<typeof workBodySchema>;
 export type StoredWork = z.infer<typeof storedWorkSchema>;

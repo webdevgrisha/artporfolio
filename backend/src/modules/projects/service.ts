@@ -18,11 +18,6 @@ import { preparePhotoList, type StoredListPhoto, toListPhoto } from "#shared/ima
 import { deleteImageFilesOrWarn } from "#shared/images/storage";
 import { titleKey } from "#shared/text/titles";
 
-/** A saved project with the id it is known by. */
-export interface SavedProject extends Tagged<Project> {
-  id: string;
-}
-
 function projectsCollection() {
   return firestore().collection("projects");
 }
@@ -87,10 +82,10 @@ function toProject(
  * The project as the API returns it, tagged by that representation. It has no position: reordering
  * the projects does not make an open edit form outdated.
  */
-function toSavedProject(id: string, project: StoredProject): SavedProject {
+function toSavedProject(id: string, project: StoredProject): Tagged<Project> {
   const data = toProject(id, project);
 
-  return { data, etag: entityTag(data), id };
+  return { data, etag: entityTag(data) };
 }
 
 /** Every project in the order the site shows them, tagged by the stored list. */
@@ -104,7 +99,7 @@ export async function listProjects(): Promise<Tagged<Project[]>> {
   };
 }
 
-export async function getProject(id: string): Promise<SavedProject> {
+export async function getProject(id: string): Promise<Tagged<Project>> {
   return toSavedProject(id, readProject(await projectDocument(id).get()));
 }
 
@@ -115,7 +110,7 @@ export async function getProject(id: string): Promise<SavedProject> {
  * files are copied from their uploads first; if saving fails, the copies are removed. Every photo
  * of a new project is new: a photo `id` refers to nothing, so it is rejected with 422.
  */
-export async function createProject(id: string, body: ProjectBody): Promise<SavedProject> {
+export async function createProject(id: string, body: ProjectBody): Promise<Tagged<Project>> {
   const draft = await preparePhotoList(body.photos, photosFolder(id));
   let project: StoredProject;
 
@@ -161,7 +156,7 @@ export async function replaceProject(
   id: string,
   body: ProjectBody,
   ifMatch: string,
-): Promise<SavedProject> {
+): Promise<Tagged<Project>> {
   const draft = await preparePhotoList(body.photos, photosFolder(id));
   let savedPhotos: StoredListPhoto[];
   let project: StoredProject;

@@ -153,6 +153,13 @@ function storedWork(year: number, month: number, collectionId: string | null) {
     materialIds: [],
     month,
     paletteIds: [],
+    published: true,
+    country: null,
+    city: "",
+    format: "single",
+    partCount: null,
+    saleStatus: "available",
+    price: null,
     photo: storedCover("work"),
     processPhotos: [],
     sectionIds: [],
@@ -356,9 +363,8 @@ describe("the works of a collection", () => {
 
 describe("getCollection", () => {
   it("returns the collection with its id", async () => {
-    const { data, id } = await getCollection(animalsId, "admin");
+    const { data } = await getCollection(animalsId, "admin");
 
-    expect(id).toBe(animalsId);
     expect(data).toMatchObject({ endYear: 2023, id: animalsId, startYear: 2022, title: "Звери" });
   });
 

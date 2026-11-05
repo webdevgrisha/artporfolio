@@ -64,8 +64,8 @@ describe("image storage", () => {
 
     await expect(deleteImageFilesOrWarn("images/v1")).resolves.toBeUndefined();
     expect(logger.warn).toHaveBeenCalledWith(
-      "Could not delete image files",
-      expect.objectContaining({ folder: "images/v1" }),
+      "Could not delete the image files in images/v1",
+      expect.objectContaining({ message: "Storage is unavailable" }),
     );
   });
 });

@@ -41,11 +41,6 @@ import {
 import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
 import { publishUpload } from "#shared/images/uploads";
 
-/** A saved work with the id it is known by. */
-export interface SavedWork extends Tagged<Work> {
-  id: string;
-}
-
 /** What a work is returned by: the saved items of each list it refers to, and the rates. */
 interface KnownData {
   /** Every section and subsection. */
@@ -192,10 +187,10 @@ function toWork(id: string, work: StoredWork, known: KnownData): Work {
  * color or a palette the work refers to, or changing a rate, changes what is returned, and so its
  * tag, without changing the stored work.
  */
-function toSavedWork(id: string, work: StoredWork, known: KnownData): SavedWork {
+function toSavedWork(id: string, work: StoredWork, known: KnownData): Tagged<Work> {
   const data = toWork(id, work, known);
 
-  return { data, etag: entityTag(data), id };
+  return { data, etag: entityTag(data) };
 }
 
 /**
@@ -348,7 +343,7 @@ export async function getWorkUsage(reader: Reader): Promise<Tagged<WorkUsage>> {
 }
 
 /** The work `id`; a hidden work is not found for a visitor, as if there were none. */
-export async function getWork(id: string, reader: Reader): Promise<SavedWork> {
+export async function getWork(id: string, reader: Reader): Promise<Tagged<Work>> {
   const [snapshot, known] = await Promise.all([workDocument(id).get(), readKnownData()]);
   const work = readWork(snapshot);
 
@@ -384,7 +379,7 @@ async function discardPhoto(id: string, image: StoredImage | undefined): Promise
  * section, a material, a color, a palette or a collection that does not exist. The files are copied
  * from their uploads first; if saving fails, the copies are removed.
  */
-export async function createWork(id: string, body: WorkBody): Promise<SavedWork> {
+export async function createWork(id: string, body: WorkBody): Promise<Tagged<Work>> {
   const { alt, uploadId } = body.photo;
 
   if (uploadId === undefined) {
@@ -444,7 +439,11 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
  * preparePhotoList. A section, a material, a color, a palette or a collection that does not exist
  * is rejected with 422. Moving the work to another collection changes both collections.
  */
-export async function replaceWork(id: string, body: WorkBody, ifMatch: string): Promise<SavedWork> {
+export async function replaceWork(
+  id: string,
+  body: WorkBody,
+  ifMatch: string,
+): Promise<Tagged<Work>> {
   const image = await publishPhoto(id, body.photo.uploadId);
   let draft: PhotoListDraft;
 

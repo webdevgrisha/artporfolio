@@ -11,11 +11,6 @@ import { ConflictError, NotFoundError, PreconditionFailedError } from "#shared/h
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { byTitle, titleKey } from "#shared/text/titles";
 
-/** A saved section with the id it is known by. */
-export interface SavedSection extends Tagged<Section> {
-  id: string;
-}
-
 /** Every section; works read it to check the sections they refer to. */
 export function sectionsCollection() {
   return firestore().collection("gallerySections");
@@ -38,8 +33,8 @@ function toStoredSection({ subsections, title }: SectionBody): StoredSection {
   return { subsections: subsections.toSorted(byTitle), title };
 }
 
-function toSavedSection(id: string, section: StoredSection): SavedSection {
-  return { data: { id, ...section }, etag: entityTag(section), id };
+function toSavedSection(id: string, section: StoredSection): Tagged<Section> {
+  return { data: { id, ...section }, etag: entityTag(section) };
 }
 
 /**
@@ -117,7 +112,7 @@ export async function listSections(): Promise<Tagged<Section[]>> {
   return { data: sections, etag: entityTag(sections) };
 }
 
-export async function getSection(id: string): Promise<SavedSection> {
+export async function getSection(id: string): Promise<Tagged<Section>> {
   return toSavedSection(id, readSection(await sectionDocument(id).get()));
 }
 
@@ -125,7 +120,7 @@ export async function getSection(id: string): Promise<SavedSection> {
  * Creates the section `id`, which the client chose; rejects it with 412 once a section has that
  * id, such as one an earlier try of the same request created.
  */
-export async function createSection(id: string, body: SectionBody): Promise<SavedSection> {
+export async function createSection(id: string, body: SectionBody): Promise<Tagged<Section>> {
   const section = toStoredSection(body);
 
   await firestore().runTransaction(async (transaction) => {
@@ -150,7 +145,7 @@ export async function replaceSection(
   id: string,
   body: SectionBody,
   ifMatch: string,
-): Promise<SavedSection> {
+): Promise<Tagged<Section>> {
   const section = toStoredSection(body);
 
   await firestore().runTransaction(async (transaction) => {

@@ -30,5 +30,3 @@ export const countryCodes = [
   "YE", "YT",
   "ZA", "ZM", "ZW",
 ] as const;
-
-export type CountryCode = (typeof countryCodes)[number];
