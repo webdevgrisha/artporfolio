@@ -3,6 +3,9 @@ export type Theme = "dark" | "light";
 /** The script in index.html reads this key too: it sets the theme before the first paint. */
 export const themeStorageKey = "theme";
 
+/** The --color-surface of each theme, for the bar of a mobile browser, which CSS cannot reach. */
+const browserBarColors = { dark: "#141414", light: "#fff" } satisfies Record<Theme, string>;
+
 export function currentTheme(): Theme {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 }
@@ -14,6 +17,10 @@ export function showTheme(theme: Theme): void {
   } else {
     delete document.documentElement.dataset.theme;
   }
+
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", browserBarColors[theme]);
 }
 
 /** Where storage is blocked, the theme still changes, for as long as the page stays open. */

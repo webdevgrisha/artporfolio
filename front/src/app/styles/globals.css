@@ -30,6 +30,8 @@
     --color-border-modified: #1d4ed8;
     /* A decorative line between the rows of a list; it marks no control, so it may be pale. */
     --color-divider: #e6e6e6;
+    /* Around a color swatch: it keeps visible the swatch in the color of the page. */
+    --color-swatch-line: #e6e6e6;
     --color-focus: #000;
     --color-danger: #b00020;
     /* Text colors of a state, such as a work for sale or reserved; both 4.5:1 on the surface. */
@@ -102,13 +104,15 @@
     --color-surface: #141414;
     --color-surface-raised: #232323;
     --color-surface-hover: #333;
-    --color-surface-disabled: #1e1e1e;
+    /* Lighter than the raised surface too: it is the hover of the rows in a dialog as well. */
+    --color-surface-disabled: #2a2a2a;
     --color-surface-inverse: #f2f2f2;
     /* Gray, not white: the frames of a whole form in white would outshine what they hold. */
     --color-border: #8c8c8c;
     --color-border-disabled: #666;
     --color-border-modified: #6ea0ff;
     --color-divider: #2e2e2e;
+    --color-swatch-line: #6e6e6e;
     --color-focus: #f2f2f2;
     --color-danger: #ff6b6b;
     --color-success: #3ddc84;
