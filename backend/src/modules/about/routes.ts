@@ -3,13 +3,15 @@ import { Router } from "express";
 import { readAbout } from "#modules/about/controller";
 import { aboutPhoto } from "#modules/about/photo";
 import { processPhotosRouter } from "#modules/about/process-photos/routes";
-import { aboutTextRouter } from "#modules/about/text/routes";
+import { aboutText } from "#modules/about/text/resource";
+import { aboutTextBodySchema } from "#modules/about/text/schema";
 import { photoSlotRouter } from "#modules/photo-slot/routes";
+import { documentResourceRouter } from "#shared/http/document-resource";
 
 export const aboutRouter = Router();
 
 // The About page is public: the site reads it whole. Each part is changed at its own resource.
 aboutRouter.get("/", readAbout);
-aboutRouter.use("/text", aboutTextRouter);
+aboutRouter.use("/text", documentResourceRouter(aboutText, aboutTextBodySchema));
 aboutRouter.use("/photo", photoSlotRouter(aboutPhoto));
 aboutRouter.use("/process-photos", processPhotosRouter);

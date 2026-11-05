@@ -106,16 +106,6 @@ describe("http", () => {
     );
   });
 
-  it("rejects a cancelled request with the abort error, not a network error", async () => {
-    server.use(mswHttp.get("/api/items/1", () => HttpResponse.json({ name: "Холст" })));
-    const controller = new AbortController();
-    controller.abort();
-
-    await expect(
-      http.get({ path: "/items/1", schema: itemSchema, signal: controller.signal }),
-    ).rejects.toMatchObject({ name: "AbortError" });
-  });
-
   it("rejects a response that does not match the schema", async () => {
     server.use(mswHttp.get("/api/items/1", () => HttpResponse.json({ name: 1 })));
 
@@ -141,53 +131,29 @@ describe("http entity tags", () => {
     });
   });
 
-  it.each(["PUT", "PATCH"] as const)(
-    "sends a conditional %s with If-Match and returns the new ETag",
-    async (method) => {
-      let request: Request | undefined;
-      const handler = method === "PUT" ? mswHttp.put : mswHttp.patch;
-      server.use(
-        handler("/api/items", ({ request: received }) => {
-          request = received.clone();
-          return HttpResponse.json({ name: "Холст" }, { headers: { ETag: '"new-tag"' } });
-        }),
-      );
-      const send = method === "PUT" ? http.putIfMatch : http.patchIfMatch;
-
-      const result = await send.call(http, {
-        body: { name: "Холст" },
-        etag,
-        path: "/items",
-        schema: itemSchema,
-      });
-
-      expect(request?.method).toBe(method);
-      expect(request?.headers.get("Content-Type")).toBe(
-        method === "PATCH" ? "application/merge-patch+json" : "application/json",
-      );
-      expect(request?.headers.get("If-Match")).toBe(etag);
-      expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
-      expect(result).toEqual({ data: { name: "Холст" }, etag: '"new-tag"' });
-    },
-  );
-
-  it("sends a conditional deletion with If-Match and returns the new ETag", async () => {
+  it("sends a conditional PUT with If-Match and returns the new ETag", async () => {
     let request: Request | undefined;
     server.use(
-      mswHttp.delete("/api/items/1", ({ request: received }) => {
-        request = received;
-        return new HttpResponse(null, { headers: { ETag: '"new-tag"' }, status: 204 });
+      mswHttp.put("/api/items", ({ request: received }) => {
+        request = received.clone();
+        return HttpResponse.json({ name: "Холст" }, { headers: { ETag: '"new-tag"' } });
       }),
     );
 
-    const newEtag = await http.deleteIfMatch({ etag, path: "/items/1" });
+    const result = await http.putIfMatch({
+      body: { name: "Холст" },
+      etag,
+      path: "/items",
+      schema: itemSchema,
+    });
 
+    expect(request?.headers.get("Content-Type")).toBe("application/json");
     expect(request?.headers.get("If-Match")).toBe(etag);
-    expect(newEtag).toBe('"new-tag"');
     expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
+    expect(result).toEqual({ data: { name: "Холст" }, etag: '"new-tag"' });
   });
 
-  it("deletes a resource with If-Match, expecting no ETag back", async () => {
+  it("deletes whatever version is saved, expecting no ETag back", async () => {
     let request: Request | undefined;
     server.use(
       mswHttp.delete("/api/items/1", ({ request: received }) => {
@@ -196,8 +162,8 @@ describe("http entity tags", () => {
       }),
     );
 
-    await expect(http.deleteResourceIfMatch({ etag, path: "/items/1" })).resolves.toBeUndefined();
-    expect(request?.headers.get("If-Match")).toBe(etag);
+    await expect(http.deleteResource({ path: "/items/1" })).resolves.toBeUndefined();
+    expect(request?.headers.get("If-Match")).toBe("*");
     expect(request?.headers.get("X-CSRF-Token")).toBe(csrfToken);
   });
 

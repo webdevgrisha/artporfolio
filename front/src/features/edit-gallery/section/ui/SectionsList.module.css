@@ -1,0 +1,18 @@
+@media (width >= 40rem) {
+  .table {
+    min-inline-size: 42rem;
+  }
+
+  .titleColumn {
+    inline-size: 35%;
+  }
+}
+
+.none {
+  color: var(--color-text-muted);
+}
+
+/* Room for the name of the column and its arrow, which are wider than the number. */
+.countColumn {
+  inline-size: 6.75rem;
+}

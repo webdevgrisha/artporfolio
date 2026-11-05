@@ -6,8 +6,8 @@ import { http } from "./http";
 import { imageUploadRules } from "./image";
 import { getSaveErrorMessage } from "./requestErrorMessages";
 
-const uploadResponseSchema = z.object({
-  upload: z.object({ id: z.string() }),
+const uploadSchema = z.object({
+  id: z.string(),
 });
 
 /**
@@ -50,8 +50,7 @@ export async function uploadImage(file: File): Promise<string> {
   let id: string;
 
   try {
-    const response = await http.post({ path: "/uploads", body, schema: uploadResponseSchema });
-    id = response.upload.id;
+    ({ id } = await http.post({ path: "/uploads", body, schema: uploadSchema }));
   } catch (error) {
     throw new UploadError(file.name, error);
   }
@@ -65,7 +64,7 @@ export function requestErrorOf(error: unknown): unknown {
   return error instanceof UploadError ? error.cause : error;
 }
 
-export function getUploadErrorMessage({ cause, fileName }: UploadError): string {
+export function getUploadErrorMessage({ cause, fileName }: UploadError): string | null {
   return getSaveErrorMessage(cause, {
     byStatus: {
       400: `Сервер не принял фото «${fileName}». Попробуйте другой файл`,

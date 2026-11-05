@@ -9,11 +9,11 @@ export const aboutTextMaxLengths: Readonly<Record<keyof AboutText, number>> = {
   creation: 2_000,
 };
 
-/** An empty text hides its section on the site. */
 function aboutText(maxLength: number) {
   return z
     .string()
     .trim()
+    .min(1, "Введите текст")
     .max(maxLength, `Не длиннее ${String(maxLength)} символов`);
 }
 

@@ -1,12 +1,14 @@
 // Fills the running emulators with demo content through the API, as the admin would: page heroes,
-// the About page, the contacts, and the projects with their photos. Every run first empties the
-// Firestore emulator, so the admin always starts from the same content. The images are drawn here,
-// so the result is the same on every machine and needs no network.
+// the About page, the contacts, the currency rates, the projects with their photos, and the gallery text, sections,
+// materials, colors, palettes, collections and works. Every run first empties the Firestore emulator, so the admin
+// always starts from the same content. The images are drawn here, so the result is the same on
+// every machine and needs no network.
 //
 //   pnpm emulators:seed [email] [password]
 //
 // The admin must exist (pnpm emulators:admin); `emulators:seed` creates it first.
 
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
@@ -223,7 +225,185 @@ const projectsIntro =
   "начинается с одного героя и вырастает в целый мир.\n\nЗдесь собраны работы последних лет — " +
   "от первых набросков до напечатанных страниц.";
 
-/** In the order the site shows them. */
+const galleryIntro =
+  "Живопись, графика и постеры разных лет. Работы можно выбрать по разделу и материалу, " +
+  "а понравившуюся — купить.";
+
+/** The site lists sections, subsections, materials, colors and palettes by title, so the order here is free. */
+const gallerySections = [
+  { title: "Живопись", subsections: ["Пейзаж", "Портрет", "Натюрморт"] },
+  { title: "Графика", subsections: [] },
+  { title: "Постеры", subsections: ["Рекламные", "Социальные", "Театральные"] },
+  { title: "Рисунок", subsections: [] },
+];
+
+/** The sections the works are in, one after another. */
+const workSections = ["Пейзаж", "Графика", "Портрет", "Натюрморт", "Рекламные", "Театральные"];
+
+/** How many units of each currency one US dollar buys. */
+const currencyRates = {
+  EUR: 0.92,
+  GBP: 0.79,
+  PLN: 3.65,
+  CHF: 0.88,
+  CAD: 1.37,
+  AUD: 1.52,
+  JPY: 150,
+  CNY: 7.1,
+  RUB: 80,
+  BYN: 3.2,
+  UAH: 41,
+  CZK: 23,
+};
+
+const galleryMaterials = ["Акварель", "Гуашь", "Карандаш", "Масло", "Тушь", "Холст", "Бумага"];
+
+/** The materials of the seeded works by title: a painting gets one of the pairs. */
+const workPaintingMaterials = [
+  ["Масло", "Холст"],
+  ["Акварель", "Бумага"],
+];
+const workEtchingMaterials = ["Тушь", "Бумага"];
+
+/** A black-and-white work gets both «Чёрный» and «Белый»: a color is one swatch. */
+const galleryColors = [
+  { title: "Синий", hex: "#1f4e9c" },
+  { title: "Красный", hex: "#c0392b" },
+  { title: "Жёлтый", hex: "#f2c94c" },
+  { title: "Зелёный", hex: "#3a7d44" },
+  { title: "Чёрный", hex: "#1a1a1a" },
+  { title: "Белый", hex: "#ffffff" },
+  { title: "Охра", hex: "#c8913a" },
+];
+
+/** The colors of the seeded paintings by the palette of their drawing; an etching is black and white. */
+const workPaintingColors = {
+  dragonfly: ["Синий", "Зелёный"],
+  elephant: ["Охра", "Красный"],
+  frog: ["Зелёный", "Жёлтый"],
+  lion: ["Жёлтый", "Охра"],
+  owl: ["Охра", "Чёрный"],
+  tiger: ["Охра", "Зелёный"],
+};
+const workEtchingColors = ["Чёрный", "Белый"];
+
+/** The palettes of the seeded works, one after another; an etching is monochrome. */
+const workPaintingPalettes = [
+  ["Тёплая", "Яркая"],
+  ["Холодная"],
+  ["Пастельная", "Тёплая"],
+  ["Приглушённая"],
+];
+const workEtchingPalettes = ["Монохромная"];
+
+/** The coloring of a work as a whole, apart from the colors it has. */
+const galleryPalettes = [
+  "Пастельная",
+  "Яркая",
+  "Приглушённая",
+  "Тёплая",
+  "Холодная",
+  "Монохромная",
+];
+
+/** The works refer to them by title; «Зима» has no works yet. */
+const galleryCollections = [
+  { title: "Саванна", palette: "lion", startYear: 2024, endYear: 2025 },
+  { title: "У воды", palette: "frog", startYear: 2022, endYear: 2025 },
+  { title: "Ночные птицы", palette: "owl", startYear: 2020, endYear: 2024 },
+  { title: "Зима", palette: "elephant", startYear: 2025, endYear: null },
+];
+
+/** In the order the site shows them; a work without a collection is a work on its own. */
+const galleryWorks = [
+  {
+    title: "Слон на закате",
+    palette: "elephant",
+    size: [50, 70],
+    year: 2025,
+    collection: "Саванна",
+    country: "PL",
+    city: "Варшава",
+    price: 1200,
+  },
+  {
+    title: "Тигр в зарослях",
+    palette: "tiger",
+    size: [60, 80],
+    year: 2025,
+    collection: "Саванна",
+    country: "PL",
+    city: "Варшава",
+    price: 1500,
+    discountPercent: 20,
+  },
+  { title: "Стрекоза", palette: "dragonfly", size: [21.6, 27.9], year: 2025, collection: "У воды" },
+  {
+    title: "Лев",
+    palette: "lion",
+    size: [40, 50],
+    year: 2024,
+    collection: "Саванна",
+    price: 800,
+    saleStatus: "sold",
+  },
+  {
+    title: "Лягушка на листе",
+    palette: "frog",
+    size: [29.7, 42],
+    year: 2024,
+    collection: "У воды",
+  },
+  {
+    title: "Сова",
+    palette: "owl",
+    size: [30, 40],
+    year: 2024,
+    collection: "Ночные птицы",
+    // An etching printed from one plate, priced for the whole set.
+    format: "set",
+    partCount: 30,
+    price: 1800,
+  },
+  { title: "Слонёнок", palette: "elephant", size: [30.5, 40.6], year: 2023 },
+  {
+    title: "Полосы",
+    palette: "tiger",
+    size: [100, 70],
+    year: 2023,
+    format: "diptych",
+    price: 2400,
+    discountPercent: 15,
+    saleStatus: "reserved",
+  },
+  {
+    title: "Пруд",
+    palette: "dragonfly",
+    size: [70, 50],
+    year: 2022,
+    collection: "У воды",
+    country: "BY",
+    city: "Минск",
+  },
+  {
+    title: "Грива",
+    palette: "lion",
+    size: [61, 76.2],
+    year: 2021,
+    format: "triptych",
+    saleStatus: "notForSale",
+  },
+  {
+    title: "Ночная сова",
+    palette: "owl",
+    size: [21, 29.7],
+    year: 2020,
+    collection: "Ночные птицы",
+  },
+  // A draft the site does not show yet.
+  { title: "Болото", palette: "frog", size: [80, 60], year: 2019, price: 950, published: false },
+];
+
 const projects = [
   {
     description:
@@ -330,8 +510,9 @@ class Api {
     return this.#send("PUT", path, { ifMatch: "*", json });
   }
 
-  async post(path, json) {
-    return (await this.#send("POST", path, { json })).json();
+  /** Creates the resource the client names in `path`, as the admin creates a project. */
+  async create(path, json) {
+    return this.#send("PUT", path, { ifNoneMatch: "*", json });
   }
 
   /** Uploads a JPEG and returns the id that the content refers to it by. */
@@ -339,16 +520,17 @@ class Api {
     const form = new FormData();
     form.append("file", new Blob([data], { type: "image/jpeg" }), name);
 
-    const { upload } = await (await this.#send("POST", "/uploads", { form })).json();
-    return upload.id;
+    const { id } = await (await this.#send("POST", "/uploads", { form })).json();
+    return id;
   }
 
-  async #send(method, path, { form, ifMatch, json } = {}) {
+  async #send(method, path, { form, ifMatch, ifNoneMatch, json } = {}) {
     const headers = {};
 
     if (this.#cookie) headers.Cookie = this.#cookie;
     if (method !== "GET" && this.#csrfToken) headers["X-CSRF-Token"] = this.#csrfToken;
     if (ifMatch) headers["If-Match"] = ifMatch;
+    if (ifNoneMatch) headers["If-None-Match"] = ifNoneMatch;
     if (json) headers["Content-Type"] = "application/json";
 
     const response = await fetch(`${apiUrl}${path}`, {
@@ -436,8 +618,14 @@ async function seedContacts(api) {
   console.log("  contacts: links, photo");
 }
 
+async function seedCurrencies(api) {
+  await api.put("/currencies", { rates: currencyRates });
+
+  console.log(`  currencies: ${String(Object.keys(currencyRates).length)} rates`);
+}
+
 async function seedProjects(api) {
-  await api.put("/projects-intro", { text: projectsIntro });
+  await api.put("/projects/intro", { text: projectsIntro });
 
   // A new project goes to the top of the list, so the last one is created first.
   for (const [index, project] of projects.map((project, index) => [index, project]).reverse()) {
@@ -454,7 +642,7 @@ async function seedProjects(api) {
       photos.push({ alt, uploadId });
     }
 
-    await api.post("/projects", {
+    await api.create(`/projects/${randomUUID()}`, {
       description: project.description,
       link: project.link,
       photos,
@@ -462,6 +650,137 @@ async function seedProjects(api) {
     });
     console.log(`  project: ${project.title} (${String(photos.length)} photos)`);
   }
+}
+
+async function seedGallery(api) {
+  await api.put("/gallery/intro", { text: galleryIntro });
+
+  // The ids of the sections and subsections by title, for the works to refer to.
+  const sectionIds = new Map();
+
+  for (const section of gallerySections) {
+    const id = randomUUID();
+    const subsections = section.subsections.map((title) => ({ id: randomUUID(), title }));
+
+    await api.create(`/gallery/sections/${id}`, { title: section.title, subsections });
+    sectionIds.set(section.title, id);
+    for (const subsection of subsections) sectionIds.set(subsection.title, subsection.id);
+  }
+
+  const materials = galleryMaterials.map((title) => ({ id: randomUUID(), title }));
+  // The ids of the materials by title, for the works to refer to.
+  const materialIds = new Map(materials.map(({ id, title }) => [title, id]));
+
+  await api.put("/gallery/materials", { materials });
+  const colors = galleryColors.map((color) => ({ id: randomUUID(), ...color }));
+  // The ids of the colors by title, for the works to refer to.
+  const colorIds = new Map(colors.map(({ id, title }) => [title, id]));
+
+  await api.put("/gallery/colors", { colors });
+  const palettes = galleryPalettes.map((title) => ({ id: randomUUID(), title }));
+  // The ids of the palettes by title, for the works to refer to.
+  const paletteIds = new Map(palettes.map(({ id, title }) => [title, id]));
+
+  await api.put("/gallery/palettes", { palettes });
+
+  // The ids of the collections by title, for the works to refer to. A collection is created empty:
+  // each work names its own when it is created.
+  const collectionIds = new Map();
+
+  for (const [index, collection] of galleryCollections.entries()) {
+    const id = randomUUID();
+
+    await api.create(`/gallery/collections/${id}`, {
+      title: collection.title,
+      description: `${collection.title}. Серия работ о животных.`,
+      cover: {
+        alt: collection.title,
+        uploadId: await uploadArtwork(api, {
+          kind: "painting",
+          name: collection.title,
+          palette: collection.palette,
+          seed: 4000 + index,
+        }),
+      },
+      startYear: collection.startYear,
+      endYear: collection.endYear,
+      workIds: [],
+    });
+    collectionIds.set(collection.title, id);
+  }
+
+  for (const [index, work] of galleryWorks.entries()) {
+    const [width, height] = work.size;
+    const kind = index % 3 === 2 ? "etching" : "painting";
+    const uploadId = await uploadArtwork(api, {
+      kind,
+      name: work.title,
+      palette: work.palette,
+      seed: 3000 + index,
+      // The drawing keeps the proportions of the work: 20 px per centimetre.
+      size: [width, height].map((side) => Math.round(side * 20)),
+    });
+
+    // Every other work shows how it was made: sketches, then the colours of the work.
+    const processPhotos = [];
+
+    if (index % 2 === 0) {
+      for (const [photoIndex, alt] of ["Наброски карандашом", "Цветовые пробы"].entries()) {
+        processPhotos.push({
+          alt,
+          uploadId: await uploadArtwork(api, {
+            kind: photoIndex === 0 ? "etching" : "painting",
+            name: `${work.title}-${alt}`,
+            palette: work.palette,
+            seed: 3100 + index * 10 + photoIndex,
+          }),
+        });
+      }
+    }
+
+    await api.create(`/gallery/works/${randomUUID()}`, {
+      title: work.title,
+      description: `${work.title}. Работа из серии о животных.`,
+      size: { width, height },
+      year: work.year,
+      // Spread over the year, so works of one year have different months.
+      month: (index % 12) + 1,
+      photo: { alt: work.title, uploadId },
+      processPhotos,
+      // A work is in a subsection, or a section without them; some are in a second one too.
+      sectionIds: [
+        workSections[index % workSections.length],
+        ...(index % 4 === 0 ? ["Рисунок"] : []),
+      ].map((title) => sectionIds.get(title)),
+      // An etching is ink on paper; the paintings alternate oil on canvas and watercolour on paper.
+      materialIds: (kind === "etching"
+        ? workEtchingMaterials
+        : workPaintingMaterials[index % workPaintingMaterials.length]
+      ).map((title) => materialIds.get(title)),
+      colorIds: (kind === "etching" ? workEtchingColors : workPaintingColors[work.palette]).map(
+        (title) => colorIds.get(title),
+      ),
+      paletteIds: (kind === "etching"
+        ? workEtchingPalettes
+        : workPaintingPalettes[index % workPaintingPalettes.length]
+      ).map((title) => paletteIds.get(title)),
+      collectionId: work.collection === undefined ? null : collectionIds.get(work.collection),
+      format: work.format ?? "single",
+      partCount: work.partCount ?? null,
+      country: work.country ?? null,
+      city: work.city ?? "",
+      published: work.published ?? true,
+      saleStatus: work.saleStatus ?? "available",
+      price:
+        work.price === undefined
+          ? null
+          : { amount: work.price, currency: "USD", discountPercent: work.discountPercent ?? null },
+    });
+  }
+
+  console.log(
+    `  gallery: text, ${String(gallerySections.length)} sections, ${String(galleryMaterials.length)} materials, ${String(galleryColors.length)} colors, ${String(galleryPalettes.length)} palettes, ${String(galleryCollections.length)} collections, ${String(galleryWorks.length)} works`,
+  );
 }
 
 /**
@@ -489,5 +808,7 @@ console.log(`Seeding ${apiUrl} as ${email}`);
 await seedHeroes(api);
 await seedAbout(api);
 await seedContacts(api);
+await seedCurrencies(api);
 await seedProjects(api);
+await seedGallery(api);
 console.log(`Done in ${String(Math.round((Date.now() - startedAt) / 1000))} s`);

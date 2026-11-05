@@ -1,2 +1,2 @@
 export { EditContactLinksForm } from "./ui/EditContactLinksForm";
-export { EditContactPhotoForm } from "./ui/EditContactPhotoForm";
+export { EditContactLinksFormSkeleton } from "./ui/EditContactLinksFormSkeleton";

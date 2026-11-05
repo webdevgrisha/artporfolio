@@ -3,7 +3,7 @@ import React from "react";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
-import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
+import { AttachmentIcon } from "@/shared/ui/icon";
 import { IconButton } from "@/shared/ui/icon-button";
 import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
 import {
@@ -22,10 +22,7 @@ interface MediaPickerProps {
   disabled?: boolean;
   /** The error of the field, including the rejection reported with `onRejectionChange`. */
   error?: string;
-  /**
-   * The owner is sending the file or its removal: the field is disabled, and a spinner stands in
-   * for the remove button.
-   */
+  /** The owner is sending the file: the field is disabled, and a spinner shows by the file. */
   isBusy?: boolean;
   /** Highlights a file that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
@@ -35,11 +32,10 @@ interface MediaPickerProps {
   /** Receives the picked file once it passes the type and size checks. */
   onPick: (file: File) => void;
   /**
-   * Receives why a file was refused, or `undefined` once the next pick or removal makes the
-   * message outdated. The owner shows it in `error` until the form is saved or reverted.
+   * Receives why a file was refused, or `undefined` once the next pick makes the message
+   * outdated. The owner shows it in `error` until the form is saved or reverted.
    */
   onRejectionChange: (message: string | undefined) => void;
-  onRemove: () => void;
   rules: FileRules;
 }
 
@@ -58,11 +54,9 @@ export function MediaPicker({
   label,
   onPick,
   onRejectionChange,
-  onRemove,
   rules,
 }: MediaPickerProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const selectButtonRef = React.useRef<HTMLButtonElement>(null);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
   const selectLabel = item ? "Заменить файл" : "Выбрать файл";
   const isDisabled = disabled || isBusy;
@@ -77,13 +71,6 @@ export function MediaPicker({
 
     onRejectionChange(fileRejection);
     if (!fileRejection) onPick(file);
-  }
-
-  function removeItem() {
-    onRejectionChange(undefined);
-    onRemove();
-    // The remove button disappears together with the file.
-    selectButtonRef.current?.focus();
   }
 
   return (
@@ -107,13 +94,7 @@ export function MediaPicker({
                 <span className={styles.spinner}>
                   <Spinner label="Сохранение" />
                 </span>
-              ) : (
-                <Tooltip className={styles.removeTooltip} content={`Удалить ${item.name}`}>
-                  <IconButton label={`Удалить ${item.name}`} onClick={removeItem}>
-                    <TrashIcon className={styles.removeIcon} />
-                  </IconButton>
-                </Tooltip>
-              )}
+              ) : null}
             </div>
             <MediaThumbnailButton
               className={styles.thumbnail}
@@ -127,11 +108,7 @@ export function MediaPicker({
 
         {/* The only control that picks a file: a click elsewhere in the frame does nothing. */}
         <Tooltip className={styles.selectTooltip} content={selectLabel}>
-          <IconButton
-            ref={selectButtonRef}
-            label={selectLabel}
-            onClick={() => inputRef.current?.click()}
-          >
+          <IconButton label={selectLabel} onClick={() => inputRef.current?.click()}>
             <AttachmentIcon className={styles.selectIcon} />
           </IconButton>
         </Tooltip>

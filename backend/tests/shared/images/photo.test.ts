@@ -33,17 +33,15 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
-import { NotFoundError, PreconditionFailedError } from "#shared/http/errors";
+import { PreconditionFailedError, UnprocessableContentError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
 import {
-  deletePhoto,
   getPhoto,
-  photoAltBodySchema,
+  photoBodySchema,
   photoSlot,
   readPhoto,
   savePhoto,
   toPhoto,
-  updatePhotoAlt,
 } from "#shared/images/photo";
 
 const slot = photoSlot({
@@ -59,6 +57,7 @@ const published = {
   fileName: "photo.png",
   fileSize: 8,
   height: 480,
+  originalPath: "contacts/photo/new-version/original.png",
   sources: {
     avif: [{ path: "contacts/photo/new-version/960.avif", token: "token", width: 960 }],
     webp: [{ path: "contacts/photo/new-version/960.webp", token: "token", width: 960 }],
@@ -72,6 +71,7 @@ const storedPhoto = {
   fileName: "old.png",
   fileSize: 100,
   height: 700,
+  originalPath: "old/original.png",
   sources: {
     avif: [{ path: "old/1000.avif", token: "avif-token", width: 1_000 }],
     webp: [{ path: "old/1000.webp", token: "webp-token", width: 1_000 }],
@@ -82,7 +82,13 @@ const storedPhoto = {
 
 /** storedPhoto as the API returns it. */
 const returnedPhoto = {
-  ...storedPhoto,
+  alt: "Portrait",
+  fileName: "old.png",
+  fileSize: 100,
+  height: 700,
+  original: "/api/originals/old/original.png",
+  version: "old-version",
+  width: 1_000,
   sources: {
     avif: [{ url: "https://storage.test/old/1000.avif?token=avif-token", width: 1_000 }],
     webp: [{ url: "https://storage.test/old/1000.webp?token=webp-token", width: 1_000 }],
@@ -221,59 +227,38 @@ describe("photo", () => {
     storedAs(storedPhoto);
     const stored = { ...storedPhoto, alt: "New alt" };
 
-    await expect(updatePhotoAlt(slot, "New alt", storedTag)).resolves.toEqual({
+    await expect(savePhoto(slot, { alt: "New alt" }, storedTag)).resolves.toEqual({
+      created: false,
       data: { ...returnedPhoto, alt: "New alt" },
       etag: entityTag(stored),
     });
     expect(transaction.set).toHaveBeenCalledWith(document, { photo: stored }, { merge: true });
   });
 
-  it("cannot update the alt text without a photo", async () => {
-    await expect(updatePhotoAlt(slot, "New alt", emptyTag)).rejects.toBeInstanceOf(NotFoundError);
+  it("cannot keep the file of an empty slot", async () => {
+    await expect(savePhoto(slot, { alt: "New alt" }, emptyTag)).rejects.toBeInstanceOf(
+      UnprocessableContentError,
+    );
     expect(transaction.set).not.toHaveBeenCalled();
   });
 
   it("refuses an alt text for a photo replaced since it was read", async () => {
     storedAs({ ...storedPhoto, version: "newer-version" });
 
-    await expect(updatePhotoAlt(slot, "New alt", storedTag)).rejects.toBeInstanceOf(
+    await expect(savePhoto(slot, { alt: "New alt" }, storedTag)).rejects.toBeInstanceOf(
       PreconditionFailedError,
     );
     expect(transaction.set).not.toHaveBeenCalled();
   });
-
-  it("deletes the photo and its files", async () => {
-    storedAs(storedPhoto);
-
-    await expect(deletePhoto(slot, storedTag)).resolves.toBe(emptyTag);
-
-    expect(transaction.update).toHaveBeenCalledWith(document, { photo: expect.anything() });
-    expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/old-version");
-  });
-
-  it("does nothing when deleting a missing photo", async () => {
-    await expect(deletePhoto(slot, emptyTag)).resolves.toBe(emptyTag);
-
-    expect(transaction.update).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
-  });
-
-  it("refuses to delete a photo uploaded since the slot was read empty", async () => {
-    storedAs(storedPhoto);
-
-    await expect(deletePhoto(slot, emptyTag)).rejects.toBeInstanceOf(PreconditionFailedError);
-    expect(transaction.update).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
-  });
 });
 
 function isValid(body: unknown): boolean {
-  return photoAltBodySchema.safeParse(body).success;
+  return photoBodySchema.safeParse(body).success;
 }
 
-describe("photo alt body", () => {
+describe("photo body", () => {
   it("trims the alt text", () => {
-    expect(photoAltBodySchema.parse({ alt: "  Портрет художницы  " })).toEqual({
+    expect(photoBodySchema.parse({ alt: "  Портрет художницы  " })).toEqual({
       alt: "Портрет художницы",
     });
   });

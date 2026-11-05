@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 
-import { useSessionUser } from "@/entities/user";
+import { useSessionCheck, useSessionUser } from "@/entities/user";
 import { adminNavigation } from "@/shared/config/routes";
 import { documentTitle } from "@/shared/lib/documentTitle";
 import { Breadcrumbs } from "@/shared/ui/breadcrumbs";
@@ -13,17 +13,20 @@ import { AdminHeader } from "./AdminHeader";
 import styles from "./AdminLayout.module.css";
 import { AdminSidebar } from "./AdminSidebar";
 import { MobileMenuButton } from "./MobileMenuButton";
+import { NavigationProgress } from "./NavigationProgress";
 
 const sidebarId = "admin-sidebar";
 
 export function AdminLayout() {
   const user = useSessionUser();
+  useSessionCheck();
   const mobileMenu = useMobileMenu();
   const pageTitle = adminNavigation[useActiveAdminPageIndex()]?.title ?? "";
   const { breadcrumbs, titleAction } = useAdminPageHandle();
 
   return (
     <div className={styles.layout}>
+      <NavigationProgress />
       <AdminSidebar
         ref={mobileMenu.drawerRef}
         id={sidebarId}

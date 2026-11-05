@@ -1,6 +1,5 @@
 import { Router } from "express";
 
-import { requireAuth } from "#modules/auth/middleware";
 import {
   putOrder,
   putProject,
@@ -9,13 +8,15 @@ import {
   readProjects,
   removeProject,
 } from "#modules/projects/controller";
+import { projectsIntro } from "#modules/projects/intro/resource";
+import { projectsIntroBodySchema } from "#modules/projects/intro/schema";
 import {
   projectBodySchema,
   projectParamsSchema,
   projectsOrderBodySchema,
 } from "#modules/projects/schema";
+import { documentResourceRouter } from "#shared/http/document-resource";
 import { requireContentType } from "#shared/middleware/content-type";
-import { requireCsrfToken } from "#shared/middleware/csrf";
 import { requireIfMatch, requireIfMatchOrCreateOnly } from "#shared/middleware/preconditions";
 import { validateBody, validateParams } from "#shared/middleware/validation";
 
@@ -27,11 +28,10 @@ export const projectsRouter = Router();
 projectsRouter.get("/", readProjects);
 
 // Registered before "/:id", which takes only UUIDs anyway.
+projectsRouter.use("/intro", documentResourceRouter(projectsIntro, projectsIntroBodySchema));
 projectsRouter.get("/order", readOrder);
 projectsRouter.put(
   "/order",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(projectsOrderBodySchema),
@@ -41,19 +41,10 @@ projectsRouter.put(
 projectsRouter.get("/:id", validateParams(projectParamsSchema), readProject);
 projectsRouter.put(
   "/:id",
-  requireAuth,
-  requireCsrfToken,
   validateParams(projectParamsSchema),
   requireContentType("application/json"),
   requireIfMatchOrCreateOnly,
   validateBody(projectBodySchema),
   putProject,
 );
-projectsRouter.delete(
-  "/:id",
-  requireAuth,
-  requireCsrfToken,
-  validateParams(projectParamsSchema),
-  requireIfMatch,
-  removeProject,
-);
+projectsRouter.delete("/:id", validateParams(projectParamsSchema), requireIfMatch, removeProject);

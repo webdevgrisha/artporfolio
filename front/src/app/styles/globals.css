@@ -16,7 +16,8 @@
 @layer base {
   :root {
     --color-text: #000;
-    --color-text-muted: #767676;
+    /* 4.5:1 on the surface and on --color-surface-disabled, the hover of a table row: 5.1 and 4.7. */
+    --color-text-muted: #6e6e6e;
     --color-text-inverse: #fff;
     --color-surface: #fff;
     --color-surface-hover: #e0e0e0;
@@ -29,6 +30,9 @@
     --color-divider: #e6e6e6;
     --color-focus: #000;
     --color-danger: #b00020;
+    /* Text colors of a state, such as a work for sale or reserved; both 4.5:1 on the surface. */
+    --color-success: #15803d;
+    --color-warning: #b45309;
     --color-backdrop: rgb(0 0 0 / 31%);
 
     /* Spacing. See "Spacing system" in docs/STYLE_GUIDE.md. */
@@ -68,6 +72,7 @@
     --layer-backdrop: 10;
     --layer-drawer: 20;
     --layer-tooltip: 30;
+    --layer-progress: 40;
 
     --motion-duration-fast: 120ms;
     --motion-duration-standard: 180ms;

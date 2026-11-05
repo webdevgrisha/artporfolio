@@ -7,11 +7,22 @@ import {
 
 import { fieldErrors } from "../../../support/schema";
 
-const values: AboutTextFormValues = { about: "", biography: "", creation: "" };
+const values: AboutTextFormValues = {
+  about: "Иллюстратор.",
+  biography: "Родилась в Минске.",
+  creation: "Пишет маслом.",
+};
 
 describe("aboutTextFormSchema", () => {
-  it("takes empty texts: their sections are hidden on the site", () => {
+  it("needs every text", () => {
     expect(fieldErrors(aboutTextFormSchema, values)).toEqual({});
+    expect(fieldErrors(aboutTextFormSchema, { about: " ", biography: "", creation: "\n" })).toEqual(
+      {
+        about: ["Введите текст"],
+        biography: ["Введите текст"],
+        creation: ["Введите текст"],
+      },
+    );
   });
 
   it("trims the texts", () => {

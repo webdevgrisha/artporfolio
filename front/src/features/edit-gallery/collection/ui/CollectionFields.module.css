@@ -1,0 +1,26 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-8);
+}
+
+/* A readable line length for the texts, as in the work form. */
+.texts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-6);
+  max-inline-size: 48rem;
+}
+
+/* The years in one row, as the span reads: the start first. */
+.years {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+  align-items: flex-start;
+}
+
+/* Room for the label «Год окончания»; both years fit in one row on a phone. */
+.year {
+  inline-size: 10rem;
+}

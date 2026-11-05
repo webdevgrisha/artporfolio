@@ -57,7 +57,7 @@ describe("upload routes", () => {
     const response = await sendUpload(await adminHeaders(server.baseUrl), uploadForm());
 
     expect(response.status).toBe(201);
-    await expect(response.json()).resolves.toEqual({ upload: { id: uploadId } });
+    await expect(response.json()).resolves.toEqual({ id: uploadId });
     expect(uploads.saveUpload).toHaveBeenCalledWith({
       data: Buffer.from("image"),
       name: "sketch.png",

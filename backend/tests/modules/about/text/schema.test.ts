@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { aboutTextBodySchema, aboutTextResponseSchema } from "#modules/about/text/schema";
+import { aboutTextBodySchema, aboutTextSchema } from "#modules/about/text/schema";
 
 const text = { about: "Иллюстратор.", biography: "Родилась в Минске.", creation: "Пишет маслом." };
 
@@ -16,8 +16,8 @@ describe("about text body", () => {
     });
   });
 
-  it.each(["about", "biography", "creation"])("accepts an empty %s", (field) => {
-    expect(aboutTextBodySchema.parse({ ...text, [field]: "  " })).toEqual({ ...text, [field]: "" });
+  it.each(["about", "biography", "creation"])("needs %s", (field) => {
+    expect(isValid({ ...text, [field]: "  " })).toBe(false);
   });
 
   it.each(["about", "biography", "creation"])("requires %s to be sent", (field) => {
@@ -41,6 +41,6 @@ describe("about text response", () => {
   it("describes a text saved before its limit was lowered", () => {
     const savedText = { ...text, about: "a".repeat(1_000) };
 
-    expect(aboutTextResponseSchema.safeParse({ text: savedText }).success).toBe(true);
+    expect(aboutTextSchema.safeParse(savedText).success).toBe(true);
   });
 });

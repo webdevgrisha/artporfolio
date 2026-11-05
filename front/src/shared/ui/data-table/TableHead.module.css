@@ -1,0 +1,41 @@
+/*
+ * The column the table is sorted by stands out from the muted ones, together with its arrow. The
+ * attribute outweighs the muted color a table gives its `thead th`.
+ */
+.sortedHeader[aria-sort] {
+  color: var(--color-text);
+}
+
+/* Tall enough to tap; the table keeps room above it for its focus ring, see the tables. */
+.sortButton {
+  display: inline-flex;
+  gap: var(--space-3);
+  align-items: center;
+  min-block-size: var(--min-tap-target-size);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+.sortButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Pale until the column is sorted, so it never reads as a sorted state. */
+.sortIdle {
+  flex: none;
+  inline-size: 0.625rem;
+  block-size: auto;
+  color: var(--color-text-muted);
+}
+
+.sortArrow {
+  flex: none;
+  inline-size: auto;
+  block-size: 0.875rem;
+}

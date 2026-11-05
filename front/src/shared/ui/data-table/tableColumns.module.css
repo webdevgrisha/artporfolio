@@ -1,0 +1,31 @@
+.positionColumn {
+  inline-size: 4.75rem;
+}
+
+/*
+ * The actions stay at the end of a table that scrolls sideways, so a row can be edited from any
+ * scroll; the other cells pass under them, hidden by their background.
+ */
+.actionsColumn {
+  position: sticky;
+  inset-inline-end: 0;
+  inline-size: 6rem;
+  background: var(--color-surface);
+}
+
+@media (width >= 40rem) {
+  .actionsColumn {
+    inline-size: 7.5rem;
+  }
+}
+
+/* A phone has room for the photo, the title and the actions; the rest is on the page of the item. */
+@media (width < 40rem) {
+  .hiddenOnPhone {
+    display: none;
+  }
+}
+
+.muted {
+  color: var(--color-text-muted);
+}

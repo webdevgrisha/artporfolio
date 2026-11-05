@@ -1,9 +1,9 @@
 import type { RequestHandler } from "express";
 
 import type {
+  Project,
   ProjectBody,
   ProjectParams,
-  ProjectResponse,
   ProjectsOrder,
   ProjectsResponse,
 } from "#modules/projects/schema";
@@ -27,17 +27,14 @@ export const readProjects: RequestHandler<object, ProjectsResponse> = async (
   response.status(200).set("ETag", etag).json({ projects: data });
 };
 
-export const readProject: RequestHandler<ProjectParams, ProjectResponse> = async (
-  request,
-  response,
-) => {
+export const readProject: RequestHandler<ProjectParams, Project> = async (request, response) => {
   const { data, etag } = await getProject(request.params.id);
 
-  response.status(200).set("ETag", etag).json({ project: data });
+  response.status(200).set("ETag", etag).json(data);
 };
 
 /** Creates the project with If-None-Match: *, or replaces the version named in If-Match. */
-export const putProject: RequestHandler<ProjectParams, ProjectResponse, ProjectBody> = async (
+export const putProject: RequestHandler<ProjectParams, Project, ProjectBody> = async (
   request,
   response,
 ) => {
@@ -46,13 +43,13 @@ export const putProject: RequestHandler<ProjectParams, ProjectResponse, ProjectB
   if (isCreateOnly(request)) {
     const { data, etag } = await createProject(id, request.body);
 
-    response.status(201).set("ETag", etag).json({ project: data });
+    response.status(201).set("ETag", etag).json(data);
     return;
   }
 
   const { data, etag } = await replaceProject(id, request.body, ifMatchHeader(request));
 
-  response.status(200).set("ETag", etag).json({ project: data });
+  response.status(200).set("ETag", etag).json(data);
 };
 
 export const removeProject: RequestHandler<ProjectParams> = async (request, response) => {

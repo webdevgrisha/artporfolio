@@ -5,7 +5,7 @@ import type { Image } from "@/shared/api/image";
 /** The value of an image field that keeps the image already on the server. */
 export const savedImage = "saved";
 
-/** The value of an image field: the saved image, a newly picked file, or `null` for no image. */
+/** The value of an image field: the saved image, a newly picked file, or `null` until one is picked. */
 export const imageFieldValueSchema = z.union([z.literal(savedImage), z.instanceof(File), z.null()]);
 
 export type ImageFieldValue = z.infer<typeof imageFieldValueSchema>;

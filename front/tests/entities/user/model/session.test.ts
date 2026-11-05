@@ -12,7 +12,7 @@ const user = { email: "admin@example.com", uid: "admin-uid" };
 
 describe("requireSession", () => {
   it("returns the signed-in user", async () => {
-    server.use(mswHttp.get("/api/auth/me", () => HttpResponse.json({ user })));
+    server.use(mswHttp.get("/api/auth/me", () => HttpResponse.json(user)));
 
     await expect(requireSession(routeArgs("/admin/about"))).resolves.toEqual(user);
   });

@@ -1,3 +1,4 @@
 export { getCurrentUser } from "./api/getCurrentUser";
 export { requireSession, useSessionUser } from "./model/session";
-export { type AuthUser, authUserResponseSchema } from "./model/user";
+export { type AuthUser, authUserSchema } from "./model/user";
+export { useSessionCheck } from "./model/useSessionCheck";

@@ -18,6 +18,7 @@ const storedImage = {
   fileName: "photo.png",
   fileSize: 100,
   height: 320,
+  originalPath: "about/photo/v/original.png",
   sources: {
     avif: [{ path: "about/photo/v/640.avif", token: "token", width: 640 }],
     webp: [{ path: "about/photo/v/640.webp", token: "token", width: 640 }],

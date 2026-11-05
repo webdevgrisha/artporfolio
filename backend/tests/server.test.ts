@@ -21,6 +21,19 @@ describe("GET /api/health", () => {
   });
 });
 
+describe("protecting changes", () => {
+  it.each([
+    ["PUT", "/api/gallery/colors"],
+    ["DELETE", "/api/gallery/works/11111111-1111-4111-8111-111111111111"],
+    ["POST", "/api/uploads"],
+    ["PUT", "/api/no-such-route"],
+  ])("refuses %s %s without a session", async (method, path) => {
+    const response = await fetch(`${server.baseUrl}${path}`, { method });
+
+    expect(response.status).toBe(401);
+  });
+});
+
 describe("CORS", () => {
   it("allows credentialed requests from the configured origin", async () => {
     const response = await fetch(`${server.baseUrl}/api/auth/login`, {
@@ -37,18 +50,31 @@ describe("CORS", () => {
     expect(response.headers.get("access-control-allow-credentials")).toBe("true");
   });
 
-  it.each(["POST", "PUT", "PATCH", "DELETE"])(
-    "allows %s requests in a preflight",
-    async (method) => {
-      const response = await fetch(`${server.baseUrl}/api/contacts/photo`, {
-        headers: { "Access-Control-Request-Method": method, Origin: "http://localhost:5173" },
-        method: "OPTIONS",
-      });
+  it.each(["POST", "PUT", "DELETE"])("allows %s requests in a preflight", async (method) => {
+    const response = await fetch(`${server.baseUrl}/api/contacts/photo`, {
+      headers: { "Access-Control-Request-Method": method, Origin: "http://localhost:5173" },
+      method: "OPTIONS",
+    });
 
-      expect(response.status).toBe(204);
-      expect(response.headers.get("access-control-allow-methods")?.split(",")).toContain(method);
-    },
-  );
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-methods")?.split(",")).toContain(method);
+  });
+
+  it("allows every header a change sends: the CSRF token and the preconditions", async () => {
+    const response = await fetch(`${server.baseUrl}/api/gallery/works/id`, {
+      headers: {
+        "Access-Control-Request-Headers": "content-type,if-match,if-none-match,x-csrf-token",
+        "Access-Control-Request-Method": "PUT",
+        Origin: "http://localhost:5173",
+      },
+      method: "OPTIONS",
+    });
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-headers")?.toLowerCase().split(",")).toEqual(
+      expect.arrayContaining(["content-type", "if-match", "if-none-match", "x-csrf-token"]),
+    );
+  });
 
   it("rejects requests from an origin outside the allowlist", async () => {
     const response = await fetch(`${server.baseUrl}/api/health`, {

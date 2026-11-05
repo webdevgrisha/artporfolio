@@ -1,7 +1,26 @@
+/*
+ * One line on a phone, which scrolls sideways, so the tabs never push the page down; the tab cut by
+ * the edge shows there are more. The padding keeps the room of the focus ring inside the scroll.
+ * Positioned, so the tabs measure their place from it.
+ */
 .root {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--layout-space-12);
+  gap: var(--space-6);
+  padding: var(--space-1);
+  margin: calc(-1 * var(--space-1));
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+@media (width >= 40rem) {
+  .root {
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--layout-space-12);
+    padding: 0;
+    margin: 0;
+    overflow-x: visible;
+  }
 }
 
 .tab {
@@ -10,6 +29,7 @@
 
   position: relative;
   display: inline-flex;
+  flex: none;
   align-items: center;
   min-block-size: var(--min-tap-target-size);
   padding: 0 0 calc(var(--space-4) + var(--tab-indicator-size));

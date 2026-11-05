@@ -59,6 +59,10 @@
   color: var(--color-text-muted);
 }
 
+.actions {
+  margin-block-start: var(--space-2);
+}
+
 /*
  * The button keeps its full tap target but is pulled into the padding, so its icon lines up with
  * the title line and the right edge of the content.

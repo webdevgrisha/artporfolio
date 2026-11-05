@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-import { formatFileSize } from "@/shared/lib/formatFileSize";
-
-import { imageSchema, imageUploadRules } from "./image";
-import { getSaveErrorMessage } from "./requestErrorMessages";
-import { requestErrorOf } from "./upload";
+import { imageSchema } from "./image";
 
 /**
  * A single photo with its description, such as «Моё фото» or the contacts photo
@@ -15,6 +11,12 @@ export const photoSchema = imageSchema.extend({
 });
 
 export type Photo = z.infer<typeof photoSchema>;
+
+/** A photo as a change sends it: a new file by its upload, or the saved file when it is left out. */
+export interface PhotoBody {
+  alt: string;
+  uploadId?: string;
+}
 
 /**
  * A photo of an ordered list, such as the process photos or the photos of a project
@@ -33,30 +35,3 @@ export type ListPhoto = z.infer<typeof listPhotoSchema>;
 export type ListPhotoItem =
   | { alt: string; id: string; uploadId?: string }
   | { alt: string; uploadId: string };
-
-/** The shape of every API response that returns a saved photo. */
-export const photoResponseSchema = z.object({
-  photo: photoSchema,
-});
-
-/** The photo of a slot as its `GET` returns it: `null` until one is uploaded. */
-export const slotPhotoResponseSchema = z.object({
-  photo: photoSchema.nullable(),
-});
-
-/** For a failed upload, alt text update or deletion of a photo. */
-export function getSavePhotoErrorMessage(error: unknown): string {
-  return getSaveErrorMessage(requestErrorOf(error), {
-    byStatus: {
-      400: "Сервер не принял фото. Попробуйте другой файл",
-      // Only an update of the alt text expects an existing photo.
-      404: "Фото уже удалено. Обновите страницу",
-      // The photo was changed since this page loaded it, for example in another tab.
-      412: "Фото уже изменили в другой вкладке",
-      413: `Фото больше ${formatFileSize(imageUploadRules.maxFileSize)}`,
-      // The upload is kept for a day; the photo is sent right after it, so this is rare.
-      422: "Загрузка фото устарела. Выберите фото ещё раз",
-    },
-    fallback: "Не удалось сохранить фото. Попробуйте ещё раз",
-  });
-}

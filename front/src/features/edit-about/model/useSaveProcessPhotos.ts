@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { processPhotosQuery } from "@/entities/about";
 import type { MutationFeedback } from "@/shared/api/queryClient";
+import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
 import { getSaveProcessPhotosErrorMessage } from "../lib/saveErrorMessages";
 import { saveProcessPhotos } from "./saveProcessPhotos";
@@ -16,11 +15,9 @@ export const saveProcessPhotosFeedback: MutationFeedback = {
  * all of it, so the page need not load it again. A failed save changed nothing on the server.
  */
 export function useSaveProcessPhotos() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    meta: { feedback: saveProcessPhotosFeedback },
+  return useReplaceResource({
+    feedback: saveProcessPhotosFeedback,
     mutationFn: saveProcessPhotos,
-    onSuccess: (list) => queryClient.setQueryData(processPhotosQuery.queryKey, list),
+    queryKey: processPhotosQuery.queryKey,
   });
 }

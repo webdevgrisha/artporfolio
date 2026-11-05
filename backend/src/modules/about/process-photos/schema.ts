@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { listPhotoSchema, photoListBodySchema } from "#shared/images/photo-list";
+import { type ListPhoto, photoListBodySchema } from "#shared/images/photo-list";
 
 /** The most process photos the page may have; raise it when the artist needs more. */
 export const maxProcessPhotos = 30;
@@ -11,10 +11,9 @@ export const processPhotosBodySchema = z.strictObject({
   processPhotos: photoListBodySchema(maxProcessPhotos),
 });
 
-export const processPhotosResponseSchema = z.object({
+export interface ProcessPhotosResponse {
   /** In the order the site shows them. */
-  processPhotos: z.array(listPhotoSchema),
-});
+  processPhotos: ListPhoto[];
+}
 
 export type ProcessPhotosBody = z.infer<typeof processPhotosBodySchema>;
-export type ProcessPhotosResponse = z.infer<typeof processPhotosResponseSchema>;

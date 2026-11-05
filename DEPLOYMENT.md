@@ -96,6 +96,14 @@ pnpm dev:backend
 pnpm dev:front
 ```
 
+`dev:backend` builds the backend once: the Functions Emulator runs the compiled `backend/dist`. To
+work on the backend, also run its build in watch mode in a third terminal; the emulator reloads the
+function whenever `dist` changes:
+
+```sh
+pnpm dev:backend:watch
+```
+
 Vite proxies `/api` requests to the `api` function running in the local Functions Emulator. The
 Functions Emulator connects the Admin SDK to the Firestore and Storage emulators automatically. The
 Firestore Emulator needs Java 21 or later.

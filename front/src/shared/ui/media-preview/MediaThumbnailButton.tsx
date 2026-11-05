@@ -20,7 +20,7 @@ export function MediaThumbnailButton({ className, item, onOpen }: MediaThumbnail
   return (
     <Tooltip className={className} content={openLabel}>
       <IconButton className={styles.button} label={openLabel} onClick={onOpen}>
-        <MediaImage className={styles.image} source={item.source} />
+        <MediaImage className={styles.image} sizes="3.5rem" source={item.source} />
       </IconButton>
     </Tooltip>
   );

@@ -1,0 +1,24 @@
+/* As the list of the sections and the table of the projects. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.search {
+  flex: 1 1 20rem;
+  block-size: var(--control-size);
+}
+
+.add {
+  inline-size: 11rem;
+  block-size: 2.5rem;
+}

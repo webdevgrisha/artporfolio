@@ -11,7 +11,6 @@ const auth = vi.hoisted(() => ({
 }));
 
 const pageService = vi.hoisted(() => ({
-  deletePageHero: vi.fn(),
   getPageHero: vi.fn(),
   getPages: vi.fn(),
   savePageHero: vi.fn(),
@@ -63,7 +62,6 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  pageService.deletePageHero.mockResolvedValue(savedEtag);
   pageService.getPages.mockResolvedValue(pages);
   pageService.getPageHero.mockResolvedValue({ data: hero, etag });
   pageService.savePageHero.mockResolvedValue({ created: false, data: hero, etag: savedEtag });
@@ -84,7 +82,7 @@ describe("page routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ hero });
+    await expect(response.json()).resolves.toEqual(hero);
     expect(pageService.getPageHero).toHaveBeenCalledWith("about");
   });
 
@@ -94,21 +92,21 @@ describe("page routes", () => {
     expect(response.status).toBe(404);
   });
 
-  it.each(["PUT", "DELETE"])("requires the ETag of the hero for %s", async (method) => {
+  it("requires the ETag of the hero", async () => {
     const response = await sendHero(
-      method,
+      "PUT",
       "about",
       { ...(await adminHeaders(server.baseUrl)), "Content-Type": "application/json" },
-      method === "PUT" ? { uploadId } : undefined,
+      { uploadId },
     );
 
     expect(response.status).toBe(428);
   });
 
   it("refuses a hero changed since it was read", async () => {
-    pageService.deletePageHero.mockRejectedValue(new PreconditionFailedError());
+    pageService.savePageHero.mockRejectedValue(new PreconditionFailedError());
 
-    const response = await sendHero("DELETE", "about", await ifMatchHeaders());
+    const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(412);
   });
@@ -119,14 +117,14 @@ describe("page routes", () => {
     const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(201);
-    await expect(response.json()).resolves.toEqual({ hero });
+    await expect(response.json()).resolves.toEqual(hero);
   });
 
   it("replaces the hero of a page with the upload", async () => {
     const response = await sendHero("PUT", "about", await jsonHeaders(), { uploadId });
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ hero });
+    await expect(response.json()).resolves.toEqual(hero);
     expect(response.headers.get("ETag")).toBe(savedEtag);
     expect(pageService.savePageHero).toHaveBeenCalledWith("about", uploadId, etag);
   });
@@ -170,18 +168,9 @@ describe("page routes", () => {
     expect(pageService.savePageHero).not.toHaveBeenCalled();
   });
 
-  it("deletes the hero of a page", async () => {
+  it("has no DELETE: a hero can be replaced, not removed", async () => {
     const response = await sendHero("DELETE", "about", await ifMatchHeaders());
 
-    expect(response.status).toBe(204);
-    expect(response.headers.get("ETag")).toBe(savedEtag);
-    expect(pageService.deletePageHero).toHaveBeenCalledWith("about", etag);
-  });
-
-  it("returns 404 when deleting the hero of an unknown page", async () => {
-    const response = await sendHero("DELETE", "contact", await adminHeaders(server.baseUrl));
-
     expect(response.status).toBe(404);
-    expect(pageService.deletePageHero).not.toHaveBeenCalled();
   });
 });

@@ -1,0 +1,71 @@
+.root {
+  max-inline-size: 24rem;
+}
+
+/* A long list scrolls inside the frame, so the fields after it stay close. */
+.frame {
+  max-block-size: 24rem;
+}
+
+.subsections {
+  padding: 0 0 var(--space-2);
+  margin: 0;
+  list-style: none;
+}
+
+/* A subsection starts under the title of its section. */
+.subsection {
+  min-block-size: var(--min-tap-target-size);
+  padding-inline-start: calc(2 * var(--row-gutter));
+}
+
+/* Over the label, so it only opens the subsections. */
+.toggle {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+@media (pointer: coarse) {
+  .toggle {
+    inline-size: var(--min-tap-target-size);
+    block-size: var(--min-tap-target-size);
+  }
+}
+
+.toggle:focus-visible {
+  outline: var(--focus-ring);
+}
+
+/* Points down while the subsections are hidden, and up once they are open. */
+.chevron {
+  inline-size: 0.375rem;
+  block-size: auto;
+  transform: rotate(90deg);
+  transition: transform var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.chevronExpanded {
+  transform: rotate(-90deg);
+}
+
+/* The arrowhead before a subsection, as in the mockup. */
+.marker {
+  flex: none;
+  inline-size: 0.375rem;
+  block-size: auto;
+}
+
+/* The checkbox keeps the end of its row. */
+.checkbox {
+  margin-inline-start: auto;
+}

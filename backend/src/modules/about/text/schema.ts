@@ -1,14 +1,14 @@
 import { z } from "zod";
 
 /**
- * Plain text: no HTML or Markdown. Paragraphs are separated by a blank line. An empty string
- * means the site does not show the section.
+ * Plain text: no HTML or Markdown. Paragraphs are separated by a blank line. It cannot be empty:
+ * the page looks unfinished without any of its sections.
  */
 function aboutText(maxLength: number) {
-  return z.string().trim().max(maxLength);
+  return z.string().trim().min(1).max(maxLength);
 }
 
-/** The texts of the About page. Every text is sent, empty when its section is hidden. */
+/** The texts of the About page; every text is sent. */
 export const aboutTextBodySchema = z.strictObject({
   /** The short introduction next to «My photo». */
   about: aboutText(500),
@@ -30,7 +30,4 @@ export const aboutTextSchema = z.object({
   creation: z.string(),
 });
 
-export const aboutTextResponseSchema = z.object({ text: aboutTextSchema });
-
 export type AboutText = z.infer<typeof aboutTextSchema>;
-export type AboutTextResponse = z.infer<typeof aboutTextResponseSchema>;

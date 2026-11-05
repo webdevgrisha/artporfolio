@@ -32,8 +32,16 @@ describe("project body", () => {
     expect(isValid({ ...project, title: "a".repeat(101) })).toBe(false);
   });
 
-  it("takes an empty description, link and photo list", () => {
-    expect(isValid({ ...project, description: "", link: "", photos: [] })).toBe(true);
+  it("needs a description", () => {
+    expect(isValid({ ...project, description: "  " })).toBe(false);
+  });
+
+  it("takes an empty link", () => {
+    expect(isValid({ ...project, link: "" })).toBe(true);
+  });
+
+  it("needs a photo", () => {
+    expect(isValid({ ...project, photos: [] })).toBe(false);
   });
 
   it("limits the description", () => {

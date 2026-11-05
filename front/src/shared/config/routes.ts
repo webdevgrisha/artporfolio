@@ -6,10 +6,20 @@ export const routes = {
   contactLinks: "/admin/contacts/links",
   contactPhoto: "/admin/contacts/photo",
   contacts: "/admin/contacts",
+  currencies: "/admin/currencies",
   gallery: "/admin/gallery",
+  galleryCollectionNew: "/admin/gallery/collections/new",
+  galleryCollections: "/admin/gallery/collections",
+  galleryColors: "/admin/gallery/colors",
+  galleryIntro: "/admin/gallery/intro",
+  galleryMaterials: "/admin/gallery/materials",
+  galleryPalettes: "/admin/gallery/palettes",
+  gallerySectionNew: "/admin/gallery/sections/new",
+  gallerySections: "/admin/gallery/sections",
+  galleryWorkNew: "/admin/gallery/works/new",
+  galleryWorks: "/admin/gallery/works",
   login: "/admin/login",
   logout: "/admin/logout",
-  personalization: "/admin/personalization",
   projectNew: "/admin/projects/new",
   projects: "/admin/projects",
   projectsAll: "/admin/projects/all",
@@ -18,11 +28,34 @@ export const routes = {
   sitePages: "/admin/pages",
 } as const;
 
-export const adminHomePath = routes.projects;
+export const adminHomePath = routes.gallery;
+
+/** The edit page of one collection of the gallery. */
+export function galleryCollectionPath(id: string): string {
+  return `${routes.galleryCollections}/${encodeURIComponent(id)}`;
+}
+
+/** The edit page of one section of the gallery. */
+export function gallerySectionPath(id: string): string {
+  return `${routes.gallerySections}/${encodeURIComponent(id)}`;
+}
+
+/** The edit page of one work of the gallery. */
+export function galleryWorkPath(id: string): string {
+  return `${routes.galleryWorks}/${encodeURIComponent(id)}`;
+}
 
 /** The edit page of one project. */
 export function projectPath(id: string): string {
   return `${routes.projects}/${encodeURIComponent(id)}`;
+}
+
+/** The search parameter of the login page: the admin page to come back to after signing in. */
+export const redirectToParam = "redirectTo";
+
+/** The login page, which brings the user back to `redirectTo` after signing in. */
+export function loginPath(redirectTo: string): string {
+  return `${routes.login}?${new URLSearchParams({ [redirectToParam]: redirectTo }).toString()}`;
 }
 
 /**
@@ -36,12 +69,15 @@ export function toAdminPath(value: FormDataEntryValue | null): string {
 /** Id of the admin layout route. Its loader provides the signed-in user. */
 export const adminRouteId = "admin";
 
-/** Admin navigation in display order; the titles are also used as page headings. */
+/**
+ * Admin navigation in display order, the most used pages first; the titles are also used as page
+ * headings.
+ */
 export const adminNavigation = [
   { title: "Галерея", to: routes.gallery },
   { title: "Проекты", to: routes.projects },
   { title: "О сайте", to: routes.about },
   { title: "Контакты", to: routes.contacts },
-  { title: "Персонализация", to: routes.personalization },
   { title: "Страницы", to: routes.sitePages },
+  { title: "Валюты", to: routes.currencies },
 ] as const;

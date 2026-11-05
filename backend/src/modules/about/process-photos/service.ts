@@ -12,6 +12,7 @@ import {
   storedListPhotoSchema,
   toListPhoto,
 } from "#shared/images/photo-list";
+import { saveWithImages } from "#shared/images/saving";
 
 /** The field of the About document that holds the photos, in the order the site shows them. */
 const field = "processPhotos";
@@ -39,21 +40,16 @@ export async function listProcessPhotos(): Promise<Tagged<ListPhoto[]>> {
 
 /**
  * Replaces the whole list: the order of `items` is the order on the site, and a saved photo left
- * out is deleted. The new files are copied from their uploads first; then one transaction checks
- * that the list is still the one the client read (`ifMatch`) and writes the new one. The files of
- * the deleted photos and of the replaced versions, and the used uploads, are removed afterwards.
- * If anything fails, the copies are removed and the list stays as it was.
+ * out is deleted. One transaction checks that the list is still the one the client read (`ifMatch`)
+ * and writes the new one.
  */
-export async function replaceProcessPhotos(
+export function replaceProcessPhotos(
   items: ListPhotoItem[],
   ifMatch: string,
 ): Promise<Tagged<ListPhoto[]>> {
-  const draft = await preparePhotoList(items, folder);
-  let saved: StoredListPhoto[];
-  let photos: StoredListPhoto[];
-
-  try {
-    [saved, photos] = await firestore().runTransaction(async (transaction) => {
+  return saveWithImages(async (files) => {
+    const draft = await preparePhotoList(files, items, folder);
+    const [saved, photos] = await firestore().runTransaction(async (transaction) => {
       const document = aboutDocument();
       const current = readProcessPhotos(await transaction.get(document));
 
@@ -64,12 +60,9 @@ export async function replaceProcessPhotos(
       transaction.set(document, { [field]: next }, { merge: true });
       return [current, next];
     });
-  } catch (error) {
-    await draft.discard();
-    throw error;
-  }
 
-  await draft.finish(saved, photos);
+    draft.removeUnused(saved, photos);
 
-  return toProcessPhotoList(photos);
+    return toProcessPhotoList(photos);
+  });
 }

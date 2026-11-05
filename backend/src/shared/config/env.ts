@@ -10,6 +10,8 @@ const originSchema = z.url().refine((origin) => {
 
 const envSchema = z.object({
   ADMIN_UID: z.string().trim().min(1),
+  /** A Secret Manager value, which the function receives as a variable; see firebase.ts. */
+  CSRF_SECRET: z.string().trim().min(32),
   CORS_ORIGINS: z
     .string()
     .default(isLocalRuntime ? "http://localhost:5173" : "")
@@ -31,6 +33,7 @@ const envSchema = z.object({
 interface Env {
   adminUid: string;
   corsOrigins: ReadonlySet<string>;
+  csrfSecret: string;
   sessionTtlMilliseconds: number;
 }
 
@@ -39,7 +42,6 @@ let env: Env | undefined;
 /**
  * Validated on first use and cached. Firebase loads this module during deploy, before the
  * runtime environment exists, so the variables cannot be read at import time.
- * CSRF_SECRET is a Secret Manager value and is read separately by the CSRF middleware.
  */
 export function getEnv(): Env {
   if (!env) {
@@ -48,6 +50,7 @@ export function getEnv(): Env {
     env = Object.freeze({
       adminUid: parsed.ADMIN_UID,
       corsOrigins: new Set(parsed.CORS_ORIGINS),
+      csrfSecret: parsed.CSRF_SECRET,
       sessionTtlMilliseconds: parsed.SESSION_TTL_MINUTES * 60 * 1_000,
     });
   }

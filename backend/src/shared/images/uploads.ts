@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { create as attachment } from "content-disposition";
 import { z } from "zod";
 
 import { copyFile, copyToDownloadableFile, readFile, saveFile } from "#shared/firebase/storage";
@@ -16,7 +17,7 @@ import {
   immutableCacheControl,
   type StoredImage,
   type StoredImageFile,
-} from "#shared/images/storage";
+} from "#shared/images/stored-image";
 import type { UploadedFile } from "#shared/middleware/upload";
 
 /**
@@ -149,7 +150,11 @@ export async function publishUpload(id: string, folder: string): Promise<StoredI
   const target = `${folder}/${version}`;
   const original = originalFileName(manifest.sourceFormat);
 
-  const copyingOriginal = copyFile(`${source}/${original}`, `${target}/${original}`, {
+  const originalPath = `${target}/${original}`;
+
+  // Downloaded under the name it was uploaded with.
+  const copyingOriginal = copyFile(`${source}/${original}`, originalPath, {
+    contentDisposition: attachment(manifest.fileName),
     contentType: `image/${manifest.sourceFormat}`,
   });
   const copyingImages = manifest.images.map(async (image): Promise<PublishedImageFile> => {
@@ -175,6 +180,7 @@ export async function publishUpload(id: string, folder: string): Promise<StoredI
     fileName: manifest.fileName,
     fileSize: manifest.fileSize,
     height: manifest.height,
+    originalPath,
     sources: {
       avif: filesIn("avif", published),
       webp: filesIn("webp", published),

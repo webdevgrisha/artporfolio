@@ -7,3 +7,8 @@ export class HttpError extends Error {
     this.status = status;
   }
 }
+
+/** The server refused a change: the resource has changed since it was read, or it already exists. */
+export function isPreconditionFailed(error: unknown): boolean {
+  return error instanceof HttpError && error.status === 412;
+}

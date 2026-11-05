@@ -1,0 +1,10 @@
+.root {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* The icon sizes of the design. */
+.icon {
+  inline-size: auto;
+  block-size: 1.625rem;
+}

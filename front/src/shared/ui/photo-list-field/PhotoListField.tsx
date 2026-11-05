@@ -4,6 +4,7 @@ import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hoo
 import { imageUploadRules } from "@/shared/api/image";
 import type { ListPhoto } from "@/shared/api/photo";
 import type { PhotoListFormValues, PhotoListRow } from "@/shared/lib/photoListForm";
+import { useClearField } from "@/shared/lib/useClearField";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { imageToMediaItem } from "@/shared/ui/media-preview";
 import { type SortableMediaItem, SortableMediaList } from "@/shared/ui/sortable-media-list";
@@ -29,7 +30,9 @@ function toFileItem(key: string, file: File): SortableMediaItem {
 function toMediaItem(key: string, row: PhotoListRow): SortableMediaItem {
   if (row.status === "new") return toFileItem(key, row.file);
 
-  return row.file ? toFileItem(key, row.file) : { ...imageToMediaItem(row.photo), id: key };
+  return row.file
+    ? { ...toFileItem(key, row.file), isSaved: true }
+    : { ...imageToMediaItem(row.photo), id: key, isSaved: true };
 }
 
 /**
@@ -44,9 +47,10 @@ export function PhotoListField({
   maxPhotos,
   savedPhotos,
 }: PhotoListFieldProps) {
-  const { clearErrors, control, register, setError, setFocus, setValue } =
+  const { clearErrors, control, register, setError, setValue } =
     useFormContext<PhotoListFormValues>();
-  const { errors, isSubmitted } = useFormState({ control });
+  const { errors } = useFormState({ control });
+  const clearField = useClearField<PhotoListFormValues>();
   // `fields` gives every row a stable key; the values come from `rows`, which also follow typing.
   const { append, fields, move, remove } = useFieldArray({ control, name: "photos" });
   const rows = useWatch({ control, name: "photos" });
@@ -71,12 +75,6 @@ export function PhotoListField({
     } else {
       clearErrors("root.photosRejection");
     }
-  }
-
-  function clearAlt(index: number) {
-    // After the first submit, fields are revalidated on change; clearing is a change too.
-    setValue(`photos.${index}.alt`, "", { shouldDirty: true, shouldValidate: isSubmitted });
-    setFocus(`photos.${index}.alt`);
   }
 
   return (
@@ -114,7 +112,7 @@ export function PhotoListField({
               isModified={row?.status === "saved" && row.alt !== row.photo.alt}
               hasValue={Boolean(row?.alt)}
               clearLabel={`Очистить описание ${item.name}`}
-              onClear={() => clearAlt(index)}
+              onClear={() => clearField(`photos.${index}.alt`)}
               {...register(`photos.${index}.alt`)}
             />
           );

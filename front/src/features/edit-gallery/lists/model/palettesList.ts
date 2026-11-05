@@ -1,0 +1,27 @@
+import { galleryPalettesQuery, maxPalettes, replaceGalleryPalettes } from "@/entities/gallery";
+
+import { getSavePalettesErrorMessage } from "../lib/saveErrorMessages";
+import type { TitleListConfig } from "./titleList";
+
+/** The palettes: the coloring of a work as a whole. */
+export const palettesList: TitleListConfig = {
+  getSaveErrorMessage: getSavePalettesErrorMessage,
+  max: maxPalettes,
+  query: galleryPalettesQuery,
+  replace: ({ etag, items }) => replaceGalleryPalettes({ etag, palettes: items }),
+  texts: {
+    add: "Добавить палитру",
+    duplicate: "Такая палитра уже есть",
+    empty: "Палитр пока нет",
+    full: `Палитр уже ${String(maxPalettes)}, больше добавить нельзя`,
+    heading: "Палитры",
+    newItem: "Новая палитра",
+    placeholder: "Например: Пастельная",
+    rowField: (title) => `Название палитры ${title}`,
+    rowFallback: "палитру",
+    others: "палитр",
+    tooMany: `Не больше ${String(maxPalettes)} палитр`,
+  },
+  toastId: "gallery-palettes-save",
+  usages: (usage) => usage.palettes,
+};

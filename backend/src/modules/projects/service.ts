@@ -8,18 +8,16 @@ import {
 } from "#modules/projects/schema";
 import { firestore } from "#shared/firebase/firestore";
 import {
+  ConflictError,
   NotFoundError,
   PreconditionFailedError,
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { preparePhotoList, type StoredListPhoto, toListPhoto } from "#shared/images/photo-list";
-import { deleteImageFilesOrWarn } from "#shared/images/storage";
-
-/** A saved project with the id it is known by. */
-export interface SavedProject extends Tagged<Project> {
-  id: string;
-}
+import { preparePhotoList, toListPhoto } from "#shared/images/photo-list";
+import { saveWithImages } from "#shared/images/saving";
+import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
+import { titleKey } from "#shared/text/titles";
 
 function projectsCollection() {
   return firestore().collection("projects");
@@ -52,11 +50,17 @@ function readProject(snapshot: DocumentSnapshot): StoredProject {
 }
 
 /**
- * What the client edits, which the entity tag of a project follows. The position is left out:
- * reordering the projects must not make an open edit form outdated.
+ * Rejects with 409 a title that another project has, whatever the case: the visitor tells the
+ * projects apart by their titles.
  */
-function editedContent({ description, link, photos, title }: StoredProject) {
-  return { description, link, photos, title };
+function assertTitleIsFree(id: string, title: string, { docs }: QuerySnapshot): void {
+  const isTaken = docs.some(
+    (snapshot) => snapshot.id !== id && titleKey(readProject(snapshot).title) === titleKey(title),
+  );
+
+  if (isTaken) {
+    throw new ConflictError("Another project has this title");
+  }
 }
 
 /** The stored project as the API returns it, with download URLs and ISO 8601 dates. */
@@ -75,8 +79,14 @@ function toProject(
   };
 }
 
-function toSavedProject(id: string, project: StoredProject): SavedProject {
-  return { data: toProject(id, project), etag: entityTag(editedContent(project)), id };
+/**
+ * The project as the API returns it, tagged by that representation. It has no position: reordering
+ * the projects does not make an open edit form outdated.
+ */
+function toSavedProject(id: string, project: StoredProject): Tagged<Project> {
+  const data = toProject(id, project);
+
+  return { data, etag: entityTag(data) };
 }
 
 /** Every project in the order the site shows them, tagged by the stored list. */
@@ -90,28 +100,28 @@ export async function listProjects(): Promise<Tagged<Project[]>> {
   };
 }
 
-export async function getProject(id: string): Promise<SavedProject> {
+export async function getProject(id: string): Promise<Tagged<Project>> {
   return toSavedProject(id, readProject(await projectDocument(id).get()));
 }
 
 /**
  * Creates the project `id`, which the client chose, at the top of the list; rejects it with 412
- * once a project has that id, such as one an earlier try of the same request created. The photo
- * files are copied from their uploads first; if saving fails, the copies are removed. Every photo
- * of a new project is new: a photo `id` refers to nothing, so it is rejected with 422.
+ * once a project has that id, such as one an earlier try of the same request created, and with 409
+ * when another project has its title. Every photo of a new project is new: a photo `id` refers to
+ * nothing, so it is rejected with 422.
  */
-export async function createProject(id: string, body: ProjectBody): Promise<SavedProject> {
-  const draft = await preparePhotoList(body.photos, photosFolder(id));
-  let project: StoredProject;
-
-  try {
-    project = await firestore().runTransaction(async (transaction) => {
+export function createProject(id: string, body: ProjectBody): Promise<Tagged<Project>> {
+  return saveWithImages(async (files) => {
+    const draft = await preparePhotoList(files, body.photos, photosFolder(id));
+    const project = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(projectDocument(id))).exists) {
         throw new PreconditionFailedError("The project already exists");
       }
 
-      const { docs } = await transaction.get(orderedProjects().limit(1));
-      const first = docs[0];
+      const saved = await transaction.get(orderedProjects());
+      assertTitleIsFree(id, body.title, saved);
+
+      const first = saved.docs[0];
       const position = first ? readProject(first).position - 1 : 0;
       const now = Timestamp.now();
       const created: StoredProject = {
@@ -125,37 +135,29 @@ export async function createProject(id: string, body: ProjectBody): Promise<Save
       transaction.create(projectDocument(id), created);
       return created;
     });
-  } catch (error) {
-    await draft.discard();
-    throw error;
-  }
 
-  // A new project has no older files, so this removes only the used uploads.
-  await draft.finish([], project.photos);
-
-  return toSavedProject(id, project);
+    return toSavedProject(id, project);
+  });
 }
 
 /**
  * Replaces the project while it is still the one the client read (`ifMatch`); it keeps its place
  * in the list. The photos are saved as one list: a saved photo left out is deleted, see
- * preparePhotoList. If anything fails, the copies are removed and the project stays as it was.
+ * preparePhotoList.
  */
-export async function replaceProject(
+export function replaceProject(
   id: string,
   body: ProjectBody,
   ifMatch: string,
-): Promise<SavedProject> {
-  const draft = await preparePhotoList(body.photos, photosFolder(id));
-  let savedPhotos: StoredListPhoto[];
-  let project: StoredProject;
-
-  try {
-    [savedPhotos, project] = await firestore().runTransaction(async (transaction) => {
+): Promise<Tagged<Project>> {
+  return saveWithImages(async (files) => {
+    const draft = await preparePhotoList(files, body.photos, photosFolder(id));
+    const [savedPhotos, project] = await firestore().runTransaction(async (transaction) => {
       const document = projectDocument(id);
       const current = readProject(await transaction.get(document));
 
-      assertIfMatch(ifMatch, editedContent(current));
+      assertIfMatch(ifMatch, toProject(id, current));
+      assertTitleIsFree(id, body.title, await transaction.get(orderedProjects()));
 
       const next: StoredProject = {
         ...current,
@@ -165,16 +167,13 @@ export async function replaceProject(
       };
 
       transaction.set(document, next);
-      return [current.photos, next];
+      return [current.photos, next] as const;
     });
-  } catch (error) {
-    await draft.discard();
-    throw error;
-  }
 
-  await draft.finish(savedPhotos, project.photos);
+    draft.removeUnused(savedPhotos, project.photos);
 
-  return toSavedProject(id, project);
+    return toSavedProject(id, project);
+  });
 }
 
 /** Deletes the project while it is still the one the client read, and then all its files. */
@@ -182,7 +181,7 @@ export async function deleteProject(id: string, ifMatch: string): Promise<void> 
   await firestore().runTransaction(async (transaction) => {
     const document = projectDocument(id);
 
-    assertIfMatch(ifMatch, editedContent(readProject(await transaction.get(document))));
+    assertIfMatch(ifMatch, toProject(id, readProject(await transaction.get(document))));
     transaction.delete(document);
   });
 

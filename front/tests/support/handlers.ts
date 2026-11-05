@@ -11,7 +11,7 @@ export const uploadId = "upload-1";
 
 /** Accepts every upload of a photo, which a save sends before it refers to the photo by id. */
 export const uploadsHandler = mswHttp.post("/api/uploads", () =>
-  HttpResponse.json({ upload: { id: uploadId } }, { status: 201 }),
+  HttpResponse.json({ id: uploadId }, { status: 201 }),
 );
 
 /** A response without content, such as that of a deletion, which sends the new ETag. */

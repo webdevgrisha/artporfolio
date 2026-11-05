@@ -49,6 +49,13 @@ export class UnsupportedMediaTypeError extends HttpError {
   }
 }
 
+/** The request clashes with other stored data, such as a title another resource already has. */
+export class ConflictError extends HttpError {
+  constructor(message = "The request conflicts with the current state") {
+    super(409, message);
+  }
+}
+
 /** The resource has changed since the client read it: its If-Match no longer matches. */
 export class PreconditionFailedError extends HttpError {
   constructor(message = "The resource has changed since it was read") {

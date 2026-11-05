@@ -138,12 +138,13 @@ describe("publishUpload", () => {
     expect(storage.copyFile).toHaveBeenCalledWith(
       `uploads/${uploadId}/original.png`,
       `${target}/original.png`,
-      { contentType: "image/png" },
+      { contentDisposition: "attachment; filename=sketch.png", contentType: "image/png" },
     );
     expect(image).toEqual({
       fileName: "sketch.png",
       fileSize: 8,
       height: 480,
+      originalPath: `${target}/original.png`,
       sources: {
         avif: [
           { path: `${target}/640.avif`, token: `${target}/640.avif token`, width: 640 },

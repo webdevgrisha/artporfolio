@@ -1,12 +1,19 @@
-import { QueryClient, QueryClientProvider, queryOptions } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, queryOptions, useQuery } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import type { FormEvent, ReactNode } from "react";
 import { useForm } from "react-hook-form";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Tagged } from "@/shared/api/http";
 import { HttpError } from "@/shared/api/httpError";
 import { useSavedForm } from "@/shared/ui/edit-form";
+
+const toast = vi.hoisted(() => ({ showErrorToast: vi.fn(), showSuccessToast: vi.fn() }));
+
+vi.mock("@/shared/ui/toast", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...toast,
+}));
 
 interface Values {
   name: string;
@@ -15,12 +22,26 @@ interface Values {
 const initial: Tagged<Values> = { data: { name: "Холст" }, etag: '"read"' };
 const latest: Tagged<Values> = { data: { name: "Бумага" }, etag: '"latest"' };
 
+const readLatest = vi.fn(() => Promise.resolve(latest));
+
 const valuesQuery = queryOptions({
-  queryFn: () => Promise.resolve(latest),
+  queryFn: () => readLatest(),
   queryKey: ["values"],
 });
 
-type Save = (values: Values, etag: string) => Promise<Tagged<Values>> | null;
+/** A list the form shows beside the resource, such as the options it chooses from. */
+const readOptions = vi.fn(() => Promise.resolve(["Холст", "Бумага"]));
+
+const optionsQuery = queryOptions({
+  queryFn: () => readOptions(),
+  queryKey: ["options"],
+});
+
+type Save = (values: Values, etag: string) => Promise<Tagged<Values>>;
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 function setUp(save: Save) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -31,11 +52,13 @@ function setUp(save: Save) {
 
   const { result } = renderHook(
     () => {
+      useQuery(optionsQuery);
       const form = useForm<Values>({ defaultValues: initial.data });
       const savedForm = useSavedForm({
         form,
         initial,
         query: valuesQuery,
+        related: [optionsQuery.queryKey],
         save,
         toValues: (data) => data,
         toastId: "values-save",
@@ -111,6 +134,31 @@ describe("useSavedForm", () => {
     expect(result.current.saved).toEqual(latest);
     expect(result.current.form.getValues()).toEqual(latest.data);
     expect(result.current.editForm.hasUnsavedChanges).toBe(false);
+  });
+
+  it("reads the related data afresh with the latest version", async () => {
+    const result = setUp(() => Promise.reject(new HttpError(412)));
+
+    await vi.waitFor(() => expect(readOptions).toHaveBeenCalledTimes(1));
+    await edit(result, "Масло");
+    await submit(result);
+
+    expect(readOptions).toHaveBeenCalledTimes(2);
+    expect(result.current.editForm.conflict.isOpen).toBe(true);
+  });
+
+  it("says that the latest version could not be read, and keeps the changes", async () => {
+    readLatest.mockRejectedValueOnce(new HttpError(404));
+    const result = setUp(() => Promise.reject(new HttpError(412)));
+
+    await edit(result, "Масло");
+    await submit(result);
+
+    expect(toast.showErrorToast).toHaveBeenCalledWith("Это уже удалили в другой вкладке", {
+      id: "values-save",
+    });
+    expect(result.current.editForm.conflict.isOpen).toBe(false);
+    expect(result.current.form.getValues()).toEqual({ name: "Масло" });
   });
 
   it("keeps the changes and the base when the latest version is declined", async () => {

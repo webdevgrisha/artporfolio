@@ -22,18 +22,13 @@ interface UploadOptions {
   maxFileSize: number;
 }
 
-interface MultipartBody {
-  fields: Record<string, string>;
-  file: UploadedFile | undefined;
-}
-
 function createParser(request: Request, { maxFileSize }: UploadOptions) {
   try {
     return busboy({
       // Lets file names contain non-Latin characters, such as Cyrillic.
       defParamCharset: "utf8",
       headers: request.headers,
-      limits: { fields: 10, fileSize: maxFileSize, files: 1 },
+      limits: { fields: 0, fileSize: maxFileSize, files: 1 },
     });
   } catch {
     // The Content-Type is multipart/form-data, so busboy throws only on a malformed one, such as
@@ -54,17 +49,11 @@ function fileError(field: string, fileName: string, options: UploadOptions) {
   return undefined;
 }
 
-function readMultipart(request: Request, options: UploadOptions): Promise<MultipartBody> {
+function readFile(request: Request, options: UploadOptions): Promise<UploadedFile | undefined> {
   const parser = createParser(request, options);
 
   return new Promise((resolve, reject) => {
-    // No prototype: field names come from the client, and "__proto__" must stay a plain key.
-    const fields: Record<string, string> = Object.create(null);
     let file: UploadedFile | undefined;
-
-    parser.on("field", (name, value) => {
-      fields[name] = value;
-    });
 
     parser.on("file", (field, stream, { filename = "" }) => {
       // busboy destroys the file stream with an error when the body ends inside the file. Without
@@ -90,42 +79,28 @@ function readMultipart(request: Request, options: UploadOptions): Promise<Multip
     });
 
     parser.on("filesLimit", () => reject(new BadRequestError("Only one file is allowed")));
-    parser.on("fieldsLimit", () => reject(new BadRequestError("Too many form fields")));
+    parser.on("fieldsLimit", () => reject(new BadRequestError("Only the file is allowed")));
     parser.on("error", () => reject(new BadRequestError("Invalid multipart/form-data body")));
-    parser.on("close", () => resolve({ fields, file }));
+    parser.on("close", () => resolve(file));
 
-    // Cloud Functions has already read the body; locally it is still a stream.
-    if (request.rawBody) {
-      parser.end(request.rawBody);
-    } else {
-      // pipe does not pass on the errors of the request, such as a client that disconnected, so
-      // the parser would wait for the rest of the body forever.
-      request.on("error", () => {
-        reject(new BadRequestError("The upload was interrupted"));
-        parser.destroy();
-      });
-      request.pipe(parser);
-    }
+    // Cloud Functions reads the body before Express does, and leaves it here.
+    parser.end(request.rawBody);
   });
 }
 
-/**
- * Parses a multipart/form-data body with exactly one file. The file goes to request.file and the
- * text fields to request.body, so validateBody can check them.
- */
+/** Parses a multipart/form-data body that holds one file and nothing else into request.file. */
 export function parseUpload(options: UploadOptions): RequestHandler {
   return async (request, _response, next) => {
     if (!request.is("multipart/form-data")) {
       throw new UnsupportedMediaTypeError("Expected a multipart/form-data body");
     }
 
-    const { fields, file } = await readMultipart(request, options);
+    const file = await readFile(request, options);
 
     if (!file) {
       throw new BadRequestError(`A file is required in the "${options.fileField}" field`);
     }
 
-    request.body = fields;
     request.file = file;
     next();
   };

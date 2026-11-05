@@ -1,0 +1,80 @@
+.controlWrapper {
+  position: relative;
+}
+
+/* As tall as a text field; the value takes the line, the chevron keeps its end. */
+.control {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-block-size: var(--control-size);
+  padding-inline: var(--space-4);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* A div is never :disabled, so the look of a disabled text field is given by a class. */
+.controlDisabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  background: var(--color-surface-disabled);
+}
+
+/* One line: a long title ends with an ellipsis, the list shows it whole. */
+.value {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Points down into the list while it is closed, and up once it is open. */
+.chevron {
+  flex: none;
+  inline-size: 0.5rem;
+  block-size: auto;
+  transform: rotate(90deg);
+  transition: transform var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.chevronOpen {
+  transform: rotate(-90deg);
+}
+
+/* The list under the field, or above it near the bottom of the screen (useDropdownPosition), over
+   what follows it; as the list of MultiSelect. */
+.menu {
+  position: absolute;
+  inset-inline: 0;
+  z-index: var(--layer-drawer);
+  max-block-size: min(18rem, var(--dropdown-available-height, 18rem));
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  /* The scroll stops at the ends of the list instead of moving the page. */
+  overscroll-behavior: contain;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+/* Kept in the page while closed, as Downshift needs, but out of sight and of the layout. */
+.menuHidden {
+  display: none;
+}
+
+.option {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-md);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.highlighted {
+  background: var(--color-surface-hover);
+}

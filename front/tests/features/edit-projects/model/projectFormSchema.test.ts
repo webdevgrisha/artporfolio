@@ -7,12 +7,19 @@ import {
 
 import { fieldErrors } from "../../../support/schema";
 
-const project = { ...emptyProjectFormValues, title: "Слон" };
+const project = {
+  ...emptyProjectFormValues,
+  description: "Иллюстрации к книге.",
+  photos: [{ alt: "Обложка", file: new File([""], "cover.png"), status: "new" as const }],
+  title: "Слон",
+};
 
 describe("projectFormSchema", () => {
-  it("needs only a title", () => {
+  it("needs a title, a description and a photo", () => {
     expect(fieldErrors(projectFormSchema, project)).toEqual({});
     expect(fieldErrors(projectFormSchema, emptyProjectFormValues)).toEqual({
+      description: ["Введите описание"],
+      photos: ["Добавьте хотя бы одно фото"],
       title: ["Введите название"],
     });
   });

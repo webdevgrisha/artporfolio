@@ -1,10 +1,11 @@
 import { useActionData, useNavigation, useSearchParams, useSubmit } from "react-router";
 
 import { LoginForm, type LoginFormValues } from "@/features/login";
+import { redirectToParam } from "@/shared/config/routes";
 import { documentTitle } from "@/shared/lib/documentTitle";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
-import { type loginAction, redirectToField } from "../model/loginRoute";
+import type { loginAction } from "../model/loginRoute";
 import styles from "./LoginPage.module.css";
 
 export function LoginPage() {
@@ -15,7 +16,7 @@ export function LoginPage() {
 
   function handleSubmit(values: LoginFormValues) {
     void submit(
-      { ...values, [redirectToField]: searchParams.get(redirectToField) ?? "" },
+      { ...values, [redirectToParam]: searchParams.get(redirectToParam) ?? "" },
       { method: "post" },
     );
   }

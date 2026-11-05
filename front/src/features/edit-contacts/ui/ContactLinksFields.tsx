@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import type { ContactLinks } from "@/entities/contacts";
+import { useClearField } from "@/shared/lib/useClearField";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 
 import { contactFields } from "../model/contactFields";
@@ -15,15 +15,10 @@ interface ContactLinksFieldsProps {
 
 /** The fields of `EditContactLinksForm`; they read the form from its context. */
 export function ContactLinksFields({ className, isSaving }: ContactLinksFieldsProps) {
-  const { control, register, setFocus, setValue } = useFormContext<ContactLinksFormValues>();
-  const { dirtyFields, errors, isSubmitted } = useFormState({ control });
+  const { control, register } = useFormContext<ContactLinksFormValues>();
+  const { dirtyFields, errors } = useFormState({ control });
+  const clearField = useClearField<ContactLinksFormValues>();
   const values = useWatch({ control });
-
-  function clearField(name: keyof ContactLinks) {
-    // After the first submit, fields are revalidated on change; clearing is a change too.
-    setValue(name, "", { shouldDirty: true, shouldValidate: isSubmitted });
-    setFocus(name);
-  }
 
   return (
     <div className={clsx(styles.root, className)}>
@@ -31,6 +26,7 @@ export function ContactLinksFields({ className, isSaving }: ContactLinksFieldsPr
         <ClearableInput
           key={field.name}
           label={field.label}
+          hint={field.hint}
           type={field.type}
           autoComplete={field.autoComplete}
           placeholder={field.placeholder}

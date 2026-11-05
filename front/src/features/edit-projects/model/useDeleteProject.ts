@@ -1,6 +1,8 @@
-import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { deleteProject, type Project, projectsQueryKey } from "@/entities/project";
+
+import { usePendingIds } from "@/shared/lib/usePendingIds";
 
 import { getDeleteProjectErrorMessage } from "../lib/saveErrorMessages";
 
@@ -21,21 +23,13 @@ export function useDeleteProject() {
         toastId: "project-delete",
       },
     },
-    mutationFn: ({ id }: Project) => deleteProject({ etag: "*", id }),
+    mutationFn: ({ id }: Project) => deleteProject(id),
     mutationKey: deleteProjectMutationKey,
     onSettled: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey }),
   });
 }
 
-/** Whether the project is being deleted, so that it is not deleted twice meanwhile. */
-export function useIsDeletingProject(id: string): boolean {
-  const deletions = useMutationState({
-    filters: {
-      mutationKey: deleteProjectMutationKey,
-      predicate: (mutation) => (mutation.state.variables as Project | undefined)?.id === id,
-      status: "pending",
-    },
-  });
-
-  return deletions.length > 0;
+/** The ids of the projects being deleted, so that none is deleted twice meanwhile. */
+export function useDeletingProjectIds(): readonly string[] {
+  return usePendingIds(deleteProjectMutationKey);
 }

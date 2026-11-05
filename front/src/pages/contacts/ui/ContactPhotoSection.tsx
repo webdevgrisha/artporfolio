@@ -1,13 +1,28 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { contactPhoto } from "@/entities/contacts";
-import { EditContactPhotoForm } from "@/features/edit-contacts";
+import { EditPhotoForm } from "@/features/edit-photo";
+import { AwaitPageData } from "@/shared/ui/page-data";
+import { FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
 
 import styles from "./ContactsPage.module.css";
 
 export function ContactPhotoSection() {
-  // The loader of the section has fetched the data, so this never suspends.
+  return (
+    <AwaitPageData
+      fallback={
+        <FormSkeleton className={styles.form}>
+          <MediaSkeleton />
+        </FormSkeleton>
+      }
+    >
+      <ContactPhoto />
+    </AwaitPageData>
+  );
+}
+
+function ContactPhoto() {
   const { data: photo } = useSuspenseQuery(contactPhoto.query);
 
-  return <EditContactPhotoForm className={styles.form} photo={photo} />;
+  return <EditPhotoForm className={styles.form} label="Фото" photo={photo} slot={contactPhoto} />;
 }

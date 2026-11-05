@@ -12,8 +12,3 @@ export const aboutTextSchema = z.object({
 });
 
 export type AboutText = z.infer<typeof aboutTextSchema>;
-
-/** The shape of every API response that returns the texts. */
-export const aboutTextResponseSchema = z.object({
-  text: aboutTextSchema,
-});

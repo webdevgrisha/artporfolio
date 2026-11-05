@@ -1,6 +1,6 @@
 import { http, type Tagged } from "@/shared/api/http";
 
-import { type ContactLinks, contactLinksResponseSchema } from "../model/contactLinks";
+import { type ContactLinks, contactLinksSchema } from "../model/contactLinks";
 
 interface ReplaceContactLinksParams {
   /** The ETag of the links the new ones were made from. */
@@ -12,16 +12,14 @@ interface ReplaceContactLinksParams {
  * Replaces all links and returns the values saved by the server (trimmed) with their new ETag.
  * Rejected with 412 when the links have changed since `etag` was read, for example in another tab.
  */
-export async function replaceContactLinks({
+export function replaceContactLinks({
   etag,
   links,
 }: ReplaceContactLinksParams): Promise<Tagged<ContactLinks>> {
-  const { data, etag: savedEtag } = await http.putIfMatch({
+  return http.putIfMatch({
     path: "/contacts/links",
     body: links,
     etag,
-    schema: contactLinksResponseSchema,
+    schema: contactLinksSchema,
   });
-
-  return { data: data.links, etag: savedEtag };
 }

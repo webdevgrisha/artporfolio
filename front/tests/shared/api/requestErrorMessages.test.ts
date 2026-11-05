@@ -63,6 +63,10 @@ describe("getSaveErrorMessage", () => {
     expect(getSaveErrorMessage(new HttpError(404), messages)).toBe("fallback");
   });
 
+  it("leaves a conflict without a message to the dialog of the form", () => {
+    expect(getSaveErrorMessage(new HttpError(412), messages)).toBeNull();
+  });
+
   it("covers no connection and server errors as getRequestErrorMessage does", () => {
     expect(getSaveErrorMessage(new NetworkError(new TypeError()), messages)).toBe(
       networkErrorMessage,

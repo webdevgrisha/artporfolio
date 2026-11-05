@@ -29,6 +29,7 @@ const storedPhoto = {
   fileName: "photo.png",
   fileSize: 466_000,
   height: 640,
+  originalPath: "image/original.png",
   sources: {
     avif: [{ path: "image/960.avif", token: "token", width: 960 }],
     webp: [{ path: "image/960.webp", token: "token", width: 960 }],
@@ -54,7 +55,7 @@ describe("contacts service", () => {
   });
 
   it("returns the links and the photo from one read of the document", async () => {
-    stored({ ...links, photo: storedPhoto });
+    stored({ links, photo: storedPhoto });
 
     await expect(getContacts()).resolves.toEqual({
       links,

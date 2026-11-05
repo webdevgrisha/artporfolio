@@ -1,0 +1,50 @@
+/*
+ * An indeterminate bar: a segment runs along the top edge. It shows only after a moment, so a page
+ * that opens at once does not flash it.
+ */
+.root {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: var(--layer-progress);
+  block-size: 3px;
+  overflow: hidden;
+  pointer-events: none;
+  animation: appear var(--motion-duration-standard) var(--motion-easing-standard) 150ms both;
+}
+
+.root::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 40%;
+  content: "";
+  background: var(--color-text);
+  animation: run 1.2s var(--motion-easing-standard) infinite;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+/* From just before the start to just past the end: the segment is 40% of the bar. */
+@keyframes run {
+  from {
+    translate: -100% 0;
+  }
+
+  to {
+    translate: 250% 0;
+  }
+}
+
+/* Without motion the bar stands still across the whole edge. */
+@media (prefers-reduced-motion: reduce) {
+  .root::before {
+    inset-inline: 0;
+    inline-size: auto;
+    animation: none;
+  }
+}

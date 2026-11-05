@@ -15,3 +15,13 @@
   margin-inline: auto;
   object-fit: contain;
 }
+
+.download {
+  font-size: var(--font-size-sm);
+  color: inherit;
+}
+
+.download:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}

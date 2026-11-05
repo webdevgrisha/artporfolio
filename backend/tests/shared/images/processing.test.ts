@@ -46,6 +46,8 @@ describe("image processing", () => {
     expect(sourceFormat).toBe("jpeg");
 
     expect(images.map(({ format, height, width }) => ({ format, height, width }))).toEqual([
+      { format: "avif", height: 160, width: 320 },
+      { format: "webp", height: 160, width: 320 },
       { format: "avif", height: 320, width: 640 },
       { format: "webp", height: 320, width: 640 },
       { format: "avif", height: 480, width: 960 },
@@ -68,7 +70,7 @@ describe("image processing", () => {
     );
 
     expect(sourceFormat).toBe("png");
-    expect(images.map(({ width }) => width)).toEqual([640, 640, 800, 800]);
+    expect(images.map(({ width }) => width)).toEqual([320, 320, 640, 640, 800, 800]);
   });
 
   it("applies the EXIF orientation and removes the metadata", async () => {

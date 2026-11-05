@@ -8,7 +8,7 @@ import {
 import { fieldErrors } from "../../../support/schema";
 
 const values: ContactLinksFormValues = {
-  email: "",
+  email: "artist@example.com",
   instagram: "",
   linkedin: "",
   youtube: "",
@@ -19,8 +19,12 @@ function errors(changed: Partial<ContactLinksFormValues>): Record<string, string
 }
 
 describe("contactLinksFormSchema", () => {
-  it("takes empty contacts: they are hidden on the site", () => {
+  it("takes empty links: they are hidden on the site", () => {
     expect(errors({})).toEqual({});
+  });
+
+  it("needs an email", () => {
+    expect(errors({ email: "  " })).toEqual({ email: ["Введите email"] });
   });
 
   it("trims the links", () => {
@@ -38,6 +42,17 @@ describe("contactLinksFormSchema", () => {
     });
     expect(errors({ instagram: "ftp://instagram.com/artist" })).toEqual({
       instagram: ["Введите ссылку вида https://…"],
+    });
+  });
+
+  it("takes only a link to the network of the field", () => {
+    expect(errors({ instagram: "https://www.instagram.com/artist" })).toEqual({});
+    expect(errors({ youtube: "https://youtu.be/abc" })).toEqual({});
+    expect(errors({ instagram: "https://youtube.com/@artist" })).toEqual({
+      instagram: ["Введите ссылку на Instagram"],
+    });
+    expect(errors({ linkedin: "https://notlinkedin.com/in/artist" })).toEqual({
+      linkedin: ["Введите ссылку на LinkedIn"],
     });
   });
 

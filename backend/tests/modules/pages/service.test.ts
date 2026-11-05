@@ -54,7 +54,7 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 }));
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
-import { deletePageHero, getPageHero, getPages, savePageHero } from "#modules/pages/service";
+import { getPageHero, getPages, savePageHero } from "#modules/pages/service";
 import { PreconditionFailedError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
 
@@ -65,6 +65,7 @@ const published = {
   fileName: "painting.jpg",
   fileSize: 8,
   height: 320,
+  originalPath: "pages/about/hero/new/original.png",
   sources: {
     avif: [{ path: "pages/about/hero/new/640.avif", token: "token", width: 640 }],
     webp: [{ path: "pages/about/hero/new/640.webp", token: "token", width: 640 }],
@@ -79,6 +80,7 @@ const storedHero = {
   fileName: "old.jpg",
   fileSize: 100,
   height: 540,
+  originalPath: "pages/about/hero/old/original.png",
   sources: {
     avif: [{ path: "pages/about/hero/old/960.avif", token: "avif-token", width: 960 }],
     webp: [{ path: "pages/about/hero/old/960.webp", token: "webp-token", width: 960 }],
@@ -122,7 +124,12 @@ describe("page service", () => {
     await expect(getPages()).resolves.toEqual({
       about: {
         hero: {
-          ...storedHero,
+          fileName: "old.jpg",
+          fileSize: 100,
+          height: 540,
+          original: "/api/originals/pages/about/hero/old/original.png",
+          version: "old",
+          width: 960,
           sources: {
             avif: [
               {
@@ -220,30 +227,5 @@ describe("page service", () => {
 
     expect(transaction.set).not.toHaveBeenCalled();
     expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/new");
-  });
-
-  it("deletes the hero and its files", async () => {
-    storedHeroes.set("pages/about", storedHero);
-
-    await expect(deletePageHero("about", storedTag)).resolves.toBe(emptyTag);
-
-    expect(transaction.update).toHaveBeenCalledWith(aboutDocument, { hero: expect.anything() });
-    expect(storage.deleteFolder).toHaveBeenCalledWith("pages/about/hero/old");
-  });
-
-  it("does nothing when deleting a missing hero", async () => {
-    await expect(deletePageHero("about", emptyTag)).resolves.toBe(emptyTag);
-
-    expect(transaction.update).not.toHaveBeenCalled();
-    expect(storage.deleteFolder).not.toHaveBeenCalled();
-  });
-
-  it("refuses to delete a hero replaced since it was read", async () => {
-    storedHeroes.set("pages/about", { ...storedHero, version: "newer" });
-
-    await expect(deletePageHero("about", storedTag)).rejects.toBeInstanceOf(
-      PreconditionFailedError,
-    );
-    expect(transaction.update).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import type { Photo } from "@/shared/api/photo";
+import type { Photo, PhotoBody } from "@/shared/api/photo";
+import { uploadImage } from "@/shared/api/upload";
 
 import { type ImageFieldValue, imageFieldValueSchema, toImageFieldValue } from "./imageFieldValue";
 
@@ -16,7 +17,7 @@ export const photoAltSchema = z
 
 /**
  * The fields of a photo with its description, to spread into a form schema together with
- * `refinePhotoAlt`. `PhotoFields` shows them.
+ * `refinePhoto`. `PhotoFields` shows them.
  */
 export const photoFieldsShape = {
   photo: imageFieldValueSchema,
@@ -28,12 +29,18 @@ export interface PhotoFormValues {
   photoAlt: string;
 }
 
-/** Checks the description only while there is a photo: without one it is hidden and not saved. */
-export function refinePhotoAlt<TValues extends PhotoFormValues>(
+/**
+ * Requires a photo: it can be replaced, not removed, since the site does not show the page without
+ * it. The description is checked once there is a photo: until then it is hidden.
+ */
+export function refinePhoto<TValues extends PhotoFormValues>(
   { photo, photoAlt }: TValues,
   context: z.RefinementCtx<TValues>,
 ): void {
-  if (photo === null) return;
+  if (photo === null) {
+    context.addIssue({ code: "custom", message: "Выберите фото", path: ["photo"] });
+    return;
+  }
 
   for (const issue of photoAltSchema.safeParse(photoAlt).error?.issues ?? []) {
     context.addIssue({ code: "custom", message: issue.message, path: ["photoAlt"] });
@@ -44,29 +51,12 @@ export function toPhotoFormValues(photo: Photo | null): PhotoFormValues {
   return { photo: toImageFieldValue(photo), photoAlt: photo?.alt ?? "" };
 }
 
-/** What a save does with the photo. */
-export type PhotoChange =
-  | { alt: string; file: File; type: "upload" }
-  | { alt: string; type: "updateAlt" }
-  | { type: "delete" };
-
-/** A change of a photo, made from the photo with the ETag `etag`. */
-export interface SavePhotoParams {
-  change: PhotoChange;
-  etag: string;
-}
-
 /**
- * The change of the submitted photo fields, or `undefined` when there is none. Only what the user
- * changed in the form counts: the photo is deleted only when they removed it here, never because
- * the server has a photo the form did not show, such as one uploaded in another tab.
+ * The photo fields as the server takes them: uploads a newly picked file; a saved photo keeps its
+ * file and sends its description alone. Rejects with `UploadError`.
  */
-export function getPhotoChange(
-  { photo, photoAlt }: PhotoFormValues,
-  { isAltDirty, isPhotoDirty }: { isAltDirty: boolean; isPhotoDirty: boolean },
-): PhotoChange | undefined {
-  if (photo instanceof File) return { alt: photoAlt, file: photo, type: "upload" };
-  if (photo === null) return isPhotoDirty ? { type: "delete" } : undefined;
-
-  return isAltDirty ? { alt: photoAlt, type: "updateAlt" } : undefined;
+export async function toPhotoBody({ photo, photoAlt }: PhotoFormValues): Promise<PhotoBody> {
+  return photo instanceof File
+    ? { alt: photoAlt, uploadId: await uploadImage(photo) }
+    : { alt: photoAlt };
 }

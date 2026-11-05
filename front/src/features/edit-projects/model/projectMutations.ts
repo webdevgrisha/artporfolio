@@ -8,10 +8,9 @@ import {
   projectsQueryKey,
   replaceProject,
 } from "@/entities/project";
-import { HttpError } from "@/shared/api/httpError";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
-import { getSaveProjectErrorMessage } from "../lib/saveErrorMessages";
+import { getCreateProjectErrorMessage, getSaveProjectErrorMessage } from "../lib/saveErrorMessages";
 import type { ProjectFormValues } from "./projectFormSchema";
 
 interface CreateProjectParams {
@@ -42,9 +41,8 @@ export const saveProjectToastId = "project-save";
 /**
  * Creates a project from the form: uploads the picked files, then sends the project in one
  * request, which the server saves all or nothing. The new project is at the top of the list.
- *
- * A try may create the project even though its response is lost. The next try then finds the
- * project there (412) and saves the values into it, so the project is neither lost nor doubled.
+ * A retry never doubles it: the server refuses
+ * an id it already has with 412, and the form opens what is saved.
  */
 export function useCreateProject() {
   const queryClient = useQueryClient();
@@ -52,7 +50,7 @@ export function useCreateProject() {
   return useMutation({
     meta: {
       feedback: {
-        getErrorMessage: getSaveProjectErrorMessage,
+        getErrorMessage: getCreateProjectErrorMessage,
         successMessage: "Проект создан",
         toastId: saveProjectToastId,
       },
@@ -60,15 +58,7 @@ export function useCreateProject() {
     mutationFn: async ({ id, values }: CreateProjectParams): Promise<Project> => {
       const body = await toProjectBody(values);
 
-      try {
-        return (await createProject({ body, id })).data;
-      } catch (error) {
-        if (!(error instanceof HttpError && error.status === 412)) throw error;
-      }
-
-      const { etag } = await queryClient.fetchQuery({ ...projectQuery(id), staleTime: 0 });
-
-      return (await replaceProject({ body, etag, id })).data;
+      return (await createProject({ body, id })).data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey }),
   });

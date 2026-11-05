@@ -1,31 +1,22 @@
 import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
 import { z } from "zod";
 
-import { NotFoundError } from "#shared/http/errors";
+import { UnprocessableContentError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
-import {
-  changeSlot,
-  clearSlot,
-  fillSlot,
-  getSlot,
-  type ImageSlot,
-  readSlot,
-} from "#shared/images/slot";
-import { imageSchema, storedImageSchema, toImage } from "#shared/images/storage";
+import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
+import { type Image, storedImageSchema, toImage } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
 
 /** The text alternative of a photo. */
 export const altSchema = z.string().trim().min(1).max(250);
 
-/** A new photo: the file uploaded before (see uploads.ts) and its alt text. */
+/**
+ * A photo as a change sends it: a new file by its upload (see uploads.ts), or the saved file when
+ * `uploadId` is left out, so the alt text can change alone.
+ */
 export const photoBodySchema = z.strictObject({
   alt: altSchema,
-  uploadId: uploadIdSchema,
-});
-
-/** An update of the alt text alone. */
-export const photoAltBodySchema = z.strictObject({
-  alt: altSchema,
+  uploadId: uploadIdSchema.optional(),
 });
 
 /**
@@ -40,19 +31,12 @@ export const storedPhotoSchema = storedImageSchema.extend({
  * A photo as the API returns it, with download URLs in place of the stored paths. The alt text is
  * returned as it was saved, even if the rules have changed since.
  */
-export const photoSchema = imageSchema.extend({ alt: z.string() });
-
-export const photoResponseSchema = z.object({ photo: photoSchema });
-
-/** The photo of a slot as `GET` returns it: null until one is uploaded. */
-export const slotPhotoResponseSchema = z.object({ photo: photoSchema.nullable() });
+export interface Photo extends Image {
+  alt: string;
+}
 
 export type PhotoBody = z.infer<typeof photoBodySchema>;
-export type PhotoAltBody = z.infer<typeof photoAltBodySchema>;
 export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
-export type Photo = z.infer<typeof photoSchema>;
-export type PhotoResponse = z.infer<typeof photoResponseSchema>;
-export type SlotPhotoResponse = z.infer<typeof slotPhotoResponseSchema>;
 
 /** A single photo with its alt text, such as «My photo» or the contact photo. */
 export type PhotoSlot = ImageSlot<StoredPhoto>;
@@ -87,37 +71,31 @@ export async function getPhoto(slot: PhotoSlot): Promise<Tagged<Photo | null>> {
   return { data: data && toPhoto(data), etag };
 }
 
-/** Puts the uploaded photo with its alt text in the slot, replacing the previous one. */
+/**
+ * Puts the uploaded photo with its alt text in the slot, replacing the previous one. Without an
+ * upload the slot keeps its file and takes the alt text alone, so an empty slot refuses it.
+ */
 export async function savePhoto(
   slot: PhotoSlot,
   { alt, uploadId }: PhotoBody,
   ifMatch: string,
 ): Promise<SavedPhoto> {
+  if (uploadId === undefined) {
+    const { data, etag } = await changeSlot(slot, ifMatch, (photo) => {
+      if (!photo) {
+        throw new UnprocessableContentError("There is no photo to keep: send an upload");
+      }
+
+      return { ...photo, alt };
+    });
+
+    return { created: false, data: toPhoto(data), etag };
+  }
+
   const { created, data, etag } = await fillSlot(slot, uploadId, ifMatch, (image) => ({
     ...image,
     alt,
   }));
 
   return { created, data: toPhoto(data), etag };
-}
-
-export async function updatePhotoAlt(
-  slot: PhotoSlot,
-  alt: string,
-  ifMatch: string,
-): Promise<Tagged<Photo>> {
-  const { data, etag } = await changeSlot(slot, ifMatch, (photo) => {
-    if (!photo) {
-      throw new NotFoundError("There is no photo");
-    }
-
-    return { ...photo, alt };
-  });
-
-  return { data: toPhoto(data), etag };
-}
-
-/** Removes the photo and its files; returns the entity tag of the empty slot. */
-export function deletePhoto(slot: PhotoSlot, ifMatch: string): Promise<string> {
-  return clearSlot(slot, ifMatch);
 }

@@ -5,6 +5,8 @@
 .layout {
   /* Shared by the header and the page so their edges line up. */
   --page-gutter: var(--layout-space-4);
+  /* Inside the frame of a page. As small as the gutter on a phone, where the content needs the room. */
+  --frame-padding: var(--layout-space-4);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -52,6 +54,12 @@
   flex: 1;
   flex-direction: column;
   border: 1px solid var(--color-border);
+}
+
+@media (width >= 40rem) {
+  .layout {
+    --frame-padding: var(--layout-space-8);
+  }
 }
 
 @media (width >= 75rem) {

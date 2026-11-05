@@ -32,9 +32,7 @@ interface ConditionalBodyOptions<TBody extends object, TSchema extends ZodType>
   etag: string;
 }
 
-interface ConditionalOptions extends HttpOptions {
-  /** The tag of the representation the change was made against, sent in If-Match. */
-  etag: string;
+interface DeleteOptions extends HttpOptions {
   path: string;
 }
 
@@ -51,7 +49,7 @@ interface PostVoidOptions extends HttpOptions {
 interface RequestOptions extends HttpOptions {
   /** Sent as JSON; `FormData` is sent as `multipart/form-data`. */
   body?: object;
-  method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
+  method: "DELETE" | "GET" | "POST" | "PUT";
 }
 
 function withIfMatch(headers: HeadersInit | undefined, etag: string): Headers {
@@ -169,32 +167,6 @@ class Http {
     return { data: schema.parse(await response.json()), etag: readETag(response) };
   }
 
-  /**
-   * A PATCH that changes the representation only while it still has the tag `etag`; the server
-   * rejects it with 412 otherwise. The body is a JSON Merge Patch (RFC 7396): the fields it sends
-   * replace those of the representation. Returns the new representation and its tag.
-   */
-  async patchIfMatch<TBody extends object, TSchema extends ZodType>({
-    body,
-    etag,
-    headers,
-    path,
-    schema,
-    ...options
-  }: ConditionalBodyOptions<TBody, TSchema>): Promise<Tagged<z.output<TSchema>>> {
-    const requestHeaders = withIfMatch(headers, etag);
-    requestHeaders.set("Content-Type", "application/merge-patch+json");
-
-    const response = await this.request(path, {
-      ...options,
-      body,
-      headers: requestHeaders,
-      method: "PATCH",
-    });
-
-    return { data: schema.parse(await response.json()), etag: readETag(response) };
-  }
-
   /** A POST without a body whose response has no content, such as an action endpoint. */
   async postVoid({ path, ...options }: PostVoidOptions): Promise<void> {
     await this.request(path, {
@@ -204,34 +176,14 @@ class Http {
   }
 
   /**
-   * A DELETE that empties a resource, such as a photo slot, only while it still has the tag
-   * `etag`; the server rejects it with 412 otherwise. The response has no content; returns the
-   * tag of the emptied resource, for the next change.
-   */
-  async deleteIfMatch({ etag, headers, path, ...options }: ConditionalOptions): Promise<string> {
-    const response = await this.request(path, {
-      ...options,
-      headers: withIfMatch(headers, etag),
-      method: "DELETE",
-    });
-
-    return readETag(response);
-  }
-
-  /**
-   * A DELETE of the resource itself, such as a project, that applies only while it still has the
-   * tag `etag`; the server rejects it with 412 otherwise. The resource is gone afterwards, so the
+   * A DELETE of the resource itself, such as a project, whatever version is saved: a table names a
+   * resource by its title, and its rows have no tags. The resource is gone afterwards, so the
    * response has neither content nor a tag.
    */
-  async deleteResourceIfMatch({
-    etag,
-    headers,
-    path,
-    ...options
-  }: ConditionalOptions): Promise<void> {
+  async deleteResource({ headers, path, ...options }: DeleteOptions): Promise<void> {
     await this.request(path, {
       ...options,
-      headers: withIfMatch(headers, etag),
+      headers: withIfMatch(headers, "*"),
       method: "DELETE",
     });
   }
@@ -293,9 +245,8 @@ class Http {
     const requestBody = isFormData ? body : body ? JSON.stringify(body) : undefined;
     const requestHeaders = new Headers(headers);
 
-    // The browser sets the multipart Content-Type itself, with the boundary. A JSON body is sent as
-    // application/json unless its method named another JSON type, such as a merge patch.
-    if (body && !isFormData && !requestHeaders.has("Content-Type")) {
+    // The browser sets the multipart Content-Type itself, with the boundary.
+    if (body && !isFormData) {
       requestHeaders.set("Content-Type", "application/json");
     }
 
@@ -311,9 +262,6 @@ class Http {
         headers: requestHeaders,
       });
     } catch (error) {
-      // A cancelled request is not a failure: its caller no longer needs the response.
-      if (options.signal?.aborted) throw error;
-
       // fetch rejects with a TypeError, which a bug in the code throws as well.
       throw new NetworkError(error);
     }

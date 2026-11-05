@@ -3,8 +3,9 @@ import React from "react";
 import type { FieldValues, UseFormReturn } from "react-hook-form";
 
 import type { Tagged } from "@/shared/api/http";
-import { HttpError } from "@/shared/api/httpError";
-import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
+import { HttpError, isPreconditionFailed } from "@/shared/api/httpError";
+import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
+import { savedMessage, showErrorToast, showSuccessToast } from "@/shared/ui/toast";
 
 import type { EditFormProps } from "./EditForm";
 
@@ -16,18 +17,27 @@ interface UseSavedFormParams<TData, TValues extends FieldValues, TQueryKey exten
   /** Reads the resource afresh when a save finds that it has changed since. */
   query: FetchQueryOptions<Tagged<TData>, Error, Tagged<TData>, TQueryKey>;
   /**
-   * Sends the changes made from the resource with the ETag `etag` and shows the result; resolves
-   * with the saved resource and its new ETag. `null` when the changes need no request.
+   * The other server data the form shows, such as the lists it chooses from, by the keys of their
+   * queries: read afresh together with the resource, so its latest version is shown with them.
    */
-  save: (values: TValues, etag: string) => Promise<Tagged<TData>> | null;
+  related?: readonly QueryKey[];
+  /**
+   * Sends the changes made from the resource with the ETag `etag` and shows the result; resolves
+   * with the saved resource and its new ETag.
+   */
+  save: (values: TValues, etag: string) => Promise<Tagged<TData>>;
   toValues: (data: TData) => TValues;
   /** The toast of `save`, for the result of a save with nothing to send. */
   toastId: string;
 }
 
-/** The server refused the save: the resource has changed since the form read it. */
-function isConflict(error: unknown): boolean {
-  return error instanceof HttpError && error.status === 412;
+function getLoadLatestErrorMessage(error: unknown): string {
+  if (error instanceof HttpError && error.status === 404) return "Это уже удалили в другой вкладке";
+
+  return getRequestErrorMessage(
+    error,
+    "Данные изменили в другой вкладке, но загрузить их не удалось. Обновите страницу",
+  );
 }
 
 /**
@@ -40,6 +50,7 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
   form,
   initial,
   query,
+  related = [],
   save,
   toValues,
   toastId,
@@ -61,16 +72,22 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
 
   async function loadLatest() {
     try {
-      setLatest(await queryClient.fetchQuery({ ...query, staleTime: 0 }));
-    } catch {
-      // The toast of the save already says that it failed; the next conflict tries again.
+      const [resource] = await Promise.all([
+        queryClient.fetchQuery({ ...query, staleTime: 0 }),
+        ...related.map((queryKey) =>
+          queryClient.refetchQueries({ exact: true, queryKey }, { throwOnError: true }),
+        ),
+      ]);
+
+      setLatest(resource);
+    } catch (error) {
+      // The changes stay in the form; the next save that conflicts tries again.
+      showErrorToast(getLoadLatestErrorMessage(error), { id: toastId });
     }
   }
 
   async function saveChanges(values: TValues) {
-    const saving = isDirty ? save(values, saved.etag) : null;
-
-    if (!saving) {
+    if (!isDirty) {
       showSuccessToast(savedMessage, { id: toastId });
       return;
     }
@@ -78,11 +95,11 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
     let next: Tagged<TData>;
 
     try {
-      next = await saving;
+      next = await save(values, saved.etag);
     } catch (error) {
       // `save` has shown the error and the changes stay. After a conflict the same save would
       // fail again, so the latest version is offered instead.
-      if (isConflict(error)) await loadLatest();
+      if (isPreconditionFailed(error)) await loadLatest();
       return;
     }
 

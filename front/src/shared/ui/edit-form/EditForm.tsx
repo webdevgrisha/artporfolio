@@ -7,10 +7,13 @@ import { useReportUnsavedChanges } from "@/shared/ui/unsaved-changes";
 
 import styles from "./EditForm.module.css";
 
-/** A save refused because the data changed since the form read it, e.g. in another tab. */
-interface EditFormConflict {
+/** A save refused with 412: the data changed since the form read it, e.g. in another tab. */
+export interface EditFormConflict {
   isOpen: boolean;
-  /** Keeps the changes in the form; saving them would be refused again. */
+  /**
+   * Closes the question and keeps the changes in the form, so they can be copied before the latest
+   * version is taken; saving them would be refused again.
+   */
   onKeep: () => void;
   /** Drops the changes and shows the data as it is now. */
   onTakeLatest: () => void;
@@ -20,7 +23,7 @@ export interface EditFormProps {
   /** The fields. */
   children: ReactNode;
   className?: string;
-  /** Left out by a form whose save cannot conflict, such as one that creates the data. */
+  /** The question after a save refused with 412, from `useSavedForm`. */
   conflict?: EditFormConflict;
   hasUnsavedChanges: boolean;
   isSaving: boolean;
@@ -59,8 +62,8 @@ export function EditForm({
         <ConfirmDialog
           isOpen={conflict.isOpen}
           title="Данные изменили в другой вкладке"
-          description="Загрузить актуальную версию? Несохранённые изменения на этой странице пропадут."
-          cancelLabel="Оставить мои"
+          description="Ваши изменения сохранить нельзя: их нужно внести заново в актуальную версию. Чтобы не набирать текст снова, скопируйте его, затем ещё раз нажмите «Сохранить» и «Загрузить»."
+          cancelLabel="Не сейчас"
           confirmLabel="Загрузить"
           onCancel={conflict.onKeep}
           onConfirm={conflict.onTakeLatest}

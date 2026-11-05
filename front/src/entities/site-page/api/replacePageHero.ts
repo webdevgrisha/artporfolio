@@ -1,7 +1,7 @@
 import { http, type Tagged } from "@/shared/api/http";
-import type { Image } from "@/shared/api/image";
+import { type Image, imageSchema } from "@/shared/api/image";
 
-import { heroResponseSchema, type SitePageId } from "../model/sitePage";
+import type { SitePageId } from "../model/sitePage";
 
 interface ReplacePageHeroParams {
   /** The ETag of the hero the change was made from. */
@@ -12,17 +12,15 @@ interface ReplacePageHeroParams {
 }
 
 /** Sets or replaces the hero of the page and returns it as stored by the server, with its new ETag. */
-export async function replacePageHero({
+export function replacePageHero({
   etag,
   page,
   uploadId,
 }: ReplacePageHeroParams): Promise<Tagged<Image>> {
-  const { data, etag: savedEtag } = await http.putIfMatch({
+  return http.putIfMatch({
     path: `/pages/${page}/hero`,
     body: { uploadId },
     etag,
-    schema: heroResponseSchema,
+    schema: imageSchema,
   });
-
-  return { data: data.hero, etag: savedEtag };
 }

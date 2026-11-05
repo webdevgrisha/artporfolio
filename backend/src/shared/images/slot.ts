@@ -1,14 +1,10 @@
-import {
-  type DocumentReference,
-  type DocumentSnapshot,
-  FieldValue,
-} from "firebase-admin/firestore";
+import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
 import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { deleteImageFilesOrWarn, type StoredImage } from "#shared/images/storage";
-import { publishUpload } from "#shared/images/uploads";
+import { saveWithImages } from "#shared/images/saving";
+import type { StoredImage } from "#shared/images/stored-image";
 
 /** How a field of a document stores its image: the image alone, or with more, such as an alt text. */
 export interface SlotField<TStored extends StoredImage> {
@@ -27,8 +23,7 @@ export interface ImageSlot<TStored extends StoredImage> extends SlotField<TStore
 }
 
 /** What the slot stores after a change, with its tag, and what it stored before. */
-export interface ChangedSlot<TStored extends StoredImage, TNext extends TStored | null>
-  extends Tagged<TNext> {
+export interface ChangedSlot<TStored extends StoredImage> extends Tagged<TStored> {
   previous: TStored | null;
 }
 
@@ -60,16 +55,15 @@ export async function getSlot<TStored extends StoredImage>(
 }
 
 /**
- * Replaces what the slot stores with `next(current)`, `null` to empty it. One transaction reads
- * the slot, checks that it is still what the client read (`ifMatch`) and writes the change:
- * concurrent requests, such as a delete and an alt update, would otherwise leave a broken image
- * or files that nothing links to.
+ * Replaces what the slot stores with `next(current)`. One transaction reads the slot, checks that
+ * it is still what the client read (`ifMatch`) and writes the change: concurrent requests, such as
+ * two saves of one photo, would otherwise leave files that nothing links to.
  */
-export function changeSlot<TStored extends StoredImage, TNext extends TStored | null>(
+export function changeSlot<TStored extends StoredImage>(
   slot: ImageSlot<TStored>,
   ifMatch: string,
-  next: (current: TStored | null) => TNext,
-): Promise<ChangedSlot<TStored, TNext>> {
+  next: (current: TStored | null) => TStored,
+): Promise<ChangedSlot<TStored>> {
   return firestore().runTransaction(async (transaction) => {
     const document = slot.document();
     const previous = readSlot(slot, await transaction.get(document));
@@ -78,58 +72,31 @@ export function changeSlot<TStored extends StoredImage, TNext extends TStored | 
 
     const stored = next(previous);
 
-    if (stored) {
-      // Merging keeps the other fields of the document.
-      transaction.set(document, { [slot.field]: stored }, { merge: true });
-    } else if (previous) {
-      transaction.update(document, { [slot.field]: FieldValue.delete() });
-    }
+    // Merging keeps the other fields of the document.
+    transaction.set(document, { [slot.field]: stored }, { merge: true });
 
     return { data: stored, etag: entityTag(stored), previous };
   });
 }
 
 /**
- * Puts the uploaded image in the slot, before removing the previous one, so the site never links
- * to missing files. `toStored` adds what the field keeps besides the image. If the image cannot be
- * saved, its copy is removed. The upload is kept either way, see uploads.ts.
+ * Puts the uploaded image in the slot, replacing the previous one. `toStored` adds what the field
+ * keeps besides the image.
  */
-export async function fillSlot<TStored extends StoredImage>(
+export function fillSlot<TStored extends StoredImage>(
   slot: ImageSlot<TStored>,
   uploadId: string,
   ifMatch: string,
   toStored: (image: StoredImage) => TStored,
 ): Promise<FilledSlot<TStored>> {
-  const stored = toStored(await publishUpload(uploadId, slot.folder));
-  let changed: ChangedSlot<TStored, TStored>;
+  return saveWithImages(async (files) => {
+    const stored = toStored(await files.publish(uploadId, slot.folder));
+    const { etag, previous } = await changeSlot(slot, ifMatch, () => stored);
 
-  try {
-    changed = await changeSlot(slot, ifMatch, () => stored);
-  } catch (error) {
-    await deleteImageFilesOrWarn(versionFolder(slot, stored.version));
-    throw error;
-  }
+    if (previous) {
+      files.removeAfterSave(versionFolder(slot, previous.version));
+    }
 
-  if (changed.previous) {
-    await deleteImageFilesOrWarn(versionFolder(slot, changed.previous.version));
-  }
-
-  return { created: changed.previous === null, data: stored, etag: changed.etag };
-}
-
-/**
- * Removes the image and its files; an empty slot stays empty. Returns the entity tag of the empty
- * slot, so the client can make its next change without reading the slot again.
- */
-export async function clearSlot<TStored extends StoredImage>(
-  slot: ImageSlot<TStored>,
-  ifMatch: string,
-): Promise<string> {
-  const { etag, previous } = await changeSlot(slot, ifMatch, () => null);
-
-  if (previous) {
-    await deleteImageFilesOrWarn(versionFolder(slot, previous.version));
-  }
-
-  return etag;
+    return { created: previous === null, data: stored, etag };
+  });
 }

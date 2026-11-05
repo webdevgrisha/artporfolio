@@ -1,27 +1,20 @@
-import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import React, { type ReactNode } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
-import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
-import { joinMessages } from "@/shared/lib/joinMessages";
-import {
-  formatPosition,
-  getAnnouncements,
-  getScreenReaderInstructions,
-} from "@/shared/lib/sortableAnnouncements";
+import type { FileRules } from "@/shared/lib/getFileRejection";
+import { useConfirmation } from "@/shared/lib/useConfirmation";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
-import { useSortableRowFocus } from "@/shared/lib/useSortableRowFocus";
-import { restrictToVerticalAxis, useVerticalSortableSensors } from "@/shared/lib/verticalSortable";
 import { Button } from "@/shared/ui/button";
+import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
 import { MediaPreviewDialog } from "@/shared/ui/media-preview";
+import { formatPosition, SortableList, useSortableRowFocus } from "@/shared/ui/sortable";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
-
+import { photoSortableMessages } from "./photoSortableMessages";
 import styles from "./SortableMediaList.module.css";
 import { type RowControl, SortableMediaRow } from "./SortableMediaRow";
-import { photoSortableMessages } from "./sortableAnnouncements";
 import type { SortableMediaItem } from "./sortableMediaItem";
+import { useMediaListFiles } from "./useMediaListFiles";
 
 interface SortableMediaListProps {
   className?: string;
@@ -72,20 +65,28 @@ export function SortableMediaList({
   renderItemFields,
   rules,
 }: SortableMediaListProps) {
-  const addInputRef = React.useRef<HTMLInputElement>(null);
-  const replaceInputRef = React.useRef<HTMLInputElement>(null);
-  const replacedItemIdRef = React.useRef<string>(undefined);
+  const { addFiles, addInputRef, openReplacePicker, replaceFile, replaceInputRef } =
+    useMediaListFiles({
+      itemCount: items.length,
+      maxItems,
+      onAdd,
+      onRejectionChange,
+      onReplace,
+      rules,
+    });
   const addButtonRef = React.useRef<HTMLButtonElement>(null);
   const { focusAfterUpdate, listRef } = useSortableRowFocus<HTMLUListElement>();
   const [viewedItemId, setViewedItemId] = React.useState<string>();
   // Announces a move made with the arrow buttons; dnd-kit announces the dragged ones.
   const [moveAnnouncement, setMoveAnnouncement] = React.useState("");
+  // A saved item asks first.
+  const removal = useConfirmation<string>((itemId) => removeItem(getItemIndex(itemId)));
+  const removedItem = items.find((item) => item.id === removal.pending);
   const isFull = items.length >= maxItems;
   const { dropTargetProps, isDragOver } = useFileDrop({
     disabled: disabled || isFull,
     onDrop: addFiles,
   });
-  const sensors = useVerticalSortableSensors();
 
   function getItemIndex(itemId: string): number {
     return items.findIndex((item) => item.id === itemId);
@@ -93,44 +94,6 @@ export function SortableMediaList({
 
   function getItemName(itemId: string): string {
     return items[getItemIndex(itemId)]?.name ?? "";
-  }
-
-  function addFiles(fileList: FileList) {
-    const rejections = new Set<string>();
-    const accepted: File[] = [];
-
-    for (const file of Array.from(fileList)) {
-      const fileRejection = getFileRejection(file, rules);
-      if (fileRejection) {
-        rejections.add(fileRejection);
-      } else {
-        accepted.push(file);
-      }
-    }
-
-    const room = maxItems - items.length;
-    if (accepted.length > room) {
-      rejections.add(`Можно добавить не больше ${String(maxItems)} фото`);
-      accepted.splice(room);
-    }
-
-    onRejectionChange(joinMessages(rejections));
-    if (accepted.length > 0) onAdd(accepted);
-  }
-
-  function replaceFile(fileList: FileList) {
-    const [file] = Array.from(fileList);
-    const itemId = replacedItemIdRef.current;
-    if (!file || !itemId) return;
-
-    const fileRejection = getFileRejection(file, rules);
-    onRejectionChange(fileRejection);
-    if (!fileRejection) onReplace(itemId, file);
-  }
-
-  function openReplacePicker(itemId: string) {
-    replacedItemIdRef.current = itemId;
-    replaceInputRef.current?.click();
   }
 
   function moveItem(from: number, to: number, control?: RowControl) {
@@ -160,12 +123,6 @@ export function SortableMediaList({
     onRemove(item.id);
   }
 
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    if (!over || active.id === over.id) return;
-
-    moveItem(getItemIndex(String(active.id)), getItemIndex(String(over.id)));
-  }
-
   return (
     <>
       <MediaFieldset
@@ -180,42 +137,31 @@ export function SortableMediaList({
         dropTargetProps={dropTargetProps}
       >
         {items.length > 0 ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            accessibility={{
-              announcements: getAnnouncements(photoSortableMessages, getItemName, (itemId) =>
-                formatPosition(getItemIndex(itemId), items.length),
-              ),
-              screenReaderInstructions: getScreenReaderInstructions(photoSortableMessages),
-            }}
-            onDragEnd={handleDragEnd}
+          <SortableList
+            ids={items.map((item) => item.id)}
+            messages={photoSortableMessages}
+            getName={getItemName}
+            onMove={moveItem}
           >
-            <SortableContext
-              items={items.map((item) => item.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <ul ref={listRef} className={styles.rows}>
-                {items.map((item, index) => (
-                  <SortableMediaRow
-                    key={item.id}
-                    item={item}
-                    disabled={disabled}
-                    isFirst={index === 0}
-                    isLast={index === items.length - 1}
-                    onMoveUp={() => moveItem(index, index - 1, "moveUp")}
-                    onMoveDown={() => moveItem(index, index + 1, "moveDown")}
-                    onOpen={() => setViewedItemId(item.id)}
-                    onRemove={() => removeItem(index)}
-                    onReplace={() => openReplacePicker(item.id)}
-                  >
-                    {renderItemFields?.(item, index)}
-                  </SortableMediaRow>
-                ))}
-              </ul>
-            </SortableContext>
-          </DndContext>
+            <ul ref={listRef} className={styles.rows}>
+              {items.map((item, index) => (
+                <SortableMediaRow
+                  key={item.id}
+                  item={item}
+                  disabled={disabled}
+                  isFirst={index === 0}
+                  isLast={index === items.length - 1}
+                  onMoveUp={() => moveItem(index, index - 1, "moveUp")}
+                  onMoveDown={() => moveItem(index, index + 1, "moveDown")}
+                  onOpen={() => setViewedItemId(item.id)}
+                  onRemove={() => (item.isSaved ? removal.ask(item.id) : removeItem(index))}
+                  onReplace={() => openReplacePicker(item.id)}
+                >
+                  {renderItemFields?.(item, index)}
+                </SortableMediaRow>
+              ))}
+            </ul>
+          </SortableList>
         ) : (
           <p className={styles.placeholder}>Перетащите фото сюда или нажмите «Добавить фото»</p>
         )}
@@ -236,7 +182,14 @@ export function SortableMediaList({
         <VisuallyHidden>{moveAnnouncement}</VisuallyHidden>
       </div>
 
-      {/* Outside the fieldset: a file dropped onto the open dialog is not a pick. */}
+      {/* Outside the fieldset: a file dropped onto the open dialogs is not a pick. */}
+      <ConfirmDeleteDialog
+        isOpen={removal.pending !== undefined}
+        title={`Удалить фото «${removedItem?.name ?? ""}»?`}
+        description="После сохранения фото пропадёт с сайта. Это нельзя отменить."
+        onCancel={removal.cancel}
+        onConfirm={removal.confirm}
+      />
       <MediaPreviewDialog
         item={items.find((item) => item.id === viewedItemId)}
         onClose={() => setViewedItemId(undefined)}

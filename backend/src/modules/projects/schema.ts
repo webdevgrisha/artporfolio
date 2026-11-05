@@ -2,7 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import {
-  listPhotoSchema,
+  type ListPhoto,
   photoListBodySchema,
   storedListPhotoSchema,
 } from "#shared/images/photo-list";
@@ -19,21 +19,27 @@ export const projectParamsSchema = z.object({
 
 /**
  * A project as the client sends it, to create one or to replace a saved one. Every field is sent;
- * an empty description or link is not shown on the site.
+ * an empty link is not shown on the site.
  */
 export const projectBodySchema = z.strictObject({
   /** The name in the list of projects, so it cannot be empty. */
   title: z.string().trim().min(1).max(100),
-  /** Plain text: no HTML or Markdown. Paragraphs are separated by a blank line. */
-  description: z.string().trim().max(2_000),
+  /**
+   * What the project is about, which the visitor reads beside it, so it cannot be empty. Plain
+   * text: no HTML or Markdown. Paragraphs are separated by a blank line.
+   */
+  description: z.string().trim().min(1).max(2_000),
   /** Unlike z.url(), rejects "javascript:" links, which would run code when a visitor clicks them. */
   link: z
     .string()
     .trim()
     .max(2_048)
     .pipe(z.union([z.literal(""), z.httpUrl()])),
-  /** In the order the site shows them; a saved photo left out is deleted. */
-  photos: photoListBodySchema(maxProjectPhotos),
+  /**
+   * In the order the site shows them; a saved photo left out is deleted. The site opens a project
+   * into its photos, so it needs at least one.
+   */
+  photos: photoListBodySchema(maxProjectPhotos).min(1),
 });
 
 /**
@@ -54,17 +60,6 @@ export const storedProjectSchema = z.object({
   updatedAt: z.instanceof(Timestamp),
 });
 
-/** A project as the API returns it. */
-export const projectSchema = z.object({
-  id: projectIdSchema,
-  title: z.string(),
-  description: z.string(),
-  link: z.string(),
-  photos: z.array(listPhotoSchema),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-});
-
 /** The order of the projects: every project, once, in the order the site shows them. */
 export const projectsOrderBodySchema = z.strictObject({
   ids: z
@@ -72,19 +67,25 @@ export const projectsOrderBodySchema = z.strictObject({
     .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once"),
 });
 
-export const projectsOrderSchema = z.object({ ids: z.array(projectIdSchema) });
-
-export const projectResponseSchema = z.object({ project: projectSchema });
-
-export const projectsResponseSchema = z.object({
-  /** In the order the site shows them. */
-  projects: z.array(projectSchema),
-});
-
 export type ProjectParams = z.infer<typeof projectParamsSchema>;
 export type ProjectBody = z.infer<typeof projectBodySchema>;
 export type StoredProject = z.infer<typeof storedProjectSchema>;
-export type Project = z.infer<typeof projectSchema>;
-export type ProjectsOrder = z.infer<typeof projectsOrderSchema>;
-export type ProjectResponse = z.infer<typeof projectResponseSchema>;
-export type ProjectsResponse = z.infer<typeof projectsResponseSchema>;
+export type ProjectsOrder = z.infer<typeof projectsOrderBodySchema>;
+
+/** A project as the API returns it. */
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
+  photos: ListPhoto[];
+  /** ISO 8601. */
+  createdAt: string;
+  /** ISO 8601. */
+  updatedAt: string;
+}
+
+export interface ProjectsResponse {
+  /** In the order the site shows them. */
+  projects: Project[];
+}

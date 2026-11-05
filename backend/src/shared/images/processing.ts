@@ -2,8 +2,8 @@ import sharp, { type Sharp } from "sharp";
 
 import { BadRequestError } from "#shared/http/errors";
 
-/** Widths for the srcset: phones, tablets and 1x desktops, up to 2x desktops. */
-const targetWidths = [640, 960, 1_280, 1_920];
+/** Widths for the srcset: small thumbnails, phones, tablets and 1x desktops, up to 2x desktops. */
+const targetWidths = [320, 640, 960, 1_280, 1_920];
 
 export const outputFormats = ["avif", "webp"] as const;
 

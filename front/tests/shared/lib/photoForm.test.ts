@@ -3,25 +3,29 @@ import { z } from "zod";
 
 import { type ImageFieldValue, savedImage } from "@/shared/lib/imageFieldValue";
 import {
-  getPhotoChange,
   type PhotoFormValues,
   photoFieldsShape,
-  refinePhotoAlt,
+  refinePhoto,
+  toPhotoBody,
   toPhotoFormValues,
 } from "@/shared/lib/photoForm";
 
+import { csrfHandler, uploadId, uploadsHandler } from "../../support/handlers";
 import { apiPhoto, imageFile } from "../../support/images";
 import { fieldErrors } from "../../support/schema";
+import { server } from "../../support/server";
 
-const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhotoAlt);
+const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhoto);
 
 function altErrors(values: PhotoFormValues): string[] {
   return fieldErrors(photoFormSchema, values).photoAlt ?? [];
 }
 
 describe("photo form fields", () => {
-  it("needs no description without a photo", () => {
-    expect(altErrors({ photo: null, photoAlt: "" })).toEqual([]);
+  it("needs a photo, and no description until there is one", () => {
+    expect(fieldErrors(photoFormSchema, { photo: null, photoAlt: "" })).toEqual({
+      photo: ["Выберите фото"],
+    });
   });
 
   it.each<[string, ImageFieldValue]>([
@@ -47,42 +51,19 @@ describe("photo form fields", () => {
   });
 });
 
-describe("getPhotoChange", () => {
-  const file = imageFile();
+describe("toPhotoBody", () => {
+  it("uploads a picked file and refers to it with its description", async () => {
+    server.use(csrfHandler, uploadsHandler);
 
-  it("uploads a picked file with its description", () => {
-    expect(
-      getPhotoChange(
-        { photo: file, photoAlt: "Портрет" },
-        { isAltDirty: false, isPhotoDirty: true },
-      ),
-    ).toEqual({ alt: "Портрет", file, type: "upload" });
+    await expect(toPhotoBody({ photo: imageFile(), photoAlt: "Портрет" })).resolves.toEqual({
+      alt: "Портрет",
+      uploadId,
+    });
   });
 
-  it("deletes the photo when it was removed in the form", () => {
-    expect(
-      getPhotoChange({ photo: null, photoAlt: "" }, { isAltDirty: true, isPhotoDirty: true }),
-    ).toEqual({ type: "delete" });
-  });
-
-  it("does not delete a photo the form did not show, such as one uploaded in another tab", () => {
-    expect(
-      getPhotoChange({ photo: null, photoAlt: "" }, { isAltDirty: false, isPhotoDirty: false }),
-    ).toBeUndefined();
-  });
-
-  it("updates only the description of the saved photo when it was changed", () => {
-    expect(
-      getPhotoChange(
-        { photo: savedImage, photoAlt: "Портрет" },
-        { isAltDirty: true, isPhotoDirty: false },
-      ),
-    ).toEqual({ alt: "Портрет", type: "updateAlt" });
-    expect(
-      getPhotoChange(
-        { photo: savedImage, photoAlt: "Портрет" },
-        { isAltDirty: false, isPhotoDirty: false },
-      ),
-    ).toBeUndefined();
+  it("sends the description alone for the saved photo", async () => {
+    await expect(toPhotoBody({ photo: savedImage, photoAlt: "Портрет" })).resolves.toEqual({
+      alt: "Портрет",
+    });
   });
 });

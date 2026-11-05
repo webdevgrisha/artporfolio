@@ -7,8 +7,8 @@ const maxRetries = 2;
 
 /** How a change tells its result; the app shows it in a toast (app/mutationFeedback.ts). */
 export interface MutationFeedback {
-  /** The text for a failure, usually from `getSaveErrorMessage`. */
-  getErrorMessage: (error: unknown) => string;
+  /** The text for a failure, usually from `getSaveErrorMessage`; `null` shows no toast. */
+  getErrorMessage: (error: unknown) => string | null;
   /** The text once the change succeeded; «Изменения сохранены» by default. */
   successMessage?: string;
   /** Toasts with the same id replace each other: one id for one action on one thing. */

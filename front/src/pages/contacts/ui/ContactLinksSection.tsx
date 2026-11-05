@@ -1,12 +1,20 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { contactLinksQuery } from "@/entities/contacts";
-import { EditContactLinksForm } from "@/features/edit-contacts";
+import { EditContactLinksForm, EditContactLinksFormSkeleton } from "@/features/edit-contacts";
+import { AwaitPageData } from "@/shared/ui/page-data";
 
 import styles from "./ContactsPage.module.css";
 
 export function ContactLinksSection() {
-  // The loader of the section has fetched the data, so this never suspends.
+  return (
+    <AwaitPageData fallback={<EditContactLinksFormSkeleton className={styles.form} />}>
+      <ContactLinks />
+    </AwaitPageData>
+  );
+}
+
+function ContactLinks() {
   const { data: links } = useSuspenseQuery(contactLinksQuery);
 
   return <EditContactLinksForm className={styles.form} links={links} />;
