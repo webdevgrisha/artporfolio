@@ -1,6 +1,12 @@
+import { fileURLToPath } from "node:url";
+
 import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    // tests/front-rules.test.ts reads the rules the front repeats.
+    alias: { "@": fileURLToPath(new URL("../front/src", import.meta.url)) },
+  },
   test: {
     coverage: {
       provider: "v8",
