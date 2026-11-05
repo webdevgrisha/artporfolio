@@ -1,8 +1,7 @@
 import React, { type ReactNode } from "react";
 
 import { formatFileSize } from "@/shared/lib/formatFileSize";
-import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
-import { joinMessages } from "@/shared/lib/joinMessages";
+import type { FileRules } from "@/shared/lib/getFileRejection";
 import { useConfirmation } from "@/shared/lib/useConfirmation";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { Button } from "@/shared/ui/button";
@@ -15,6 +14,7 @@ import { photoSortableMessages } from "./photoSortableMessages";
 import styles from "./SortableMediaList.module.css";
 import { type RowControl, SortableMediaRow } from "./SortableMediaRow";
 import type { SortableMediaItem } from "./sortableMediaItem";
+import { useMediaListFiles } from "./useMediaListFiles";
 
 interface SortableMediaListProps {
   className?: string;
@@ -65,9 +65,15 @@ export function SortableMediaList({
   renderItemFields,
   rules,
 }: SortableMediaListProps) {
-  const addInputRef = React.useRef<HTMLInputElement>(null);
-  const replaceInputRef = React.useRef<HTMLInputElement>(null);
-  const replacedItemIdRef = React.useRef<string>(undefined);
+  const { addFiles, addInputRef, openReplacePicker, replaceFile, replaceInputRef } =
+    useMediaListFiles({
+      itemCount: items.length,
+      maxItems,
+      onAdd,
+      onRejectionChange,
+      onReplace,
+      rules,
+    });
   const addButtonRef = React.useRef<HTMLButtonElement>(null);
   const { focusAfterUpdate, listRef } = useSortableRowFocus<HTMLUListElement>();
   const [viewedItemId, setViewedItemId] = React.useState<string>();
@@ -88,44 +94,6 @@ export function SortableMediaList({
 
   function getItemName(itemId: string): string {
     return items[getItemIndex(itemId)]?.name ?? "";
-  }
-
-  function addFiles(fileList: FileList) {
-    const rejections = new Set<string>();
-    const accepted: File[] = [];
-
-    for (const file of Array.from(fileList)) {
-      const fileRejection = getFileRejection(file, rules);
-      if (fileRejection) {
-        rejections.add(fileRejection);
-      } else {
-        accepted.push(file);
-      }
-    }
-
-    const room = maxItems - items.length;
-    if (accepted.length > room) {
-      rejections.add(`Можно добавить не больше ${String(maxItems)} фото`);
-      accepted.splice(room);
-    }
-
-    onRejectionChange(joinMessages(rejections));
-    if (accepted.length > 0) onAdd(accepted);
-  }
-
-  function replaceFile(fileList: FileList) {
-    const [file] = Array.from(fileList);
-    const itemId = replacedItemIdRef.current;
-    if (!file || !itemId) return;
-
-    const fileRejection = getFileRejection(file, rules);
-    onRejectionChange(fileRejection);
-    if (!fileRejection) onReplace(itemId, file);
-  }
-
-  function openReplacePicker(itemId: string) {
-    replacedItemIdRef.current = itemId;
-    replaceInputRef.current?.click();
   }
 
   function moveItem(from: number, to: number, control?: RowControl) {
