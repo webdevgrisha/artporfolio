@@ -671,7 +671,7 @@ describe("the price of a work", () => {
     const price = { amount: 500, currency: "USD", discountPercent: 10, overrides: {} } as const;
     const { data } = await createWork(newId, { ...body, price });
 
-    expect(data.price).toEqual({ ...price, finalAmount: 450 });
+    expect(data.price).toEqual({ ...price, finalAmount: 450, prices: {} });
     expect(works.get(newId)?.price).toEqual(price);
   });
 
@@ -697,6 +697,39 @@ describe("the price of a work", () => {
     const { data } = await getWork(elephantId, "admin");
 
     expect(data.price?.overrides).toEqual({});
+  });
+
+  it("returns the price in the other currencies, computed and not stored", async () => {
+    lists.set("site/currencies", { rates: { EUR: 0.8899, PLN: 3.9097 } });
+    const price = {
+      amount: 1500,
+      currency: "USD",
+      discountPercent: 20,
+      overrides: { PLN: 5800 },
+    } as const;
+    const { data } = await createWork(newId, { ...body, price });
+
+    expect(data.price?.prices).toEqual({
+      EUR: { amount: 1500, finalAmount: 1200, source: "rate" },
+      PLN: { amount: 5800, finalAmount: 4640, source: "manual" },
+    });
+    expect(works.get(newId)?.price).toEqual(price);
+  });
+
+  it("changes the tag of a work when a rate changes, so a change made before is refused", async () => {
+    works.set(elephantId, {
+      ...storedWork(elephantId, "Слон", 2024, 3),
+      price: { amount: 500, currency: "USD", discountPercent: null, overrides: {} },
+    });
+    lists.set("site/currencies", { rates: { EUR: 0.9 } });
+    const { etag } = await getWork(elephantId, "admin");
+
+    lists.set("site/currencies", { rates: { EUR: 1.5 } });
+
+    await expect(getWork(elephantId, "admin")).resolves.not.toMatchObject({ etag });
+    await expect(replaceWork(elephantId, body, etag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
   });
 
   it("gives the full amount as the final one when there is no discount", async () => {

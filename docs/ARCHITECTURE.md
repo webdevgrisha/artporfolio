@@ -133,7 +133,7 @@ backend/src/
 │   ├── gallery-materials/ the materials of the gallery, one list sorted by title
 │   ├── gallery-palettes/ the palettes of the gallery (pastel, bright…), one list sorted by title
 │   ├── gallery-sections/ the sections of the gallery, each a Firestore document with its subsections
-│   ├── gallery-works/  the works of the gallery, each a Firestore document; sizes stored in cm, returned in cm and inches
+│   ├── gallery-works/  the works of the gallery, each a Firestore document; sizes stored in cm, returned in cm and inches; prices in other currencies computed from the rates on reading
 │   ├── health/
 │   ├── pages/          the pages of the public site and their main photos (heroes)
 │   ├── photo-slot/     the routes of one photo slot, for the slot a module names

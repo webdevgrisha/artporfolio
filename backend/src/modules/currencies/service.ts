@@ -7,12 +7,17 @@ import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 const noRates: CurrencyRates = { rates: {} };
 
 /** The document that holds the rate of every currency, and nothing else. */
-function ratesDocument() {
+export function ratesDocument() {
   return firestore().doc("site/currencies");
 }
 
 function readRates(snapshot: DocumentSnapshot): CurrencyRates {
   return snapshot.exists ? currencyRatesSchema.parse(snapshot.data()) : noRates;
+}
+
+/** How many units of each currency in use one US dollar buys. */
+export function ratesIn(snapshot: DocumentSnapshot): CurrencyRates["rates"] {
+  return readRates(snapshot).rates;
 }
 
 /** The rates with the entity tag for If-Match; there are none until they are first saved. */

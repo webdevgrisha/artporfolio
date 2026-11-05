@@ -15,7 +15,8 @@ function roundUpToStep(value: number): number {
 
 /**
  * The price to offer in a currency for an amount in US dollars: the amount by the rate, rounded up
- * to a figure that reads well on a price tag, such as 430 to 450.
+ * to a figure that reads well on a price tag, such as 430 to 450. Mirrors the server, which computes
+ * it for the site (backend/src/modules/currencies/suggested-price.ts): a form needs it while typing.
  */
 export function suggestedPrice(amount: number, rate: number): number {
   // To cents first: 500 × 0.9 is a little above 450 in floating point, and would round up to 500.

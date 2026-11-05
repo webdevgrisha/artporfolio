@@ -284,6 +284,19 @@ export const workSchema = z.object({
       finalAmount: z.number(),
       /** The prices set by hand in other currencies, before the discount, by currency code. */
       overrides: z.record(z.string(), z.number()),
+      /**
+       * The price in every other currency in use, by currency code: the one set by hand, or else
+       * the one by the rate, rounded up to a step. Computed, not stored.
+       */
+      prices: z.record(
+        z.string(),
+        z.object({
+          amount: z.number(),
+          /** The amount after the same percent as the price in dollars. */
+          finalAmount: z.number(),
+          source: z.enum(["manual", "rate"]),
+        }),
+      ),
     })
     .nullable(),
   createdAt: z.iso.datetime(),

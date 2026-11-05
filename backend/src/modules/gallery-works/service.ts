@@ -1,6 +1,7 @@
 import { type DocumentSnapshot, Timestamp, type Transaction } from "firebase-admin/firestore";
 
 import type { Reader } from "#modules/auth/schema";
+import { ratesDocument, ratesIn } from "#modules/currencies/service";
 import { collectionDocument } from "#modules/gallery-collections/document";
 import { maxCollectionWorks } from "#modules/gallery-collections/schema";
 import { colorIdsIn, colorsDocument } from "#modules/gallery-colors/service";
@@ -11,7 +12,7 @@ import {
   sectionIdsIn,
   sectionsCollection,
 } from "#modules/gallery-sections/service";
-
+import { pricesIn } from "#modules/gallery-works/prices";
 import {
   discountedAmount,
   type StoredWork,
@@ -45,13 +46,15 @@ export interface SavedWork extends Tagged<Work> {
   id: string;
 }
 
-/** The ids of the saved items of each gallery list a work refers to. */
-interface KnownIds {
+/** What a work is returned by: the saved items of each list it refers to, and the rates. */
+interface KnownData {
   /** Every section and subsection. */
   sections: Set<string>;
   materials: Set<string>;
   colors: Set<string>;
   palettes: Set<string>;
+  /** How many units of each currency in use one US dollar buys. */
+  rates: Record<string, number>;
 }
 
 /** Every work; a collection reads it to find its works. */
@@ -100,8 +103,11 @@ function toInches(centimetres: number): number {
   return Math.round((centimetres / centimetresPerInch) * 100) / 100;
 }
 
-/** The price as the API returns it, with the amount after the discount rounded to a whole unit. */
-function toPrice(price: StoredWork["price"]): Work["price"] {
+/**
+ * The price as the API returns it, with the amount after the discount rounded to a whole unit, and
+ * the price in every other currency in use.
+ */
+function toPrice(price: StoredWork["price"], rates: Record<string, number>): Work["price"] {
   if (price === null) {
     return null;
   }
@@ -114,6 +120,7 @@ function toPrice(price: StoredWork["price"]): Work["price"] {
     discountPercent,
     finalAmount: discountedAmount(amount, discountPercent),
     overrides,
+    prices: pricesIn(price, rates),
   };
 }
 
@@ -145,7 +152,7 @@ function toWorkSummary(
     updatedAt,
     year,
   }: StoredWork,
-  known: KnownIds,
+  known: KnownData,
 ): WorkSummary {
   return {
     city,
@@ -160,7 +167,7 @@ function toWorkSummary(
     paletteIds: paletteIds.filter((paletteId) => known.palettes.has(paletteId)),
     partCount,
     photo: toPhoto(photo),
-    price: toPrice(price),
+    price: toPrice(price, known.rates),
     published,
     saleStatus,
     sectionIds: sectionIds.filter((sectionId) => known.sections.has(sectionId)),
@@ -173,7 +180,7 @@ function toWorkSummary(
 }
 
 /** The stored work as the API returns it alone: its summary, its description and process photos. */
-function toWork(id: string, work: StoredWork, known: KnownIds): Work {
+function toWork(id: string, work: StoredWork, known: KnownData): Work {
   return {
     ...toWorkSummary(id, work, known),
     description: work.description,
@@ -183,10 +190,10 @@ function toWork(id: string, work: StoredWork, known: KnownIds): Work {
 
 /**
  * The work as the API returns it, tagged by that representation: deleting a section, a material, a
- * color or a palette the work refers to changes what is returned, and so its tag, without changing
- * the stored work.
+ * color or a palette the work refers to, or changing a rate, changes what is returned, and so its
+ * tag, without changing the stored work.
  */
-function toSavedWork(id: string, work: StoredWork, known: KnownIds): SavedWork {
+function toSavedWork(id: string, work: StoredWork, known: KnownData): SavedWork {
   const data = toWork(id, work, known);
 
   return { data, etag: entityTag(data), id };
@@ -196,23 +203,25 @@ function toSavedWork(id: string, work: StoredWork, known: KnownIds): SavedWork {
  * Rejects with 412 a change of the work unless `ifMatch` names the tag of the work as it is
  * returned now.
  */
-function assertWorkIfMatch(ifMatch: string, id: string, work: StoredWork, known: KnownIds): void {
+function assertWorkIfMatch(ifMatch: string, id: string, work: StoredWork, known: KnownData): void {
   assertIfMatch(ifMatch, toWork(id, work, known));
 }
 
-/** The ids of everything a work may refer to, read in `transaction` when there is one. */
-async function readKnownIds(transaction?: Transaction): Promise<KnownIds> {
-  const [sections, materials, colors, palettes] = await Promise.all([
+/** Everything a work is returned by, read in `transaction` when there is one. */
+async function readKnownData(transaction?: Transaction): Promise<KnownData> {
+  const [sections, materials, colors, palettes, rates] = await Promise.all([
     transaction ? transaction.get(sectionsCollection()) : sectionsCollection().get(),
     transaction ? transaction.get(materialsDocument()) : materialsDocument().get(),
     transaction ? transaction.get(colorsDocument()) : colorsDocument().get(),
     transaction ? transaction.get(palettesDocument()) : palettesDocument().get(),
+    transaction ? transaction.get(ratesDocument()) : ratesDocument().get(),
   ]);
 
   return {
     colors: colorIdsIn(colors),
     materials: materialIdsIn(materials),
     palettes: paletteIdsIn(palettes),
+    rates: ratesIn(rates),
     sections: sectionIdsIn(sections),
   };
 }
@@ -252,7 +261,7 @@ async function assertReferencesExist(
   transaction: Transaction,
   body: WorkBody,
   currentCollectionId: string | null,
-  known: KnownIds,
+  known: KnownData,
 ): Promise<void> {
   const collection =
     body.collectionId === null
@@ -295,12 +304,12 @@ export function worksInOrder(docs: DocumentSnapshot[]): { id: string; work: Stor
  * returned.
  */
 export async function listWorks(reader: Reader): Promise<Tagged<WorkSummary[]>> {
-  const [{ docs }, known] = await Promise.all([worksCollection().get(), readKnownIds()]);
+  const [{ docs }, known] = await Promise.all([worksCollection().get(), readKnownData()]);
   const works = worksInOrder(docs).filter(({ work }) => isVisibleTo(work, reader));
   const data = works.map(({ id, work }) => toWorkSummary(id, work, known));
 
-  // Tagged by what is returned: deleting an item of a list a work refers to, such as a section,
-  // changes the list without changing a work.
+  // Tagged by what is returned: deleting an item of a list a work refers to, such as a section, or
+  // changing a rate, changes the list without changing a work.
   return { data, etag: entityTag(data) };
 }
 
@@ -341,7 +350,7 @@ export async function getWorkUsage(reader: Reader): Promise<Tagged<WorkUsage>> {
 
 /** The work `id`; a hidden work is not found for a visitor, as if there were none. */
 export async function getWork(id: string, reader: Reader): Promise<SavedWork> {
-  const [snapshot, known] = await Promise.all([workDocument(id).get(), readKnownIds()]);
+  const [snapshot, known] = await Promise.all([workDocument(id).get(), readKnownData()]);
   const work = readWork(snapshot);
 
   if (!isVisibleTo(work, reader)) {
@@ -394,7 +403,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
   }
 
   let work: StoredWork;
-  let known: KnownIds;
+  let known: KnownData;
 
   try {
     [work, known] = await firestore().runTransaction(async (transaction) => {
@@ -402,7 +411,7 @@ export async function createWork(id: string, body: WorkBody): Promise<SavedWork>
         throw new PreconditionFailedError("The work already exists");
       }
 
-      const references = await readKnownIds(transaction);
+      const references = await readKnownData(transaction);
 
       await assertReferencesExist(transaction, body, null, references);
 
@@ -449,13 +458,13 @@ export async function replaceWork(id: string, body: WorkBody, ifMatch: string): 
 
   let previous: { photo: StoredPhoto; processPhotos: StoredListPhoto[] };
   let work: StoredWork;
-  let known: KnownIds;
+  let known: KnownData;
 
   try {
     [previous, work, known] = await firestore().runTransaction(async (transaction) => {
       const document = workDocument(id);
       const current = readWork(await transaction.get(document));
-      const references = await readKnownIds(transaction);
+      const references = await readKnownData(transaction);
 
       assertWorkIfMatch(ifMatch, id, current, references);
       await assertReferencesExist(transaction, body, current.collectionId, references);
@@ -491,7 +500,7 @@ export async function deleteWork(id: string, ifMatch: string): Promise<void> {
     const document = workDocument(id);
     const current = readWork(await transaction.get(document));
 
-    assertWorkIfMatch(ifMatch, id, current, await readKnownIds(transaction));
+    assertWorkIfMatch(ifMatch, id, current, await readKnownData(transaction));
     transaction.delete(document);
   });
 
