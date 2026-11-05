@@ -9,11 +9,10 @@ import {
   galleryWorksQueryKey,
   replaceGalleryWork,
 } from "@/entities/gallery";
-import { createOnce } from "@/shared/api/createOnce";
 import { uploadImage } from "@/shared/api/upload";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
-import { getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
+import { getCreateWorkErrorMessage, getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
 import { toPartCount, toWorkSize, type WorkFormValues } from "./workFormSchema";
 import { toWorkPrice } from "./workPrice";
 
@@ -81,7 +80,8 @@ export const saveWorkToastId = "gallery-work-save";
 /**
  * Creates a work from the form: uploads its photos, then sends the work in one request, which the
  * server saves all or nothing.
- * A retry never doubles it (createOnce).
+ * A retry never doubles it: the server refuses
+ * an id it already has with 412, and the form offers to open what is saved (useCreateConflict).
  */
 export function useCreateWork() {
   const queryClient = useQueryClient();
@@ -89,7 +89,7 @@ export function useCreateWork() {
   return useMutation({
     meta: {
       feedback: {
-        getErrorMessage: getSaveWorkErrorMessage,
+        getErrorMessage: getCreateWorkErrorMessage,
         successMessage: "Работа создана",
         toastId: saveWorkToastId,
       },
@@ -97,14 +97,7 @@ export function useCreateWork() {
     mutationFn: async ({ id, values }: CreateWorkParams): Promise<GalleryWork> => {
       const body = await toWorkBody(values);
 
-      const saved = await createOnce({
-        create: () => createGalleryWork({ body, id }),
-        fetchEtag: async () =>
-          (await queryClient.fetchQuery({ ...galleryWorkQuery(id), staleTime: 0 })).etag,
-        replace: (etag) => replaceGalleryWork({ body, etag, id }),
-      });
-
-      return saved.data;
+      return (await createGalleryWork({ body, id })).data;
     },
     // A work in a collection changes the works of that collection too.
     onSuccess: () =>

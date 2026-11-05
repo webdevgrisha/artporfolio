@@ -69,30 +69,13 @@ describe("useCreateSection", () => {
     expect(preconditions).toEqual([{ ifMatch: null, ifNoneMatch: "*" }]);
   });
 
-  it("saves the values into the section an earlier try created", async () => {
-    const createdEtag = '"created"';
-    server.use(
-      mswHttp.put(path, ({ request }) =>
-        request.headers.get("If-None-Match") === "*"
-          ? problem(412)
-          : HttpResponse.json({ section: apiSection("Постеры") }, { headers: { ETag: savedEtag } }),
-      ),
-      mswHttp.get(path, () =>
-        HttpResponse.json({ section: apiSection("Пстеры") }, { headers: { ETag: createdEtag } }),
-      ),
-    );
+  it("never overwrites the section an earlier try created, which may have changed since", async () => {
+    server.use(mswHttp.put(path, () => problem(412)));
     const createSection = setUp();
     const requests = recordRequests();
-    const preconditions = recordPreconditions();
 
-    const section = await createSection.mutateAsync({ id, values });
-
-    expect(section.title).toBe("Постеры");
-    expect(requests).toEqual(["GET /api/auth/csrf", `PUT ${path}`, `GET ${path}`, `PUT ${path}`]);
-    expect(preconditions).toEqual([
-      { ifMatch: null, ifNoneMatch: "*" },
-      { ifMatch: createdEtag, ifNoneMatch: null },
-    ]);
+    await expect(createSection.mutateAsync({ id, values })).rejects.toMatchObject({ status: 412 });
+    expect(requests.filter((request) => request.endsWith(path))).toEqual([`PUT ${path}`]);
   });
 
   it("does not retry a title another section has", async () => {

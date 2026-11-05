@@ -4,7 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import { galleryWorkPath } from "@/shared/config/routes";
-import { EditForm } from "@/shared/ui/edit-form";
+import { EditForm, useCreateConflict } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 import type { WorkReferences } from "../model/useWorkReferences";
 import { emptyWorkFormValues, type WorkFormValues, workFormSchema } from "../model/workFormSchema";
@@ -35,12 +35,20 @@ export function CreateWorkForm({ className, references }: CreateWorkFormProps) {
     reset,
   } = form;
   const isSaving = createWork.isPending;
+  const { conflict, onCreateError } = useCreateConflict(() => {
+    const path = galleryWorkPath(id);
+
+    allowNextNavigation(path);
+    void navigate(path, { replace: true });
+  });
 
   function create(values: WorkFormValues) {
-    // On failure the mutation shows the error and the values stay for another try.
+    // On failure the mutation shows the error and the values stay for another try; if an earlier
+    // try already saved the data, the form offers to open it.
     createWork.mutate(
       { id, values },
       {
+        onError: onCreateError,
         // Called only while this form is open: once the user has left it, perhaps for another new
         // work, the created one just appears in the list.
         onSuccess: (work) => {
@@ -59,6 +67,7 @@ export function CreateWorkForm({ className, references }: CreateWorkFormProps) {
     <FormProvider {...form}>
       <EditForm
         className={className}
+        conflict={conflict}
         hasUnsavedChanges={isDirty}
         isSaving={isSaving}
         onRevert={() => reset()}

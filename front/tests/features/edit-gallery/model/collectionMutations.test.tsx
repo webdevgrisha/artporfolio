@@ -121,32 +121,15 @@ describe("useCreateCollection", () => {
     ]);
   });
 
-  it("saves the values into the collection an earlier try created", async () => {
-    const createdEtag = '"created"';
-    const puts = handlePuts(({ ifNoneMatch }) =>
-      ifNoneMatch === "*"
-        ? problem(412)
-        : HttpResponse.json(
-            { collection: apiCollection("Саванна") },
-            { headers: { ETag: savedEtag } },
-          ),
-    );
-    server.use(
-      mswHttp.get(path, () =>
-        HttpResponse.json(
-          { collection: apiCollection("Сванна") },
-          { headers: { ETag: createdEtag } },
-        ),
-      ),
-    );
+  it("never overwrites the collection an earlier try created, which may have changed since", async () => {
+    server.use(mswHttp.put(path, () => problem(412)));
     const createCollection = renderHook(() => useCreateCollection(), { wrapper }).result.current;
+    const requests = recordRequests();
 
-    await createCollection.mutateAsync({ id, values: values() });
-
-    expect(puts.map(({ ifMatch, ifNoneMatch }) => ({ ifMatch, ifNoneMatch }))).toEqual([
-      { ifMatch: null, ifNoneMatch: "*" },
-      { ifMatch: createdEtag, ifNoneMatch: null },
-    ]);
+    await expect(createCollection.mutateAsync({ id, values: values() })).rejects.toMatchObject({
+      status: 412,
+    });
+    expect(requests.filter((request) => request.endsWith(path))).toEqual([`PUT ${path}`]);
   });
 });
 

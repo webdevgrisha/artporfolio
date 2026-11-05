@@ -3,8 +3,8 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import { routes } from "@/shared/config/routes";
-import { EditForm } from "@/shared/ui/edit-form";
+import { gallerySectionPath, routes } from "@/shared/config/routes";
+import { EditForm, useCreateConflict } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 
 import {
@@ -37,12 +37,20 @@ export function CreateSectionForm({ className }: CreateSectionFormProps) {
     reset,
   } = form;
   const isSaving = createSection.isPending;
+  const { conflict, onCreateError } = useCreateConflict(() => {
+    const path = gallerySectionPath(id);
+
+    allowNextNavigation(path);
+    void navigate(path, { replace: true });
+  });
 
   function create(values: SectionFormValues) {
-    // On failure the mutation shows the error and the values stay for another try.
+    // On failure the mutation shows the error and the values stay for another try; if an earlier
+    // try already saved the data, the form offers to open it.
     createSection.mutate(
       { id, values },
       {
+        onError: onCreateError,
         // Called only while this form is open: once the user has left it, the created section
         // just appears in the list.
         onSuccess: () => {
@@ -59,6 +67,7 @@ export function CreateSectionForm({ className }: CreateSectionFormProps) {
     <FormProvider {...form}>
       <EditForm
         className={className}
+        conflict={conflict}
         hasUnsavedChanges={isDirty}
         isSaving={isSaving}
         onRevert={() => reset()}

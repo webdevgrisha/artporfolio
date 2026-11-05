@@ -1,4 +1,5 @@
 import { maxCollectionWorks } from "@/entities/gallery";
+import { HttpError } from "@/shared/api/httpError";
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
@@ -25,6 +26,16 @@ export function getSaveSectionErrorMessage(error: unknown): string {
     },
     fallback: "Не удалось сохранить раздел. Попробуйте ещё раз",
   });
+}
+
+/**
+ * A new section: 412 says an earlier try already saved it although its response was lost
+ * (useCreateConflict).
+ */
+export function getCreateSectionErrorMessage(error: unknown): string {
+  return error instanceof HttpError && error.status === 412
+    ? "Раздел уже сохранён"
+    : getSaveSectionErrorMessage(error);
 }
 
 export function getDeleteSectionErrorMessage(error: unknown): string {
@@ -88,6 +99,16 @@ export function getSaveWorkErrorMessage(error: unknown): string {
   });
 }
 
+/**
+ * A new work: 412 says an earlier try already saved it although its response was lost
+ * (useCreateConflict).
+ */
+export function getCreateWorkErrorMessage(error: unknown): string {
+  return error instanceof HttpError && error.status === 412
+    ? "Работа уже сохранена"
+    : getSaveWorkErrorMessage(error);
+}
+
 export function getDeleteWorkErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
     byStatus: {
@@ -124,4 +145,14 @@ export function getSaveCollectionErrorMessage(error: unknown): string {
     },
     fallback: "Не удалось сохранить коллекцию. Попробуйте ещё раз",
   });
+}
+
+/**
+ * A new collection: 412 says an earlier try already saved it although its response was lost
+ * (useCreateConflict).
+ */
+export function getCreateCollectionErrorMessage(error: unknown): string {
+  return error instanceof HttpError && error.status === 412
+    ? "Коллекция уже сохранена"
+    : getSaveCollectionErrorMessage(error);
 }

@@ -8,9 +8,8 @@ import {
   gallerySectionsQueryKey,
   replaceGallerySection,
 } from "@/entities/gallery";
-import { createOnce } from "@/shared/api/createOnce";
 
-import { getSaveSectionErrorMessage } from "../lib/saveErrorMessages";
+import { getCreateSectionErrorMessage, getSaveSectionErrorMessage } from "../lib/saveErrorMessages";
 import type { SectionFormValues } from "./sectionFormSchema";
 
 interface CreateSectionParams {
@@ -34,7 +33,8 @@ function toSectionBody({ subsections, title }: SectionFormValues): GallerySectio
 export const saveSectionToastId = "gallery-section-save";
 
 /**
- * Creates a section from the form. A retry never doubles it (createOnce).
+ * Creates a section from the form. A retry never doubles it: the server refuses an id it already
+ * has with 412, and the form offers to open what is saved (useCreateConflict).
  */
 export function useCreateSection() {
   const queryClient = useQueryClient();
@@ -42,7 +42,7 @@ export function useCreateSection() {
   return useMutation({
     meta: {
       feedback: {
-        getErrorMessage: getSaveSectionErrorMessage,
+        getErrorMessage: getCreateSectionErrorMessage,
         successMessage: "Раздел создан",
         toastId: saveSectionToastId,
       },
@@ -50,14 +50,7 @@ export function useCreateSection() {
     mutationFn: async ({ id, values }: CreateSectionParams): Promise<GallerySection> => {
       const body = toSectionBody(values);
 
-      const saved = await createOnce({
-        create: () => createGallerySection({ body, id }),
-        fetchEtag: async () =>
-          (await queryClient.fetchQuery({ ...gallerySectionQuery(id), staleTime: 0 })).etag,
-        replace: (etag) => replaceGallerySection({ body, etag, id }),
-      });
-
-      return saved.data;
+      return (await createGallerySection({ body, id })).data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: gallerySectionsQueryKey }),
   });

@@ -9,10 +9,12 @@ import {
   galleryWorksQueryKey,
   replaceGalleryCollection,
 } from "@/entities/gallery";
-import { createOnce } from "@/shared/api/createOnce";
 import { uploadImage } from "@/shared/api/upload";
 
-import { getSaveCollectionErrorMessage } from "../lib/saveErrorMessages";
+import {
+  getCreateCollectionErrorMessage,
+  getSaveCollectionErrorMessage,
+} from "../lib/saveErrorMessages";
 import type { CollectionFormValues } from "./collectionFormSchema";
 
 interface CreateCollectionParams {
@@ -59,7 +61,8 @@ export const saveCollectionToastId = "gallery-collection-save";
 /**
  * Creates a collection from the form: uploads its cover, then sends the collection with its works
  * in one request, which the server saves all or nothing.
- * A retry never doubles it (createOnce).
+ * A retry never doubles it: the server refuses
+ * an id it already has with 412, and the form offers to open what is saved (useCreateConflict).
  */
 export function useCreateCollection() {
   const queryClient = useQueryClient();
@@ -67,7 +70,7 @@ export function useCreateCollection() {
   return useMutation({
     meta: {
       feedback: {
-        getErrorMessage: getSaveCollectionErrorMessage,
+        getErrorMessage: getCreateCollectionErrorMessage,
         successMessage: "Коллекция создана",
         toastId: saveCollectionToastId,
       },
@@ -75,14 +78,7 @@ export function useCreateCollection() {
     mutationFn: async ({ id, values }: CreateCollectionParams): Promise<GalleryCollection> => {
       const body = await toCollectionBody(values);
 
-      const saved = await createOnce({
-        create: () => createGalleryCollection({ body, id }),
-        fetchEtag: async () =>
-          (await queryClient.fetchQuery({ ...galleryCollectionQuery(id), staleTime: 0 })).etag,
-        replace: (etag) => replaceGalleryCollection({ body, etag, id }),
-      });
-
-      return saved.data;
+      return (await createGalleryCollection({ body, id })).data;
     },
     // The works of the collection may have come from other collections.
     onSuccess: () =>

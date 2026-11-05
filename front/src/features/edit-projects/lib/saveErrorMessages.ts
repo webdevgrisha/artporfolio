@@ -1,3 +1,4 @@
+import { HttpError } from "@/shared/api/httpError";
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
@@ -47,4 +48,14 @@ export function getSaveProjectErrorMessage(error: unknown): string {
     },
     fallback: "Не удалось сохранить проект. Попробуйте ещё раз",
   });
+}
+
+/**
+ * A new project: 412 says an earlier try already saved it although its response was lost
+ * (useCreateConflict).
+ */
+export function getCreateProjectErrorMessage(error: unknown): string {
+  return error instanceof HttpError && error.status === 412
+    ? "Проект уже сохранён"
+    : getSaveProjectErrorMessage(error);
 }

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 
 import type { GalleryCollection, GalleryWork } from "@/entities/gallery";
 import { galleryCollectionPath } from "@/shared/config/routes";
-import { EditForm } from "@/shared/ui/edit-form";
+import { EditForm, useCreateConflict } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 
 import {
@@ -42,12 +42,20 @@ export function CreateCollectionForm({ className, collections, works }: CreateCo
     reset,
   } = form;
   const isSaving = createCollection.isPending;
+  const { conflict, onCreateError } = useCreateConflict(() => {
+    const path = galleryCollectionPath(id);
+
+    allowNextNavigation(path);
+    void navigate(path, { replace: true });
+  });
 
   function create(values: CollectionFormValues) {
-    // On failure the mutation shows the error and the values stay for another try.
+    // On failure the mutation shows the error and the values stay for another try; if an earlier
+    // try already saved the data, the form offers to open it.
     createCollection.mutate(
       { id, values },
       {
+        onError: onCreateError,
         // Called only while this form is open: once the user has left it, perhaps for another new
         // collection, the created one just appears in the list.
         onSuccess: (collection) => {
@@ -66,6 +74,7 @@ export function CreateCollectionForm({ className, collections, works }: CreateCo
     <FormProvider {...form}>
       <EditForm
         className={className}
+        conflict={conflict}
         hasUnsavedChanges={isDirty}
         isSaving={isSaving}
         onRevert={() => reset()}

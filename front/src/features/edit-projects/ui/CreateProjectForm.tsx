@@ -4,7 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import { projectPath } from "@/shared/config/routes";
-import { EditForm } from "@/shared/ui/edit-form";
+import { EditForm, useCreateConflict } from "@/shared/ui/edit-form";
 import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
 
 import {
@@ -37,12 +37,20 @@ export function CreateProjectForm({ className }: CreateProjectFormProps) {
     reset,
   } = form;
   const isSaving = createProject.isPending;
+  const { conflict, onCreateError } = useCreateConflict(() => {
+    const path = projectPath(id);
+
+    allowNextNavigation(path);
+    void navigate(path, { replace: true });
+  });
 
   function create(values: ProjectFormValues) {
-    // On failure the mutation shows the error and the values stay for another try.
+    // On failure the mutation shows the error and the values stay for another try; if an earlier
+    // try already saved the data, the form offers to open it.
     createProject.mutate(
       { id, values },
       {
+        onError: onCreateError,
         // Called only while this form is open: once the user has left it, perhaps for another new
         // project, the created one just appears in the list.
         onSuccess: (project) => {
@@ -61,6 +69,7 @@ export function CreateProjectForm({ className }: CreateProjectFormProps) {
     <FormProvider {...form}>
       <EditForm
         className={className}
+        conflict={conflict}
         hasUnsavedChanges={isDirty}
         isSaving={isSaving}
         onRevert={() => reset()}

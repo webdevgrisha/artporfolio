@@ -75,29 +75,12 @@ describe("useCreateProject", () => {
     expect(preconditions).toEqual([{ ifMatch: null, ifNoneMatch: "*" }]);
   });
 
-  it("saves the values into the project an earlier try created", async () => {
-    const createdEtag = '"created"';
-    server.use(
-      mswHttp.put(path, ({ request }) =>
-        request.headers.get("If-None-Match") === "*"
-          ? problem(412)
-          : HttpResponse.json({ project: apiProject("Слон") }, { headers: { ETag: savedEtag } }),
-      ),
-      mswHttp.get(path, () =>
-        HttpResponse.json({ project: apiProject("Слн") }, { headers: { ETag: createdEtag } }),
-      ),
-    );
+  it("never overwrites the project an earlier try created, which may have changed since", async () => {
+    server.use(mswHttp.put(path, () => problem(412)));
     const createProject = setUp();
     const requests = recordRequests();
-    const preconditions = recordPreconditions();
 
-    const project = await createProject.mutateAsync({ id, values });
-
-    expect(project.title).toBe("Слон");
-    expect(requests).toEqual(["GET /api/auth/csrf", `PUT ${path}`, `GET ${path}`, `PUT ${path}`]);
-    expect(preconditions).toEqual([
-      { ifMatch: null, ifNoneMatch: "*" },
-      { ifMatch: createdEtag, ifNoneMatch: null },
-    ]);
+    await expect(createProject.mutateAsync({ id, values })).rejects.toMatchObject({ status: 412 });
+    expect(requests.filter((request) => request.endsWith(path))).toEqual([`PUT ${path}`]);
   });
 });

@@ -8,10 +8,9 @@ import {
   projectsQueryKey,
   replaceProject,
 } from "@/entities/project";
-import { createOnce } from "@/shared/api/createOnce";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
 
-import { getSaveProjectErrorMessage } from "../lib/saveErrorMessages";
+import { getCreateProjectErrorMessage, getSaveProjectErrorMessage } from "../lib/saveErrorMessages";
 import type { ProjectFormValues } from "./projectFormSchema";
 
 interface CreateProjectParams {
@@ -42,7 +41,8 @@ export const saveProjectToastId = "project-save";
 /**
  * Creates a project from the form: uploads the picked files, then sends the project in one
  * request, which the server saves all or nothing. The new project is at the top of the list.
- * A retry never doubles it (createOnce).
+ * A retry never doubles it: the server refuses
+ * an id it already has with 412, and the form offers to open what is saved (useCreateConflict).
  */
 export function useCreateProject() {
   const queryClient = useQueryClient();
@@ -50,7 +50,7 @@ export function useCreateProject() {
   return useMutation({
     meta: {
       feedback: {
-        getErrorMessage: getSaveProjectErrorMessage,
+        getErrorMessage: getCreateProjectErrorMessage,
         successMessage: "Проект создан",
         toastId: saveProjectToastId,
       },
@@ -58,14 +58,7 @@ export function useCreateProject() {
     mutationFn: async ({ id, values }: CreateProjectParams): Promise<Project> => {
       const body = await toProjectBody(values);
 
-      const saved = await createOnce({
-        create: () => createProject({ body, id }),
-        fetchEtag: async () =>
-          (await queryClient.fetchQuery({ ...projectQuery(id), staleTime: 0 })).etag,
-        replace: (etag) => replaceProject({ body, etag, id }),
-      });
-
-      return saved.data;
+      return (await createProject({ body, id })).data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey }),
   });

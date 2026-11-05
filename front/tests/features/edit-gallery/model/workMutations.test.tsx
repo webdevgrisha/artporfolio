@@ -149,33 +149,15 @@ describe("useCreateWork", () => {
     ]);
   });
 
-  it("saves the values into the work an earlier try created", async () => {
-    const createdEtag = '"created"';
-    const puts = handlePuts(({ ifNoneMatch }) =>
-      ifNoneMatch === "*"
-        ? problem(412)
-        : HttpResponse.json({ work: apiWork("Стрекоза") }, { headers: { ETag: savedEtag } }),
-    );
-    server.use(
-      mswHttp.get(path, () =>
-        HttpResponse.json({ work: apiWork("Стркоза") }, { headers: { ETag: createdEtag } }),
-      ),
-    );
+  it("never overwrites the work an earlier try created, which may have changed since", async () => {
+    server.use(mswHttp.put(path, () => problem(412)));
     const createWork = renderHook(() => useCreateWork(), { wrapper }).result.current;
     const requests = recordRequests();
 
-    await createWork.mutateAsync({ id, values: values() });
-
-    expect(requests.filter((request) => request !== "GET /api/auth/csrf")).toEqual([
-      "POST /api/uploads",
-      `PUT ${path}`,
-      `GET ${path}`,
-      `PUT ${path}`,
-    ]);
-    expect(puts.map(({ ifMatch, ifNoneMatch }) => ({ ifMatch, ifNoneMatch }))).toEqual([
-      { ifMatch: null, ifNoneMatch: "*" },
-      { ifMatch: createdEtag, ifNoneMatch: null },
-    ]);
+    await expect(createWork.mutateAsync({ id, values: values() })).rejects.toMatchObject({
+      status: 412,
+    });
+    expect(requests.filter((request) => request.endsWith(path))).toEqual([`PUT ${path}`]);
   });
 });
 
