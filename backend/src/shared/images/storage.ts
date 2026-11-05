@@ -36,7 +36,7 @@ const imageSourceSchema = z.object({
 
 /**
  * The image as the API returns it, with download URLs in place of the stored paths: resized
- * without cropping to the widths 640, 960, 1280 and 1920 (never wider than the original) and
+ * without cropping to the widths 320, 640, 960, 1280 and 1920 (never wider than the original) and
  * encoded as AVIF and WebP, each ordered by width.
  */
 export const imageSchema = z.object({
