@@ -14,6 +14,7 @@ const service = vi.hoisted(() => ({
   createWork: vi.fn(),
   deleteWork: vi.fn(),
   getWork: vi.fn(),
+  getWorkUsage: vi.fn(),
   listWorks: vi.fn(),
   replaceWork: vi.fn(),
 }));
@@ -80,6 +81,12 @@ const body = {
   country: "PL",
   city: "Варшава",
 };
+const usage = {
+  sections: { [otherId]: { count: 1, onlyCount: 1 } },
+  materials: {},
+  colors: {},
+  palettes: {},
+};
 const etag = '"read"';
 const savedEtag = '"saved"';
 
@@ -116,6 +123,7 @@ beforeEach(() => {
   auth.verifySession.mockResolvedValue(admin);
   service.listWorks.mockResolvedValue({ data: [workSummary], etag });
   service.getWork.mockResolvedValue({ data: work, etag, id });
+  service.getWorkUsage.mockResolvedValue({ data: usage, etag });
   service.createWork.mockResolvedValue({ data: work, etag: savedEtag, id });
   service.replaceWork.mockResolvedValue({ data: work, etag: savedEtag, id });
   service.deleteWork.mockResolvedValue(undefined);
@@ -151,6 +159,16 @@ describe("reading the works", () => {
     const response = await send("GET", `/${id}`, { Cookie: adminSessionCookie });
 
     expect(response.status).toBe(401);
+    expect(service.getWork).not.toHaveBeenCalled();
+  });
+
+  it("returns how the works use each item of the lists, with its ETag", async () => {
+    const response = await send("GET", "/usage");
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(etag);
+    await expect(response.json()).resolves.toEqual({ usage });
+    expect(service.getWorkUsage).toHaveBeenCalledWith("visitor");
     expect(service.getWork).not.toHaveBeenCalled();
   });
 

@@ -290,6 +290,24 @@ export const worksResponseSchema = z.object({
   works: z.array(workSummarySchema),
 });
 
+/** How the works use one item of a gallery list, such as a material or a section. */
+export const itemUsageSchema = z.object({
+  /** The works that name the item, or for a section, the section or any of its subsections. */
+  count: z.number(),
+  /** Of those, the works that name nothing else of the list: removing the item leaves them none. */
+  onlyCount: z.number(),
+});
+
+/** How the works use each item of each gallery list a work names, by the id of the item. */
+export const workUsageSchema = z.object({
+  sections: z.record(z.uuid(), itemUsageSchema),
+  materials: z.record(z.uuid(), itemUsageSchema),
+  colors: z.record(z.uuid(), itemUsageSchema),
+  palettes: z.record(z.uuid(), itemUsageSchema),
+});
+
+export const workUsageResponseSchema = z.object({ usage: workUsageSchema });
+
 export type WorkFormat = (typeof workFormats)[number];
 export type WorkSaleStatus = (typeof workSaleStatuses)[number];
 export type WorkCurrency = (typeof workCurrencies)[number];
@@ -298,5 +316,8 @@ export type WorkBody = z.infer<typeof workBodySchema>;
 export type StoredWork = z.infer<typeof storedWorkSchema>;
 export type Work = z.infer<typeof workSchema>;
 export type WorkSummary = z.infer<typeof workSummarySchema>;
+export type ItemUsage = z.infer<typeof itemUsageSchema>;
+export type WorkUsage = z.infer<typeof workUsageSchema>;
+export type WorkUsageResponse = z.infer<typeof workUsageResponseSchema>;
 export type WorkResponse = z.infer<typeof workResponseSchema>;
 export type WorksResponse = z.infer<typeof worksResponseSchema>;

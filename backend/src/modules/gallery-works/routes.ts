@@ -1,7 +1,13 @@
 import { Router } from "express";
 
 import { identifyReader, requireAuth } from "#modules/auth/middleware";
-import { putWork, readWork, readWorks, removeWork } from "#modules/gallery-works/controller";
+import {
+  putWork,
+  readWork,
+  readWorks,
+  readWorkUsage,
+  removeWork,
+} from "#modules/gallery-works/controller";
 import { workBodySchema, workParamsSchema } from "#modules/gallery-works/schema";
 import { requireContentType } from "#shared/middleware/content-type";
 import { requireCsrfToken } from "#shared/middleware/csrf";
@@ -15,6 +21,9 @@ export const galleryWorksRouter = Router();
 // If-Match. The client names a new work itself and creates it with PUT and If-None-Match: *, so
 // repeating the request is safe.
 galleryWorksRouter.get("/", identifyReader, readWorks);
+// How many works name each section, material, color and palette: a few numbers instead of every
+// work. Before /:id, which takes only a UUID.
+galleryWorksRouter.get("/usage", identifyReader, readWorkUsage);
 galleryWorksRouter.get("/:id", identifyReader, validateParams(workParamsSchema), readWork);
 galleryWorksRouter.put(
   "/:id",

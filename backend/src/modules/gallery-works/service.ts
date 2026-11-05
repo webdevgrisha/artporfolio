@@ -6,7 +6,11 @@ import { maxCollectionWorks } from "#modules/gallery-collections/schema";
 import { colorIdsIn, colorsDocument } from "#modules/gallery-colors/service";
 import { materialIdsIn, materialsDocument } from "#modules/gallery-materials/service";
 import { paletteIdsIn, palettesDocument } from "#modules/gallery-palettes/service";
-import { sectionIdsIn, sectionsCollection } from "#modules/gallery-sections/service";
+import {
+  sectionGroupsIn,
+  sectionIdsIn,
+  sectionsCollection,
+} from "#modules/gallery-sections/service";
 
 import {
   discountedAmount,
@@ -15,7 +19,9 @@ import {
   type Work,
   type WorkBody,
   type WorkSummary,
+  type WorkUsage,
 } from "#modules/gallery-works/schema";
+import { ownGroups, usageByItem } from "#modules/gallery-works/usage";
 import { firestore } from "#shared/firebase/firestore";
 import {
   ConflictError,
@@ -294,6 +300,41 @@ export async function listWorks(reader: Reader): Promise<Tagged<WorkSummary[]>> 
 
   // Tagged by what is returned: deleting an item of a list a work refers to, such as a section,
   // changes the list without changing a work.
+  return { data, etag: entityTag(data) };
+}
+
+/**
+ * How the works `reader` sees use each section, material, color and palette, tagged by what is
+ * returned. Counted afresh from every work on each request, so it never drifts from the works.
+ */
+export async function getWorkUsage(reader: Reader): Promise<Tagged<WorkUsage>> {
+  const [{ docs }, sections, materials, colors, palettes] = await Promise.all([
+    worksCollection().get(),
+    sectionsCollection().get(),
+    materialsDocument().get(),
+    colorsDocument().get(),
+    palettesDocument().get(),
+  ]);
+  const works = docs.map(readWork).filter((work) => isVisibleTo(work, reader));
+  const data: WorkUsage = {
+    sections: usageByItem(
+      works.map((work) => work.sectionIds),
+      sectionGroupsIn(sections),
+    ),
+    materials: usageByItem(
+      works.map((work) => work.materialIds),
+      ownGroups(materialIdsIn(materials)),
+    ),
+    colors: usageByItem(
+      works.map((work) => work.colorIds),
+      ownGroups(colorIdsIn(colors)),
+    ),
+    palettes: usageByItem(
+      works.map((work) => work.paletteIds),
+      ownGroups(paletteIdsIn(palettes)),
+    ),
+  };
+
   return { data, etag: entityTag(data) };
 }
 

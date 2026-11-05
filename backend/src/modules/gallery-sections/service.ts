@@ -90,6 +90,23 @@ export function sectionIdsIn({ docs }: QuerySnapshot): Set<string> {
   );
 }
 
+/**
+ * The ids each saved section and subsection covers, by its id: a section covers itself and its
+ * subsections, a subsection only itself.
+ */
+export function sectionGroupsIn({ docs }: QuerySnapshot): Map<string, Set<string>> {
+  const groups = new Map<string, Set<string>>();
+
+  for (const snapshot of docs) {
+    const subsectionIds = readSection(snapshot).subsections.map((subsection) => subsection.id);
+
+    groups.set(snapshot.id, new Set([snapshot.id, ...subsectionIds]));
+    for (const id of subsectionIds) groups.set(id, new Set([id]));
+  }
+
+  return groups;
+}
+
 /** Every section sorted by title, tagged by the stored list. */
 export async function listSections(): Promise<Tagged<Section[]>> {
   const { docs } = await sectionsCollection().get();

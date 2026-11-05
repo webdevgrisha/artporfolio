@@ -84,6 +84,7 @@ import {
   createWork,
   deleteWork,
   getWork,
+  getWorkUsage,
   listWorks,
   replaceWork,
 } from "#modules/gallery-works/service";
@@ -287,6 +288,43 @@ describe("listWorks", () => {
     const { data } = await listWorks("admin");
 
     expect(data.map((work) => work.title)).toEqual(["Жираф", "Тигр", "Слон"]);
+  });
+});
+
+describe("getWorkUsage", () => {
+  const unused = { count: 0, onlyCount: 0 };
+
+  it("counts the works of every item of each list, leaving out the ids deleted since", async () => {
+    const both = { count: 2, onlyCount: 2 };
+
+    expect((await getWorkUsage("admin")).data).toEqual({
+      sections: { [animalsId]: both, [birdsId]: unused },
+      materials: { [canvasId]: unused, [oilId]: both },
+      colors: { [whiteId]: unused, [blackId]: both },
+      palettes: { [pastelId]: both, [brightId]: unused },
+    });
+  });
+
+  it("counts a work of a subsection for its section too", async () => {
+    works.set(newId, { ...storedWork(newId, "Сова", 2024, 1), sectionIds: [birdsId] });
+
+    const { sections: usage } = (await getWorkUsage("admin")).data;
+
+    expect(usage[animalsId]).toEqual({ count: 3, onlyCount: 3 });
+    expect(usage[birdsId]).toEqual({ count: 1, onlyCount: 1 });
+  });
+
+  it("counts only the works a visitor sees for a visitor", async () => {
+    works.set(elephantId, { ...storedWork(elephantId, "Слон", 2023, 5), published: false });
+
+    expect((await getWorkUsage("visitor")).data.materials[oilId]).toEqual({
+      count: 1,
+      onlyCount: 1,
+    });
+    expect((await getWorkUsage("admin")).data.materials[oilId]).toEqual({
+      count: 2,
+      onlyCount: 2,
+    });
   });
 });
 

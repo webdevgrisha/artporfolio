@@ -7,11 +7,13 @@ import type {
   WorkParams,
   WorkResponse,
   WorksResponse,
+  WorkUsageResponse,
 } from "#modules/gallery-works/schema";
 import {
   createWork,
   deleteWork,
   getWork,
+  getWorkUsage,
   listWorks,
   replaceWork,
 } from "#modules/gallery-works/service";
@@ -21,6 +23,15 @@ export const readWorks: RequestHandler<object, WorksResponse> = async (_request,
   const { data, etag } = await listWorks(readerOf(response.locals));
 
   response.status(200).set("ETag", etag).json({ works: data });
+};
+
+export const readWorkUsage: RequestHandler<object, WorkUsageResponse> = async (
+  _request,
+  response,
+) => {
+  const { data, etag } = await getWorkUsage(readerOf(response.locals));
+
+  response.status(200).set("ETag", etag).json({ usage: data });
 };
 
 export const readWork: RequestHandler<WorkParams, WorkResponse> = async (request, response) => {
