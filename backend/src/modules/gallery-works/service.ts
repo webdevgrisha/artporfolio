@@ -106,13 +106,14 @@ function toPrice(price: StoredWork["price"]): Work["price"] {
     return null;
   }
 
-  const { amount, currency, discountPercent } = price;
+  const { amount, currency, discountPercent, overrides } = price;
 
   return {
     amount,
     currency,
     discountPercent,
     finalAmount: discountedAmount(amount, discountPercent),
+    overrides,
   };
 }
 

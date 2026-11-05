@@ -668,15 +668,39 @@ describe("the price of a work", () => {
   });
 
   it("saves the price without the amount after the discount, which it computes", async () => {
-    const price = { amount: 500, currency: "USD", discountPercent: 10 } as const;
+    const price = { amount: 500, currency: "USD", discountPercent: 10, overrides: {} } as const;
     const { data } = await createWork(newId, { ...body, price });
 
     expect(data.price).toEqual({ ...price, finalAmount: 450 });
     expect(works.get(newId)?.price).toEqual(price);
   });
 
+  it("keeps the prices set by hand in other currencies", async () => {
+    const price = {
+      amount: 500,
+      currency: "USD",
+      discountPercent: null,
+      overrides: { EUR: 450, PLN: 2000 },
+    } as const;
+    const { data } = await createWork(newId, { ...body, price });
+
+    expect(data.price?.overrides).toEqual({ EUR: 450, PLN: 2000 });
+    expect(works.get(newId)?.price).toEqual(price);
+  });
+
+  it("reads a price saved before prices could be set by hand as having none", async () => {
+    works.set(elephantId, {
+      ...storedWork(elephantId, "Слон", 2024, 3),
+      price: { amount: 500, currency: "USD", discountPercent: null },
+    });
+
+    const { data } = await getWork(elephantId, "admin");
+
+    expect(data.price?.overrides).toEqual({});
+  });
+
   it("gives the full amount as the final one when there is no discount", async () => {
-    const price = { amount: 500, currency: "USD", discountPercent: null } as const;
+    const price = { amount: 500, currency: "USD", discountPercent: null, overrides: {} } as const;
     const { data } = await createWork(newId, { ...body, price });
 
     expect(data.price?.finalAmount).toBe(500);
@@ -685,7 +709,7 @@ describe("the price of a work", () => {
   it("rounds the amount after the discount to a whole dollar", async () => {
     const { data } = await createWork(newId, {
       ...body,
-      price: { amount: 999, currency: "USD", discountPercent: 15 },
+      price: { amount: 999, currency: "USD", discountPercent: 15, overrides: {} },
     });
 
     // 999 × 0.85 = 849.15
@@ -697,7 +721,10 @@ describe("the price of a work", () => {
     const { etag } = await replaceWork(elephantId, withoutPrice, await readTag(elephantId));
     const { etag: priced } = await replaceWork(
       elephantId,
-      { ...withoutPrice, price: { amount: 500, currency: "USD", discountPercent: null } },
+      {
+        ...withoutPrice,
+        price: { amount: 500, currency: "USD", discountPercent: null, overrides: {} },
+      },
       etag,
     );
 
