@@ -1,7 +1,12 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
-import type { GalleryMaterial, GallerySection, GalleryWork } from "@/entities/gallery";
+import type {
+  GalleryMaterial,
+  GallerySection,
+  GalleryWork,
+  WorkSaleStatus,
+} from "@/entities/gallery";
 import { galleryWorkPath, routes } from "@/shared/config/routes";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import {
@@ -38,6 +43,13 @@ interface WorksListProps {
 }
 
 const collator = new Intl.Collator("ru", { sensitivity: "base" });
+
+const saleStatusClassNames: Record<WorkSaleStatus, string | undefined> = {
+  available: styles.available,
+  reserved: styles.reserved,
+  sold: styles.sold,
+  notForSale: styles.notForSale,
+};
 
 /** Every work, in a table; a work opens by the pencil and is deleted after a confirmation. */
 export function WorksList({ className, materials, sections, works }: WorksListProps) {
@@ -132,7 +144,11 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         header: "Статус",
         meta: { className: styles.saleStatusColumn },
         enableSorting: false,
-        cell: ({ row: { original } }) => formatSaleStatus(original.item.saleStatus),
+        cell: ({ row: { original } }) => (
+          <span className={saleStatusClassNames[original.item.saleStatus]}>
+            {formatSaleStatus(original.item.saleStatus)}
+          </span>
+        ),
       },
       {
         id: "date",

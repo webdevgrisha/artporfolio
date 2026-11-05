@@ -29,6 +29,9 @@
     --color-divider: #e6e6e6;
     --color-focus: #000;
     --color-danger: #b00020;
+    /* Text colors of a state, such as a work for sale or reserved; both 4.5:1 on the surface. */
+    --color-success: #15803d;
+    --color-warning: #b45309;
     --color-backdrop: rgb(0 0 0 / 31%);
 
     /* Spacing. See "Spacing system" in docs/STYLE_GUIDE.md. */

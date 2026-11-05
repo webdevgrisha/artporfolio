@@ -43,6 +43,26 @@
   white-space: nowrap;
 }
 
+/*
+ * Each status in its own color, so the sold and the reserved works stand out: green for sale, amber
+ * reserved, red sold (the red dot of a gallery), muted not for sale. The label still says it.
+ */
+.available {
+  color: var(--color-success);
+}
+
+.reserved {
+  color: var(--color-warning);
+}
+
+.sold {
+  color: var(--color-danger);
+}
+
+.notForSale {
+  color: var(--color-text-muted);
+}
+
 /* The format under the size; the discount under the price. */
 .muted {
   color: var(--color-text-muted);
