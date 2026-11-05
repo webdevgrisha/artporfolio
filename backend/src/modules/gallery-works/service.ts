@@ -1,5 +1,6 @@
 import { type DocumentSnapshot, Timestamp, type Transaction } from "firebase-admin/firestore";
 
+import type { Reader } from "#modules/auth/schema";
 import { collectionDocument } from "#modules/gallery-collections/document";
 import { maxCollectionWorks } from "#modules/gallery-collections/schema";
 import { colorIdsIn, colorsDocument } from "#modules/gallery-colors/service";
@@ -304,6 +305,11 @@ function compareWorks(a: StoredWork, b: StoredWork): number {
   return b.year - a.year || b.month - a.month || b.createdAt.toMillis() - a.createdAt.toMillis();
 }
 
+/** Whether `reader` sees the work: a hidden work is the admin's alone. */
+export function isVisibleTo(work: StoredWork, reader: Reader): boolean {
+  return work.published || reader === "admin";
+}
+
 /** The saved works in the order the site shows them. */
 export function worksInOrder(docs: DocumentSnapshot[]): { id: string; work: StoredWork }[] {
   return docs
@@ -311,10 +317,10 @@ export function worksInOrder(docs: DocumentSnapshot[]): { id: string; work: Stor
     .sort((a, b) => compareWorks(a.work, b.work));
 }
 
-/** Every work in the order the site shows them, tagged by the stored list. */
-export async function listWorks(): Promise<Tagged<Work[]>> {
+/** Every work `reader` sees in the order the site shows them, tagged by the stored list. */
+export async function listWorks(reader: Reader): Promise<Tagged<Work[]>> {
   const [{ docs }, known] = await Promise.all([worksCollection().get(), readKnownIds()]);
-  const works = worksInOrder(docs);
+  const works = worksInOrder(docs).filter(({ work }) => isVisibleTo(work, reader));
   const data = works.map(({ id, work }) => toWork(id, work, known));
 
   // Tagged by what is returned: deleting an item of a list a work refers to, such as a section,
@@ -322,10 +328,16 @@ export async function listWorks(): Promise<Tagged<Work[]>> {
   return { data, etag: entityTag(data) };
 }
 
-export async function getWork(id: string): Promise<SavedWork> {
+/** The work `id`; a hidden work is not found for a visitor, as if there were none. */
+export async function getWork(id: string, reader: Reader): Promise<SavedWork> {
   const [snapshot, known] = await Promise.all([workDocument(id).get(), readKnownIds()]);
+  const work = readWork(snapshot);
 
-  return toSavedWork(id, readWork(snapshot), known);
+  if (!isVisibleTo(work, reader)) {
+    throw new NotFoundError("There is no work");
+  }
+
+  return toSavedWork(id, work, known);
 }
 
 /**

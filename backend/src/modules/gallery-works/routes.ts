@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { requireAuth } from "#modules/auth/middleware";
+import { identifyReader, requireAuth } from "#modules/auth/middleware";
 import { putWork, readWork, readWorks, removeWork } from "#modules/gallery-works/controller";
 import { workBodySchema, workParamsSchema } from "#modules/gallery-works/schema";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -10,11 +10,12 @@ import { validateBody, validateParams } from "#shared/middleware/validation";
 
 export const galleryWorksRouter = Router();
 
-// Works are public: the gallery shows them to every visitor. A change applies only to the work the
-// client read: it sends its ETag in If-Match. The client names a new work itself and creates it
-// with PUT and If-None-Match: *, so repeating the request is safe.
-galleryWorksRouter.get("/", readWorks);
-galleryWorksRouter.get("/:id", validateParams(workParamsSchema), readWork);
+// Works are public: the gallery shows the published ones to every visitor, and the admin sees the
+// hidden ones too. A change applies only to the work the client read: it sends its ETag in
+// If-Match. The client names a new work itself and creates it with PUT and If-None-Match: *, so
+// repeating the request is safe.
+galleryWorksRouter.get("/", identifyReader, readWorks);
+galleryWorksRouter.get("/:id", identifyReader, validateParams(workParamsSchema), readWork);
 galleryWorksRouter.put(
   "/:id",
   requireAuth,

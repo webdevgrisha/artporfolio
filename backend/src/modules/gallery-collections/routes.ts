@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { requireAuth } from "#modules/auth/middleware";
+import { identifyReader, requireAuth } from "#modules/auth/middleware";
 import {
   putCollection,
   readCollection,
@@ -15,11 +15,17 @@ import { validateBody, validateParams } from "#shared/middleware/validation";
 
 export const galleryCollectionsRouter = Router();
 
-// Collections are public: the gallery shows them to every visitor. A change applies only to the
-// collection the client read: it sends its ETag in If-Match. The client names a new collection
-// itself and creates it with PUT and If-None-Match: *, so repeating the request is safe.
-galleryCollectionsRouter.get("/", readCollections);
-galleryCollectionsRouter.get("/:id", validateParams(collectionParamsSchema), readCollection);
+// Collections are public: the gallery shows them to every visitor, with their published works; the
+// admin sees their hidden works too. A change applies only to the collection the client read: it
+// sends its ETag in If-Match. The client names a new collection itself and creates it with PUT and
+// If-None-Match: *, so repeating the request is safe.
+galleryCollectionsRouter.get("/", identifyReader, readCollections);
+galleryCollectionsRouter.get(
+  "/:id",
+  identifyReader,
+  validateParams(collectionParamsSchema),
+  readCollection,
+);
 galleryCollectionsRouter.put(
   "/:id",
   requireAuth,

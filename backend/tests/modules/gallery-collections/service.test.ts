@@ -194,7 +194,7 @@ const body: CollectionBody = {
 
 /** The If-Match of a client that read the collection. */
 async function readTag(id: string): Promise<string> {
-  return (await getCollection(id)).etag;
+  return (await getCollection(id, "admin")).etag;
 }
 
 beforeEach(() => {
@@ -215,7 +215,7 @@ beforeEach(() => {
 
 describe("listCollections", () => {
   it("lists the latest first, with download URLs", async () => {
-    const { data } = await listCollections();
+    const { data } = await listCollections("admin");
 
     expect(data.map((collection) => collection.title)).toEqual(["Море", "Звери"]);
     expect(data[0]?.cover.sources.avif[0]?.url).toBe(
@@ -226,7 +226,7 @@ describe("listCollections", () => {
   it("lists by the year a collection was finished, then by its start", async () => {
     collections.set(newId, storedCollection(newId, "Лес", 2020, 2024));
 
-    const { data } = await listCollections();
+    const { data } = await listCollections("admin");
 
     expect(data.map((collection) => collection.title)).toEqual(["Море", "Лес", "Звери"]);
   });
@@ -234,7 +234,7 @@ describe("listCollections", () => {
   it("lists the collections of the same years by title", async () => {
     collections.set(newId, storedCollection(newId, "Горы", 2024));
 
-    const { data } = await listCollections();
+    const { data } = await listCollections("admin");
 
     expect(data.map((collection) => collection.title)).toEqual(["Горы", "Море", "Звери"]);
   });
@@ -244,20 +244,30 @@ describe("the works of a collection", () => {
   it("returns the works of each collection, the latest first", async () => {
     works.set(foxId, storedWork(2022, 1, seaId));
 
-    const { data } = await listCollections();
+    const { data } = await listCollections("admin");
 
     expect(data.map((collection) => collection.workIds)).toEqual([
       [whaleId, foxId],
       [tigerId, elephantId],
     ]);
-    expect((await getCollection(animalsId)).data.workIds).toEqual([tigerId, elephantId]);
+    expect((await getCollection(animalsId, "admin")).data.workIds).toEqual([tigerId, elephantId]);
+  });
+
+  it("returns a hidden work to the admin and not to a visitor", async () => {
+    works.set(tigerId, { ...storedWork(2024, 2, animalsId), published: false });
+
+    expect((await getCollection(animalsId, "admin")).data.workIds).toEqual([tigerId, elephantId]);
+    expect((await getCollection(animalsId, "visitor")).data.workIds).toEqual([elephantId]);
+    expect((await listCollections("visitor")).data.map((collection) => collection.workIds)).toEqual(
+      [[whaleId], [elephantId]],
+    );
   });
 
   it("returns no works for an empty collection", async () => {
     works.clear();
 
-    expect((await getCollection(animalsId)).data.workIds).toEqual([]);
-    expect((await listCollections()).data.map((collection) => collection.workIds)).toEqual([
+    expect((await getCollection(animalsId, "admin")).data.workIds).toEqual([]);
+    expect((await listCollections("admin")).data.map((collection) => collection.workIds)).toEqual([
       [],
       [],
     ]);
@@ -269,7 +279,7 @@ describe("the works of a collection", () => {
     expect(data.workIds).toEqual([whaleId, foxId]);
     expect(collectionOf(foxId)).toBe(newId);
     expect(collectionOf(whaleId)).toBe(newId);
-    expect((await getCollection(seaId)).data.workIds).toEqual([]);
+    expect((await getCollection(seaId, "admin")).data.workIds).toEqual([]);
   });
 
   it("adds and removes works, leaving a removed work on its own", async () => {
@@ -333,14 +343,14 @@ describe("the works of a collection", () => {
 
 describe("getCollection", () => {
   it("returns the collection with its id", async () => {
-    const { data, id } = await getCollection(animalsId);
+    const { data, id } = await getCollection(animalsId, "admin");
 
     expect(id).toBe(animalsId);
     expect(data).toMatchObject({ endYear: 2023, id: animalsId, startYear: 2022, title: "Звери" });
   });
 
   it("returns 404 for a collection that does not exist", async () => {
-    await expect(getCollection(newId)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(getCollection(newId, "admin")).rejects.toBeInstanceOf(NotFoundError);
   });
 });
 

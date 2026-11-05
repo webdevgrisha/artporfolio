@@ -1,5 +1,7 @@
 import type { RequestHandler } from "express";
 
+import { readerOf } from "#modules/auth/middleware";
+
 import type {
   CollectionBody,
   CollectionParams,
@@ -19,7 +21,7 @@ export const readCollections: RequestHandler<object, CollectionsResponse> = asyn
   _request,
   response,
 ) => {
-  const { data, etag } = await listCollections();
+  const { data, etag } = await listCollections(readerOf(response.locals));
 
   response.status(200).set("ETag", etag).json({ collections: data });
 };
@@ -28,7 +30,7 @@ export const readCollection: RequestHandler<CollectionParams, CollectionResponse
   request,
   response,
 ) => {
-  const { data, etag } = await getCollection(request.params.id);
+  const { data, etag } = await getCollection(request.params.id, readerOf(response.locals));
 
   response.status(200).set("ETag", etag).json({ collection: data });
 };

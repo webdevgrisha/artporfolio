@@ -1,5 +1,7 @@
 import type { RequestHandler } from "express";
 
+import { readerOf } from "#modules/auth/middleware";
+
 import type {
   WorkBody,
   WorkParams,
@@ -16,13 +18,13 @@ import {
 import { ifMatchHeader, isCreateOnly } from "#shared/middleware/preconditions";
 
 export const readWorks: RequestHandler<object, WorksResponse> = async (_request, response) => {
-  const { data, etag } = await listWorks();
+  const { data, etag } = await listWorks(readerOf(response.locals));
 
   response.status(200).set("ETag", etag).json({ works: data });
 };
 
 export const readWork: RequestHandler<WorkParams, WorkResponse> = async (request, response) => {
-  const { data, etag } = await getWork(request.params.id);
+  const { data, etag } = await getWork(request.params.id, readerOf(response.locals));
 
   response.status(200).set("ETag", etag).json({ work: data });
 };

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { adminHeaders } from "../../support/adminSession.js";
+import { adminHeaders, adminSessionCookie } from "../../support/adminSession.js";
 import { apiImage } from "../../support/images.js";
 import { routeApp } from "../../support/routeApp.js";
 import { startTestServer, type TestServer } from "../../support/testServer.js";
@@ -103,7 +103,28 @@ describe("reading the collections", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
     await expect(response.json()).resolves.toEqual({ collections: [collection] });
+    expect(service.listCollections).toHaveBeenCalledWith("visitor");
+    expect(response.headers.get("Vary")).toBe("Cookie");
+    expect(response.headers.get("Cache-Control")).toBeNull();
     expect(auth.verifySession).not.toHaveBeenCalled();
+  });
+
+  it("lists the hidden works too to the admin, in an answer no shared cache keeps", async () => {
+    const response = await send("GET", "", { Cookie: adminSessionCookie });
+
+    expect(response.status).toBe(200);
+    expect(service.listCollections).toHaveBeenCalledWith("admin");
+    expect(response.headers.get("Vary")).toBe("Cookie");
+    expect(response.headers.get("Cache-Control")).toBe("private, no-cache");
+  });
+
+  it("returns 401 for a session that has ended rather than answering as to a visitor", async () => {
+    auth.verifySession.mockRejectedValue(new UnauthorizedError());
+
+    const response = await send("GET", `/${id}`, { Cookie: adminSessionCookie });
+
+    expect(response.status).toBe(401);
+    expect(service.getCollection).not.toHaveBeenCalled();
   });
 
   it("returns one collection with its ETag", async () => {
@@ -112,7 +133,7 @@ describe("reading the collections", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
     await expect(response.json()).resolves.toEqual({ collection });
-    expect(service.getCollection).toHaveBeenCalledWith(id);
+    expect(service.getCollection).toHaveBeenCalledWith(id, "visitor");
   });
 
   it("returns 404 for a collection that does not exist or an id that is not one", async () => {

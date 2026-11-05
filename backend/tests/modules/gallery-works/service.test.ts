@@ -214,7 +214,7 @@ const body: WorkBody = {
 
 /** The If-Match of a client that read the work. */
 async function readTag(id: string): Promise<string> {
-  return (await getWork(id)).etag;
+  return (await getWork(id, "admin")).etag;
 }
 
 beforeEach(() => {
@@ -253,7 +253,7 @@ beforeEach(() => {
 
 describe("listWorks", () => {
   it("lists the latest year first, with download URLs", async () => {
-    const { data } = await listWorks();
+    const { data } = await listWorks("admin");
 
     expect(data.map((work) => work.title)).toEqual(["Тигр", "Слон"]);
     expect(data[0]?.photo.sources.avif[0]?.url).toBe(
@@ -264,7 +264,7 @@ describe("listWorks", () => {
   it("lists the works of one year by month, the latest first", async () => {
     works.set(newId, storedWork(newId, "Жираф", 2024, 7));
 
-    const { data } = await listWorks();
+    const { data } = await listWorks("admin");
 
     expect(data.map((work) => work.title)).toEqual(["Жираф", "Тигр", "Слон"]);
   });
@@ -275,18 +275,42 @@ describe("listWorks", () => {
       storedWork(newId, "Жираф", 2024, 2, Timestamp.fromMillis(seededAt.toMillis() + 1)),
     );
 
-    const { data } = await listWorks();
+    const { data } = await listWorks("admin");
 
     expect(data.map((work) => work.title)).toEqual(["Жираф", "Тигр", "Слон"]);
   });
 });
 
+describe("a hidden work", () => {
+  beforeEach(() => {
+    works.set(elephantId, { ...storedWork(elephantId, "Слон", 2023, 5), published: false });
+  });
+
+  it("is listed to the admin and not to a visitor", async () => {
+    expect((await listWorks("admin")).data.map((work) => work.title)).toEqual(["Тигр", "Слон"]);
+    expect((await listWorks("visitor")).data.map((work) => work.title)).toEqual(["Тигр"]);
+  });
+
+  it("is returned to the admin and not found for a visitor", async () => {
+    expect((await getWork(elephantId, "admin")).data.published).toBe(false);
+    await expect(getWork(elephantId, "visitor")).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it("does not change the tag of the list a visitor reads", async () => {
+    const before = (await listWorks("visitor")).etag;
+
+    works.set(elephantId, { ...storedWork(elephantId, "Слоник", 2023, 5), published: false });
+
+    expect((await listWorks("visitor")).etag).toBe(before);
+  });
+});
+
 describe("the sections of a work", () => {
   it("leaves out a section deleted since the work was saved", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data.sectionIds).toEqual([animalsId]);
-    expect((await listWorks()).data[0]?.sectionIds).toEqual([animalsId]);
+    expect((await listWorks("admin")).data[0]?.sectionIds).toEqual([animalsId]);
   });
 
   it("saves the sections and subsections named by id", async () => {
@@ -322,10 +346,10 @@ describe("the sections of a work", () => {
 
 describe("the materials of a work", () => {
   it("leaves out a material deleted since the work was saved", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data.materialIds).toEqual([oilId]);
-    expect((await listWorks()).data[0]?.materialIds).toEqual([oilId]);
+    expect((await listWorks("admin")).data[0]?.materialIds).toEqual([oilId]);
   });
 
   it("saves the materials named by id", async () => {
@@ -361,17 +385,17 @@ describe("the materials of a work", () => {
   it("knows no material before the materials are first saved", async () => {
     lists.delete("site/galleryMaterials");
 
-    expect((await getWork(elephantId)).data.materialIds).toEqual([]);
+    expect((await getWork(elephantId, "admin")).data.materialIds).toEqual([]);
     await expect(createWork(newId, body)).rejects.toBeInstanceOf(UnprocessableContentError);
   });
 });
 
 describe("the colors of a work", () => {
   it("leaves out a color deleted since the work was saved", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data.colorIds).toEqual([blackId]);
-    expect((await listWorks()).data[0]?.colorIds).toEqual([blackId]);
+    expect((await listWorks("admin")).data[0]?.colorIds).toEqual([blackId]);
   });
 
   it("saves the colors named by id", async () => {
@@ -403,10 +427,10 @@ describe("the colors of a work", () => {
 
 describe("the palettes of a work", () => {
   it("leaves out a palette deleted since the work was saved", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data.paletteIds).toEqual([pastelId]);
-    expect((await listWorks()).data[0]?.paletteIds).toEqual([pastelId]);
+    expect((await listWorks("admin")).data[0]?.paletteIds).toEqual([pastelId]);
   });
 
   it("saves the palettes named by id", async () => {
@@ -442,7 +466,7 @@ describe("the palettes of a work", () => {
 
 describe("the collection of a work", () => {
   it("returns null for a work on its own", async () => {
-    expect((await getWork(elephantId)).data.collectionId).toBeNull();
+    expect((await getWork(elephantId, "admin")).data.collectionId).toBeNull();
   });
 
   it("saves the collection named by id", async () => {
@@ -530,7 +554,7 @@ describe("the collection of a work", () => {
 
 describe("the format of a work", () => {
   it("reads a work saved before formats as a single work", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data).toMatchObject({ format: "single", partCount: null });
   });
@@ -545,7 +569,7 @@ describe("the format of a work", () => {
 
 describe("the place of a work", () => {
   it("reads a work saved before places as a work without a country and a city", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data).toMatchObject({ city: "", country: null });
   });
@@ -560,7 +584,7 @@ describe("the place of a work", () => {
 
 describe("whether the site shows a work", () => {
   it("reads a work saved before works could be hidden as shown", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data.published).toBe(true);
   });
@@ -570,13 +594,13 @@ describe("whether the site shows a work", () => {
 
     expect(data.published).toBe(false);
     expect(works.get(newId)?.published).toBe(false);
-    expect((await listWorks()).data.map((work) => work.id)).toContain(newId);
+    expect((await listWorks("admin")).data.map((work) => work.id)).toContain(newId);
   });
 });
 
 describe("the sale status of a work", () => {
   it("reads a work saved before sale statuses as a work for sale", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data.saleStatus).toBe("available");
   });
@@ -591,7 +615,7 @@ describe("the sale status of a work", () => {
 
 describe("the price of a work", () => {
   it("reads a work saved before prices as a work without a price", async () => {
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data.price).toBeNull();
   });
@@ -636,7 +660,7 @@ describe("the price of a work", () => {
 
 describe("getWork", () => {
   it("returns the work with its id", async () => {
-    const { data, id } = await getWork(elephantId);
+    const { data, id } = await getWork(elephantId, "admin");
 
     expect(id).toBe(elephantId);
     expect(data).toMatchObject({ id: elephantId, title: "Слон", year: 2023 });
@@ -648,7 +672,7 @@ describe("getWork", () => {
       size: { width: 21.6, height: 27.9 },
     });
 
-    const { data } = await getWork(elephantId);
+    const { data } = await getWork(elephantId, "admin");
 
     expect(data.size).toEqual({ width: 21.6, height: 27.9 });
     expect(data.sizeInches).toEqual({ width: 8.5, height: 10.98 });
@@ -665,12 +689,15 @@ describe("getWork", () => {
       size: { width: 29.85, height: 38.43 },
     });
 
-    expect((await getWork(elephantId)).data.sizeInches).toEqual({ width: 16, height: 20 });
-    expect((await getWork(tigerId)).data.sizeInches).toEqual({ width: 11.75, height: 15.13 });
+    expect((await getWork(elephantId, "admin")).data.sizeInches).toEqual({ width: 16, height: 20 });
+    expect((await getWork(tigerId, "admin")).data.sizeInches).toEqual({
+      width: 11.75,
+      height: 15.13,
+    });
   });
 
   it("returns 404 for a work that does not exist", async () => {
-    await expect(getWork(newId)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(getWork(newId, "admin")).rejects.toBeInstanceOf(NotFoundError);
   });
 });
 

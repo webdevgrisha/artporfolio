@@ -5,6 +5,7 @@ import {
   type Transaction,
 } from "firebase-admin/firestore";
 
+import type { Reader } from "#modules/auth/schema";
 import { collectionDocument, collectionsCollection } from "#modules/gallery-collections/document";
 import {
   type Collection,
@@ -12,7 +13,7 @@ import {
   type StoredCollection,
   storedCollectionSchema,
 } from "#modules/gallery-collections/schema";
-import { worksCollection, worksInOrder } from "#modules/gallery-works/service";
+import { isVisibleTo, worksCollection, worksInOrder } from "#modules/gallery-works/service";
 import { firestore } from "#shared/firebase/firestore";
 import {
   ConflictError,
@@ -50,9 +51,11 @@ function membersQuery(id: string) {
   return worksCollection().where("collectionId", "==", id);
 }
 
-/** The ids of the works in the order the site shows them. */
-function idsInOrder(docs: DocumentSnapshot[]): string[] {
-  return worksInOrder(docs).map(({ id }) => id);
+/** The ids of the works `reader` sees in the order the site shows them; the admin sees them all. */
+function idsInOrder(docs: DocumentSnapshot[], reader: Reader): string[] {
+  return worksInOrder(docs)
+    .filter(({ work }) => isVisibleTo(work, reader))
+    .map(({ id }) => id);
 }
 
 function readCollection(snapshot: DocumentSnapshot): StoredCollection {
@@ -133,7 +136,7 @@ async function readWorks(transaction: Transaction, ids: string[]): Promise<strin
     throw new UnprocessableContentError(`There is no work ${missing.id}`);
   }
 
-  return idsInOrder(snapshots);
+  return idsInOrder(snapshots, "admin");
 }
 
 /**
@@ -164,10 +167,10 @@ function compareCollections(a: StoredCollection, b: StoredCollection): number {
 }
 
 /**
- * Every collection with its works in the order the site shows them, tagged by what is returned:
- * moving a work changes the list without changing a stored collection.
+ * Every collection with the works `reader` sees in the order the site shows them, tagged by what is
+ * returned: moving a work changes the list without changing a stored collection.
  */
-export async function listCollections(): Promise<Tagged<Collection[]>> {
+export async function listCollections(reader: Reader): Promise<Tagged<Collection[]>> {
   const [collections, works] = await Promise.all([
     collectionsCollection().get(),
     worksCollection().get(),
@@ -175,7 +178,7 @@ export async function listCollections(): Promise<Tagged<Collection[]>> {
   const workIds = new Map<string, string[]>();
 
   for (const { id, work } of worksInOrder(works.docs)) {
-    if (work.collectionId !== null) {
+    if (work.collectionId !== null && isVisibleTo(work, reader)) {
       workIds.set(work.collectionId, [...(workIds.get(work.collectionId) ?? []), id]);
     }
   }
@@ -188,13 +191,14 @@ export async function listCollections(): Promise<Tagged<Collection[]>> {
   return { data, etag: entityTag(data) };
 }
 
-export async function getCollection(id: string): Promise<SavedCollection> {
+/** The collection `id` with the works `reader` sees. */
+export async function getCollection(id: string, reader: Reader): Promise<SavedCollection> {
   const [snapshot, members] = await Promise.all([
     collectionDocument(id).get(),
     membersQuery(id).get(),
   ]);
 
-  return toSavedCollection(id, readCollection(snapshot), idsInOrder(members.docs));
+  return toSavedCollection(id, readCollection(snapshot), idsInOrder(members.docs, reader));
 }
 
 /** Removes the copied file of a cover that was not saved. */
@@ -274,7 +278,7 @@ export async function replaceCollection(
     [previous, collection, members] = await firestore().runTransaction(async (transaction) => {
       const document = collectionDocument(id);
       const current = readCollection(await transaction.get(document));
-      const currentWorkIds = idsInOrder((await transaction.get(membersQuery(id))).docs);
+      const currentWorkIds = idsInOrder((await transaction.get(membersQuery(id))).docs, "admin");
 
       assertIfMatch(ifMatch, editedContent(current, currentWorkIds));
       assertTitleIsFree(id, body.title, await transaction.get(collectionsCollection()));
@@ -311,7 +315,7 @@ export async function deleteCollection(id: string, ifMatch: string): Promise<voi
   await firestore().runTransaction(async (transaction) => {
     const document = collectionDocument(id);
     const current = readCollection(await transaction.get(document));
-    const currentWorkIds = idsInOrder((await transaction.get(membersQuery(id))).docs);
+    const currentWorkIds = idsInOrder((await transaction.get(membersQuery(id))).docs, "admin");
 
     assertIfMatch(ifMatch, editedContent(current, currentWorkIds));
     transaction.delete(document);
