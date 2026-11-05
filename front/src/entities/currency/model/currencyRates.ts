@@ -1,7 +1,18 @@
 import { z } from "zod";
 
 /** The currencies a price may be shown in besides US dollars (backend/src/modules/currencies/schema.ts). */
-export const currencies = ["EUR", "GBP", "PLN", "CHF", "CNY", "RUB", "BYN"] as const;
+export const currencies = [
+  "EUR",
+  "GBP",
+  "PLN",
+  "CHF",
+  "CAD",
+  "AUD",
+  "JPY",
+  "CNY",
+  "RUB",
+  "BYN",
+] as const;
 
 export type Currency = (typeof currencies)[number];
 

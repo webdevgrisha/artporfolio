@@ -241,7 +241,18 @@ const gallerySections = [
 const workSections = ["Пейзаж", "Графика", "Портрет", "Натюрморт", "Рекламные", "Театральные"];
 
 /** How many units of each currency one US dollar buys. */
-const currencyRates = { EUR: 0.92, GBP: 0.79, PLN: 3.65, CHF: 0.88, CNY: 7.1, RUB: 80, BYN: 3.2 };
+const currencyRates = {
+  EUR: 0.92,
+  GBP: 0.79,
+  PLN: 3.65,
+  CHF: 0.88,
+  CAD: 1.37,
+  AUD: 1.52,
+  JPY: 150,
+  CNY: 7.1,
+  RUB: 80,
+  BYN: 3.2,
+};
 
 const galleryMaterials = ["Акварель", "Гуашь", "Карандаш", "Масло", "Тушь", "Холст", "Бумага"];
 

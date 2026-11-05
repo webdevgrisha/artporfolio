@@ -1,7 +1,18 @@
 import { z } from "zod";
 
 /** The currencies a price may be shown in besides US dollars, the currency prices are set in. */
-export const currencies = ["EUR", "GBP", "PLN", "CHF", "CNY", "RUB", "BYN"] as const;
+export const currencies = [
+  "EUR",
+  "GBP",
+  "PLN",
+  "CHF",
+  "CAD",
+  "AUD",
+  "JPY",
+  "CNY",
+  "RUB",
+  "BYN",
+] as const;
 
 /** The highest rate: well above any currency, low enough to catch a typo. */
 export const maxCurrencyRate = 1_000_000;
