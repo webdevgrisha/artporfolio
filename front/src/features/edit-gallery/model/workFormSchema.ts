@@ -286,21 +286,21 @@ export const workFormatOptions: readonly { label: string; value: WorkFormat }[] 
   { label: "Несколько работ", value: "set" },
 ];
 
-/** The format as the admin reads it beside the size: «диптих», «12 шт.»; nothing for one work. */
+/** The format as the admin reads it in the table: «Одна работа», «Диптих», «12 шт.». */
 export function formatWorkFormat({
   format,
   partCount,
 }: {
   format: WorkFormat;
   partCount: number | null;
-}): string | null {
+}): string {
   switch (format) {
     case "single":
-      return null;
+      return "Одна работа";
     case "diptych":
-      return "диптих";
+      return "Диптих";
     case "triptych":
-      return "триптих";
+      return "Триптих";
     case "set":
       return `${String(partCount)} шт.`;
   }

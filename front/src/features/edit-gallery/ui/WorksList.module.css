@@ -4,7 +4,7 @@
  * the title.
  */
 .table {
-  min-inline-size: 105rem;
+  min-inline-size: 115rem;
 }
 
 .photoColumn {
@@ -24,6 +24,11 @@
 /* Room for «30,5 × 40,6 см» on one line, which a long title never squeezes. */
 .sizeColumn {
   inline-size: 11rem;
+}
+
+/* Room for «Одна работа» on one line. */
+.formatColumn {
+  inline-size: 10rem;
 }
 
 /* Room for «−10% от 100 000 $» on one line. */
@@ -63,7 +68,7 @@
   color: var(--color-text-muted);
 }
 
-/* The format under the size; the discount under the price. */
+/* A single work in the format column; the discount under the price. */
 .muted {
   color: var(--color-text-muted);
 }

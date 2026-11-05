@@ -212,10 +212,10 @@ describe("the format in the form", () => {
     expect(toPartCount({ ...work, format: "set", partCount: " 12 " })).toBe(12);
   });
 
-  it("shows the format beside the size, nothing for a single work", () => {
-    expect(formatWorkFormat({ format: "single", partCount: null })).toBeNull();
-    expect(formatWorkFormat({ format: "diptych", partCount: null })).toBe("диптих");
-    expect(formatWorkFormat({ format: "triptych", partCount: null })).toBe("триптих");
+  it("shows the format in the table, the number of parts for several works", () => {
+    expect(formatWorkFormat({ format: "single", partCount: null })).toBe("Одна работа");
+    expect(formatWorkFormat({ format: "diptych", partCount: null })).toBe("Диптих");
+    expect(formatWorkFormat({ format: "triptych", partCount: null })).toBe("Триптих");
     expect(formatWorkFormat({ format: "set", partCount: 12 })).toBe("12 шт.");
   });
 });

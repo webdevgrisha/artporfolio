@@ -72,7 +72,7 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         header: "Название",
         accessorFn: (row) => row.item.title,
         sortingFn: (a, b) => collator.compare(a.original.item.title, b.original.item.title),
-        // A hidden work says so under its title, muted, as the format is under the size.
+        // A hidden work says so under its title, muted, as the discount is under the price.
         cell: ({ row: { original } }) => (
           <>
             {original.item.title}
@@ -103,17 +103,19 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         sortingFn: (a, b) => compareWorkSizes(a.original.item, b.original.item),
         // The smallest first would read as a step back; the largest first is the useful start.
         sortDescFirst: true,
-        cell: ({ row: { original } }) => {
-          const format = formatWorkFormat(original.item);
-
-          // The format under the size, muted: «диптих», «12 шт.»; a single work has none.
-          return (
-            <>
-              {formatWorkSize(original.item.size)}
-              {format === null ? null : <div className={styles.muted}>{format}</div>}
-            </>
-          );
-        },
+        cell: ({ row: { original } }) => formatWorkSize(original.item.size),
+      },
+      {
+        id: "format",
+        header: "Формат",
+        meta: { className: styles.formatColumn },
+        enableSorting: false,
+        // A single work, the usual one, muted, so the diptychs and the sets stand out.
+        cell: ({ row: { original } }) => (
+          <span className={original.item.format === "single" ? styles.muted : undefined}>
+            {formatWorkFormat(original.item)}
+          </span>
+        ),
       },
       {
         id: "price",
