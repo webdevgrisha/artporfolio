@@ -17,6 +17,7 @@ import {
   type TableRow,
 } from "@/shared/ui/data-table";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
+import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import { useDeleteWork, useDeletingWorkIds } from "../model/useDeleteWork";
 import { formatWorkDate, formatWorkFormat, formatWorkSize } from "../model/workFormSchema";
@@ -128,11 +129,24 @@ export function WorksList({ className, materials, sections, works }: WorksListPr
         cell: ({ row: { original } }) => {
           const { price } = original.item;
 
+          // A muted dash for no price, so the cell doesn't read as not loaded; a screen reader
+          // hears the words instead of «тире».
+          if (price === null) {
+            return (
+              <>
+                <span className={styles.muted} aria-hidden="true">
+                  —
+                </span>
+                <VisuallyHidden>Без цены</VisuallyHidden>
+              </>
+            );
+          }
+
           // The discount under the price, muted.
           return (
             <>
-              {price === null ? null : formatPrice(price.finalAmount, price.currency)}
-              {price === null || price.discountPercent === null ? null : (
+              {formatPrice(price.finalAmount, price.currency)}
+              {price.discountPercent === null ? null : (
                 <div className={styles.muted}>
                   −{price.discountPercent}% от {formatPrice(price.amount, price.currency)}
                 </div>

@@ -68,7 +68,7 @@
   color: var(--color-text-muted);
 }
 
-/* A single work in the format column; the discount under the price. */
+/* A single work in the format column; the discount under the price, the dash for no price. */
 .muted {
   color: var(--color-text-muted);
 }
