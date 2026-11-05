@@ -21,6 +21,18 @@
   flex: 1 1 20rem;
 }
 
+/* The filters share a line; on a phone they go two in a line, so the table stays close. */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.filter {
+  flex: 1 1 8rem;
+  max-inline-size: 18rem;
+}
+
 /*
  * A narrow screen scrolls the table instead of squeezing its columns. The scroll clips vertically
  * too, so the padding keeps room for the focus ring of the sort buttons, which have none above

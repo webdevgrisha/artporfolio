@@ -8,9 +8,11 @@ import {
 import clsx from "clsx";
 import React from "react";
 
+import type { TableFilter } from "@/shared/lib/tableView";
 import { useTableView } from "@/shared/lib/useTableView";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { SearchInput } from "@/shared/ui/search-input";
+import { Select } from "@/shared/ui/select";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./DataTable.module.css";
@@ -26,6 +28,8 @@ interface DataTableProps<TItem> {
   columns: ColumnDef<TableRow<TItem>>[];
   /** Shown instead of the table while there are no items, such as «Работ пока нет». */
   emptyText: string;
+  /** The lists under the search that narrow the rows; a new array reads the address again. */
+  filters?: readonly TableFilter<TItem>[];
   getId: (item: TItem) => string;
   /** In the order of the site, which the table keeps until it is sorted. */
   items: readonly TItem[];
@@ -39,9 +43,14 @@ interface DataTableProps<TItem> {
   tableClassName?: string;
 }
 
+/** The choice of a filter that shows every row. */
+const everyItemOption = { label: "Все", value: "" };
+
+const noFilters: readonly never[] = [];
+
 /**
- * A list of the admin as a table: the search and the adding over it, the names of the columns
- * that sort it, and a line per item. The search and the sorting are kept in the address.
+ * A list of the admin as a table: the search, the filters and the adding over it, the names of the
+ * columns that sort it, and a line per item. All of them but the adding are kept in the address.
  */
 export function DataTable<TItem>({
   addLink,
@@ -49,6 +58,7 @@ export function DataTable<TItem>({
   className,
   columns,
   emptyText,
+  filters = noFilters,
   getId,
   items,
   matches,
@@ -56,14 +66,23 @@ export function DataTable<TItem>({
   sortableColumns,
   tableClassName,
 }: DataTableProps<TItem>) {
-  const { changeSorting, changeView, view } = useTableView(sortableColumns);
+  const { changeSorting, changeView, view } = useTableView(sortableColumns, filters);
   const { query } = view;
+  const isFiltered = filters.some(({ id }) => view.filters[id]);
   const rows = React.useMemo(
     () =>
       items
         .map((item, index) => ({ item, position: index + 1 }))
-        .filter(({ item }) => matches(item, query)),
-    [items, matches, query],
+        .filter(
+          ({ item }) =>
+            matches(item, query) &&
+            filters.every(({ id, matches: fits }) => {
+              const value = view.filters[id];
+
+              return !value || fits(item, value);
+            }),
+        ),
+    [filters, items, matches, query, view.filters],
   );
   const table = useReactTable({
     columns,
@@ -82,6 +101,14 @@ export function DataTable<TItem>({
     changeView({ query: next });
   }
 
+  function changeFilter(id: string, value: string) {
+    changeView({ filters: { ...view.filters, [id]: value } });
+  }
+
+  function clearFilters(changes?: { query: string }) {
+    changeView({ ...changes, filters: Object.fromEntries(filters.map(({ id }) => [id, ""])) });
+  }
+
   return (
     <div className={clsx(styles.root, className)}>
       <div className={styles.toolbar}>
@@ -90,19 +117,42 @@ export function DataTable<TItem>({
           label={searchLabel}
           clearLabel="Очистить поиск"
           value={query}
-          summary={query ? `Найдено: ${String(rows.length)} из ${String(items.length)}` : ""}
+          summary={
+            query || isFiltered ? `Найдено: ${String(rows.length)} из ${String(items.length)}` : ""
+          }
           onChange={changeQuery}
         />
+        {/* Here and not by the filters: its line never moves the table once a filter is chosen. */}
+        {isFiltered ? (
+          <Button variant="text" onClick={() => clearFilters()}>
+            Сбросить фильтры
+          </Button>
+        ) : null}
         <ButtonLink to={addLink.to}>{addLink.label}</ButtonLink>
       </div>
+
+      {filters.length > 0 ? (
+        <div className={styles.filters}>
+          {filters.map(({ id, label, options }) => (
+            <Select
+              key={id}
+              className={styles.filter}
+              label={label}
+              options={[everyItemOption, ...options]}
+              value={view.filters[id] ?? ""}
+              onChange={(value) => changeFilter(id, value)}
+            />
+          ))}
+        </div>
+      ) : null}
 
       {items.length === 0 ? (
         <p className={styles.empty}>{emptyText}</p>
       ) : rows.length === 0 ? (
         <div className={styles.empty}>
-          <p>Ничего не найдено по запросу «{query}»</p>
-          <Button variant="text" onClick={() => changeQuery("")}>
-            Сбросить поиск
+          <p>{query ? `Ничего не найдено по запросу «${query}»` : "Ничего не найдено"}</p>
+          <Button variant="text" onClick={() => clearFilters({ query: "" })}>
+            {isFiltered ? "Сбросить поиск и фильтры" : "Сбросить поиск"}
           </Button>
         </div>
       ) : (
