@@ -253,6 +253,7 @@ const currencyRates = {
   RUB: 80,
   BYN: 3.2,
   UAH: 41,
+  CZK: 23,
 };
 
 const galleryMaterials = ["Акварель", "Гуашь", "Карандаш", "Масло", "Тушь", "Холст", "Бумага"];

@@ -13,6 +13,7 @@ export const currencies = [
   "RUB",
   "BYN",
   "UAH",
+  "CZK",
 ] as const;
 
 /** The highest rate: well above any currency, low enough to catch a typo. */

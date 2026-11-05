@@ -7,6 +7,7 @@ export const currencyLabels: Record<Currency, string> = {
   CAD: "Канадский доллар, CAD",
   CHF: "Швейцарский франк, CHF",
   CNY: "Китайский юань, CNY",
+  CZK: "Чешская крона, CZK",
   EUR: "Евро, EUR",
   GBP: "Фунт стерлингов, GBP",
   JPY: "Японская иена, JPY",
