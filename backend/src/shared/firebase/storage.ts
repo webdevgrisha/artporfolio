@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { Readable } from "node:stream";
 
 import { getStorage } from "firebase-admin/storage";
 
@@ -73,6 +74,37 @@ export async function copyFile(from: string, to: string, metadata: FileMetadata)
 
 function isNotFoundError(error: unknown): boolean {
   return error instanceof Error && "code" in error && error.code === 404;
+}
+
+/** A file to send as it is read, with what to tell the client about it. */
+export interface OpenedFile {
+  contentDisposition: string | undefined;
+  contentType: string;
+  /** In bytes. */
+  size: number;
+  stream: Readable;
+}
+
+/** Opens a file for reading, or returns `undefined` when there is no such file. */
+export async function openFile(path: string): Promise<OpenedFile | undefined> {
+  const file = storageBucket().file(path);
+
+  try {
+    const [{ contentDisposition, contentType, size }] = await file.getMetadata();
+
+    return {
+      contentDisposition,
+      contentType: contentType ?? "application/octet-stream",
+      size: Number(size),
+      stream: file.createReadStream(),
+    };
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return undefined;
+    }
+
+    throw error;
+  }
 }
 
 /** The contents of a file, or `undefined` when there is no such file. */
