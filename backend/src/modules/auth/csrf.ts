@@ -37,7 +37,7 @@ export const requireCsrfToken: RequestHandler = (request, _response, next) => {
   const session = readSessionCookie(request);
 
   // A forged request acts with the cookies of the browser. Without a session cookie it has nothing
-  // to act with, and the routes that need a session reject it in requireAuth.
+  // to act with, and what needs a session rejects it in verifySession.
   if (!session) {
     next();
     return;

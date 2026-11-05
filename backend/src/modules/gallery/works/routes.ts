@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { identifyReader, requireAuth } from "#modules/auth/middleware";
+
+import { identifyReader } from "#modules/auth/middleware";
 import {
   putWork,
   readWork,
@@ -26,19 +26,10 @@ galleryWorksRouter.get("/usage", identifyReader, readWorkUsage);
 galleryWorksRouter.get("/:id", identifyReader, validateParams(workParamsSchema), readWork);
 galleryWorksRouter.put(
   "/:id",
-  requireAuth,
-  requireCsrfToken,
   validateParams(workParamsSchema),
   requireContentType("application/json"),
   requireIfMatchOrCreateOnly,
   validateBody(workBodySchema),
   putWork,
 );
-galleryWorksRouter.delete(
-  "/:id",
-  requireAuth,
-  requireCsrfToken,
-  validateParams(workParamsSchema),
-  requireIfMatch,
-  removeWork,
-);
+galleryWorksRouter.delete("/:id", validateParams(workParamsSchema), requireIfMatch, removeWork);

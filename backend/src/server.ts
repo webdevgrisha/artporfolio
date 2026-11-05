@@ -4,6 +4,7 @@ import express from "express";
 import helmet from "helmet";
 
 import { aboutRouter } from "#modules/about/routes";
+import { protectChanges } from "#modules/auth/middleware";
 import { authRouter } from "#modules/auth/routes";
 import { contactsRouter } from "#modules/contacts/routes";
 import { currenciesRouter } from "#modules/currencies/routes";
@@ -27,6 +28,9 @@ server.use(parseJsonBody);
 
 server.use("/api/health", healthRouter);
 server.use("/api/auth", authRouter);
+
+server.use(protectChanges);
+
 server.use("/api/contacts", contactsRouter);
 server.use("/api/originals", originalsRouter);
 server.use("/api/pages", pagesRouter);

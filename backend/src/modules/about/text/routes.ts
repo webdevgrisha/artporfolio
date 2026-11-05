@@ -2,8 +2,6 @@ import { Router } from "express";
 
 import { readText, replaceText } from "#modules/about/text/controller";
 import { aboutTextBodySchema } from "#modules/about/text/schema";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
 import { requireContentType } from "#shared/middleware/content-type";
 import { requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody } from "#shared/middleware/validation";
@@ -15,8 +13,6 @@ export const aboutTextRouter = Router();
 aboutTextRouter.get("/", readText);
 aboutTextRouter.put(
   "/",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(aboutTextBodySchema),

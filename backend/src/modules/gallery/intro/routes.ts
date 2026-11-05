@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import { readIntro, replaceIntro } from "#modules/gallery/intro/controller";
 import { galleryIntroBodySchema } from "#modules/gallery/intro/schema";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -14,8 +13,6 @@ export const galleryIntroRouter = Router();
 galleryIntroRouter.get("/", readIntro);
 galleryIntroRouter.put(
   "/",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(galleryIntroBodySchema),

@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import { readColors, replaceColors } from "#modules/gallery/colors/controller";
 import { galleryColorsBodySchema } from "#modules/gallery/colors/schema";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -14,8 +13,6 @@ export const galleryColorsRouter = Router();
 galleryColorsRouter.get("/", readColors);
 galleryColorsRouter.put(
   "/",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(galleryColorsBodySchema),

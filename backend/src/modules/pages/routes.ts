@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import { putHero, readHero, readPages } from "#modules/pages/controller";
 import { heroBodySchema, pageParamsSchema } from "#modules/pages/schema";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -17,8 +16,6 @@ pagesRouter.get("/:page/hero", validateParams(pageParamsSchema), readHero);
 
 pagesRouter.put(
   "/:page/hero",
-  requireAuth,
-  requireCsrfToken,
   validateParams(pageParamsSchema),
   requireContentType("application/json"),
   requireIfMatch,

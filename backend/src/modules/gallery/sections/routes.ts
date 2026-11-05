@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import {
   putSection,
   readSection,
@@ -21,8 +20,6 @@ gallerySectionsRouter.get("/", readSections);
 gallerySectionsRouter.get("/:id", validateParams(sectionParamsSchema), readSection);
 gallerySectionsRouter.put(
   "/:id",
-  requireAuth,
-  requireCsrfToken,
   validateParams(sectionParamsSchema),
   requireContentType("application/json"),
   requireIfMatchOrCreateOnly,
@@ -31,8 +28,6 @@ gallerySectionsRouter.put(
 );
 gallerySectionsRouter.delete(
   "/:id",
-  requireAuth,
-  requireCsrfToken,
   validateParams(sectionParamsSchema),
   requireIfMatch,
   removeSection,

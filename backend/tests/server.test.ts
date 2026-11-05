@@ -21,6 +21,19 @@ describe("GET /api/health", () => {
   });
 });
 
+describe("protecting changes", () => {
+  it.each([
+    ["PUT", "/api/gallery/colors"],
+    ["DELETE", "/api/gallery/works/11111111-1111-4111-8111-111111111111"],
+    ["POST", "/api/uploads"],
+    ["PUT", "/api/no-such-route"],
+  ])("refuses %s %s without a session", async (method, path) => {
+    const response = await fetch(`${server.baseUrl}${path}`, { method });
+
+    expect(response.status).toBe(401);
+  });
+});
+
 describe("CORS", () => {
   it("allows credentialed requests from the configured origin", async () => {
     const response = await fetch(`${server.baseUrl}/api/auth/login`, {

@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import { readIntro, replaceIntro } from "#modules/projects/intro/controller";
 import { projectsIntroBodySchema } from "#modules/projects/intro/schema";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -14,8 +13,6 @@ export const projectsIntroRouter = Router();
 projectsIntroRouter.get("/", readIntro);
 projectsIntroRouter.put(
   "/",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(projectsIntroBodySchema),

@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import { readPalettes, replacePalettes } from "#modules/gallery/palettes/controller";
 import { galleryPalettesBodySchema } from "#modules/gallery/palettes/schema";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -14,8 +13,6 @@ export const galleryPalettesRouter = Router();
 galleryPalettesRouter.get("/", readPalettes);
 galleryPalettesRouter.put(
   "/",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(galleryPalettesBodySchema),

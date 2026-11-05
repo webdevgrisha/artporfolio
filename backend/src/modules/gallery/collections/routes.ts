@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { identifyReader, requireAuth } from "#modules/auth/middleware";
+
+import { identifyReader } from "#modules/auth/middleware";
 import {
   putCollection,
   readCollection,
@@ -27,8 +27,6 @@ galleryCollectionsRouter.get(
 );
 galleryCollectionsRouter.put(
   "/:id",
-  requireAuth,
-  requireCsrfToken,
   validateParams(collectionParamsSchema),
   requireContentType("application/json"),
   requireIfMatchOrCreateOnly,
@@ -37,8 +35,6 @@ galleryCollectionsRouter.put(
 );
 galleryCollectionsRouter.delete(
   "/:id",
-  requireAuth,
-  requireCsrfToken,
   validateParams(collectionParamsSchema),
   requireIfMatch,
   removeCollection,

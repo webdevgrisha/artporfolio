@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import {
   putOrder,
   putProject,
@@ -31,8 +30,6 @@ projectsRouter.use("/intro", projectsIntroRouter);
 projectsRouter.get("/order", readOrder);
 projectsRouter.put(
   "/order",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(projectsOrderBodySchema),
@@ -42,19 +39,10 @@ projectsRouter.put(
 projectsRouter.get("/:id", validateParams(projectParamsSchema), readProject);
 projectsRouter.put(
   "/:id",
-  requireAuth,
-  requireCsrfToken,
   validateParams(projectParamsSchema),
   requireContentType("application/json"),
   requireIfMatchOrCreateOnly,
   validateBody(projectBodySchema),
   putProject,
 );
-projectsRouter.delete(
-  "/:id",
-  requireAuth,
-  requireCsrfToken,
-  validateParams(projectParamsSchema),
-  requireIfMatch,
-  removeProject,
-);
+projectsRouter.delete("/:id", validateParams(projectParamsSchema), requireIfMatch, removeProject);

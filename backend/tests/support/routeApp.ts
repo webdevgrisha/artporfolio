@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import express, { type RequestHandler, type Router } from "express";
 
+import { protectChanges } from "#modules/auth/middleware";
 import { authRouter } from "#modules/auth/routes";
 import { parseJsonBody } from "#shared/middleware/content-type";
 import { errorHandler } from "#shared/middleware/error";
@@ -28,6 +29,7 @@ export function routeApp(path: string, router: Router): express.Express {
   app.use(cookieParser());
   app.use(parseJsonBody);
   app.use("/api/auth", authRouter);
+  app.use(protectChanges);
   app.use(path, router);
   app.use(errorHandler);
 

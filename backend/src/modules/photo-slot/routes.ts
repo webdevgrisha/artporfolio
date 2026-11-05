@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import { photoSlotController } from "#modules/photo-slot/controller";
 import { type PhotoSlot, photoBodySchema } from "#shared/images/photo";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -19,8 +18,6 @@ export function photoSlotRouter(slot: PhotoSlot): Router {
   router.get("/", readPhoto);
   router.put(
     "/",
-    requireAuth,
-    requireCsrfToken,
     requireContentType("application/json"),
     requireIfMatch,
     validateBody(photoBodySchema),

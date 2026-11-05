@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import { readLinks, replaceLinks } from "#modules/contacts/links/controller";
 import { contactLinksBodySchema } from "#modules/contacts/links/schema";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -14,8 +13,6 @@ export const linksRouter = Router();
 linksRouter.get("/", readLinks);
 linksRouter.put(
   "/",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(contactLinksBodySchema),

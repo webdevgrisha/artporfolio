@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { requireCsrfToken } from "#modules/auth/csrf";
-import { requireAuth } from "#modules/auth/middleware";
+
 import { readRates, replaceRates } from "#modules/currencies/controller";
 import { currencyRatesBodySchema } from "#modules/currencies/schema";
 import { requireContentType } from "#shared/middleware/content-type";
@@ -14,8 +13,6 @@ export const currenciesRouter = Router();
 currenciesRouter.get("/", readRates);
 currenciesRouter.put(
   "/",
-  requireAuth,
-  requireCsrfToken,
   requireContentType("application/json"),
   requireIfMatch,
   validateBody(currencyRatesBodySchema),
