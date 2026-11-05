@@ -128,18 +128,18 @@ backend/src/
 │   │   ├── links/      the contact links, mounted by the contacts router
 │   │   └── photo.ts    the contact photo, a photo slot mounted by the contacts router
 │   ├── currencies/     the rates of the currencies against the US dollar, set by hand
-│   ├── gallery-collections/ the collections of the gallery, each a Firestore document with its cover and years
-│   ├── gallery-colors/ the colors of the gallery, one list sorted by title
-│   ├── gallery-intro/  the text above the works in the gallery
-│   ├── gallery-materials/ the materials of the gallery, one list sorted by title
-│   ├── gallery-palettes/ the palettes of the gallery (pastel, bright…), one list sorted by title
-│   ├── gallery-sections/ the sections of the gallery, each a Firestore document with its subsections
-│   ├── gallery-works/  the works of the gallery, each a Firestore document; sizes stored in cm, returned in cm and inches; prices in other currencies computed from the rates on reading
+│   ├── gallery/collections/ the collections of the gallery, each a Firestore document with its cover and years
+│   ├── gallery/colors/ the colors of the gallery, one list sorted by title
+│   ├── gallery/intro/  the text above the works in the gallery
+│   ├── gallery/materials/ the materials of the gallery, one list sorted by title
+│   ├── gallery/palettes/ the palettes of the gallery (pastel, bright…), one list sorted by title
+│   ├── gallery/sections/ the sections of the gallery, each a Firestore document with its subsections
+│   ├── gallery/works/  the works of the gallery, each a Firestore document; sizes stored in cm, returned in cm and inches; prices in other currencies computed from the rates on reading
 │   ├── health/
 │   ├── pages/          the pages of the public site and their main photos (heroes)
 │   ├── photo-slot/     the routes of one photo slot, for the slot a module names
 │   ├── projects/       the projects, each a Firestore document of its own, and their order
-│   ├── projects-intro/ the text above the projects
+│   ├── projects/intro/ the text above the projects
 │   └── uploads/        POST /api/uploads, the only multipart route
 └── shared/             no knowledge of the domain
     ├── config/         env, cookies, cors

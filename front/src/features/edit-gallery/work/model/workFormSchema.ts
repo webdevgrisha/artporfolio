@@ -24,7 +24,7 @@ import { yearSchema } from "../../model/yearField";
 import { formatSide } from "./workDisplay";
 import { discountError, priceError } from "./workPrice";
 
-// Mirror the server rules in backend/src/modules/gallery-works/schema.ts.
+// Mirror the server rules in backend/src/modules/gallery/works/schema.ts.
 export const workMaxLengths = {
   description: 2_000,
   city: maxWorkCityLength,

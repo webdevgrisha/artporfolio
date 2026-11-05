@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** The most colors the gallery may have (backend/src/modules/gallery-colors/schema.ts). */
+/** The most colors the gallery may have (backend/src/modules/gallery/colors/schema.ts). */
 export const maxColors = 100;
 
 export const galleryColorSchema = z.object({

@@ -11,7 +11,7 @@ import { csrfHandler, problem } from "../../../../support/handlers";
 import { recordRequests, server } from "../../../../support/server";
 
 const id = "11111111-1111-4111-8111-111111111111";
-const path = `/api/gallery-sections/${id}`;
+const path = `/api/gallery/sections/${id}`;
 const values = {
   subsections: [{ id: "22222222-2222-4222-8222-222222222222", title: "Театральные" }],
   title: "Постеры",

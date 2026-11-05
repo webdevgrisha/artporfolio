@@ -16,7 +16,7 @@ import { csrfHandler, problem, uploadId, uploadsHandler } from "../../../../supp
 import { recordRequests, server } from "../../../../support/server";
 
 const id = "11111111-1111-4111-8111-111111111111";
-const path = `/api/gallery-collections/${id}`;
+const path = `/api/gallery/collections/${id}`;
 const workId = "22222222-2222-4222-8222-222222222222";
 /** The values of the form, with a new file each time: a file once uploaded is not sent again. */
 const values = () => ({

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { photoSchema } from "@/shared/api/photo";
 
-/** The most works one collection may hold (backend/src/modules/gallery-collections/schema.ts). */
+/** The most works one collection may hold (backend/src/modules/gallery/collections/schema.ts). */
 export const maxCollectionWorks = 200;
 
 /** A collection of the gallery: works painted as one series. */

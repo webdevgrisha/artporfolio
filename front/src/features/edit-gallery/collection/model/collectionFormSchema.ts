@@ -6,7 +6,7 @@ import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/p
 import { toIdSet } from "../../model/idSet";
 import { yearSchema } from "../../model/yearField";
 
-// Mirror the server rules in backend/src/modules/gallery-collections/schema.ts.
+// Mirror the server rules in backend/src/modules/gallery/collections/schema.ts.
 export const collectionMaxLengths = {
   description: 2_000,
   title: 100,

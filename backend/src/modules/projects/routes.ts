@@ -9,6 +9,7 @@ import {
   readProjects,
   removeProject,
 } from "#modules/projects/controller";
+import { projectsIntroRouter } from "#modules/projects/intro/routes";
 import {
   projectBodySchema,
   projectParamsSchema,
@@ -27,6 +28,7 @@ export const projectsRouter = Router();
 projectsRouter.get("/", readProjects);
 
 // Registered before "/:id", which takes only UUIDs anyway.
+projectsRouter.use("/intro", projectsIntroRouter);
 projectsRouter.get("/order", readOrder);
 projectsRouter.put(
   "/order",

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** The most palettes the gallery may have (backend/src/modules/gallery-palettes/schema.ts). */
+/** The most palettes the gallery may have (backend/src/modules/gallery/palettes/schema.ts). */
 export const maxPalettes = 30;
 
 export const galleryPaletteSchema = z.object({

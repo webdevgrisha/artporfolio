@@ -48,7 +48,7 @@ describe("CORS", () => {
   });
 
   it("allows every header a change sends: the CSRF token and the preconditions", async () => {
-    const response = await fetch(`${server.baseUrl}/api/gallery-works/id`, {
+    const response = await fetch(`${server.baseUrl}/api/gallery/works/id`, {
       headers: {
         "Access-Control-Request-Headers": "content-type,if-match,if-none-match,x-csrf-token",
         "Access-Control-Request-Method": "PUT",

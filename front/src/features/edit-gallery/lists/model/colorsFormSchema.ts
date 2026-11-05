@@ -14,7 +14,7 @@ export const colorsFormSchema = z.object({
         /** Picked by the form for a new color, so works can refer to it once it is saved. */
         id: z.string(),
         title: titleSchema,
-        // Mirrors the server rule in backend/src/modules/gallery-colors/schema.ts; the color picker
+        // Mirrors the server rule in backend/src/modules/gallery/colors/schema.ts; the color picker
         // of the browser always gives such a value.
         hex: z.string().regex(/^#[0-9a-f]{6}$/i, "Выберите цвет"),
       }),

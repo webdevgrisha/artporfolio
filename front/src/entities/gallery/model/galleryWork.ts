@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { listPhotoSchema, photoSchema } from "@/shared/api/photo";
 
-/** The earliest year a work can be dated (backend/src/modules/gallery-works/schema.ts). */
+/** The earliest year a work can be dated (backend/src/modules/gallery/works/schema.ts). */
 export const minWorkYear = 1900;
 
 /** The most sections and subsections one work may be in. */

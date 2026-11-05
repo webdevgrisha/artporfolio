@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** The most materials the gallery may have (backend/src/modules/gallery-materials/schema.ts). */
+/** The most materials the gallery may have (backend/src/modules/gallery/materials/schema.ts). */
 export const maxMaterials = 100;
 
 export const galleryMaterialSchema = z.object({
