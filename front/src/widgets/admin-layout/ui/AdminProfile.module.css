@@ -25,13 +25,8 @@
   line-height: normal;
 }
 
-/* Keeps the name inside the column, away from its line. */
 @media (width >= 75rem) {
-  .profile {
-    gap: var(--space-4);
-  }
-
   .avatar {
-    inline-size: 88px;
+    inline-size: 104px;
   }
 }
