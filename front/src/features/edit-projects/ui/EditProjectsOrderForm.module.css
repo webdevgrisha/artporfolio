@@ -33,10 +33,10 @@
   }
 }
 
-/* Smaller than in the table: the rows of the order are dense. */
+/* Smaller than in the table: the rows of the order are dense. A picture needs not grow with the text. */
 .cover {
-  inline-size: 3rem;
-  block-size: 3rem;
+  inline-size: 48px;
+  block-size: 48px;
 }
 
 .title {
