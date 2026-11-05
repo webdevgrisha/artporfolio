@@ -2,6 +2,25 @@
 .root {
   /* The controls inside take the surface of the dialog. */
   --color-surface: var(--color-surface-raised);
+  /* The height of the title line; the close button is centred on it. */
+  --title-line-size: 1.75rem;
+  --small-line-size: calc(var(--font-size-sm) * 1.4);
+  --description-size: 0rem;
+  --actions-size: 0rem;
+  /*
+   * The height left for the content: all but the margins, the border, the padding, the header and
+   * the gap under it. The dialog takes its width from the content, so a content of this height
+   * makes the dialog exactly as wide as it is.
+   */
+  --content-max-block-size: calc(
+    100dvh -
+    5 *
+    var(--space-4) -
+    2px -
+    var(--title-line-size) -
+    var(--description-size) -
+    var(--actions-size)
+  );
 
   max-inline-size: calc(100vw - 2 * var(--space-4));
   max-block-size: calc(100dvh - 2 * var(--space-4));
@@ -33,10 +52,15 @@
   padding: var(--space-4);
 }
 
-.header {
-  /* The height of the title line; the close button is centred on it. */
-  --title-line-size: 1.75rem;
+.root:has(.description) {
+  --description-size: calc(var(--space-1) + var(--small-line-size));
+}
 
+.root:has(.actions) {
+  --actions-size: calc(var(--space-2) + var(--small-line-size));
+}
+
+.header {
   display: flex;
   gap: var(--space-4);
   align-items: flex-start;
@@ -64,6 +88,8 @@
 
 .actions {
   margin-block-start: var(--space-2);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
 }
 
 /*
