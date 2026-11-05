@@ -5,6 +5,8 @@ import {
   type GalleryCollection,
   type GalleryWork,
   galleryCollectionQuery,
+  galleryCollectionsQuery,
+  galleryWorksQuery,
 } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
@@ -42,6 +44,8 @@ export function EditCollectionForm({
     form,
     initial: collection,
     query: galleryCollectionQuery(collection.data.id),
+    // A work added in another tab must show among the works of the latest version.
+    related: [galleryWorksQuery.queryKey, galleryCollectionsQuery.queryKey],
     // The server replaces the whole collection, its cover and its works included, at once.
     save: (values, etag) => saveCollection.mutateAsync({ etag, values }),
     toValues: toCollectionFormValues,

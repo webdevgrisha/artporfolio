@@ -22,6 +22,15 @@ export interface WorkReferences {
   sections: readonly GallerySection[];
 }
 
+/** The queries of the lists a work form chooses from, which it reads afresh after a conflict. */
+export const workReferenceQueryKeys = [
+  gallerySectionsQuery.queryKey,
+  galleryMaterialsQuery.queryKey,
+  galleryColorsQuery.queryKey,
+  galleryPalettesQuery.queryKey,
+  galleryCollectionsQuery.queryKey,
+];
+
 /**
  * The lists a work form chooses from, read from the cache. A page calls it once the loader has put
  * them there, so it never suspends.

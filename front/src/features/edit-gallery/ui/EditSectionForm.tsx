@@ -1,7 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { type GallerySection, type GalleryWork, gallerySectionQuery } from "@/entities/gallery";
+import {
+  type GallerySection,
+  type GalleryWork,
+  gallerySectionQuery,
+  galleryWorksQuery,
+} from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
@@ -31,6 +36,7 @@ export function EditSectionForm({ className, section, works }: EditSectionFormPr
     form,
     initial: section,
     query: gallerySectionQuery(section.data.id),
+    related: [galleryWorksQuery.queryKey],
     // The server replaces the section with all its subsections at once.
     save: (values, etag) => saveSection.mutateAsync({ etag, values }),
     toValues: toSectionFormValues,

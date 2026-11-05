@@ -4,7 +4,8 @@ import type { FieldValues, UseFormReturn } from "react-hook-form";
 
 import type { Tagged } from "@/shared/api/http";
 import { HttpError } from "@/shared/api/httpError";
-import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
+import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
+import { savedMessage, showErrorToast, showSuccessToast } from "@/shared/ui/toast";
 
 import type { EditFormProps } from "./EditForm";
 
@@ -16,6 +17,11 @@ interface UseSavedFormParams<TData, TValues extends FieldValues, TQueryKey exten
   /** Reads the resource afresh when a save finds that it has changed since. */
   query: FetchQueryOptions<Tagged<TData>, Error, Tagged<TData>, TQueryKey>;
   /**
+   * The other server data the form shows, such as the lists it chooses from, by the keys of their
+   * queries: read afresh together with the resource, so its latest version is shown with them.
+   */
+  related?: readonly QueryKey[];
+  /**
    * Sends the changes made from the resource with the ETag `etag` and shows the result; resolves
    * with the saved resource and its new ETag. `null` when the changes need no request.
    */
@@ -23,6 +29,15 @@ interface UseSavedFormParams<TData, TValues extends FieldValues, TQueryKey exten
   toValues: (data: TData) => TValues;
   /** The toast of `save`, for the result of a save with nothing to send. */
   toastId: string;
+}
+
+function getLoadLatestErrorMessage(error: unknown): string {
+  if (error instanceof HttpError && error.status === 404) return "Это уже удалили в другой вкладке";
+
+  return getRequestErrorMessage(
+    error,
+    "Данные изменили в другой вкладке, но загрузить их не удалось. Обновите страницу",
+  );
 }
 
 /** The server refused the save: the resource has changed since the form read it. */
@@ -40,6 +55,7 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
   form,
   initial,
   query,
+  related = [],
   save,
   toValues,
   toastId,
@@ -61,9 +77,17 @@ export function useSavedForm<TData, TValues extends FieldValues, TQueryKey exten
 
   async function loadLatest() {
     try {
-      setLatest(await queryClient.fetchQuery({ ...query, staleTime: 0 }));
-    } catch {
-      // The toast of the save already says that it failed; the next conflict tries again.
+      const [resource] = await Promise.all([
+        queryClient.fetchQuery({ ...query, staleTime: 0 }),
+        ...related.map((queryKey) =>
+          queryClient.refetchQueries({ exact: true, queryKey }, { throwOnError: true }),
+        ),
+      ]);
+
+      setLatest(resource);
+    } catch (error) {
+      // The changes stay in the form; the next save that conflicts tries again.
+      showErrorToast(getLoadLatestErrorMessage(error), { id: toastId });
     }
   }
 

@@ -6,6 +6,7 @@ import {
   type GalleryColors,
   type GalleryWork,
   galleryColorsQuery,
+  galleryWorksQuery,
   maxColors,
 } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
@@ -60,6 +61,7 @@ export function EditColorsForm({ className, colors, works }: EditColorsFormProps
     form,
     initial: colors,
     query: galleryColorsQuery,
+    related: [galleryWorksQuery.queryKey],
     save: (values, etag) => saveColors.mutateAsync({ colors: values, etag }),
     toValues: toColorsFormValues,
     toastId: saveColorsFeedback.toastId,

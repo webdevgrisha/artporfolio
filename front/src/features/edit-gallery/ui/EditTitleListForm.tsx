@@ -3,7 +3,7 @@ import type { QueryKey } from "@tanstack/react-query";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
-import type { GalleryWork } from "@/entities/gallery";
+import { type GalleryWork, galleryWorksQuery } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
@@ -64,6 +64,7 @@ export function EditTitleListForm<TData, TQueryKey extends QueryKey>({
     form,
     initial: data,
     query: list.query,
+    related: [galleryWorksQuery.queryKey],
     save: (values, etag) => saveList.mutateAsync({ etag, items: values.items }),
     toValues,
     toastId: list.toastId,

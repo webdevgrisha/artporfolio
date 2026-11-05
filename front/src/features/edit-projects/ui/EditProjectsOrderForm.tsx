@@ -1,5 +1,4 @@
 import { arrayMove } from "@dnd-kit/sortable";
-import { useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import { useForm, useWatch } from "react-hook-form";
 
@@ -42,13 +41,14 @@ function toFormValues(ids: string[]): ProjectsOrderFormValues {
  * «Сохранить», all at once.
  */
 export function EditProjectsOrderForm({ className, order, projects }: EditProjectsOrderFormProps) {
-  const queryClient = useQueryClient();
   const form = useForm<ProjectsOrderFormValues>({ defaultValues: toFormValues(order.data) });
   const saveOrder = useSaveProjectsOrder();
   const { editForm, saved } = useSavedForm({
     form,
     initial: order,
     query: projectsOrderQuery,
+    // The latest order may bring a project created in another tab, which needs its row.
+    related: [projectsQuery.queryKey],
     save: (values, etag) => saveOrder.mutateAsync({ etag, ids: values.ids }),
     toValues: toFormValues,
     toastId: saveProjectsOrderFeedback.toastId,
@@ -65,14 +65,6 @@ export function EditProjectsOrderForm({ className, order, projects }: EditProjec
 
     return project ? [{ index, project }] : [];
   });
-  const hasProjectsWithoutRows = rows.length < ids.length;
-
-  // Taking the latest order after a conflict may bring such a project; the list is read again for it.
-  React.useEffect(() => {
-    if (hasProjectsWithoutRows) {
-      void queryClient.invalidateQueries({ queryKey: projectsQuery.queryKey });
-    }
-  }, [hasProjectsWithoutRows, queryClient]);
 
   function getTitle(id: string): string {
     return projectsById.get(id)?.title ?? "";
