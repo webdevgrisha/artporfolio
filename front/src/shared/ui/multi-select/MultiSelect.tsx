@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useCombobox, useMultipleSelection } from "downshift";
 import React from "react";
 
+import { containsText } from "@/shared/lib/containsText";
 import { useDropdownPosition } from "@/shared/lib/useDropdownPosition";
 import { Field, useFieldIds } from "@/shared/ui/field";
 import { CloseIcon } from "@/shared/ui/icon";
@@ -43,7 +44,7 @@ interface MultiSelectProps {
 }
 
 function matches(option: MultiSelectOption, query: string): boolean {
-  return option.label.toLocaleLowerCase("ru").includes(query.trim().toLocaleLowerCase("ru"));
+  return containsText(option.label, query);
 }
 
 /**

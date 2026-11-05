@@ -1,5 +1,7 @@
 import React from "react";
 
+import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
+
 /**
  * Where the focus goes once the items are updated: a button of a row, named in its `data-control`
  * inside the element with `data-item-id`, or another element, such as an add button.
@@ -14,14 +16,9 @@ export type SortableFocusTarget =
  */
 export function useSortableRowFocus<TList extends HTMLElement>() {
   const listRef = React.useRef<TList>(null);
-  const targetRef = React.useRef<SortableFocusTarget>(undefined);
+  const focusAfterRender = useFocusAfterUpdate();
 
-  // Runs after every render: the owner's update is the next one.
-  React.useLayoutEffect(() => {
-    const target = targetRef.current;
-    if (!target) return;
-
-    targetRef.current = undefined;
+  function focusTarget(target: SortableFocusTarget) {
     if ("element" in target) {
       target.element?.focus();
       return;
@@ -34,10 +31,10 @@ export function useSortableRowFocus<TList extends HTMLElement>() {
     // An arrow is disabled at the end of the list: the other one takes the focus.
     const fallback = row?.querySelector<HTMLButtonElement>('[data-control^="move"]:not(:disabled)');
     (button ?? fallback)?.focus();
-  });
+  }
 
   function focusAfterUpdate(target: SortableFocusTarget) {
-    targetRef.current = target;
+    focusAfterRender(() => focusTarget(target));
   }
 
   return { focusAfterUpdate, listRef };

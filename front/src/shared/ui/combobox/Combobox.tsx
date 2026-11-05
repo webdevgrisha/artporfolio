@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useCombobox } from "downshift";
 import React from "react";
 
+import { containsText } from "@/shared/lib/containsText";
 import { useDropdownPosition } from "@/shared/lib/useDropdownPosition";
 import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field";
 import { ChevronRightIcon } from "@/shared/ui/icon";
@@ -33,7 +34,7 @@ interface ComboboxProps {
 }
 
 function matches(option: SelectOption, query: string): boolean {
-  return option.label.toLocaleLowerCase("ru").includes(query.trim().toLocaleLowerCase("ru"));
+  return containsText(option.label, query);
 }
 
 /**

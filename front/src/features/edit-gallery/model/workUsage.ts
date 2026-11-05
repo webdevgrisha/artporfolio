@@ -1,4 +1,5 @@
 import type { WorkUsage, WorkUsages } from "@/entities/gallery";
+import { pluralForm } from "@/shared/lib/pluralForm";
 
 /** The usage of an item no work names. */
 export const noWorkUsage: WorkUsage = { count: 0, onlyCount: 0 };
@@ -6,15 +7,6 @@ export const noWorkUsage: WorkUsage = { count: 0, onlyCount: 0 };
 /** The usage of the item `id`; none for an item the counts don't know yet, such as a new one. */
 export function usageOf(usages: WorkUsages, id: string): WorkUsage {
   return usages[id] ?? noWorkUsage;
-}
-
-const pluralRules = new Intl.PluralRules("ru");
-
-/** The word for `count` among three forms, as in «1 работа», «2 работы», «5 работ». */
-function pluralForm(count: number, one: string, few: string, many: string): string {
-  const plural = pluralRules.select(count);
-
-  return plural === "one" ? one : plural === "few" ? few : many;
 }
 
 /** E.g. «1 работа», «12 работ». */

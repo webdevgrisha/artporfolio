@@ -5,7 +5,8 @@ import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form"
 import { galleryWorkUsageQuery, type WorkUsages } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
+import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { useRowRemoval } from "../../model/useRowRemoval";
 import { describeWorkUsage, usageOf } from "../../model/workUsage";
@@ -76,13 +77,12 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
   const [editing, setEditing] = React.useState<Editing>();
   const addFieldRef = React.useRef<HTMLInputElement>(null);
   const savedTitles = new Map(saved.data.map(({ id, title }) => [id, title]));
-  const removal = useRowRemoval({
-    remove: (index) => {
-      remove(index);
-      setEditing(undefined);
-    },
+  const focusAfterUpdate = useFocusAfterUpdate();
+  const removal = useRowRemoval((index) => {
+    remove(index);
+    setEditing(undefined);
     // The row and its buttons are gone; the next row is added from the field above.
-    onRemoved: () => addFieldRef.current?.focus(),
+    focusAfterUpdate(() => addFieldRef.current?.focus());
   });
   const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
 
@@ -161,7 +161,7 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
           </TitleList>
         </div>
 
-        <ConfirmDialog
+        <ConfirmDeleteDialog
           isOpen={removal.pending !== undefined}
           title={`Удалить ${texts.rowFallback} «${removedTitle ?? ""}»?`}
           description={
@@ -172,8 +172,6 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
                 })
               : ""
           }
-          cancelLabel="Отмена"
-          confirmLabel="Удалить"
           onCancel={removal.cancel}
           onConfirm={removal.confirm}
         />

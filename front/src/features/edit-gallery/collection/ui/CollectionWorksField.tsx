@@ -1,6 +1,7 @@
 import React from "react";
 
 import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
+import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { Button } from "@/shared/ui/button";
 import { Fieldset } from "@/shared/ui/fieldset";
 import { Frame, FrameEmpty, FrameList, FrameListItem, FrameRow } from "@/shared/ui/frame-list";
@@ -50,25 +51,18 @@ export function CollectionWorksField({
   const [isAdding, setIsAdding] = React.useState(false);
   const removeButtons = React.useRef(new Map<string, HTMLButtonElement>());
   const addButton = React.useRef<HTMLButtonElement>(null);
-  // What takes the focus once a removed row is gone: the button of the next row, or the adding
-  // when no row is left, so the focus stays in the field instead of falling to the page.
-  const [focusTarget, setFocusTarget] = React.useState<{ workId?: string }>();
-
-  React.useEffect(() => {
-    if (focusTarget === undefined) return;
-
-    const { workId } = focusTarget;
-
-    (workId === undefined ? addButton.current : removeButtons.current.get(workId))?.focus();
-    setFocusTarget(undefined);
-  }, [focusTarget]);
+  const focusAfterUpdate = useFocusAfterUpdate();
 
   function remove(id: string) {
     const index = chosen.findIndex((work) => work.id === id);
     const neighbour = chosen[index + 1] ?? chosen[index - 1];
 
     onChange(value.filter((chosenId) => chosenId !== id));
-    setFocusTarget({ workId: neighbour?.id });
+    // The button of the next row, or the adding when no row is left, so the focus stays in the
+    // field instead of falling to the page.
+    focusAfterUpdate(() => {
+      (neighbour ? removeButtons.current.get(neighbour.id) : addButton.current)?.focus();
+    });
   }
 
   function add(ids: string[]) {

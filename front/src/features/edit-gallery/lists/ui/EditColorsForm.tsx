@@ -10,8 +10,9 @@ import {
   type WorkUsages,
 } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
+import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ColorSwatch, ColorSwatchInput } from "@/shared/ui/color-swatch";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { useRowRemoval } from "../../model/useRowRemoval";
@@ -80,13 +81,12 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
   const [newHex, setNewHex] = React.useState(defaultColorHex);
   const addFieldRef = React.useRef<HTMLInputElement>(null);
   const savedColors = new Map(saved.data.map((color) => [color.id, color]));
-  const removal = useRowRemoval({
-    remove: (index) => {
-      remove(index);
-      setEditing(undefined);
-    },
+  const focusAfterUpdate = useFocusAfterUpdate();
+  const removal = useRowRemoval((index) => {
+    remove(index);
+    setEditing(undefined);
     // The row and its buttons are gone; the next color is added from the field above.
-    onRemoved: () => addFieldRef.current?.focus(),
+    focusAfterUpdate(() => addFieldRef.current?.focus());
   });
   const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
 
@@ -205,7 +205,7 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
           </TitleList>
         </div>
 
-        <ConfirmDialog
+        <ConfirmDeleteDialog
           isOpen={removal.pending !== undefined}
           title={`Удалить цвет «${removedTitle ?? ""}»?`}
           description={
@@ -213,8 +213,6 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
               ? describeWorkUsage(removal.pending.usage, { item: "цвет", others: "цветов" })
               : ""
           }
-          cancelLabel="Отмена"
-          confirmLabel="Удалить"
           onCancel={removal.cancel}
           onConfirm={removal.confirm}
         />

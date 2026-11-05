@@ -1,26 +1,15 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
 import type { GalleryCollection } from "@/entities/gallery";
-import { galleryCollectionPath, routes } from "@/shared/config/routes";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import {
-  actionsColumn,
-  DataTable,
-  positionColumn,
-  RowActions,
-  type TableRow,
-} from "@/shared/ui/data-table";
-import { PhotoThumbnail } from "@/shared/ui/media-preview";
-
-import {
-  collectionsSortableColumns,
-  compareCollectionYears,
-  matchesCollectionQuery,
-} from "../model/collectionsTableView";
-import { formatCollectionYears } from "../model/collectionYears";
+import { routes } from "@/shared/config/routes";
+import { useConfirmation } from "@/shared/lib/useConfirmation";
+import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
+import { DataTable } from "@/shared/ui/data-table";
+import { describeCollectionDeletion } from "../model/collectionDeletion";
+import { collectionsSortableColumns, matchesCollectionQuery } from "../model/collectionsTableView";
 import { useDeleteCollection, useDeletingCollectionIds } from "../model/useDeleteCollection";
 import styles from "./CollectionsList.module.css";
+import { collectionsColumns } from "./collectionsColumns";
 
 interface CollectionsListProps {
   className?: string;
@@ -28,72 +17,18 @@ interface CollectionsListProps {
   collections: readonly GalleryCollection[];
 }
 
-/** What deleting the collection does to its works, which stay in the gallery. */
-function deletionDescription(count: number): string {
-  if (count === 0) return "Коллекция пропадёт с сайта. Это нельзя отменить.";
-
-  const plural = new Intl.PluralRules("ru").select(count);
-  const noun = plural === "one" ? "работа" : plural === "few" ? "работы" : "работ";
-  const verb = plural === "one" ? "останется" : "останутся";
-
-  return `Коллекция пропадёт с сайта, её ${String(count)} ${noun} ${verb} в галерее без коллекции. Это нельзя отменить.`;
-}
-
-const collator = new Intl.Collator("ru", { sensitivity: "base" });
-
 /**
  * Every collection, in a table; a collection opens by the pencil and is deleted after a
  * confirmation.
  */
 export function CollectionsList({ className, collections }: CollectionsListProps) {
-  const deletion = useDeleteCollection();
+  const { mutate: deleteCollection } = useDeleteCollection();
   const deletingIds = useDeletingCollectionIds();
-  const [deleted, setDeleted] = React.useState<GalleryCollection>();
-
-  const columns = React.useMemo<ColumnDef<TableRow<GalleryCollection>>[]>(
-    () => [
-      positionColumn({ isSortable: true }),
-      {
-        id: "cover",
-        header: "Обложка",
-        meta: { className: styles.coverColumn },
-        enableSorting: false,
-        cell: ({ row: { original } }) => <PhotoThumbnail image={original.item.cover} />,
-      },
-      {
-        id: "title",
-        header: "Название",
-        accessorFn: (row) => row.item.title,
-        sortingFn: (a, b) => collator.compare(a.original.item.title, b.original.item.title),
-      },
-      {
-        id: "years",
-        header: "Годы",
-        meta: { className: styles.yearsColumn },
-        accessorFn: (row) => row.item.startYear,
-        sortingFn: (a, b) => compareCollectionYears(a.original.item, b.original.item),
-        // The latest first, as the site shows them.
-        sortDescFirst: true,
-        cell: ({ row: { original } }) => formatCollectionYears(original.item),
-      },
-      {
-        id: "works",
-        header: "Работ",
-        meta: { className: styles.countColumn },
-        accessorFn: (row) => row.item.workIds.length,
-        // The largest first: the useful start.
-        sortDescFirst: true,
-      },
-      actionsColumn((collection) => (
-        <RowActions
-          title={collection.title}
-          editTo={galleryCollectionPath(collection.id)}
-          isDeleting={deletingIds.includes(collection.id)}
-          onDelete={() => setDeleted(collection)}
-        />
-      )),
-    ],
-    [deletingIds],
+  const confirmation = useConfirmation(deleteCollection);
+  const { ask } = confirmation;
+  const columns = React.useMemo(
+    () => collectionsColumns({ deletingIds, onDelete: ask }),
+    [ask, deletingIds],
   );
 
   return (
@@ -111,17 +46,12 @@ export function CollectionsList({ className, collections }: CollectionsListProps
         addLink={{ label: "Добавить коллекцию", to: routes.galleryCollectionNew }}
         emptyText="Коллекций пока нет"
       />
-      <ConfirmDialog
-        isOpen={deleted !== undefined}
-        title={`Удалить коллекцию «${deleted?.title ?? ""}»?`}
-        description={deletionDescription(deleted?.workIds.length ?? 0)}
-        cancelLabel="Отмена"
-        confirmLabel="Удалить"
-        onCancel={() => setDeleted(undefined)}
-        onConfirm={() => {
-          if (deleted) deletion.mutate(deleted);
-          setDeleted(undefined);
-        }}
+      <ConfirmDeleteDialog
+        isOpen={confirmation.pending !== undefined}
+        title={`Удалить коллекцию «${confirmation.pending?.title ?? ""}»?`}
+        description={describeCollectionDeletion(confirmation.pending?.workIds.length ?? 0)}
+        onCancel={confirmation.cancel}
+        onConfirm={confirmation.confirm}
       />
     </>
   );

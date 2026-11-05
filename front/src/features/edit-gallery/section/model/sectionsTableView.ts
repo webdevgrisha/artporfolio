@@ -1,4 +1,5 @@
 import type { GallerySection } from "@/entities/gallery";
+import { containsText } from "@/shared/lib/containsText";
 
 /**
  * The columns the table sorts by, as named in the address. The sections stand by title already, so
@@ -11,9 +12,7 @@ export function matchesSectionQuery(
   { subsections, title }: GallerySection,
   query: string,
 ): boolean {
-  const needle = query.trim().toLocaleLowerCase("ru");
-
   return [title, ...subsections.map((subsection) => subsection.title)].some((text) =>
-    text.toLocaleLowerCase("ru").includes(needle),
+    containsText(text, query),
   );
 }

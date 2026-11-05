@@ -3,9 +3,10 @@ import React from "react";
 import { useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import { maxSubsections, type Subsection, type WorkUsages } from "@/entities/gallery";
+import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { Button } from "@/shared/ui/button";
 import { ClearableInput } from "@/shared/ui/clearable-input";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { FieldError, FieldHint } from "@/shared/ui/field";
 import { maxTitleLength } from "../../model/titles";
 import { useRowRemoval } from "../../model/useRowRemoval";
@@ -41,30 +42,24 @@ export function SectionFields({
   const addButtonRef = React.useRef<HTMLButtonElement>(null);
   const hintId = React.useId();
   const errorId = React.useId();
-  // The row whose place gets the focus once a removed row has left the list.
-  const [focusAfterRemove, setFocusAfterRemove] = React.useState<number>();
+  const focusAfterUpdate = useFocusAfterUpdate();
   const savedTitles = new Map(savedSubsections.map(({ id, title }) => [id, title]));
   const listError = errors.subsections?.message ?? errors.subsections?.root?.message;
   const isFull = fields.length >= maxSubsections;
-  const removal = useRowRemoval({
-    remove: (index) => {
-      remove(index);
-      setFocusAfterRemove(index);
-    },
+  const removal = useRowRemoval((index) => {
+    const lastIndex = fields.length - 2;
+
+    remove(index);
+    // The next row takes the place of the removed one; after the last row, the add button.
+    focusAfterUpdate(() => {
+      if (lastIndex >= 0) {
+        setFocus(`subsections.${Math.min(index, lastIndex)}.title`);
+      } else {
+        addButtonRef.current?.focus();
+      }
+    });
   });
   const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
-
-  React.useEffect(() => {
-    if (focusAfterRemove === undefined) return;
-
-    // The next row takes the place of the removed one; after the last row, the add button.
-    if (fields.length > 0) {
-      setFocus(`subsections.${Math.min(focusAfterRemove, fields.length - 1)}.title`);
-    } else {
-      addButtonRef.current?.focus();
-    }
-    setFocusAfterRemove(undefined);
-  }, [fields.length, focusAfterRemove, setFocus]);
 
   function clearTitle() {
     // After the first submit, fields are revalidated on change; clearing is a change too.
@@ -138,7 +133,7 @@ export function SectionFields({
         </Button>
       </fieldset>
 
-      <ConfirmDialog
+      <ConfirmDeleteDialog
         isOpen={removal.pending !== undefined}
         title={`Удалить подраздел «${removedTitle ?? ""}»?`}
         description={
@@ -146,8 +141,6 @@ export function SectionFields({
             ? describeWorkUsage(removal.pending.usage, { item: "раздел", others: "разделов" })
             : ""
         }
-        cancelLabel="Отмена"
-        confirmLabel="Удалить"
         onCancel={removal.cancel}
         onConfirm={removal.confirm}
       />

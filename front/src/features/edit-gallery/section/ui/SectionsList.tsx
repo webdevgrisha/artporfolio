@@ -1,19 +1,15 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import React from "react";
-import type { GallerySection, WorkUsage, WorkUsages } from "@/entities/gallery";
-import { gallerySectionPath, routes } from "@/shared/config/routes";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import {
-  actionsColumn,
-  DataTable,
-  positionColumn,
-  RowActions,
-  type TableRow,
-} from "@/shared/ui/data-table";
-import { describeWorkUsage, usageOf } from "../../model/workUsage";
+import type { GallerySection, WorkUsages } from "@/entities/gallery";
+import { routes } from "@/shared/config/routes";
+import { useConfirmation } from "@/shared/lib/useConfirmation";
+import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
+import { DataTable } from "@/shared/ui/data-table";
+import { usageOf } from "../../model/workUsage";
+import { describeSectionDeletion } from "../model/sectionDeletion";
 import { matchesSectionQuery, sectionsSortableColumns } from "../model/sectionsTableView";
 import { useDeleteSection, useDeletingSectionIds } from "../model/useDeleteSection";
 import styles from "./SectionsList.module.css";
+import { sectionsColumns } from "./sectionsColumns";
 
 interface SectionsListProps {
   className?: string;
@@ -24,75 +20,19 @@ interface SectionsListProps {
 }
 
 /**
- * What the deletion of the section takes from the site, its subsections included, and what it
- * leaves the works that were in it.
- */
-function deletionDescription({ subsections }: GallerySection, usage: WorkUsage): string {
-  const count = subsections.length;
-  const plural = new Intl.PluralRules("ru").select(count);
-  const noun = plural === "one" ? "подраздел" : plural === "few" ? "подраздела" : "подразделов";
-  const removal =
-    count === 0
-      ? "Раздел пропадёт с сайта."
-      : `Раздел и ${String(count)} ${noun} пропадут с сайта.`;
-  const works =
-    usage.count === 0 ? "" : ` ${describeWorkUsage(usage, { item: "раздел", others: "разделов" })}`;
-
-  return `${removal}${works} Это нельзя отменить.`;
-}
-
-/**
  * Every section with its subsections, in a table, by title as on the site: «№» and the title
  * would only repeat that order, so only the counts of subsections and of works sort. The search finds the
  * titles of the subsections too. A section opens by the pencil and is deleted after a
  * confirmation.
  */
 export function SectionsList({ className, sections, usages }: SectionsListProps) {
-  const deletion = useDeleteSection();
+  const { mutate: deleteSection } = useDeleteSection();
   const deletingIds = useDeletingSectionIds();
-  const [deleted, setDeleted] = React.useState<GallerySection>();
-
-  const columns = React.useMemo<ColumnDef<TableRow<GallerySection>>[]>(
-    () => [
-      positionColumn({ isSortable: false }),
-      {
-        id: "title",
-        header: "Раздел",
-        meta: { className: styles.titleColumn },
-        enableSorting: false,
-        cell: ({ row: { original } }) => original.item.title,
-      },
-      {
-        id: "subsections",
-        header: "Подразделы",
-        accessorFn: (row) => row.item.subsections.length,
-        // The most subsections first: the useful start.
-        sortDescFirst: true,
-        cell: ({ row: { original } }) =>
-          original.item.subsections.length > 0 ? (
-            original.item.subsections.map((subsection) => subsection.title).join(", ")
-          ) : (
-            <span className={styles.none}>Нет</span>
-          ),
-      },
-      {
-        id: "works",
-        header: "Работ",
-        meta: { className: styles.countColumn },
-        accessorFn: (row) => usageOf(usages, row.item.id).count,
-        // The largest first: the useful start.
-        sortDescFirst: true,
-      },
-      actionsColumn((section) => (
-        <RowActions
-          title={section.title}
-          editTo={gallerySectionPath(section.id)}
-          isDeleting={deletingIds.includes(section.id)}
-          onDelete={() => setDeleted(section)}
-        />
-      )),
-    ],
-    [deletingIds, usages],
+  const confirmation = useConfirmation(deleteSection);
+  const { ask, pending } = confirmation;
+  const columns = React.useMemo(
+    () => sectionsColumns({ deletingIds, onDelete: ask, usages }),
+    [ask, deletingIds, usages],
   );
 
   return (
@@ -110,17 +50,12 @@ export function SectionsList({ className, sections, usages }: SectionsListProps)
         addLink={{ label: "Добавить раздел", to: routes.gallerySectionNew }}
         emptyText="Разделов пока нет"
       />
-      <ConfirmDialog
-        isOpen={deleted !== undefined}
-        title={`Удалить раздел «${deleted?.title ?? ""}»?`}
-        description={deleted ? deletionDescription(deleted, usageOf(usages, deleted.id)) : ""}
-        cancelLabel="Отмена"
-        confirmLabel="Удалить"
-        onCancel={() => setDeleted(undefined)}
-        onConfirm={() => {
-          if (deleted) deletion.mutate(deleted);
-          setDeleted(undefined);
-        }}
+      <ConfirmDeleteDialog
+        isOpen={pending !== undefined}
+        title={`Удалить раздел «${pending?.title ?? ""}»?`}
+        description={pending ? describeSectionDeletion(pending, usageOf(usages, pending.id)) : ""}
+        onCancel={confirmation.cancel}
+        onConfirm={confirmation.confirm}
       />
     </>
   );

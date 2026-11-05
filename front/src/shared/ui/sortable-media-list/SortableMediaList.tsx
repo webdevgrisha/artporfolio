@@ -3,9 +3,10 @@ import React, { type ReactNode } from "react";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { joinMessages } from "@/shared/lib/joinMessages";
+import { useConfirmation } from "@/shared/lib/useConfirmation";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
 import { MediaPreviewDialog } from "@/shared/ui/media-preview";
 import { formatPosition, SortableList, useSortableRowFocus } from "@/shared/ui/sortable";
@@ -70,24 +71,15 @@ export function SortableMediaList({
   const addButtonRef = React.useRef<HTMLButtonElement>(null);
   const { focusAfterUpdate, listRef } = useSortableRowFocus<HTMLUListElement>();
   const [viewedItemId, setViewedItemId] = React.useState<string>();
-  // The saved item the question is about. The item goes only once the question has closed, since
-  // the page is inert until then and could not take the focus.
-  const [removal, setRemoval] = React.useState<{ id: string; isConfirmed: boolean }>();
-  const removedItem = items.find((item) => item.id === removal?.id);
   // Announces a move made with the arrow buttons; dnd-kit announces the dragged ones.
   const [moveAnnouncement, setMoveAnnouncement] = React.useState("");
+  // A saved item asks first.
+  const removal = useConfirmation<string>((itemId) => removeItem(getItemIndex(itemId)));
+  const removedItem = items.find((item) => item.id === removal.pending);
   const isFull = items.length >= maxItems;
   const { dropTargetProps, isDragOver } = useFileDrop({
     disabled: disabled || isFull,
     onDrop: addFiles,
-  });
-
-  // After every render: the question, a child, has closed by then in its own effect.
-  React.useEffect(() => {
-    if (!removal?.isConfirmed) return;
-
-    setRemoval(undefined);
-    removeItem(getItemIndex(removal.id));
   });
 
   function getItemIndex(itemId: string): number {
@@ -194,11 +186,7 @@ export function SortableMediaList({
                   onMoveUp={() => moveItem(index, index - 1, "moveUp")}
                   onMoveDown={() => moveItem(index, index + 1, "moveDown")}
                   onOpen={() => setViewedItemId(item.id)}
-                  onRemove={() =>
-                    item.isSaved
-                      ? setRemoval({ id: item.id, isConfirmed: false })
-                      : removeItem(index)
-                  }
+                  onRemove={() => (item.isSaved ? removal.ask(item.id) : removeItem(index))}
                   onReplace={() => openReplacePicker(item.id)}
                 >
                   {renderItemFields?.(item, index)}
@@ -227,14 +215,12 @@ export function SortableMediaList({
       </div>
 
       {/* Outside the fieldset: a file dropped onto the open dialogs is not a pick. */}
-      <ConfirmDialog
-        isOpen={removal !== undefined && !removal.isConfirmed}
+      <ConfirmDeleteDialog
+        isOpen={removal.pending !== undefined}
         title={`Удалить фото «${removedItem?.name ?? ""}»?`}
         description="После сохранения фото пропадёт с сайта. Это нельзя отменить."
-        cancelLabel="Отмена"
-        confirmLabel="Удалить"
-        onCancel={() => setRemoval(undefined)}
-        onConfirm={() => setRemoval((current) => current && { ...current, isConfirmed: true })}
+        onCancel={removal.cancel}
+        onConfirm={removal.confirm}
       />
       <MediaPreviewDialog
         item={items.find((item) => item.id === viewedItemId)}

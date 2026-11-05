@@ -1,4 +1,5 @@
 import type { Project } from "@/entities/project";
+import { containsText } from "@/shared/lib/containsText";
 
 /** The columns the table sorts by, as named in the address. */
 export const sortableColumns = ["position", "title", "link"] as const;
@@ -14,9 +15,5 @@ export function linkHost(link: string): string {
 
 /** Whether the project's title or link contains the query, in any case. */
 export function matchesQuery({ link, title }: Project, query: string): boolean {
-  const needle = query.trim().toLocaleLowerCase("ru");
-
-  return (
-    title.toLocaleLowerCase("ru").includes(needle) || link.toLocaleLowerCase("ru").includes(needle)
-  );
+  return containsText(title, query) || containsText(link, query);
 }

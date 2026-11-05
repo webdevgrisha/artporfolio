@@ -1,16 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { type GalleryWorkSummary, galleryWorksQuery } from "@/entities/gallery";
+import { compareText } from "@/shared/lib/compareText";
 import { countryCodes, countryName } from "@/shared/lib/countries";
-
-const collator = new Intl.Collator("ru", { sensitivity: "base" });
 
 /** The countries to choose from, by their Russian names, after «Не указана» for none. */
 export const countryOptions: readonly { label: string; value: string }[] = [
   { label: "Не указана", value: "" },
   ...countryCodes
     .map((code) => ({ label: countryName(code), value: code }))
-    .sort((a, b) => collator.compare(a.label, b.label)),
+    .sort((a, b) => compareText(a.label, b.label)),
 ];
 
 /**
@@ -24,7 +23,7 @@ export function citiesOf(works: readonly GalleryWorkSummary[], country: string):
       .map(({ city }) => city),
   );
 
-  return [...cities].sort(collator.compare);
+  return [...cities].sort(compareText);
 }
 
 /**

@@ -4,6 +4,7 @@ import type {
   GallerySection,
   GalleryWorkSummary,
 } from "@/entities/gallery";
+import { containsText } from "@/shared/lib/containsText";
 import { countryName } from "@/shared/lib/countries";
 import type { TableFilter } from "@/shared/lib/tableView";
 
@@ -76,7 +77,7 @@ export function createWorkFilters(
 
 /** Whether the title of the work contains the query, in any case. */
 export function matchesWorkQuery({ title }: GalleryWorkSummary, query: string): boolean {
-  return title.toLocaleLowerCase("ru").includes(query.trim().toLocaleLowerCase("ru"));
+  return containsText(title, query);
 }
 
 /** By the area of the work, the smaller first; works of one area by the width. */
