@@ -110,10 +110,10 @@ export async function listWorks(reader: Reader): Promise<Tagged<WorkSummary[]>> 
 }
 
 /**
- * How the works `reader` sees use each section, material, color and palette, tagged by what is
+ * How the works, hidden ones too, use each section, material, color and palette, tagged by what is
  * returned. Counted afresh from every work on each request, so it never drifts from the works.
  */
-export async function getWorkUsage(reader: Reader): Promise<Tagged<WorkUsage>> {
+export async function getWorkUsage(): Promise<Tagged<WorkUsage>> {
   const [{ docs }, sections, materials, colors, palettes] = await Promise.all([
     worksCollection().get(),
     sectionsCollection().get(),
@@ -121,7 +121,7 @@ export async function getWorkUsage(reader: Reader): Promise<Tagged<WorkUsage>> {
     galleryColors.document().get(),
     galleryPalettes.document().get(),
   ]);
-  const works = docs.map(readWork).filter((work) => isVisibleTo(work, reader));
+  const works = docs.map(readWork);
   const data: WorkUsage = {
     sections: usageByItem(
       works.map((work) => work.sectionIds),

@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { identifyReader } from "#modules/auth/middleware";
+import { identifyReader, requireAuth } from "#modules/auth/middleware";
 import {
   putWork,
   readWork,
@@ -20,9 +20,9 @@ export const galleryWorksRouter = Router();
 // If-Match. The client names a new work itself and creates it with PUT and If-None-Match: *, so
 // repeating the request is safe.
 galleryWorksRouter.get("/", identifyReader, readWorks);
-// How many works name each section, material, color and palette: a few numbers instead of every
-// work. Before /:id, which takes only a UUID.
-galleryWorksRouter.get("/usage", identifyReader, readWorkUsage);
+// How many works name each section, material, color and palette: what the admin needs to know
+// before removing one. Before /:id, which takes only a UUID.
+galleryWorksRouter.get("/usage", requireAuth, readWorkUsage);
 galleryWorksRouter.get("/:id", identifyReader, validateParams(workParamsSchema), readWork);
 galleryWorksRouter.put(
   "/:id",

@@ -11,6 +11,7 @@ import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import { formatWorkDate } from "../../work/model/workDisplay";
+import { addableWorks } from "../model/addableWorks";
 import { AddWorksDialog } from "./AddWorksDialog";
 import styles from "./CollectionWorksField.module.css";
 
@@ -44,12 +45,7 @@ export function CollectionWorksField({
   works,
 }: CollectionWorksFieldProps) {
   const chosen = works.filter((work) => value.includes(work.id));
-  // A work on its own, or one taken out of this collection and not saved yet.
-  const others = works.filter(
-    (work) =>
-      !value.includes(work.id) &&
-      (work.collectionId === null || work.collectionId === collectionId),
-  );
+  const addable = addableWorks(works, value, collectionId);
   const [isAdding, setIsAdding] = React.useState(false);
   const removeButtons = React.useRef(new Map<string, HTMLButtonElement>());
   const addButton = React.useRef<HTMLButtonElement>(null);
@@ -126,7 +122,7 @@ export function CollectionWorksField({
       <AddWorksDialog
         isOpen={isAdding}
         isGalleryEmpty={works.length === 0}
-        works={others}
+        works={addable}
         onAdd={add}
         onCancel={() => setIsAdding(false)}
       />

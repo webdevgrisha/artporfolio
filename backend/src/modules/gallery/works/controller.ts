@@ -26,9 +26,10 @@ export const readWorks: RequestHandler<object, WorksResponse> = async (_request,
 };
 
 export const readWorkUsage: RequestHandler<object, WorkUsage> = async (_request, response) => {
-  const { data, etag } = await getWorkUsage(readerOf(response.locals));
+  const { data, etag } = await getWorkUsage();
 
-  response.status(200).set("ETag", etag).json(data);
+  // It counts the hidden works too, so no shared cache may keep it.
+  response.status(200).set({ "Cache-Control": "private, no-cache", ETag: etag }).json(data);
 };
 
 export const readWork: RequestHandler<WorkParams, Work> = async (request, response) => {

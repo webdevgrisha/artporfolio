@@ -169,13 +169,22 @@ describe("reading the works", () => {
   });
 
   it("returns how the works use each item of the lists, with its ETag", async () => {
-    const response = await send("GET", "/usage");
+    const response = await send("GET", "/usage", { Cookie: adminSessionCookie });
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-cache");
     await expect(response.json()).resolves.toEqual(usage);
-    expect(service.getWorkUsage).toHaveBeenCalledWith("visitor");
     expect(service.getWork).not.toHaveBeenCalled();
+  });
+
+  it("does not tell a visitor how the works use the lists", async () => {
+    auth.verifySession.mockRejectedValue(new UnauthorizedError());
+
+    const response = await send("GET", "/usage");
+
+    expect(response.status).toBe(401);
+    expect(service.getWorkUsage).not.toHaveBeenCalled();
   });
 
   it("returns one work with its ETag", async () => {
