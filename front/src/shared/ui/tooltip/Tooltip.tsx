@@ -56,8 +56,9 @@ export function Tooltip({ children, className, content }: TooltipProps) {
   ]);
   const { isMounted, status } = useTransitionStatus(context, { duration: transitionDuration });
   // A modal dialog is in the top layer and makes the rest of the page inert, so no z-index lifts a
-  // tooltip in <body> above it: a trigger in a dialog keeps its tooltip in that dialog.
-  const portalRoot = elements.domReference?.closest("dialog") ?? null;
+  // tooltip in <body> above it: a trigger in a dialog keeps its tooltip in that dialog. Undefined
+  // elsewhere, for <body>: to FloatingPortal a null root is one still to come, so nothing shows.
+  const portalRoot = elements.domReference?.closest("dialog") ?? undefined;
 
   return (
     <>
