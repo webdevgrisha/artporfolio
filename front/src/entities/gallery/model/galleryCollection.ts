@@ -2,11 +2,6 @@ import { z } from "zod";
 
 import { photoSchema } from "@/shared/api/photo";
 
-import { minWorkYear } from "./galleryWork";
-
-/** A collection holds works, so it starts no earlier than a work can be dated. */
-export const minCollectionYear = minWorkYear;
-
 /** The most works one collection may hold (backend/src/modules/gallery-collections/schema.ts). */
 export const maxCollectionWorks = 200;
 
