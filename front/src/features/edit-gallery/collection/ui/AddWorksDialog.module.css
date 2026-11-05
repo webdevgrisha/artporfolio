@@ -49,17 +49,13 @@
   min-inline-size: 0;
 }
 
-/* The date and the collection, muted, as the details of the row. */
+/* The date, muted, as the details of the row. */
 .details {
   display: flex;
   flex-wrap: wrap;
   gap: 0 var(--space-3);
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
-}
-
-.collection {
-  overflow-wrap: anywhere;
 }
 
 /* The count at the start, the buttons at the end, as the actions of the confirmation. */

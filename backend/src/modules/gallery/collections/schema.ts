@@ -40,7 +40,8 @@ export const collectionBodySchema = z
     endYear: collectionYearSchema.nullable(),
     /**
      * Every work of the collection, in any order: the site shows them by date. A work of another
-     * collection moves to this one; a saved work left out becomes a work on its own.
+     * collection is refused: it moves in its own form. A saved work left out becomes a work on its
+     * own.
      */
     workIds: z
       .array(z.uuid())

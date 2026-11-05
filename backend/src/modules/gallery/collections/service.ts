@@ -108,10 +108,16 @@ function assertTitleIsFree(id: string, title: string, { docs }: QuerySnapshot): 
 }
 
 /**
- * The works `ids` in the order the site shows them; rejects with 422 one that does not exist, such
- * as one deleted while the page was open.
+ * The works `ids` of the collection `collectionId` in the order the site shows them. Rejects with
+ * 422 a work that does not exist, such as one deleted while the page was open, and a work of another
+ * collection: the If-Match of this collection says nothing about that one, so a form opened earlier
+ * would take the work away without having seen where it went. A work moves in its own form.
  */
-async function readWorks(transaction: Transaction, ids: string[]): Promise<string[]> {
+async function readWorks(
+  transaction: Transaction,
+  collectionId: string,
+  ids: string[],
+): Promise<string[]> {
   if (ids.length === 0) {
     return [];
   }
@@ -123,13 +129,21 @@ async function readWorks(transaction: Transaction, ids: string[]): Promise<strin
     throw new UnprocessableContentError(`There is no work ${missing.id}`);
   }
 
-  return idsInOrder(snapshots, "admin");
+  const works = worksInOrder(snapshots);
+  const taken = works.find(
+    ({ work }) => work.collectionId !== null && work.collectionId !== collectionId,
+  );
+
+  if (taken) {
+    throw new UnprocessableContentError(`The work ${taken.id} is in another collection`);
+  }
+
+  return works.map(({ id }) => id);
 }
 
 /**
- * Puts the works `next` in the collection `id` and takes out those of `current` left out. A work
- * moved from another collection leaves it. The date a work was saved stays: the admin did not edit
- * the work itself.
+ * Puts the works `next` in the collection `id` and takes out those of `current` left out. The date
+ * a work was saved stays: the admin did not edit the work itself.
  */
 function moveWorks(transaction: Transaction, id: string, current: string[], next: string[]): void {
   const previous = new Set(current);
@@ -192,7 +206,8 @@ export async function getCollection(id: string, reader: Reader): Promise<Tagged<
  * Creates the collection `id`, which the client chose, with its works; rejects it with 412 once a
  * collection has that id, such as one an earlier try of the same request created, and with 409
  * when another collection has its title. A new collection has no saved cover, so its cover needs an
- * upload, or it is rejected with 422, as it is for a work that does not exist.
+ * upload, or it is rejected with 422, as it is for a work that does not exist or is in another
+ * collection.
  */
 export async function createCollection(
   id: string,
@@ -214,7 +229,7 @@ export async function createCollection(
 
       assertTitleIsFree(id, body.title, await transaction.get(collectionsCollection()));
 
-      const ordered = await readWorks(transaction, workIds);
+      const ordered = await readWorks(transaction, id, workIds);
       const now = Timestamp.now();
       const created: StoredCollection = {
         ...fields,
@@ -235,7 +250,7 @@ export async function createCollection(
 /**
  * Replaces the collection and its works while it is still the one the client read (`ifMatch`);
  * rejects it with 409 when another collection has its title and with 422 for a work that does not
- * exist.
+ * exist or is in another collection.
  */
 export function replaceCollection(
   id: string,
@@ -257,7 +272,7 @@ export function replaceCollection(
         assertIfMatch(ifMatch, toCollection(id, current, currentWorkIds));
         assertTitleIsFree(id, body.title, await transaction.get(collectionsCollection()));
 
-        const ordered = await readWorks(transaction, workIds);
+        const ordered = await readWorks(transaction, id, workIds);
         const next: StoredCollection = {
           ...current,
           ...fields,

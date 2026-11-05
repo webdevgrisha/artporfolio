@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
+import type { GalleryWorkSummary } from "@/entities/gallery";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { Button } from "@/shared/ui/button";
 import { Fieldset } from "@/shared/ui/fieldset";
@@ -17,8 +17,6 @@ import styles from "./CollectionWorksField.module.css";
 interface CollectionWorksFieldProps {
   /** The collection being edited; none for a new one. */
   collectionId?: string;
-  /** The collections of the gallery, to name the one a work to add is in now. */
-  collections: readonly GalleryCollection[];
   disabled: boolean;
   error?: string;
   /** Whether the works differ from the saved ones. */
@@ -38,7 +36,6 @@ interface CollectionWorksFieldProps {
  */
 export function CollectionWorksField({
   collectionId,
-  collections,
   disabled,
   error,
   isModified,
@@ -47,7 +44,12 @@ export function CollectionWorksField({
   works,
 }: CollectionWorksFieldProps) {
   const chosen = works.filter((work) => value.includes(work.id));
-  const others = works.filter((work) => !value.includes(work.id));
+  // A work on its own, or one taken out of this collection and not saved yet.
+  const others = works.filter(
+    (work) =>
+      !value.includes(work.id) &&
+      (work.collectionId === null || work.collectionId === collectionId),
+  );
   const [isAdding, setIsAdding] = React.useState(false);
   const removeButtons = React.useRef(new Map<string, HTMLButtonElement>());
   const addButton = React.useRef<HTMLButtonElement>(null);
@@ -125,8 +127,6 @@ export function CollectionWorksField({
         isOpen={isAdding}
         isGalleryEmpty={works.length === 0}
         works={others}
-        collections={collections}
-        collectionId={collectionId}
         onAdd={add}
         onCancel={() => setIsAdding(false)}
       />

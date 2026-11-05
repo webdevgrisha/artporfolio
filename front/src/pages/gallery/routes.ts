@@ -104,20 +104,19 @@ export const editWorkRoute = {
     loadFresh(galleryWorkQuery(params.id ?? ""), ...workReferenceQueries),
 };
 
-// A collection shows its works and adds others, naming the collection each one is in now, so its
-// pages load every work and every collection.
+// A collection shows its works and adds free ones, so its pages load every work.
 
 export const newCollectionRoute = {
   Component: NewCollectionPage,
   handle: newCollectionHandle,
-  loader: () => loadFresh(galleryWorksQuery, galleryCollectionsQuery),
+  loader: () => loadFresh(galleryWorksQuery),
 };
 
 export const editCollectionRoute = {
   Component: EditCollectionPage,
   handle: editCollectionHandle,
   loader: ({ params }: LoaderFunctionArgs) =>
-    loadFresh(galleryCollectionQuery(params.id ?? ""), galleryWorksQuery, galleryCollectionsQuery),
+    loadFresh(galleryCollectionQuery(params.id ?? ""), galleryWorksQuery),
 };
 
 export const newSectionRoute = { Component: NewSectionPage, handle: newSectionHandle };

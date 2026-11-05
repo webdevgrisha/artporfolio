@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { galleryCollectionsQuery, galleryWorksQuery } from "@/entities/gallery";
+import { galleryWorksQuery } from "@/entities/gallery";
 import { CreateCollectionForm } from "@/features/edit-gallery";
 import { AwaitPageData } from "@/shared/ui/page-data";
 
@@ -19,7 +19,6 @@ export function NewCollectionPage() {
 
 function NewCollection() {
   const { data: works } = useSuspenseQuery(galleryWorksQuery);
-  const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);
 
-  return <CreateCollectionForm className={styles.form} works={works} collections={collections} />;
+  return <CreateCollectionForm className={styles.form} works={works} />;
 }

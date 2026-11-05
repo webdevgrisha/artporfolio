@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
+import type { GalleryWorkSummary } from "@/entities/gallery";
 import { isPreconditionFailed } from "@/shared/api/httpError";
 import { galleryCollectionPath } from "@/shared/config/routes";
 import { EditForm } from "@/shared/ui/edit-form";
@@ -18,14 +18,12 @@ import { CollectionFields } from "./CollectionFields";
 
 interface CreateCollectionFormProps {
   className?: string;
-  /** The collections of the gallery, to name the one a work to add is in now. */
-  collections: readonly GalleryCollection[];
   /** Every work of the gallery, in the order the site shows them, to add to the collection. */
   works: readonly GalleryWorkSummary[];
 }
 
 /** A new collection; once it is created, its edit page opens in place of this one. */
-export function CreateCollectionForm({ className, collections, works }: CreateCollectionFormProps) {
+export function CreateCollectionForm({ className, works }: CreateCollectionFormProps) {
   const navigate = useNavigate();
   const allowNextNavigation = useAllowNextNavigation();
   // Every try of this form creates the same collection, so a retry after a lost response never
@@ -77,12 +75,7 @@ export function CreateCollectionForm({ className, collections, works }: CreateCo
         onRevert={() => reset()}
         onSubmit={handleSubmit(create)}
       >
-        <CollectionFields
-          isSaving={isSaving}
-          savedCover={null}
-          works={works}
-          collections={collections}
-        />
+        <CollectionFields isSaving={isSaving} savedCover={null} works={works} />
       </EditForm>
     </FormProvider>
   );

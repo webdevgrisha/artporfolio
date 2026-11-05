@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import React from "react";
 
-import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
+import type { GalleryWorkSummary } from "@/entities/gallery";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
@@ -20,48 +20,27 @@ import { matchesWorkQuery } from "../../work/model/worksTableView";
 import styles from "./AddWorksDialog.module.css";
 
 export interface AddWorksChoiceProps {
-  /** The collections of the gallery, to name the one a work is in now. */
-  collections: readonly GalleryCollection[];
-  /** The collection being edited; none for a new one. */
-  collectionId?: string;
   /** The gallery has no works at all, so there is nothing to add yet. */
   isGalleryEmpty: boolean;
   /** Called on the cancel button and on Escape. */
   onCancel: () => void;
   /** Gets the chosen works, by id. */
   onAdd: (ids: string[]) => void;
-  /** The works to choose from, in the order the site shows them. */
+  /** The works free to add, in the order the site shows them. */
   works: readonly GalleryWorkSummary[];
 }
 
 /** The search, the works to check and the buttons of `AddWorksDialog`. */
-export function AddWorksChoice({
-  collectionId,
-  collections,
-  isGalleryEmpty,
-  onAdd,
-  onCancel,
-  works,
-}: AddWorksChoiceProps) {
+export function AddWorksChoice({ isGalleryEmpty, onAdd, onCancel, works }: AddWorksChoiceProps) {
   const listId = React.useId();
   const [query, setQuery] = React.useState("");
   const [chosenIds, setChosenIds] = React.useState<readonly string[]>([]);
   const shownWorks = works.filter((work) => matchesWorkQuery(work, query));
-  const collectionTitles = new Map(collections.map(({ id, title }) => [id, title]));
 
   function toggle(id: string, checked: boolean) {
     setChosenIds((current) =>
       checked ? [...current, id] : current.filter((chosenId) => chosenId !== id),
     );
-  }
-
-  /** Where the work is now, unless it is on its own or was taken out of this collection. */
-  function currentCollection({
-    collectionId: workCollectionId,
-  }: GalleryWorkSummary): string | undefined {
-    if (workCollectionId === null || workCollectionId === collectionId) return undefined;
-
-    return collectionTitles.get(workCollectionId);
   }
 
   return (
@@ -78,9 +57,7 @@ export function AddWorksChoice({
       <Frame className={styles.frame}>
         {works.length === 0 ? (
           <FrameEmpty>
-            {isGalleryEmpty
-              ? "В галерее пока нет работ"
-              : "Все работы галереи уже в этой коллекции"}
+            {isGalleryEmpty ? "В галерее пока нет работ" : "Все работы галереи уже в коллекциях"}
           </FrameEmpty>
         ) : shownWorks.length === 0 ? (
           <FrameEmpty>Ничего не найдено по запросу «{query}»</FrameEmpty>
@@ -88,7 +65,6 @@ export function AddWorksChoice({
           <FrameList>
             {shownWorks.map((work) => {
               const checkboxId = `${listId}-${work.id}`;
-              const collectionTitle = currentCollection(work);
 
               return (
                 <FrameListItem key={work.id}>
@@ -96,12 +72,7 @@ export function AddWorksChoice({
                     <PhotoThumbnail image={work.photo} />
                     <span className={styles.text}>
                       <FrameRowLabel htmlFor={checkboxId}>{work.title}</FrameRowLabel>
-                      <span className={styles.details}>
-                        {formatWorkDate(work)}
-                        {collectionTitle === undefined ? null : (
-                          <span className={styles.collection}>в коллекции «{collectionTitle}»</span>
-                        )}
-                      </span>
+                      <span className={styles.details}>{formatWorkDate(work)}</span>
                     </span>
                     <Checkbox
                       id={checkboxId}

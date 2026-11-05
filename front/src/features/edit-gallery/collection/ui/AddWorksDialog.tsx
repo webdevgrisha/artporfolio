@@ -11,7 +11,7 @@ interface AddWorksDialogProps extends AddWorksChoiceProps {
 
 /**
  * Chooses works to add to a collection, by checkboxes, with a search in the titles. A work of
- * another collection says which: adding it moves it here once the collection is saved.
+ * another collection is not offered: it moves in its own form.
  */
 export function AddWorksDialog({ isOpen, ...choiceProps }: AddWorksDialogProps) {
   const { dialogRef, handleCancel } = useModalDialog(isOpen, choiceProps.onCancel);

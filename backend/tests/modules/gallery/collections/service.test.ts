@@ -281,13 +281,35 @@ describe("the works of a collection", () => {
     ]);
   });
 
-  it("creates a collection with its works, moving one from another collection", async () => {
+  it("creates a collection with its works", async () => {
+    works.set(whaleId, storedWork(2024, 1, null));
+
     const { data } = await createCollection(newId, { ...body, workIds: [foxId, whaleId] });
 
     expect(data.workIds).toEqual([whaleId, foxId]);
     expect(collectionOf(foxId)).toBe(newId);
     expect(collectionOf(whaleId)).toBe(newId);
-    expect((await getCollection(seaId, "admin")).data.workIds).toEqual([]);
+  });
+
+  it("returns 422 for a work of another collection, and moves nothing", async () => {
+    await expect(
+      createCollection(newId, { ...body, workIds: [foxId, whaleId] }),
+    ).rejects.toMatchObject({ status: 422 });
+
+    expect(collectionOf(foxId)).toBeNull();
+    expect(collectionOf(whaleId)).toBe(seaId);
+  });
+
+  it("refuses a work put in another collection after the form was opened", async () => {
+    const { data, etag } = await getCollection(animalsId, "admin");
+
+    works.set(foxId, storedWork(2024, 1, seaId));
+
+    await expect(
+      replaceCollection(animalsId, { ...body, workIds: [...data.workIds, foxId] }, etag),
+    ).rejects.toMatchObject({ status: 422 });
+
+    expect(collectionOf(foxId)).toBe(seaId);
   });
 
   it("adds and removes works, leaving a removed work on its own", async () => {
