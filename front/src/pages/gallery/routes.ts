@@ -14,7 +14,7 @@ import {
   galleryWorkUsageQuery,
 } from "@/entities/gallery";
 import { workReferenceQueries } from "@/features/edit-gallery";
-import { loadFresh } from "@/shared/api/pageData";
+import { loadCached, loadFresh } from "@/shared/api/pageData";
 import { revalidateUnlessOnlySearch } from "@/shared/lib/revalidateUnlessOnlySearch";
 
 import {
@@ -52,7 +52,7 @@ export const galleryWorksRoute = {
   Component: GalleryWorksSection,
   // The table names the sections, the materials and the collection of each work.
   loader: () =>
-    loadFresh(
+    loadCached(
       galleryWorksQuery,
       gallerySectionsQuery,
       galleryMaterialsQuery,
@@ -63,7 +63,7 @@ export const galleryWorksRoute = {
 
 export const galleryCollectionsRoute = {
   Component: GalleryCollectionsSection,
-  loader: () => loadFresh(galleryCollectionsQuery),
+  loader: () => loadCached(galleryCollectionsQuery),
   shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
@@ -72,7 +72,7 @@ export const galleryCollectionsRoute = {
 
 export const gallerySectionsRoute = {
   Component: GallerySectionsSection,
-  loader: () => loadFresh(gallerySectionsQuery, galleryWorkUsageQuery),
+  loader: () => loadCached(gallerySectionsQuery, galleryWorkUsageQuery),
   shouldRevalidate: revalidateUnlessOnlySearch,
 };
 

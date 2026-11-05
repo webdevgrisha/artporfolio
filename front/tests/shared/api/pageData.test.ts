@@ -1,7 +1,7 @@
 import { QueryObserver } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { loadFresh } from "@/shared/api/pageData";
+import { loadCached, loadFresh } from "@/shared/api/pageData";
 import { queryClient } from "@/shared/api/queryClient";
 
 const queryKey = ["page-data-test"];
@@ -78,5 +78,47 @@ describe("loadFresh", () => {
 
     process.off("unhandledRejection", unhandled);
     expect(unhandled).not.toHaveBeenCalled();
+  });
+});
+
+describe("loadCached", () => {
+  it("opens the page on the cache and still refreshes it", async () => {
+    queryClient.setQueryData(queryKey, "cached");
+
+    const { isCached, loading } = loadCached({
+      queryFn: () => Promise.resolve("fresh"),
+      queryKey,
+    });
+
+    expect(isCached).toBe(true);
+    await loading;
+    expect(queryClient.getQueryData(queryKey)).toBe("fresh");
+  });
+
+  it("waits for data that is not cached yet", () => {
+    const { isCached } = loadCached({ queryFn: () => Promise.resolve("fresh"), queryKey });
+
+    expect(isCached).toBe(false);
+  });
+
+  it("waits for data a change has outdated, so the old values never show", async () => {
+    queryClient.setQueryData(queryKey, "cached");
+    await queryClient.invalidateQueries({ queryKey, refetchType: "none" });
+
+    const { isCached } = loadCached({ queryFn: () => Promise.resolve("fresh"), queryKey });
+
+    expect(isCached).toBe(false);
+  });
+
+  it("waits while any of the queries of the page is missing", () => {
+    queryClient.setQueryData(queryKey, "cached");
+    const queryFn = () => Promise.resolve("fresh");
+
+    const { isCached } = loadCached(
+      { queryFn, queryKey },
+      { queryFn, queryKey: [...queryKey, "second"] },
+    );
+
+    expect(isCached).toBe(false);
   });
 });

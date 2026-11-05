@@ -6,7 +6,7 @@ import {
   projectsOrderQuery,
   projectsQuery,
 } from "@/entities/project";
-import { loadFresh } from "@/shared/api/pageData";
+import { loadCached, loadFresh } from "@/shared/api/pageData";
 import { revalidateUnlessOnlySearch } from "@/shared/lib/revalidateUnlessOnlySearch";
 
 import { editProjectHandle, newProjectHandle } from "./model/projectsHandles";
@@ -27,7 +27,7 @@ export const projectsIntroRoute = {
 
 export const projectsTableRoute = {
   Component: ProjectsTableSection,
-  loader: () => loadFresh(projectsQuery),
+  loader: () => loadCached(projectsQuery),
   shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
