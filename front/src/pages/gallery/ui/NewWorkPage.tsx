@@ -15,7 +15,6 @@ export function NewWorkPage() {
 }
 
 function NewWork() {
-  // AwaitPageData has waited for the fresh lists, so this never suspends.
   const references = useWorkReferences();
 
   return <CreateWorkForm className={styles.form} references={references} />;

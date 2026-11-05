@@ -13,8 +13,8 @@ interface ReplaceGalleryMaterialsParams {
 
 /** Every material with the ETag of the list. A save puts the saved list here. */
 export const galleryMaterialsQuery = queryOptions({
-  queryFn: ({ signal }): Promise<Tagged<GalleryMaterials>> =>
-    http.getWithETag({ path: "/gallery-materials", schema: galleryMaterialsSchema, signal }),
+  queryFn: (): Promise<Tagged<GalleryMaterials>> =>
+    http.getWithETag({ path: "/gallery-materials", schema: galleryMaterialsSchema }),
   queryKey: ["gallery", "materials"],
 });
 

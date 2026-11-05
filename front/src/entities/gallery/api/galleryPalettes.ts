@@ -13,8 +13,8 @@ interface ReplaceGalleryPalettesParams {
 
 /** Every palette with the ETag of the list. A save puts the saved list here. */
 export const galleryPalettesQuery = queryOptions({
-  queryFn: ({ signal }): Promise<Tagged<GalleryPalettes>> =>
-    http.getWithETag({ path: "/gallery-palettes", schema: galleryPalettesSchema, signal }),
+  queryFn: (): Promise<Tagged<GalleryPalettes>> =>
+    http.getWithETag({ path: "/gallery-palettes", schema: galleryPalettesSchema }),
   queryKey: ["gallery", "palettes"],
 });
 

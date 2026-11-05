@@ -1,7 +1,7 @@
 import { QueryObserver } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { fetchFresh, loadPageData } from "@/shared/api/pageData";
+import { loadFresh } from "@/shared/api/pageData";
 import { queryClient } from "@/shared/api/queryClient";
 
 const queryKey = ["page-data-test"];
@@ -10,49 +10,45 @@ afterEach(() => {
   queryClient.removeQueries({ queryKey });
 });
 
-describe("fetchFresh", () => {
+describe("loadFresh", () => {
   it("loads the data again although it is cached", async () => {
     queryClient.setQueryData(queryKey, "cached");
     const queryFn = vi.fn(() => Promise.resolve("fresh"));
 
-    await expect(fetchFresh({ queryFn, queryKey })).resolves.toBe("fresh");
+    await loadFresh({ queryFn, queryKey }).loading;
+
     expect(queryFn).toHaveBeenCalledOnce();
     expect(queryClient.getQueryData(queryKey)).toBe("fresh");
   });
 
-  it("loads again when a component that read the query unmounts during the request", async () => {
-    // Reads the signal, as the requests of the API do, so leaving the query cancels the request.
-    const queryFn = vi.fn(
-      ({ signal }: { signal: AbortSignal }) =>
-        new Promise<string>((resolve) => {
-          const timer = setTimeout(() => resolve("fresh"), 10);
-          signal.addEventListener("abort", () => clearTimeout(timer));
-        }),
-    );
+  it("finishes the request when a component that read the query unmounts during it", async () => {
+    const queryFn = vi.fn(() => Promise.resolve("fresh"));
 
-    const loading = fetchFresh({ queryFn, queryKey });
+    const { loading } = loadFresh({ queryFn, queryKey });
     const unsubscribe = new QueryObserver(queryClient, { enabled: false, queryKey }).subscribe(
       () => undefined,
     );
     unsubscribe();
 
-    await expect(loading).resolves.toBe("fresh");
-    expect(queryFn).toHaveBeenCalledTimes(2);
+    await loading;
+    expect(queryFn).toHaveBeenCalledOnce();
+    expect(queryClient.getQueryData(queryKey)).toBe("fresh");
   });
-});
 
-describe("loadPageData", () => {
-  it("is loaded once every load is done", async () => {
+  it("is loaded once every query is done", async () => {
     let finishSecond = () => {};
-    const second = new Promise<void>((resolve) => {
-      finishSecond = resolve;
+    const second = new Promise<string>((resolve) => {
+      finishSecond = () => resolve("second");
     });
     const loaded = vi.fn();
 
-    const { loading } = loadPageData(Promise.resolve("first"), second);
+    const { loading } = loadFresh(
+      { queryFn: () => Promise.resolve("first"), queryKey },
+      { queryFn: () => second, queryKey: [...queryKey, "second"] },
+    );
     void loading.then(loaded);
 
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(loaded).not.toHaveBeenCalled();
 
     finishSecond();
@@ -60,17 +56,23 @@ describe("loadPageData", () => {
     expect(loaded).toHaveBeenCalledOnce();
   });
 
-  it("fails as a load does, for the page to show its error", async () => {
+  it("fails as a query does, for the page to show its error", async () => {
     const error = new Error("No connection");
 
-    await expect(loadPageData(Promise.reject(error)).loading).rejects.toBe(error);
+    await expect(
+      loadFresh({ queryFn: () => Promise.reject(error), queryKey, retry: false }).loading,
+    ).rejects.toBe(error);
   });
 
   it("leaves no unhandled rejection when the page is left before its data arrives", async () => {
     const unhandled = vi.fn();
     process.on("unhandledRejection", unhandled);
 
-    loadPageData(Promise.reject(new Error("No connection")));
+    loadFresh({
+      queryFn: () => Promise.reject(new Error("No connection")),
+      queryKey,
+      retry: false,
+    });
     // An unhandled rejection is reported once the microtasks have run.
     await new Promise((resolve) => setTimeout(resolve, 0));
 

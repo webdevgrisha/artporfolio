@@ -22,7 +22,6 @@ export function ProjectsOrderSection() {
 }
 
 function ProjectsOrder() {
-  // AwaitPageData has waited for the fresh data, so these never suspend.
   const { data: projects } = useSuspenseQuery(projectsQuery);
   const { data: order } = useSuspenseQuery(projectsOrderQuery);
 

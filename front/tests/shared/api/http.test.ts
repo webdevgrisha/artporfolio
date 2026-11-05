@@ -106,16 +106,6 @@ describe("http", () => {
     );
   });
 
-  it("rejects a cancelled request with the abort error, not a network error", async () => {
-    server.use(mswHttp.get("/api/items/1", () => HttpResponse.json({ name: "Холст" })));
-    const controller = new AbortController();
-    controller.abort();
-
-    await expect(
-      http.get({ path: "/items/1", schema: itemSchema, signal: controller.signal }),
-    ).rejects.toMatchObject({ name: "AbortError" });
-  });
-
   it("rejects a response that does not match the schema", async () => {
     server.use(mswHttp.get("/api/items/1", () => HttpResponse.json({ name: 1 })));
 

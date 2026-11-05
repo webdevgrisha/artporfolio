@@ -14,7 +14,6 @@ export function GallerySectionsSection() {
 }
 
 function GallerySections() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: sections } = useSuspenseQuery(gallerySectionsQuery);
   const { data: usage } = useSuspenseQuery(galleryWorkUsageQuery);
 

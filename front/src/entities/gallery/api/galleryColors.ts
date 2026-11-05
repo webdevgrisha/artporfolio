@@ -13,8 +13,8 @@ interface ReplaceGalleryColorsParams {
 
 /** Every color with the ETag of the list. A save puts the saved list here. */
 export const galleryColorsQuery = queryOptions({
-  queryFn: ({ signal }): Promise<Tagged<GalleryColors>> =>
-    http.getWithETag({ path: "/gallery-colors", schema: galleryColorsSchema, signal }),
+  queryFn: (): Promise<Tagged<GalleryColors>> =>
+    http.getWithETag({ path: "/gallery-colors", schema: galleryColorsSchema }),
   queryKey: ["gallery", "colors"],
 });
 

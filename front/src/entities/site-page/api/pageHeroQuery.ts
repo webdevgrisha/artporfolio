@@ -6,7 +6,7 @@ import { getPageHero } from "./getPageHero";
 /** The hero of one page with its ETag. An upload puts the saved hero here. */
 export function pageHeroQuery(page: SitePageId) {
   return queryOptions({
-    queryFn: ({ signal }) => getPageHero({ page, signal }),
+    queryFn: () => getPageHero(page),
     queryKey: ["site-pages", page, "hero"],
   });
 }

@@ -22,7 +22,6 @@ export function GalleryIntroSection() {
 }
 
 function GalleryIntro() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: intro } = useSuspenseQuery(galleryIntroQuery);
 
   return <EditGalleryIntroForm className={styles.form} intro={intro} />;

@@ -17,7 +17,6 @@ export function CurrenciesPage() {
 }
 
 function CurrencyRatesForm() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: rates } = useSuspenseQuery(currencyRatesQuery);
 
   return <EditCurrencyRatesForm className={styles.form} rates={rates} />;

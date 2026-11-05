@@ -38,11 +38,10 @@ export const projectsQueryKey = ["projects"] as const;
 
 /** Every project in the order the site shows them. */
 export const projectsQuery = queryOptions({
-  queryFn: async ({ signal }): Promise<Project[]> => {
+  queryFn: async (): Promise<Project[]> => {
     const { projects } = await http.get({
       path: "/projects",
       schema: projectsResponseSchema,
-      signal,
     });
 
     return projects;
@@ -53,11 +52,10 @@ export const projectsQuery = queryOptions({
 /** One project with its ETag. A save puts the saved project here. */
 export function projectQuery(id: string) {
   return queryOptions({
-    queryFn: ({ signal }): Promise<Tagged<Project>> =>
+    queryFn: (): Promise<Tagged<Project>> =>
       http.getWithETag({
         path: `/projects/${encodeURIComponent(id)}`,
         schema: projectSchema,
-        signal,
       }),
     queryKey: [...projectsQueryKey, "item", id],
   });

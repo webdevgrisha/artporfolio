@@ -36,7 +36,6 @@ interface EditSectionProps {
 }
 
 function EditSection({ id }: EditSectionProps) {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: section } = useSuspenseQuery(gallerySectionQuery(id));
   const { data: usage } = useSuspenseQuery(galleryWorkUsageQuery);
 

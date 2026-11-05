@@ -13,8 +13,8 @@ interface ReplaceCurrencyRatesParams {
 
 /** Every rate with their ETag. A save puts the saved rates here. */
 export const currencyRatesQuery = queryOptions({
-  queryFn: ({ signal }): Promise<Tagged<CurrencyRates>> =>
-    http.getWithETag({ path: "/currencies", schema: currencyRatesSchema, signal }),
+  queryFn: (): Promise<Tagged<CurrencyRates>> =>
+    http.getWithETag({ path: "/currencies", schema: currencyRatesSchema }),
   queryKey: ["currencies"],
 });
 

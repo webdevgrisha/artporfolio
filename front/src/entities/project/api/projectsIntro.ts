@@ -12,11 +12,10 @@ interface ReplaceProjectsIntroParams {
 
 /** The text above the projects with its ETag. A save puts the saved text here. */
 export const projectsIntroQuery = queryOptions({
-  queryFn: ({ signal }): Promise<Tagged<ProjectsIntro>> =>
+  queryFn: (): Promise<Tagged<ProjectsIntro>> =>
     http.getWithETag({
       path: "/projects-intro",
       schema: projectsIntroSchema,
-      signal,
     }),
   queryKey: ["projects", "intro"],
 });

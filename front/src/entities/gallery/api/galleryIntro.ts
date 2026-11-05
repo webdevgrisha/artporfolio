@@ -12,11 +12,10 @@ interface ReplaceGalleryIntroParams {
 
 /** The text above the works with its ETag. A save puts the saved text here. */
 export const galleryIntroQuery = queryOptions({
-  queryFn: ({ signal }): Promise<Tagged<GalleryIntro>> =>
+  queryFn: (): Promise<Tagged<GalleryIntro>> =>
     http.getWithETag({
       path: "/gallery-intro",
       schema: galleryIntroSchema,
-      signal,
     }),
   queryKey: ["gallery", "intro"],
 });

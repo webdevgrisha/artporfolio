@@ -22,7 +22,6 @@ export function ContactPhotoSection() {
 }
 
 function ContactPhoto() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: photo } = useSuspenseQuery(contactPhoto.query);
 
   return <EditContactPhotoForm className={styles.form} photo={photo} />;

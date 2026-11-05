@@ -1,3 +1,20 @@
+import type { LoaderFunctionArgs } from "react-router";
+
+import {
+  galleryCollectionQuery,
+  galleryCollectionsQuery,
+  galleryColorsQuery,
+  galleryIntroQuery,
+  galleryMaterialsQuery,
+  galleryPalettesQuery,
+  gallerySectionQuery,
+  gallerySectionsQuery,
+  galleryWorkQuery,
+  galleryWorksQuery,
+  galleryWorkUsageQuery,
+} from "@/entities/gallery";
+import { workReferenceQueries } from "@/features/edit-gallery";
+import { loadFresh } from "@/shared/api/pageData";
 import { revalidateUnlessOnlySearch } from "@/shared/lib/revalidateUnlessOnlySearch";
 
 import {
@@ -8,20 +25,6 @@ import {
   newSectionHandle,
   newWorkHandle,
 } from "./model/galleryHandles";
-import {
-  galleryCollectionLoader,
-  galleryCollectionsLoader,
-  galleryColorsLoader,
-  galleryIntroLoader,
-  galleryMaterialsLoader,
-  galleryPalettesLoader,
-  gallerySectionLoader,
-  gallerySectionsLoader,
-  galleryWorkLoader,
-  galleryWorksLoader,
-  newGalleryCollectionLoader,
-  newGalleryWorkLoader,
-} from "./model/galleryRoute";
 import { EditCollectionPage } from "./ui/EditCollectionPage";
 import { EditSectionPage } from "./ui/EditSectionPage";
 import { EditWorkPage } from "./ui/EditWorkPage";
@@ -40,60 +43,81 @@ import { NewWorkPage } from "./ui/NewWorkPage";
 /** The page with the tabs of the gallery; each tab is a route of its own. */
 export const galleryRoute = { Component: GalleryPage };
 
-export const galleryIntroRoute = { Component: GalleryIntroSection, loader: galleryIntroLoader };
+export const galleryIntroRoute = {
+  Component: GalleryIntroSection,
+  loader: () => loadFresh(galleryIntroQuery),
+};
 
 export const galleryWorksRoute = {
   Component: GalleryWorksSection,
-  loader: galleryWorksLoader,
+  // The table names the sections, the materials and the collection of each work.
+  loader: () =>
+    loadFresh(
+      galleryWorksQuery,
+      gallerySectionsQuery,
+      galleryMaterialsQuery,
+      galleryCollectionsQuery,
+    ),
   shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 export const galleryCollectionsRoute = {
   Component: GalleryCollectionsSection,
-  loader: galleryCollectionsLoader,
+  loader: () => loadFresh(galleryCollectionsQuery),
   shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
+// The lists that works name tell how many works name each item, and warn before one they name is
+// removed, so their pages load the counts too (not the works: the server counts them).
+
 export const gallerySectionsRoute = {
   Component: GallerySectionsSection,
-  loader: gallerySectionsLoader,
+  loader: () => loadFresh(gallerySectionsQuery, galleryWorkUsageQuery),
   shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 export const galleryMaterialsRoute = {
   Component: GalleryMaterialsSection,
-  loader: galleryMaterialsLoader,
+  loader: () => loadFresh(galleryMaterialsQuery, galleryWorkUsageQuery),
 };
 
-export const galleryColorsRoute = { Component: GalleryColorsSection, loader: galleryColorsLoader };
+export const galleryColorsRoute = {
+  Component: GalleryColorsSection,
+  loader: () => loadFresh(galleryColorsQuery, galleryWorkUsageQuery),
+};
 
 export const galleryPalettesRoute = {
   Component: GalleryPalettesSection,
-  loader: galleryPalettesLoader,
+  loader: () => loadFresh(galleryPalettesQuery, galleryWorkUsageQuery),
 };
 
 export const newWorkRoute = {
   Component: NewWorkPage,
   handle: newWorkHandle,
-  loader: newGalleryWorkLoader,
+  loader: () => loadFresh(...workReferenceQueries),
 };
 
 export const editWorkRoute = {
   Component: EditWorkPage,
   handle: editWorkHandle,
-  loader: galleryWorkLoader,
+  loader: ({ params }: LoaderFunctionArgs) =>
+    loadFresh(galleryWorkQuery(params.id ?? ""), ...workReferenceQueries),
 };
+
+// A collection shows its works and adds others, naming the collection each one is in now, so its
+// pages load every work and every collection.
 
 export const newCollectionRoute = {
   Component: NewCollectionPage,
   handle: newCollectionHandle,
-  loader: newGalleryCollectionLoader,
+  loader: () => loadFresh(galleryWorksQuery, galleryCollectionsQuery),
 };
 
 export const editCollectionRoute = {
   Component: EditCollectionPage,
   handle: editCollectionHandle,
-  loader: galleryCollectionLoader,
+  loader: ({ params }: LoaderFunctionArgs) =>
+    loadFresh(galleryCollectionQuery(params.id ?? ""), galleryWorksQuery, galleryCollectionsQuery),
 };
 
 export const newSectionRoute = { Component: NewSectionPage, handle: newSectionHandle };
@@ -101,5 +125,6 @@ export const newSectionRoute = { Component: NewSectionPage, handle: newSectionHa
 export const editSectionRoute = {
   Component: EditSectionPage,
   handle: editSectionHandle,
-  loader: gallerySectionLoader,
+  loader: ({ params }: LoaderFunctionArgs) =>
+    loadFresh(gallerySectionQuery(params.id ?? ""), galleryWorkUsageQuery),
 };

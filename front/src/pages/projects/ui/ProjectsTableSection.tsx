@@ -14,7 +14,6 @@ export function ProjectsTableSection() {
 }
 
 function Projects() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: projects } = useSuspenseQuery(projectsQuery);
 
   return <ProjectsTable projects={projects} />;

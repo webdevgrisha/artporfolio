@@ -37,7 +37,6 @@ interface EditProjectProps {
 }
 
 function EditProject({ id }: EditProjectProps) {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: project } = useSuspenseQuery(projectQuery(id));
 
   return <EditProjectForm className={styles.form} project={project} />;

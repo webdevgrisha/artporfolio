@@ -52,11 +52,10 @@ function collectionPath(id: string): string {
 
 /** Every collection in the order the site shows them. */
 export const galleryCollectionsQuery = queryOptions({
-  queryFn: async ({ signal }): Promise<GalleryCollection[]> => {
+  queryFn: async (): Promise<GalleryCollection[]> => {
     const { collections } = await http.get({
       path: "/gallery-collections",
       schema: galleryCollectionsResponseSchema,
-      signal,
     });
 
     return collections;
@@ -67,11 +66,10 @@ export const galleryCollectionsQuery = queryOptions({
 /** One collection with its ETag. A save puts the saved collection here. */
 export function galleryCollectionQuery(id: string) {
   return queryOptions({
-    queryFn: ({ signal }): Promise<Tagged<GalleryCollection>> =>
+    queryFn: (): Promise<Tagged<GalleryCollection>> =>
       http.getWithETag({
         path: collectionPath(id),
         schema: galleryCollectionSchema,
-        signal,
       }),
     queryKey: [...galleryCollectionsQueryKey, "item", id],
   });

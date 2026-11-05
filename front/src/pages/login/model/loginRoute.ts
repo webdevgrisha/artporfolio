@@ -5,7 +5,7 @@ import { getLoginErrorMessage, login, loginSchema } from "@/features/login";
 import { redirectToParam, toAdminPath } from "@/shared/config/routes";
 
 export async function loginLoader({ request }: LoaderFunctionArgs) {
-  const user = await getCurrentUser({ signal: request.signal }).catch(() => null);
+  const user = await getCurrentUser().catch(() => null);
 
   if (user) {
     throw redirect(toAdminPath(new URL(request.url).searchParams.get(redirectToParam)));

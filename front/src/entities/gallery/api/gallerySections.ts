@@ -44,11 +44,10 @@ function sectionPath(id: string): string {
 
 /** Every section, sorted by title. */
 export const gallerySectionsQuery = queryOptions({
-  queryFn: async ({ signal }): Promise<GallerySection[]> => {
+  queryFn: async (): Promise<GallerySection[]> => {
     const { sections } = await http.get({
       path: "/gallery-sections",
       schema: gallerySectionsResponseSchema,
-      signal,
     });
 
     return sections;
@@ -59,11 +58,10 @@ export const gallerySectionsQuery = queryOptions({
 /** One section with its ETag. A save puts the saved section here. */
 export function gallerySectionQuery(id: string) {
   return queryOptions({
-    queryFn: ({ signal }): Promise<Tagged<GallerySection>> =>
+    queryFn: (): Promise<Tagged<GallerySection>> =>
       http.getWithETag({
         path: sectionPath(id),
         schema: gallerySectionSchema,
-        signal,
       }),
     queryKey: [...gallerySectionsQueryKey, "item", id],
   });

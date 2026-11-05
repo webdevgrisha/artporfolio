@@ -22,7 +22,6 @@ export function AboutPhotoSection() {
 }
 
 function AboutPhoto() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: photo } = useSuspenseQuery(aboutPhoto.query);
 
   return <EditAboutPhotoForm className={styles.form} photo={photo} />;

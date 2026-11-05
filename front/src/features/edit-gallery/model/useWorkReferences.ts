@@ -25,15 +25,15 @@ export interface WorkReferences {
   sections: readonly GallerySection[];
 }
 
-/** The queries of the lists a work form chooses from, which it reads afresh after a conflict. */
-export const workReferenceQueryKeys = [
-  gallerySectionsQuery.queryKey,
-  galleryMaterialsQuery.queryKey,
-  galleryColorsQuery.queryKey,
-  galleryPalettesQuery.queryKey,
-  galleryCollectionsQuery.queryKey,
-  currencyRatesQuery.queryKey,
-];
+/** The queries of the lists a work form chooses from: its page loads them, a conflict reloads them. */
+export const workReferenceQueries = [
+  gallerySectionsQuery,
+  galleryMaterialsQuery,
+  galleryColorsQuery,
+  galleryPalettesQuery,
+  galleryCollectionsQuery,
+  currencyRatesQuery,
+] as const;
 
 /**
  * The lists a work form chooses from, read from the cache. A page calls it once the loader has put

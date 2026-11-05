@@ -29,7 +29,6 @@ export function TitleListSection({ list }: TitleListSectionProps) {
 }
 
 function TitleList({ list }: TitleListSectionProps) {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data } = useSuspenseQuery(list.query);
   const { data: usage } = useSuspenseQuery(galleryWorkUsageQuery);
 

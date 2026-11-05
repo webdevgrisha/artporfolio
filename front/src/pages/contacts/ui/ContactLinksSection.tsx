@@ -15,7 +15,6 @@ export function ContactLinksSection() {
 }
 
 function ContactLinks() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: links } = useSuspenseQuery(contactLinksQuery);
 
   return <EditContactLinksForm className={styles.form} links={links} />;

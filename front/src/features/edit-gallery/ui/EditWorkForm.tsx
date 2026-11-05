@@ -4,7 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { type GalleryWork, galleryWorkQuery } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { type WorkReferences, workReferenceQueryKeys } from "../model/useWorkReferences";
+import { type WorkReferences, workReferenceQueries } from "../model/useWorkReferences";
 import { toWorkFormValues, type WorkFormValues, workFormSchema } from "../model/workFormSchema";
 import { saveWorkToastId, useSaveWork } from "../model/workMutations";
 import { WorkFields } from "./WorkFields";
@@ -27,7 +27,7 @@ export function EditWorkForm({ className, references, work }: EditWorkFormProps)
     form,
     initial: work,
     query: galleryWorkQuery(work.data.id),
-    related: workReferenceQueryKeys,
+    related: workReferenceQueries.map((query) => query.queryKey),
     // The server replaces the whole work, its photos included, at once.
     save: (values, etag) => saveWork.mutateAsync({ etag, values }),
     toValues: toWorkFormValues,

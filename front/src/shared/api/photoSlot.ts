@@ -18,8 +18,8 @@ export function photoSlot(path: string, queryKey: string[]) {
   return {
     path,
     query: queryOptions({
-      queryFn: ({ signal }): Promise<Tagged<Photo | null>> =>
-        http.getWithETag({ path, schema: photoSchema.nullable(), signal }),
+      queryFn: (): Promise<Tagged<Photo | null>> =>
+        http.getWithETag({ path, schema: photoSchema.nullable() }),
       queryKey,
     }),
   };

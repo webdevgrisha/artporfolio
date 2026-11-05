@@ -15,7 +15,6 @@ export function AboutTextSection() {
 }
 
 function AboutText() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: text } = useSuspenseQuery(aboutTextQuery);
 
   return <EditAboutTextForm className={styles.form} text={text} />;

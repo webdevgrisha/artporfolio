@@ -14,11 +14,10 @@ interface ReplaceProjectsOrderParams {
 
 /** The ids of the projects in the order the site shows them, with the ETag of that order. */
 export const projectsOrderQuery = queryOptions({
-  queryFn: async ({ signal }): Promise<Tagged<string[]>> => {
+  queryFn: async (): Promise<Tagged<string[]>> => {
     const { data, etag } = await http.getWithETag({
       path: "/projects/order",
       schema: projectsOrderSchema,
-      signal,
     });
 
     return { data: data.ids, etag };

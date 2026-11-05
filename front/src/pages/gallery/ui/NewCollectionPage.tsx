@@ -18,7 +18,6 @@ export function NewCollectionPage() {
 }
 
 function NewCollection() {
-  // AwaitPageData has waited for the fresh lists, so this never suspends.
   const { data: works } = useSuspenseQuery(galleryWorksQuery);
   const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);
 

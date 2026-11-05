@@ -17,9 +17,9 @@ export const returnToField = "returnTo";
 const logoutToastId = "logout";
 
 /** Whether the browser still has a session: the API answers 401 without one. */
-async function hasSession(signal: AbortSignal): Promise<boolean> {
+async function hasSession(): Promise<boolean> {
   try {
-    await getCurrentUser({ signal });
+    await getCurrentUser();
     return true;
   } catch (error) {
     if (error instanceof HttpError && error.status === 401) return false;
@@ -31,7 +31,7 @@ async function hasSession(signal: AbortSignal): Promise<boolean> {
  * Ends the session. Rejects while the session may still be there: the request was refused, never
  * reached the server, or the session could not be checked after a server error.
  */
-async function logout(signal: AbortSignal): Promise<void> {
+async function logout(): Promise<void> {
   try {
     await endSession();
   } catch (error) {
@@ -42,7 +42,7 @@ async function logout(signal: AbortSignal): Promise<void> {
     // The server clears the session cookie before it revokes the session, so an error while
     // revoking still signs this browser out. A proxy may answer with an error before the server
     // is reached, though, and then the session stays: only the session itself tells which.
-    if (await hasSession(signal)) throw error;
+    if (await hasSession()) throw error;
   }
 }
 
@@ -51,7 +51,7 @@ export async function logoutAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   try {
-    await logout(request.signal);
+    await logout();
   } catch (error) {
     showErrorToast(getRequestErrorMessage(error, "Не удалось выйти. Попробуйте ещё раз"), {
       id: logoutToastId,

@@ -23,7 +23,6 @@ export function GalleryColorsSection() {
 }
 
 function GalleryColors() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: colors } = useSuspenseQuery(galleryColorsQuery);
   const { data: usage } = useSuspenseQuery(galleryWorkUsageQuery);
 

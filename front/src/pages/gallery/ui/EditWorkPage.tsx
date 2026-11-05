@@ -27,7 +27,6 @@ interface EditWorkProps {
 }
 
 function EditWork({ id }: EditWorkProps) {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: work } = useSuspenseQuery(galleryWorkQuery(id));
   const references = useWorkReferences();
 

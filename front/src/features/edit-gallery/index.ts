@@ -1,7 +1,7 @@
 export { materialsList } from "./model/materialsList";
 export { palettesList } from "./model/palettesList";
 export type { TitleListConfig } from "./model/titleList";
-export { useWorkReferences } from "./model/useWorkReferences";
+export { useWorkReferences, workReferenceQueries } from "./model/useWorkReferences";
 export { CollectionsList } from "./ui/CollectionsList";
 export { CreateCollectionForm } from "./ui/CreateCollectionForm";
 export { CreateSectionForm } from "./ui/CreateSectionForm";

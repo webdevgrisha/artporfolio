@@ -22,7 +22,6 @@ export function ProjectsIntroSection() {
 }
 
 function ProjectsIntro() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: intro } = useSuspenseQuery(projectsIntroQuery);
 
   return <EditProjectsIntroForm className={styles.form} intro={intro} />;

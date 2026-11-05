@@ -22,7 +22,6 @@ export function AboutProcessSection() {
 }
 
 function AboutProcess() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: list } = useSuspenseQuery(processPhotosQuery);
 
   return <EditProcessPhotosForm className={styles.form} list={list} />;

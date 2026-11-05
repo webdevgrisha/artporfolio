@@ -81,11 +81,10 @@ function workPath(id: string): string {
  * photos come with one work alone (`galleryWorkQuery`).
  */
 export const galleryWorksQuery = queryOptions({
-  queryFn: async ({ signal }): Promise<GalleryWorkSummary[]> => {
+  queryFn: async (): Promise<GalleryWorkSummary[]> => {
     const { works } = await http.get({
       path: "/gallery-works",
       schema: galleryWorksResponseSchema,
-      signal,
     });
 
     return works;
@@ -99,11 +98,10 @@ export const galleryWorksQuery = queryOptions({
  * refreshes it too.
  */
 export const galleryWorkUsageQuery = queryOptions({
-  queryFn: ({ signal }): Promise<GalleryWorkUsage> =>
+  queryFn: (): Promise<GalleryWorkUsage> =>
     http.get({
       path: "/gallery-works/usage",
       schema: galleryWorkUsageSchema,
-      signal,
     }),
   queryKey: [...galleryWorksQueryKey, "usage"],
 });
@@ -111,11 +109,10 @@ export const galleryWorkUsageQuery = queryOptions({
 /** One work with its ETag. A save puts the saved work here. */
 export function galleryWorkQuery(id: string) {
   return queryOptions({
-    queryFn: ({ signal }): Promise<Tagged<GalleryWork>> =>
+    queryFn: (): Promise<Tagged<GalleryWork>> =>
       http.getWithETag({
         path: workPath(id),
         schema: galleryWorkSchema,
-        signal,
       }),
     queryKey: [...galleryWorksQueryKey, "item", id],
   });

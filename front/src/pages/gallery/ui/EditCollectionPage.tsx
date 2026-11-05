@@ -31,7 +31,6 @@ interface EditCollectionProps {
 }
 
 function EditCollection({ id }: EditCollectionProps) {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: collection } = useSuspenseQuery(galleryCollectionQuery(id));
   const { data: works } = useSuspenseQuery(galleryWorksQuery);
   const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);

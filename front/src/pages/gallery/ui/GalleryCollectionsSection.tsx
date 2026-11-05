@@ -14,7 +14,6 @@ export function GalleryCollectionsSection() {
 }
 
 function GalleryCollections() {
-  // AwaitPageData has waited for the fresh data, so this never suspends.
   const { data: collections } = useSuspenseQuery(galleryCollectionsQuery);
 
   return <CollectionsList collections={collections} />;

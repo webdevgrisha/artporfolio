@@ -269,9 +269,6 @@ class Http {
         headers: requestHeaders,
       });
     } catch (error) {
-      // A cancelled request is not a failure: its caller no longer needs the response.
-      if (options.signal?.aborted) throw error;
-
       // fetch rejects with a TypeError, which a bug in the code throws as well.
       throw new NetworkError(error);
     }

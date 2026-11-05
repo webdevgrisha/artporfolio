@@ -13,7 +13,7 @@ import type { AuthUser } from "./user";
  */
 export async function requireSession({ request }: LoaderFunctionArgs): Promise<AuthUser> {
   try {
-    return await getCurrentUser({ signal: request.signal });
+    return await getCurrentUser();
   } catch (error) {
     if (!(error instanceof HttpError && error.status === 401)) throw error;
 
