@@ -57,6 +57,8 @@ const work = {
   country: "PL",
   city: "Варшава",
 };
+// The list returns each work without its description and process photos.
+const { description: _description, processPhotos: _processPhotos, ...workSummary } = work;
 const body = {
   description: "Масло, холст.",
   photo: { alt: "Слон на закате", uploadId },
@@ -112,7 +114,7 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  service.listWorks.mockResolvedValue({ data: [work], etag });
+  service.listWorks.mockResolvedValue({ data: [workSummary], etag });
   service.getWork.mockResolvedValue({ data: work, etag, id });
   service.createWork.mockResolvedValue({ data: work, etag: savedEtag, id });
   service.replaceWork.mockResolvedValue({ data: work, etag: savedEtag, id });
@@ -127,7 +129,7 @@ describe("reading the works", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({ works: [work] });
+    await expect(response.json()).resolves.toEqual({ works: [workSummary] });
     expect(service.listWorks).toHaveBeenCalledWith("visitor");
     expect(response.headers.get("Vary")).toBe("Cookie");
     expect(response.headers.get("Cache-Control")).toBeNull();

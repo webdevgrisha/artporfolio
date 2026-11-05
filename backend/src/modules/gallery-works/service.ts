@@ -14,6 +14,7 @@ import {
   storedWorkSchema,
   type Work,
   type WorkBody,
+  type WorkSummary,
 } from "#modules/gallery-works/schema";
 import { firestore } from "#shared/firebase/firestore";
 import {
@@ -110,11 +111,11 @@ function toPrice(price: StoredWork["price"]): Work["price"] {
 }
 
 /**
- * The stored work as the API returns it, with download URLs and ISO 8601 dates. A section, a
- * material, a color or a palette deleted since the work was saved is left out (`known`, the ids
- * that exist).
+ * The stored work as the list of works returns it, with download URLs and ISO 8601 dates. A
+ * section, a material, a color or a palette deleted since the work was saved is left out (`known`,
+ * the ids that exist).
  */
-function toWork(
+function toWorkSummary(
   id: string,
   {
     city,
@@ -122,7 +123,6 @@ function toWork(
     colorIds,
     country,
     createdAt,
-    description,
     format,
     materialIds,
     month,
@@ -130,7 +130,6 @@ function toWork(
     partCount,
     photo,
     price,
-    processPhotos,
     published,
     saleStatus,
     sectionIds,
@@ -140,14 +139,13 @@ function toWork(
     year,
   }: StoredWork,
   known: KnownIds,
-): Work {
+): WorkSummary {
   return {
     city,
     collectionId,
     colorIds: colorIds.filter((colorId) => known.colors.has(colorId)),
     country,
     createdAt: createdAt.toDate().toISOString(),
-    description,
     format,
     id,
     materialIds: materialIds.filter((materialId) => known.materials.has(materialId)),
@@ -156,7 +154,6 @@ function toWork(
     partCount,
     photo: toPhoto(photo),
     price: toPrice(price),
-    processPhotos: processPhotos.map(toListPhoto),
     published,
     saleStatus,
     sectionIds: sectionIds.filter((sectionId) => known.sections.has(sectionId)),
@@ -165,6 +162,15 @@ function toWork(
     title,
     updatedAt: updatedAt.toDate().toISOString(),
     year,
+  };
+}
+
+/** The stored work as the API returns it alone: its summary, its description and process photos. */
+function toWork(id: string, work: StoredWork, known: KnownIds): Work {
+  return {
+    ...toWorkSummary(id, work, known),
+    description: work.description,
+    processPhotos: work.processPhotos.map(toListPhoto),
   };
 }
 
@@ -277,11 +283,14 @@ export function worksInOrder(docs: DocumentSnapshot[]): { id: string; work: Stor
     .sort((a, b) => compareWorks(a.work, b.work));
 }
 
-/** Every work `reader` sees in the order the site shows them, tagged by the stored list. */
-export async function listWorks(reader: Reader): Promise<Tagged<Work[]>> {
+/**
+ * Every work `reader` sees in the order the site shows them, each by its summary, tagged by what is
+ * returned.
+ */
+export async function listWorks(reader: Reader): Promise<Tagged<WorkSummary[]>> {
   const [{ docs }, known] = await Promise.all([worksCollection().get(), readKnownIds()]);
   const works = worksInOrder(docs).filter(({ work }) => isVisibleTo(work, reader));
-  const data = works.map(({ id, work }) => toWork(id, work, known));
+  const data = works.map(({ id, work }) => toWorkSummary(id, work, known));
 
   // Tagged by what is returned: deleting an item of a list a work refers to, such as a section,
   // changes the list without changing a work.

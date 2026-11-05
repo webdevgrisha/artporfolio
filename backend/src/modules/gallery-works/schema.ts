@@ -277,11 +277,17 @@ export const workSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 
+/**
+ * A work in the list of works: everything but its description and its process photos, the heavy
+ * parts that only the page of one work needs. A list of many works stays light.
+ */
+export const workSummarySchema = workSchema.omit({ description: true, processPhotos: true });
+
 export const workResponseSchema = z.object({ work: workSchema });
 
 export const worksResponseSchema = z.object({
   /** In the order the site shows them: the latest first. */
-  works: z.array(workSchema),
+  works: z.array(workSummarySchema),
 });
 
 export type WorkFormat = (typeof workFormats)[number];
@@ -291,5 +297,6 @@ export type WorkParams = z.infer<typeof workParamsSchema>;
 export type WorkBody = z.infer<typeof workBodySchema>;
 export type StoredWork = z.infer<typeof storedWorkSchema>;
 export type Work = z.infer<typeof workSchema>;
+export type WorkSummary = z.infer<typeof workSummarySchema>;
 export type WorkResponse = z.infer<typeof workResponseSchema>;
 export type WorksResponse = z.infer<typeof worksResponseSchema>;

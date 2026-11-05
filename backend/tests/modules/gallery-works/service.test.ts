@@ -262,6 +262,14 @@ describe("listWorks", () => {
     );
   });
 
+  it("lists each work without its description and process photos, which only a work alone has", async () => {
+    const { data } = await listWorks("admin");
+
+    expect(data[0]).not.toHaveProperty("description");
+    expect(data[0]).not.toHaveProperty("processPhotos");
+    expect((await getWork(tigerId, "admin")).data.processPhotos).toHaveLength(1);
+  });
+
   it("lists the works of one year by month, the latest first", async () => {
     works.set(newId, storedWork(newId, "Жираф", 2024, 7));
 
