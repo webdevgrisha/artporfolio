@@ -61,14 +61,14 @@ export function worksColumns({
     {
       id: "sections",
       header: "Разделы",
-      meta: { className: styles.sectionsColumn },
+      meta: { className: styles.sectionsColumn, hiddenOnPhone: true },
       enableSorting: false,
       cell: ({ row: { original } }) => sectionLabels(original.item.sectionIds, sections).join(", "),
     },
     {
       id: "collection",
       header: "Коллекция",
-      meta: { className: styles.collectionColumn },
+      meta: { className: styles.collectionColumn, hiddenOnPhone: true },
       // Works on their own stay last either way.
       accessorFn: (row) =>
         row.item.collectionId === null ? undefined : collectionTitles.get(row.item.collectionId),
@@ -82,14 +82,14 @@ export function worksColumns({
     {
       id: "materials",
       header: "Материалы",
-      meta: { className: styles.materialsColumn },
+      meta: { className: styles.materialsColumn, hiddenOnPhone: true },
       enableSorting: false,
       cell: ({ row: { original } }) => titlesOf(original.item.materialIds, materials).join(", "),
     },
     {
       id: "size",
       header: "Размер",
-      meta: { className: styles.sizeColumn },
+      meta: { className: styles.sizeColumn, hiddenOnPhone: true },
       accessorFn: (row) => row.item.size,
       sortingFn: (a, b) => compareWorkSizes(a.original.item, b.original.item),
       // The smallest first would read as a step back; the largest first is the useful start.
@@ -99,14 +99,14 @@ export function worksColumns({
     {
       id: "format",
       header: "Формат",
-      meta: { className: styles.formatColumn },
+      meta: { className: styles.formatColumn, hiddenOnPhone: true },
       enableSorting: false,
       cell: ({ row: { original } }) => <WorkFormatCell work={original.item} />,
     },
     {
       id: "price",
       header: "Цена",
-      meta: { className: styles.priceColumn },
+      meta: { className: styles.priceColumn, hiddenOnPhone: true },
       // The price a visitor pays; works without a price stay last either way.
       accessorFn: (row) => row.item.price?.finalAmount,
       sortingFn: "basic",
@@ -116,14 +116,14 @@ export function worksColumns({
     {
       id: "saleStatus",
       header: "Статус",
-      meta: { className: styles.saleStatusColumn },
+      meta: { className: styles.saleStatusColumn, hiddenOnPhone: true },
       enableSorting: false,
       cell: ({ row: { original } }) => <WorkSaleStatusCell saleStatus={original.item.saleStatus} />,
     },
     {
       id: "date",
       header: "Дата",
-      meta: { className: styles.dateColumn },
+      meta: { className: styles.dateColumn, hiddenOnPhone: true },
       accessorFn: (row) => row.item.year,
       sortingFn: (a, b) => compareWorkDates(a.original.item, b.original.item),
       // The latest first, as the site shows them.
@@ -133,7 +133,7 @@ export function worksColumns({
     {
       id: "place",
       header: "Место",
-      meta: { className: styles.placeColumn },
+      meta: { className: styles.placeColumn, hiddenOnPhone: true },
       // Works without a place stay last either way.
       accessorFn: (row) => formatWorkPlace(row.item) || undefined,
       sortingFn: (a, b) => compareText(a.getValue<string>("place"), b.getValue<string>("place")),

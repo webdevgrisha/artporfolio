@@ -1,10 +1,16 @@
-.table {
-  min-inline-size: 44rem;
-}
-
 /* Room for the name «Обложка», which is wider than the cover. */
 .coverColumn {
-  inline-size: 7.5rem;
+  inline-size: 5.5rem;
+}
+
+@media (width >= 40rem) {
+  .table {
+    min-inline-size: 44rem;
+  }
+
+  .coverColumn {
+    inline-size: 7.5rem;
+  }
 }
 
 /* Room for «2022–2025», on one line. */

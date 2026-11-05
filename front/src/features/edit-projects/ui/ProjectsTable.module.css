@@ -1,10 +1,17 @@
 /* As in the design: the size of the tabs. The link gets enough for a domain, the title the rest. */
-.table {
-  min-inline-size: 40rem;
+/* The photo and its gap on a phone. */
+.photoColumn {
+  inline-size: 4rem;
 }
 
-.photoColumn {
-  inline-size: 6rem;
+@media (width >= 40rem) {
+  .table {
+    min-inline-size: 40rem;
+  }
+
+  .photoColumn {
+    inline-size: 6rem;
+  }
 }
 
 .linkColumn {

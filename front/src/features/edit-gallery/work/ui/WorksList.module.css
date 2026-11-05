@@ -3,12 +3,25 @@
  * scrolls the table instead of breaking words such as «Театральные». A wider one gives the rest to
  * the title.
  */
-.table {
-  min-inline-size: 141rem;
+/* The photo and its gap on a phone. */
+.photoColumn {
+  inline-size: 4rem;
 }
 
-.photoColumn {
-  inline-size: 6rem;
+@media (width >= 40rem) {
+  .table {
+    min-inline-size: 141rem;
+  }
+
+  .photoColumn {
+    inline-size: 6rem;
+  }
+
+  /* The table always scrolls here: the line shows where its columns pass under the actions. */
+  .table th:last-child,
+  .table td:last-child {
+    box-shadow: inset 1px 0 0 var(--color-divider);
+  }
 }
 
 /* Room for «Постеры › Театральные» on one line; several sections go on the next lines. */

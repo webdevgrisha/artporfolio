@@ -38,7 +38,7 @@ export function collectionsColumns({
     {
       id: "years",
       header: "Годы",
-      meta: { className: styles.yearsColumn },
+      meta: { className: styles.yearsColumn, hiddenOnPhone: true },
       accessorFn: (row) => row.item.startYear,
       sortingFn: (a, b) => compareCollectionYears(a.original.item, b.original.item),
       // The latest first, as the site shows them.
@@ -48,7 +48,7 @@ export function collectionsColumns({
     {
       id: "works",
       header: "Работ",
-      meta: { className: styles.countColumn },
+      meta: { className: styles.countColumn, hiddenOnPhone: true },
       accessorFn: (row) => row.item.workIds.length,
       // The largest first: the useful start.
       sortDescFirst: true,

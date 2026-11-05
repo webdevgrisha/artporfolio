@@ -1,9 +1,11 @@
-.table {
-  min-inline-size: 42rem;
-}
+@media (width >= 40rem) {
+  .table {
+    min-inline-size: 42rem;
+  }
 
-.titleColumn {
-  inline-size: 35%;
+  .titleColumn {
+    inline-size: 35%;
+  }
 }
 
 .none {

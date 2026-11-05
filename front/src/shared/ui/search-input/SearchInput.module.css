@@ -10,9 +10,14 @@
   gap: var(--space-4);
   align-items: center;
   padding-block-end: var(--space-1);
-  padding-inline: var(--space-4);
   font-size: var(--font-size-lg);
   border-block-end: 1px solid var(--color-divider);
+}
+
+@media (width >= 40rem) {
+  .root {
+    padding-inline: var(--space-4);
+  }
 }
 
 /*

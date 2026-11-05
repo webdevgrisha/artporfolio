@@ -15,7 +15,7 @@ export function positionColumn<TItem>({
   return {
     id: "position",
     header: "№",
-    meta: { className: styles.positionColumn },
+    meta: { className: styles.positionColumn, hiddenOnPhone: true },
     accessorFn: (row) => row.position,
     enableSorting: isSortable,
     cell: ({ row: { original } }) => <span className={styles.muted}>{original.position}</span>,

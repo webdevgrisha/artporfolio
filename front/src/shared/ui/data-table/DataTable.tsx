@@ -17,6 +17,7 @@ import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./DataTable.module.css";
 import { TableHead } from "./TableHead";
+import columnStyles from "./tableColumns.module.css";
 import type { TableRow } from "./tableRow";
 
 interface DataTableProps<TItem> {
@@ -69,6 +70,8 @@ export function DataTable<TItem>({
   const { changeSorting, changeView, view } = useTableView(sortableColumns, filters);
   const { query } = view;
   const isFiltered = filters.some(({ id }) => view.filters[id]);
+  const [areFiltersOpen, setAreFiltersOpen] = React.useState(isFiltered);
+  const filtersId = React.useId();
   const rows = React.useMemo(
     () =>
       items
@@ -122,13 +125,27 @@ export function DataTable<TItem>({
           }
           onChange={changeQuery}
         />
+        {filters.length > 0 ? (
+          <Button
+            className={styles.filtersToggle}
+            variant="text"
+            aria-controls={filtersId}
+            aria-expanded={areFiltersOpen}
+            onClick={() => setAreFiltersOpen(!areFiltersOpen)}
+          >
+            Фильтры
+          </Button>
+        ) : null}
         {/* Here and not by the filters: its line never moves the table once a filter is chosen. */}
         {isFiltered ? <Button onClick={() => clearFilters()}>Сбросить фильтры</Button> : null}
         <ButtonLink to={addLink.to}>{addLink.label}</ButtonLink>
       </div>
 
       {filters.length > 0 ? (
-        <div className={styles.filters}>
+        <div
+          id={filtersId}
+          className={clsx(styles.filters, !areFiltersOpen && styles.filtersClosed)}
+        >
           {filters.map(({ id, label, options }) => (
             <Select
               key={id}
@@ -161,11 +178,21 @@ export function DataTable<TItem>({
             <tbody>
               {table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className={styles.row}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className={cell.column.columnDef.meta?.className}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const { meta } = cell.column.columnDef;
+
+                    return (
+                      <td
+                        key={cell.id}
+                        className={clsx(
+                          meta?.className,
+                          meta?.hiddenOnPhone && columnStyles.hiddenOnPhone,
+                        )}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

@@ -4,11 +4,14 @@ import clsx from "clsx";
 import { ArrowDownIcon, ArrowUpIcon, SortIcon } from "@/shared/ui/icon";
 
 import styles from "./TableHead.module.css";
+import columnStyles from "./tableColumns.module.css";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
     /** The class of the column's header and cells, such as its width. */
     className?: string;
+    /** Hides the column on a phone, which keeps the photo, the title and the actions. */
+    hiddenOnPhone?: boolean;
   }
 }
 
@@ -49,6 +52,7 @@ export function TableHead<TData>({ table }: TableHeadProps<TData>) {
                 key={header.id}
                 className={clsx(
                   header.column.columnDef.meta?.className,
+                  header.column.columnDef.meta?.hiddenOnPhone && columnStyles.hiddenOnPhone,
                   sorted && styles.sortedHeader,
                 )}
                 scope="col"

@@ -41,7 +41,7 @@ export function projectsColumns({
     {
       id: "link",
       header: "Ссылка",
-      meta: { className: styles.linkColumn },
+      meta: { className: styles.linkColumn, hiddenOnPhone: true },
       accessorFn: (row) => linkHost(row.item.link),
       sortingFn: (a, b) =>
         compareText(linkHost(a.original.item.link), linkHost(b.original.item.link)),

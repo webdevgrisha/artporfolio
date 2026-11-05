@@ -31,6 +31,7 @@ export function sectionsColumns({
     {
       id: "subsections",
       header: "Подразделы",
+      meta: { hiddenOnPhone: true },
       accessorFn: (row) => row.item.subsections.length,
       // The most subsections first: the useful start.
       sortDescFirst: true,
@@ -44,7 +45,7 @@ export function sectionsColumns({
     {
       id: "works",
       header: "Работ",
-      meta: { className: styles.countColumn },
+      meta: { className: styles.countColumn, hiddenOnPhone: true },
       accessorFn: (row) => usageOf(usages, row.item.id).count,
       // The largest first: the useful start.
       sortDescFirst: true,
