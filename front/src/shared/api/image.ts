@@ -14,6 +14,8 @@ export const imageSchema = z.object({
   fileSize: z.number(),
   /** Size of the largest image. */
   height: z.number(),
+  /** URL of the uploaded file, which only the admin can download (GET /api/originals/…). */
+  original: z.string(),
   /** Ordered by width. The server makes every format in at least one width. */
   sources: z.object({
     avif: z.tuple([imageSourceSchema], imageSourceSchema),

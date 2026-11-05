@@ -31,6 +31,14 @@ export function MediaPreviewDialog({ item, onClose }: MediaPreviewDialogProps) {
       isOpen={Boolean(item)}
       title={item?.name ?? ""}
       description={size}
+      actions={
+        // A same-origin link, so it carries the session; the server names the file.
+        item?.original ? (
+          <a className={styles.download} href={item.original} download>
+            Скачать оригинал
+          </a>
+        ) : null
+      }
       onClose={onClose}
     >
       {source !== undefined ? (

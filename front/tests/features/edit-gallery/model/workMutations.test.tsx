@@ -45,6 +45,7 @@ function apiWork(title: string): GalleryWork {
       fileName: "dragonfly.png",
       fileSize: 100,
       height: 640,
+      original: "/api/originals/dragonfly/original.jpeg",
       sources: {
         avif: [{ url: "https://storage.test/dragonfly/960.avif", width: 960 }],
         webp: [{ url: "https://storage.test/dragonfly/960.webp", width: 960 }],

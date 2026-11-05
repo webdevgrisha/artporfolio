@@ -37,6 +37,7 @@ function apiCollection(title: string): GalleryCollection {
       fileName: "savanna.png",
       fileSize: 100,
       height: 640,
+      original: "/api/originals/savanna/original.jpeg",
       sources: {
         avif: [{ url: "https://storage.test/savanna/960.avif", width: 960 }],
         webp: [{ url: "https://storage.test/savanna/960.webp", width: 960 }],

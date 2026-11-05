@@ -10,6 +10,8 @@ import styles from "./PreviewDialog.module.css";
 const closeLabel = "Закрыть";
 
 interface PreviewDialogProps {
+  /** Controls under the title and the description, such as a download link. */
+  actions?: ReactNode;
   /** What to show large, such as an image. Rendered only while the dialog is open. */
   children: ReactNode;
   /** A short line under the title, such as the image size. */
@@ -25,6 +27,7 @@ interface PreviewDialogProps {
  * it to the opening control when it closes.
  */
 export function PreviewDialog({
+  actions,
   children,
   description,
   isOpen,
@@ -63,6 +66,7 @@ export function PreviewDialog({
                   {description}
                 </p>
               ) : null}
+              {actions ? <div className={styles.actions}>{actions}</div> : null}
             </div>
             <Tooltip className={styles.close} content={closeLabel}>
               <IconButton label={closeLabel} onClick={onClose}>
