@@ -19,6 +19,8 @@ export const storedImageSchema = z.object({
   fileName: z.string(),
   fileSize: z.number().int().positive(),
   height: z.number().int().positive(),
+  /** The uploaded file, which only the admin can download; see modules/originals. */
+  originalPath: z.string(),
   sources: z.object({
     avif: z.array(storedImageFileSchema),
     webp: z.array(storedImageFileSchema),
@@ -46,6 +48,8 @@ export const imageSchema = z.object({
   /** Size of the largest image. */
   width: z.number().int().positive(),
   height: z.number().int().positive(),
+  /** URL of the uploaded file, from the site's origin; only the admin can download it. */
+  original: z.string(),
   sources: z.object({ avif: z.array(imageSourceSchema), webp: z.array(imageSourceSchema) }),
   /** Changes with every upload. */
   version: z.string(),
@@ -60,11 +64,17 @@ function toImageSource({ path, token, width }: StoredImageFile): ImageSource {
   return { url: downloadUrl({ path, token }), width };
 }
 
+/** The route of modules/originals that serves the file at `path`. */
+function originalUrl(path: string): string {
+  return `/api/originals/${path.split("/").map(encodeURIComponent).join("/")}`;
+}
+
 /** The stored image as the API returns it, with download URLs. */
 export function toImage({
   fileName,
   fileSize,
   height,
+  originalPath,
   sources,
   version,
   width,
@@ -73,6 +83,7 @@ export function toImage({
     fileName,
     fileSize,
     height,
+    original: originalUrl(originalPath),
     sources: {
       avif: sources.avif.map(toImageSource),
       webp: sources.webp.map(toImageSource),

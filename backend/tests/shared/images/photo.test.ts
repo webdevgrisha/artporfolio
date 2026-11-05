@@ -58,6 +58,7 @@ const published = {
   fileName: "photo.png",
   fileSize: 8,
   height: 480,
+  originalPath: "contacts/photo/new-version/original.png",
   sources: {
     avif: [{ path: "contacts/photo/new-version/960.avif", token: "token", width: 960 }],
     webp: [{ path: "contacts/photo/new-version/960.webp", token: "token", width: 960 }],
@@ -71,6 +72,7 @@ const storedPhoto = {
   fileName: "old.png",
   fileSize: 100,
   height: 700,
+  originalPath: "old/original.png",
   sources: {
     avif: [{ path: "old/1000.avif", token: "avif-token", width: 1_000 }],
     webp: [{ path: "old/1000.webp", token: "webp-token", width: 1_000 }],
@@ -81,7 +83,13 @@ const storedPhoto = {
 
 /** storedPhoto as the API returns it. */
 const returnedPhoto = {
-  ...storedPhoto,
+  alt: "Portrait",
+  fileName: "old.png",
+  fileSize: 100,
+  height: 700,
+  original: "/api/originals/old/original.png",
+  version: "old-version",
+  width: 1_000,
   sources: {
     avif: [{ url: "https://storage.test/old/1000.avif?token=avif-token", width: 1_000 }],
     webp: [{ url: "https://storage.test/old/1000.webp?token=webp-token", width: 1_000 }],

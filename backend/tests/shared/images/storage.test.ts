@@ -17,6 +17,7 @@ const storedImage = {
   fileName: "photo.png",
   fileSize: 8,
   height: 480,
+  originalPath: "images/v1/original.png",
   sources: {
     avif: [{ path: "images/v1/960.avif", token: "avif-token", width: 960 }],
     webp: [{ path: "images/v1/960.webp", token: "webp-token", width: 960 }],
@@ -33,7 +34,12 @@ beforeEach(() => {
 describe("image storage", () => {
   it("returns the image with download URLs in place of the stored paths", () => {
     expect(toImage(storedImage)).toEqual({
-      ...storedImage,
+      fileName: "photo.png",
+      fileSize: 8,
+      height: 480,
+      original: "/api/originals/images/v1/original.png",
+      version: "v1",
+      width: 960,
       sources: {
         avif: [{ url: "https://storage.test/images/v1/960.avif?token=avif-token", width: 960 }],
         webp: [{ url: "https://storage.test/images/v1/960.webp?token=webp-token", width: 960 }],

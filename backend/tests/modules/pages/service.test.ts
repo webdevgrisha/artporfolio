@@ -65,6 +65,7 @@ const published = {
   fileName: "painting.jpg",
   fileSize: 8,
   height: 320,
+  originalPath: "pages/about/hero/new/original.png",
   sources: {
     avif: [{ path: "pages/about/hero/new/640.avif", token: "token", width: 640 }],
     webp: [{ path: "pages/about/hero/new/640.webp", token: "token", width: 640 }],
@@ -79,6 +80,7 @@ const storedHero = {
   fileName: "old.jpg",
   fileSize: 100,
   height: 540,
+  originalPath: "pages/about/hero/old/original.png",
   sources: {
     avif: [{ path: "pages/about/hero/old/960.avif", token: "avif-token", width: 960 }],
     webp: [{ path: "pages/about/hero/old/960.webp", token: "webp-token", width: 960 }],
@@ -122,7 +124,12 @@ describe("page service", () => {
     await expect(getPages()).resolves.toEqual({
       about: {
         hero: {
-          ...storedHero,
+          fileName: "old.jpg",
+          fileSize: 100,
+          height: 540,
+          original: "/api/originals/pages/about/hero/old/original.png",
+          version: "old",
+          width: 960,
           sources: {
             avif: [
               {

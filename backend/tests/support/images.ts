@@ -7,6 +7,7 @@ export function apiImage(fileName: string): Image {
     fileSize: 466_000,
     width: 960,
     height: 640,
+    original: "/api/originals/image/original.png",
     sources: {
       avif: [{ url: "https://storage.test/image/960.avif?token=token", width: 960 }],
       webp: [{ url: "https://storage.test/image/960.webp?token=token", width: 960 }],

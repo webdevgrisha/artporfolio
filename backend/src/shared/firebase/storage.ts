@@ -13,6 +13,8 @@ export interface DownloadableFile {
 // A type alias, not an interface: the Storage SDK expects metadata with an index signature.
 export type FileMetadata = {
   cacheControl?: string;
+  /** How a browser handles the file when it gets it, such as saving it under a name. */
+  contentDisposition?: string;
   contentType: string;
 };
 
