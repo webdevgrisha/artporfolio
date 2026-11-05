@@ -20,6 +20,8 @@
     --color-text-muted: #6e6e6e;
     --color-text-inverse: #fff;
     --color-surface: #fff;
+    /* What lies over the page: a dialog, a dropdown, a toast. Only the dark theme tells it apart. */
+    --color-surface-raised: #fff;
     --color-surface-hover: #e0e0e0;
     --color-surface-disabled: #f5f5f5;
     --color-surface-inverse: #000;
@@ -34,6 +36,9 @@
     --color-success: #15803d;
     --color-warning: #b45309;
     --color-backdrop: rgb(0 0 0 / 31%);
+
+    --shadow-overlay: 0 4px 4px rgb(0 0 0 / 25%);
+    --shadow-dragged: 0 0.25rem 1rem rgb(0 0 0 / 15%);
 
     /* Spacing. See "Spacing system" in docs/STYLE_GUIDE.md. */
     --space-unit: 0.25rem;
@@ -84,6 +89,36 @@
 
     color-scheme: light;
     background: var(--color-surface);
+  }
+
+  /*
+   * The surfaces are neutral grays: a tint would change how the colors of the works look. The page
+   * is not pure black, on which light text glows. Every pair keeps the contrast of the light theme.
+   */
+  :root[data-theme="dark"] {
+    --color-text: #f2f2f2;
+    --color-text-muted: #a6a6a6;
+    --color-text-inverse: #141414;
+    --color-surface: #141414;
+    --color-surface-raised: #232323;
+    --color-surface-hover: #333;
+    --color-surface-disabled: #1e1e1e;
+    --color-surface-inverse: #f2f2f2;
+    /* Gray, not white: the frames of a whole form in white would outshine what they hold. */
+    --color-border: #8c8c8c;
+    --color-border-disabled: #666;
+    --color-border-modified: #6ea0ff;
+    --color-divider: #2e2e2e;
+    --color-focus: #f2f2f2;
+    --color-danger: #ff6b6b;
+    --color-success: #3ddc84;
+    --color-warning: #ffb020;
+    --color-backdrop: rgb(0 0 0 / 60%);
+
+    --shadow-overlay: 0 0.5rem 1.5rem rgb(0 0 0 / 60%);
+    --shadow-dragged: 0 0.25rem 1rem rgb(0 0 0 / 60%);
+
+    color-scheme: dark;
   }
 
   @media (width >= 40rem) {

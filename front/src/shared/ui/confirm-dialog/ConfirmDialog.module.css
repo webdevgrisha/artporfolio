@@ -1,10 +1,13 @@
 .root {
+  /* The controls inside take the surface of the dialog. */
+  --color-surface: var(--color-surface-raised);
+
   inline-size: min(32rem, 100% - 2 * var(--space-4));
   padding: var(--space-8);
   color: var(--color-text);
   background: var(--color-surface);
   border: 0;
-  box-shadow: 0 4px 4px rgb(0 0 0 / 25%);
+  box-shadow: var(--shadow-overlay);
 }
 
 .root::backdrop {

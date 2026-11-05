@@ -1,12 +1,15 @@
 /* As the confirmation dialog, wide enough for a list of works; the list scrolls inside it. */
 .root {
+  /* The controls inside take the surface of the dialog. */
+  --color-surface: var(--color-surface-raised);
+
   inline-size: min(40rem, 100% - 2 * var(--space-4));
   max-block-size: min(48rem, 100% - 2 * var(--space-4));
   padding: var(--space-4);
   color: var(--color-text);
   background: var(--color-surface);
   border: 0;
-  box-shadow: 0 4px 4px rgb(0 0 0 / 25%);
+  box-shadow: var(--shadow-overlay);
 }
 
 /* The title, the search and the actions keep their size; the list takes the rest of the height. */

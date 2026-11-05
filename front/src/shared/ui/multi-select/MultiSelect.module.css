@@ -123,7 +123,7 @@
   /* The scroll stops at the ends of the list instead of moving the page. */
   overscroll-behavior: contain;
   list-style: none;
-  background: var(--color-surface);
+  background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
 }
 
