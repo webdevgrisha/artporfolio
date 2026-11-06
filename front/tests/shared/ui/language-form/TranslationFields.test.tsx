@@ -9,9 +9,10 @@ import {
   workMaxLengths,
 } from "@/features/edit-gallery/work/model/workFormSchema";
 import { emptyWorkFormValues } from "@/features/edit-gallery/work/model/workFormValues";
-import { WorkTranslationFields } from "@/features/edit-gallery/work/ui/WorkTranslationFields";
+import { workLanguageFields } from "@/features/edit-gallery/work/model/workTranslation";
 import type { TargetLanguage } from "@/shared/config/languages";
 import { translationValuesSchema } from "@/shared/lib/translationsForm";
+import { TranslationFields } from "@/shared/ui/language-form/TranslationFields";
 
 const schema = z.looseObject({
   translations: translationValuesSchema({ ...workMaxLengths, alt: 250 }),
@@ -43,7 +44,8 @@ function Form({
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSave)}>
-        <WorkTranslationFields
+        <TranslationFields
+          fields={workLanguageFields}
           isSaving={false}
           language={language}
           saved={{ en: { title: { status: "edited", text: "Elephant" } } }}
@@ -54,7 +56,7 @@ function Form({
   );
 }
 
-describe("WorkTranslationFields", () => {
+describe("TranslationFields", () => {
   it("shows each text with its status and the Russian text", () => {
     render(<Form onSave={vi.fn()} />);
 

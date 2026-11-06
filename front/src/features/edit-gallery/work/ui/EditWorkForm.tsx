@@ -4,12 +4,13 @@ import { FormProvider, useForm } from "react-hook-form";
 import { type GalleryWork, galleryWorkQuery } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
+import { LanguageForm } from "@/shared/ui/language-form";
 import { type WorkReferences, workReferenceQueries } from "../model/useWorkReferences";
 import { type WorkFormValues, workFormSchema } from "../model/workFormSchema";
 import { toWorkFormValues } from "../model/workFormValues";
 import { saveWorkToastId, useSaveWork } from "../model/workMutations";
+import { workLanguageFields } from "../model/workTranslation";
 import { WorkFields } from "./WorkFields";
-import { WorkLanguages } from "./WorkLanguages";
 
 interface EditWorkFormProps {
   className?: string;
@@ -40,14 +41,18 @@ export function EditWorkForm({ className, references, work }: EditWorkFormProps)
     // The fields read the form from the context.
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <WorkLanguages isSaving={editForm.isSaving} saved={saved.data.translations}>
+        <LanguageForm
+          fields={workLanguageFields}
+          isSaving={editForm.isSaving}
+          saved={saved.data.translations}
+        >
           <WorkFields
             isSaving={editForm.isSaving}
             savedPhoto={saved.data.photo}
             savedProcessPhotos={saved.data.processPhotos}
             references={references}
           />
-        </WorkLanguages>
+        </LanguageForm>
       </EditForm>
     </FormProvider>
   );

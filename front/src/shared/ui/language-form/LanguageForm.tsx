@@ -1,40 +1,52 @@
 import React from "react";
-import { useFormContext, useFormState } from "react-hook-form";
+import { type FieldValues, useFormContext, useFormState } from "react-hook-form";
 
 import type { Translations } from "@/shared/api/translations";
 import { languageNames, type TargetLanguage, targetLanguages } from "@/shared/config/languages";
+import { countOutdated } from "@/shared/lib/translationsForm";
 import { Select } from "@/shared/ui/select";
 
-import type { WorkFormValues } from "../model/workFormSchema";
-import { countOutdated } from "../model/workTranslation";
-import styles from "./WorkLanguages.module.css";
-import { WorkTranslationFields } from "./WorkTranslationFields";
+import styles from "./LanguageForm.module.css";
+import { TranslationFields } from "./TranslationFields";
 
-type WorkLanguage = "ru" | TargetLanguage;
+type FormLanguage = "ru" | TargetLanguage;
 
 const russianName = "Русский (оригинал)";
 
-interface WorkLanguagesProps {
-  /** The fields of the work in Russian. */
+/** A text of the form that the site shows in every language. */
+export interface TranslatedField {
+  /** The name the server gives the text in `translations`. */
+  field: string;
+  label: string;
+  /** Whether the text takes several lines. */
+  multiline?: boolean;
+  /** The form field that holds the text in Russian. */
+  source: string;
+}
+
+interface LanguageFormProps {
+  /** The fields of the form in Russian. */
   children: React.ReactNode;
+  fields: readonly TranslatedField[];
   isSaving: boolean;
-  /** The translations of the saved work. */
+  /** The translations of the saved resource. */
   saved: Translations;
 }
 
 /**
- * Switches a work form between its languages. All the languages are one form with one save: the
- * Russian fields stay mounted while hidden, so switching never loses what was typed.
+ * Switches a form between its languages. It reads a form with a `translations` field from its
+ * context. All the languages are one form with one save: the Russian fields stay mounted while
+ * hidden, so switching never loses what was typed.
  */
-export function WorkLanguages({ children, isSaving, saved }: WorkLanguagesProps) {
-  const [language, setLanguage] = React.useState<WorkLanguage>("ru");
-  const { control } = useFormContext<WorkFormValues>();
+export function LanguageForm({ children, fields, isSaving, saved }: LanguageFormProps) {
+  const [language, setLanguage] = React.useState<FormLanguage>("ru");
+  const { control } = useFormContext<FieldValues>();
   const { errors } = useFormState({ control });
   const { translations: translationErrors, ...russianErrors } = errors;
   const languagesWithErrors = [
     ...(Object.keys(russianErrors).length > 0 ? [russianName] : []),
     ...targetLanguages
-      .filter((target) => translationErrors?.[target] !== undefined)
+      .filter((target) => (translationErrors as FieldValues | undefined)?.[target] !== undefined)
       .map((target) => languageNames[target]),
   ];
   const outdated = targetLanguages.map((target) => countOutdated(saved, target));
@@ -61,11 +73,11 @@ export function WorkLanguages({ children, isSaving, saved }: WorkLanguagesProps)
         }
         options={options}
         value={language}
-        onChange={(value) => setLanguage(value as WorkLanguage)}
+        onChange={(value) => setLanguage(value as FormLanguage)}
       />
       <div hidden={language !== "ru"}>{children}</div>
       {language !== "ru" && (
-        <WorkTranslationFields isSaving={isSaving} language={language} saved={saved} />
+        <TranslationFields fields={fields} isSaving={isSaving} language={language} saved={saved} />
       )}
     </div>
   );
