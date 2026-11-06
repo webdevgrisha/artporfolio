@@ -9,6 +9,7 @@ import { type WorkFormValues, workFormSchema } from "../model/workFormSchema";
 import { toWorkFormValues } from "../model/workFormValues";
 import { saveWorkToastId, useSaveWork } from "../model/workMutations";
 import { WorkFields } from "./WorkFields";
+import { WorkLanguages } from "./WorkLanguages";
 
 interface EditWorkFormProps {
   className?: string;
@@ -39,12 +40,14 @@ export function EditWorkForm({ className, references, work }: EditWorkFormProps)
     // The fields read the form from the context.
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <WorkFields
-          isSaving={editForm.isSaving}
-          savedPhoto={saved.data.photo}
-          savedProcessPhotos={saved.data.processPhotos}
-          references={references}
-        />
+        <WorkLanguages isSaving={editForm.isSaving} saved={saved.data.translations}>
+          <WorkFields
+            isSaving={editForm.isSaving}
+            savedPhoto={saved.data.photo}
+            savedProcessPhotos={saved.data.processPhotos}
+            references={references}
+          />
+        </WorkLanguages>
       </EditForm>
     </FormProvider>
   );

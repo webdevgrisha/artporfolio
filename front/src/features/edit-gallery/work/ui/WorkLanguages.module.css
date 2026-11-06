@@ -1,0 +1,21 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-8);
+}
+
+.language {
+  max-inline-size: 20rem;
+}
+
+/* A readable line length, as the groups of the Russian fields. */
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-6);
+  max-inline-size: 48rem;
+}
+
+.translateAnew {
+  align-self: flex-start;
+}

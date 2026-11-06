@@ -11,6 +11,7 @@ import {
 } from "@/entities/gallery";
 import { toPhotoBody } from "@/shared/lib/photoForm";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
+import { toTranslationsBody } from "@/shared/lib/translationsForm";
 
 import { getCreateWorkErrorMessage, getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
 import type { WorkFormValues } from "./workFormSchema";
@@ -64,6 +65,7 @@ async function toWorkBody(values: WorkFormValues): Promise<GalleryWorkBody> {
     month: Number(month),
     country: values.country === "" ? null : values.country,
     city: values.city,
+    translations: toTranslationsBody(values.translations),
   };
 }
 

@@ -10,8 +10,9 @@ import {
   workFormats,
   workSaleStatuses,
 } from "@/entities/gallery";
-import { photoFieldsShape, refinePhoto } from "@/shared/lib/photoForm";
+import { maxAltLength, photoFieldsShape, refinePhoto } from "@/shared/lib/photoForm";
 import { photoListRowsSchema } from "@/shared/lib/photoListForm";
+import { translationValuesSchema } from "@/shared/lib/translationsForm";
 import { yearSchema } from "../../model/yearField";
 import { refineMonth, refinePartCount, refinePrice } from "./workFormRefinements";
 import { sideSchema } from "./workSide";
@@ -85,6 +86,8 @@ export const workFormSchema = z
     price: z.string(),
     /** The percent taken off the price, as typed; empty for none. */
     discountPercent: z.string(),
+    /** The texts in the other languages; an empty one is translated anew on save. */
+    translations: translationValuesSchema({ ...workMaxLengths, alt: maxAltLength }),
   })
   // A work is shown by its photo, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)

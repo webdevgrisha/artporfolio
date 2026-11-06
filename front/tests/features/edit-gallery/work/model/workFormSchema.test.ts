@@ -58,6 +58,7 @@ const savedWork = {
   price: null,
   size: { height: 27.9, width: 21.6 },
   title: "Стрекоза",
+  translations: { en: { title: { status: "edited", text: "Dragonfly" } } },
   year: 2025,
 } as unknown as GalleryWork;
 
@@ -371,5 +372,35 @@ describe("the date of a work", () => {
     expect(monthOptions[0]).toEqual({ label: "Январь", value: "1" });
     expect(monthOptions[11]).toEqual({ label: "Декабрь", value: "12" });
     expect(formatWorkDate({ month: 3, year: 2024 })).toBe("март 2024");
+  });
+});
+
+describe("the translations of a work form", () => {
+  it("shows a saved translation, and a text not translated yet as empty", () => {
+    expect(toWorkFormValues(savedWork).translations.en).toEqual({
+      alt: "",
+      city: "",
+      description: "",
+      title: "Dragonfly",
+    });
+  });
+
+  it("takes empty texts, which are translated anew", () => {
+    expect(fieldErrors(workFormSchema, work)).toEqual({});
+  });
+
+  it("allows a translation twice as long as the Russian limit", () => {
+    const withTitle = (title: string) => ({
+      ...work,
+      translations: {
+        ...work.translations,
+        en: { ...work.translations.en, title },
+      },
+    });
+
+    expect(fieldErrors(workFormSchema, withTitle("а".repeat(200)))).toEqual({});
+    expect(fieldErrors(workFormSchema, withTitle("а".repeat(201)))).toEqual({
+      "translations.en.title": ["Не длиннее 200 символов"],
+    });
   });
 });

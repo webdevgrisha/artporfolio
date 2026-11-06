@@ -1,4 +1,5 @@
 import type { ListPhotoItem, PhotoBody } from "@/shared/api/photo";
+import type { TranslationsBody } from "@/shared/api/translations";
 
 import type { WorkFormat, WorkPrice, WorkSaleStatus, WorkSize } from "../../model/galleryWork";
 
@@ -16,6 +17,8 @@ export interface GalleryWorkBody {
   country: string | null;
   /** The city the work was made in; an empty string for none. */
   city: string;
+  /** The texts in the other languages; the server makes those sent as null. */
+  translations: TranslationsBody;
   photo: PhotoBody;
   /** In the order the site shows them; a saved photo left out is deleted. */
   processPhotos: readonly ListPhotoItem[];

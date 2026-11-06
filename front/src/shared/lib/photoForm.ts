@@ -6,7 +6,7 @@ import { uploadImage } from "@/shared/api/upload";
 import { type ImageFieldValue, imageFieldValueSchema, toImageFieldValue } from "./imageFieldValue";
 
 // Mirrors the server rule in backend/src/shared/images/photo.ts.
-const maxAltLength = 250;
+export const maxAltLength = 250;
 
 /** The description of a photo: what is on it, for screen readers and search engines. */
 export const photoAltSchema = z

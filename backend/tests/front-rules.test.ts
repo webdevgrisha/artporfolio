@@ -12,6 +12,7 @@ import { discountedAmount } from "#modules/gallery/works/prices";
 import * as works from "#modules/gallery/works/schema";
 import * as pages from "#modules/pages/schema";
 import * as projects from "#modules/projects/schema";
+import * as languages from "#shared/i18n/languages";
 import { maxSourceFileSize } from "#shared/images/processing";
 
 type Module = Record<string, unknown>;
@@ -26,6 +27,7 @@ function front(path: string): Promise<Module> {
 
 const sameNames: [string, Module, string[]][] = [
   ["entities/about/model/processPhoto", aboutPhotos, ["maxProcessPhotos"]],
+  ["shared/config/languages", languages, ["targetLanguages"]],
   ["entities/currency/model/currencyRates", currencyRates, ["currencies", "maxCurrencyRate"]],
   ["entities/gallery/model/galleryCollection", collections, ["maxCollectionWorks"]],
   ["entities/gallery/model/galleryColors", colors, ["maxColors"]],
