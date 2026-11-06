@@ -34,7 +34,15 @@ once for the production project:
 pnpm exec firebase functions:secrets:set CSRF_SECRET --project artportfolio-b2ef4
 ```
 
-The deployed `api` function declares this secret in its runtime configuration.
+`DEEPL_API_KEY` is the key of the DeepL API, which translates the texts of the site when they are
+saved. Configure it the same way:
+
+```sh
+pnpm exec firebase functions:secrets:set DEEPL_API_KEY --project artportfolio-b2ef4
+```
+
+The deployed `api` function declares both secrets in its runtime configuration. For the emulators,
+add `DEEPL_API_KEY` to `backend/.secret.local`; without it a save goes through untranslated.
 
 ## Firestore
 

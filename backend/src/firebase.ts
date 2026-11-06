@@ -4,6 +4,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { server } from "#server";
 
 const csrfSecret = defineSecret("CSRF_SECRET");
+const deeplApiKey = defineSecret("DEEPL_API_KEY");
 
 export const api = onRequest(
   {
@@ -17,7 +18,7 @@ export const api = onRequest(
     concurrency: 4,
     timeoutSeconds: 120,
     region: "europe-west1",
-    secrets: [csrfSecret],
+    secrets: [csrfSecret, deeplApiKey],
   },
   server,
 );
