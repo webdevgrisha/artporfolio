@@ -16,6 +16,8 @@ const uploads = vi.hoisted(() => ({
   publishUpload: vi.fn(),
 }));
 
+const deepl = vi.hoisted(() => ({ translateTexts: vi.fn() }));
+
 vi.mock("#shared/firebase/firestore", () => {
   type Documents = Map<string, Record<string, unknown>>;
 
@@ -71,6 +73,7 @@ vi.mock("#shared/firebase/firestore", () => {
   };
 });
 vi.mock("#shared/firebase/storage", () => storage);
+vi.mock("#shared/i18n/deepl", () => deepl);
 vi.mock("#shared/images/uploads", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...uploads,
@@ -139,6 +142,7 @@ function storedCollection(
     endYear,
     startYear,
     title,
+    translations: {},
     updatedAt: seededAt,
   };
 }
@@ -198,6 +202,7 @@ const body: CollectionBody = {
   endYear: 2025,
   startYear: 2024,
   title: "Лес",
+  translations: {},
   workIds: [],
 };
 
@@ -513,7 +518,7 @@ describe("replaceCollection", () => {
     expect(Date.parse(data.updatedAt)).toBeGreaterThan(seededAt.toMillis());
   });
 
-  it("returns 412 for a collection changed since it was read, and removes the copy", async () => {
+  it("returns 412 for a collection changed since it was read, before making any copy", async () => {
     const saved = collections.get(animalsId);
 
     await expect(replaceCollection(animalsId, body, '"stale"')).rejects.toBeInstanceOf(
@@ -521,9 +526,46 @@ describe("replaceCollection", () => {
     );
 
     expect(collections.get(animalsId)).toBe(saved);
+    expect(uploads.publishUpload).not.toHaveBeenCalled();
+  });
+
+  it("returns 412 for a collection changed during the save, and removes the copy", async () => {
+    const etag = await readTag(animalsId);
+    const changed = storedCollection(animalsId, "Звери и птицы", 2022, 2023);
+
+    deepl.translateTexts.mockImplementationOnce(async () => {
+      collections.set(animalsId, changed);
+      return [];
+    });
+
+    await expect(replaceCollection(animalsId, body, etag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
+
+    expect(collections.get(animalsId)).toBe(changed);
     expect(storage.deleteFolder).toHaveBeenCalledWith(
       `galleryCollections/${animalsId}/cover/new-version`,
     );
+  });
+
+  it("translates the title, the description and the cover's alt text", async () => {
+    deepl.translateTexts.mockImplementation(async (texts: string[], language: string) =>
+      texts.map((text) => `${text} (${language})`),
+    );
+
+    const { data } = await replaceCollection(animalsId, body, await readTag(animalsId));
+
+    expect(data.translations.en).toEqual({
+      alt: { status: "auto", text: "Новая обложка (en)" },
+      description: { status: "auto", text: "Серия о лесе. (en)" },
+      title: { status: "auto", text: "Лес (en)" },
+    });
+  });
+
+  it("leaves the translations out of the list", async () => {
+    const { data } = await listCollections("admin");
+
+    expect(data[0]).not.toHaveProperty("translations");
   });
 
   it("returns 404 for a collection that does not exist", async () => {

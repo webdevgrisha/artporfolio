@@ -3,6 +3,7 @@ import { type DocumentSnapshot, type QuerySnapshot, Timestamp } from "firebase-a
 import {
   type Project,
   type ProjectBody,
+  type ProjectSummary,
   type StoredProject,
   storedProjectSchema,
 } from "#modules/projects/schema";
@@ -14,6 +15,8 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import { saveTranslations } from "#shared/i18n/translating";
+import { toTranslations } from "#shared/i18n/translations";
 import { preparePhotoList, toListPhoto } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
@@ -63,11 +66,19 @@ function assertTitleIsFree(id: string, title: string, { docs }: QuerySnapshot): 
   }
 }
 
-/** The stored project as the API returns it, with download URLs and ISO 8601 dates. */
-function toProject(
+/** The texts of a project in the source language, by the field their translations go under. */
+function projectTexts({
+  description,
+  title,
+}: Pick<StoredProject, "description" | "title">): Record<string, string> {
+  return { description, title };
+}
+
+/** The stored project as the list returns it, with download URLs and ISO 8601 dates. */
+function toProjectSummary(
   id: string,
   { createdAt, description, link, photos, title, updatedAt }: StoredProject,
-): Project {
+): ProjectSummary {
   return {
     createdAt: createdAt.toDate().toISOString(),
     description,
@@ -76,6 +87,14 @@ function toProject(
     photos: photos.map(toListPhoto),
     title,
     updatedAt: updatedAt.toDate().toISOString(),
+  };
+}
+
+/** The stored project as the API returns it alone: its summary and its translations. */
+function toProject(id: string, project: StoredProject): Project {
+  return {
+    ...toProjectSummary(id, project),
+    translations: toTranslations(project.translations, projectTexts(project)),
   };
 }
 
@@ -90,12 +109,12 @@ function toSavedProject(id: string, project: StoredProject): Tagged<Project> {
 }
 
 /** Every project in the order the site shows them, tagged by the stored list. */
-export async function listProjects(): Promise<Tagged<Project[]>> {
+export async function listProjects(): Promise<Tagged<ProjectSummary[]>> {
   const { docs } = await orderedProjects().get();
   const projects = docs.map((snapshot) => ({ id: snapshot.id, project: readProject(snapshot) }));
 
   return {
-    data: projects.map(({ id, project }) => toProject(id, project)),
+    data: projects.map(({ id, project }) => toProjectSummary(id, project)),
     etag: entityTag(projects),
   };
 }
@@ -112,6 +131,7 @@ export async function getProject(id: string): Promise<Tagged<Project>> {
  */
 export function createProject(id: string, body: ProjectBody): Promise<Tagged<Project>> {
   return saveWithImages(async (files) => {
+    const translations = await saveTranslations(projectTexts(body), {}, body.translations);
     const draft = await preparePhotoList(files, body.photos, photosFolder(id));
     const project = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(projectDocument(id))).exists) {
@@ -129,6 +149,7 @@ export function createProject(id: string, body: ProjectBody): Promise<Tagged<Pro
         createdAt: now,
         photos: draft.build([]),
         position,
+        translations,
         updatedAt: now,
       };
 
@@ -143,7 +164,8 @@ export function createProject(id: string, body: ProjectBody): Promise<Tagged<Pro
 /**
  * Replaces the project while it is still the one the client read (`ifMatch`); it keeps its place
  * in the list. The photos are saved as one list: a saved photo left out is deleted, see
- * preparePhotoList.
+ * preparePhotoList. The translator runs before the transaction, which may run several times: the
+ * tag checked there covers the translations, so the ones it started from are still the saved ones.
  */
 export function replaceProject(
   id: string,
@@ -151,6 +173,16 @@ export function replaceProject(
   ifMatch: string,
 ): Promise<Tagged<Project>> {
   return saveWithImages(async (files) => {
+    const saved = readProject(await projectDocument(id).get());
+
+    // Nothing is paid for a change that the check in the transaction would reject anyway.
+    assertIfMatch(ifMatch, toProject(id, saved));
+
+    const translations = await saveTranslations(
+      projectTexts(body),
+      saved.translations,
+      body.translations,
+    );
     const draft = await preparePhotoList(files, body.photos, photosFolder(id));
     const [savedPhotos, project] = await firestore().runTransaction(async (transaction) => {
       const document = projectDocument(id);
@@ -163,6 +195,7 @@ export function replaceProject(
         ...current,
         ...body,
         photos: draft.build(current.photos),
+        translations,
         updatedAt: Timestamp.now(),
       };
 

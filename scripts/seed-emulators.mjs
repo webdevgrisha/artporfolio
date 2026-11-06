@@ -647,6 +647,7 @@ async function seedProjects(api) {
       link: project.link,
       photos,
       title: project.title,
+      translations: {},
     });
     console.log(`  project: ${project.title} (${String(photos.length)} photos)`);
   }
@@ -693,6 +694,7 @@ async function seedGallery(api) {
     await api.create(`/gallery/collections/${id}`, {
       title: collection.title,
       description: `${collection.title}. Серия работ о животных.`,
+      translations: {},
       cover: {
         alt: collection.title,
         uploadId: await uploadArtwork(api, {

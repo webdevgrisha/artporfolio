@@ -2,6 +2,11 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import {
+  storedTranslationsSchema,
+  type Translations,
+  translationsBodySchema,
+} from "#shared/i18n/translations";
+import {
   type ListPhoto,
   photoListBodySchema,
   storedListPhotoSchema,
@@ -11,6 +16,12 @@ import {
 export const maxProjectPhotos = 20;
 
 const projectIdSchema = z.uuid();
+
+/** The texts of a project that the site shows in every language, with the limit of each. */
+const projectTextLimits = {
+  description: 2_000,
+  title: 100,
+};
 
 /** The path parameters of a request about one project. */
 export const projectParamsSchema = z.object({
@@ -23,12 +34,12 @@ export const projectParamsSchema = z.object({
  */
 export const projectBodySchema = z.strictObject({
   /** The name in the list of projects, so it cannot be empty. */
-  title: z.string().trim().min(1).max(100),
+  title: z.string().trim().min(1).max(projectTextLimits.title),
   /**
    * What the project is about, which the visitor reads beside it, so it cannot be empty. Plain
    * text: no HTML or Markdown. Paragraphs are separated by a blank line.
    */
-  description: z.string().trim().min(1).max(2_000),
+  description: z.string().trim().min(1).max(projectTextLimits.description),
   /** Unlike z.url(), rejects "javascript:" links, which would run code when a visitor clicks them. */
   link: z
     .string()
@@ -40,6 +51,8 @@ export const projectBodySchema = z.strictObject({
    * into its photos, so it needs at least one.
    */
   photos: photoListBodySchema(maxProjectPhotos).min(1),
+  /** The texts above in the other languages; the server makes those not written by a person. */
+  translations: translationsBodySchema(projectTextLimits),
 });
 
 /**
@@ -54,6 +67,7 @@ export const storedProjectSchema = z.object({
   photos: z.array(storedListPhotoSchema),
   /** The place in the list: the site shows the projects by ascending position. */
   position: z.number(),
+  translations: storedTranslationsSchema,
   /** Set by the server when the project is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the project; moving it does not count. */
@@ -79,13 +93,18 @@ export interface Project {
   description: string;
   link: string;
   photos: ListPhoto[];
+  /** The title and the description in the other languages. */
+  translations: Translations;
   /** ISO 8601. */
   createdAt: string;
   /** ISO 8601. */
   updatedAt: string;
 }
 
+/** A project in the list: everything but its translations, which only its own page needs. */
+export type ProjectSummary = Omit<Project, "translations">;
+
 export interface ProjectsResponse {
   /** In the order the site shows them. */
-  projects: Project[];
+  projects: ProjectSummary[];
 }

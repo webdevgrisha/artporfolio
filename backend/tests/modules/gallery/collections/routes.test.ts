@@ -51,6 +51,7 @@ const body = {
   endYear: 2024,
   startYear: 2023,
   title: "Звери",
+  translations: { en: { title: "Beasts" } },
   workIds: [otherId],
 };
 const etag = '"read"';

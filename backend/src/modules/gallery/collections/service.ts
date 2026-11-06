@@ -10,9 +10,11 @@ import { collectionDocument, collectionsCollection } from "#modules/gallery/coll
 import {
   type Collection,
   type CollectionBody,
+  type CollectionSummary,
   type StoredCollection,
   storedCollectionSchema,
 } from "#modules/gallery/collections/schema";
+import { collectionTexts } from "#modules/gallery/collections/texts";
 import { worksCollection } from "#modules/gallery/works/document";
 import { isVisibleTo, worksInOrder } from "#modules/gallery/works/service";
 import { firestore } from "#shared/firebase/firestore";
@@ -23,6 +25,8 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import { saveTranslations } from "#shared/i18n/translating";
+import { toTranslations } from "#shared/i18n/translations";
 import { toPhoto } from "#shared/images/photo";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
@@ -62,12 +66,12 @@ function readCollection(snapshot: DocumentSnapshot): StoredCollection {
   return storedCollectionSchema.parse(snapshot.data());
 }
 
-/** The stored collection as the API returns it, with download URLs and ISO 8601 dates. */
-function toCollection(
+/** The stored collection as the list returns it, with download URLs and ISO 8601 dates. */
+function toCollectionSummary(
   id: string,
   { cover, createdAt, description, endYear, startYear, title, updatedAt }: StoredCollection,
   workIds: string[],
-): Collection {
+): CollectionSummary {
   return {
     cover: toPhoto(cover),
     createdAt: createdAt.toDate().toISOString(),
@@ -78,6 +82,14 @@ function toCollection(
     title,
     updatedAt: updatedAt.toDate().toISOString(),
     workIds,
+  };
+}
+
+/** The stored collection as the API returns it alone: its summary and its translations. */
+function toCollection(id: string, collection: StoredCollection, workIds: string[]): Collection {
+  return {
+    ...toCollectionSummary(id, collection, workIds),
+    translations: toTranslations(collection.translations, collectionTexts(collection)),
   };
 }
 
@@ -171,7 +183,7 @@ function compareCollections(a: StoredCollection, b: StoredCollection): number {
  * Every collection with the works `reader` sees in the order the site shows them, tagged by what is
  * returned: moving a work changes the list without changing a stored collection.
  */
-export async function listCollections(reader: Reader): Promise<Tagged<Collection[]>> {
+export async function listCollections(reader: Reader): Promise<Tagged<CollectionSummary[]>> {
   const [collections, works] = await Promise.all([
     collectionsCollection().get(),
     worksCollection().get(),
@@ -187,7 +199,7 @@ export async function listCollections(reader: Reader): Promise<Tagged<Collection
   const data = collections.docs
     .map((snapshot) => ({ collection: readCollection(snapshot), id: snapshot.id }))
     .sort((a, b) => compareCollections(a.collection, b.collection))
-    .map(({ collection, id }) => toCollection(id, collection, workIds.get(id) ?? []));
+    .map(({ collection, id }) => toCollectionSummary(id, collection, workIds.get(id) ?? []));
 
   return { data, etag: entityTag(data) };
 }
@@ -213,7 +225,7 @@ export async function createCollection(
   id: string,
   body: CollectionBody,
 ): Promise<Tagged<Collection>> {
-  const { cover, workIds, ...fields } = body;
+  const { cover, translations: sent, workIds, ...fields } = body;
   const { uploadId } = cover;
 
   if (uploadId === undefined) {
@@ -221,6 +233,7 @@ export async function createCollection(
   }
 
   return saveWithImages(async (files) => {
+    const translations = await saveTranslations(collectionTexts(body), {}, sent);
     const image = await files.publish(uploadId, coverFolder(id));
     const [collection, members] = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(collectionDocument(id))).exists) {
@@ -235,6 +248,7 @@ export async function createCollection(
         ...fields,
         cover: { ...image, alt: cover.alt },
         createdAt: now,
+        translations,
         updatedAt: now,
       };
 
@@ -250,17 +264,29 @@ export async function createCollection(
 /**
  * Replaces the collection and its works while it is still the one the client read (`ifMatch`);
  * rejects it with 409 when another collection has its title and with 422 for a work that does not
- * exist or is in another collection.
+ * exist or is in another collection. The translator runs before the transaction, which may run
+ * several times: the tag checked there covers the translations, so the ones it started from are
+ * still the saved ones.
  */
 export function replaceCollection(
   id: string,
   body: CollectionBody,
   ifMatch: string,
 ): Promise<Tagged<Collection>> {
-  const { cover, workIds, ...fields } = body;
+  const { cover, translations: sent, workIds, ...fields } = body;
   const { uploadId } = cover;
 
   return saveWithImages(async (files) => {
+    const [snapshot, savedMembers] = await Promise.all([
+      collectionDocument(id).get(),
+      membersQuery(id).get(),
+    ]);
+    const saved = readCollection(snapshot);
+
+    // Nothing is paid for a change that the check in the transaction would reject anyway.
+    assertIfMatch(ifMatch, toCollection(id, saved, idsInOrder(savedMembers.docs, "admin")));
+
+    const translations = await saveTranslations(collectionTexts(body), saved.translations, sent);
     const image =
       uploadId === undefined ? undefined : await files.publish(uploadId, coverFolder(id));
     const [previous, collection, members] = await firestore().runTransaction(
@@ -277,6 +303,7 @@ export function replaceCollection(
           ...current,
           ...fields,
           cover: { ...(image ?? current.cover), alt: cover.alt },
+          translations,
           updatedAt: Timestamp.now(),
         };
 

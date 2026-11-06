@@ -37,6 +37,7 @@ async function newProject() {
   const body = {
     title: `Проект ${id}`,
     description: "Описание",
+    translations: {},
     link: "",
     photos: [{ alt: "Фото", uploadId: await upload() }],
   };
