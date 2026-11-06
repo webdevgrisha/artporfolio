@@ -760,6 +760,7 @@ async function seedGallery(api) {
       colorIds: (kind === "etching" ? workEtchingColors : workPaintingColors[work.palette]).map(
         (title) => colorIds.get(title),
       ),
+      translations: {},
       paletteIds: (kind === "etching"
         ? workEtchingPalettes
         : workPaintingPalettes[index % workPaintingPalettes.length]

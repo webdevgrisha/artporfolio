@@ -20,6 +20,7 @@ import {
   type WorkSummary,
   type WorkUsage,
 } from "#modules/gallery/works/schema";
+import { workTexts } from "#modules/gallery/works/texts";
 import { ownGroups, usageByItem } from "#modules/gallery/works/usage";
 import { firestore } from "#shared/firebase/firestore";
 import {
@@ -28,6 +29,7 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import { saveTranslations } from "#shared/i18n/translating";
 import { preparePhotoList } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
@@ -170,6 +172,7 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
   }
 
   return saveWithImages(async (files) => {
+    const translations = await saveTranslations(workTexts(body), {}, body.translations);
     const image = await files.publish(uploadId, photoFolder(id));
     const draft = await preparePhotoList(files, body.processPhotos, processPhotosFolder(id));
     const [work, known] = await firestore().runTransaction(async (transaction) => {
@@ -187,6 +190,7 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
         createdAt: now,
         photo: { ...image, alt },
         processPhotos: draft.build([]),
+        translations,
         updatedAt: now,
       };
 
@@ -202,12 +206,25 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
  * Replaces the work while it is still the one the client read (`ifMatch`). The process photos are
  * saved as one list: a saved photo left out is deleted, see preparePhotoList. A section, a
  * material, a color, a palette or a collection that does not exist is rejected with 422. Moving
- * the work to another collection changes both collections.
+ * the work to another collection changes both collections. The translator runs before the
+ * transaction, which may run several times: the tag checked there covers the translations, so the
+ * ones it started from are still the saved ones.
  */
 export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promise<Tagged<Work>> {
   const { alt, uploadId } = body.photo;
 
   return saveWithImages(async (files) => {
+    const [snapshot, knownBefore] = await Promise.all([workDocument(id).get(), readKnownData()]);
+    const saved = readWork(snapshot);
+
+    // Nothing is paid for a change that the check in the transaction would reject anyway.
+    assertWorkIfMatch(ifMatch, id, saved, knownBefore);
+
+    const translations = await saveTranslations(
+      workTexts(body),
+      saved.translations,
+      body.translations,
+    );
     const image =
       uploadId === undefined ? undefined : await files.publish(uploadId, photoFolder(id));
     const draft = await preparePhotoList(files, body.processPhotos, processPhotosFolder(id));
@@ -224,6 +241,7 @@ export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promis
         ...body,
         photo: { ...(image ?? current.photo), alt },
         processPhotos: draft.build(current.processPhotos),
+        translations,
         updatedAt: Timestamp.now(),
       };
 

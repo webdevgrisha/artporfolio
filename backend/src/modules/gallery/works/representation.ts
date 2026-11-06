@@ -1,6 +1,8 @@
 import { toPrice } from "#modules/gallery/works/prices";
 import type { KnownData } from "#modules/gallery/works/references";
 import type { StoredWork, Work, WorkSummary } from "#modules/gallery/works/schema";
+import { workTexts } from "#modules/gallery/works/texts";
+import { toTranslations } from "#shared/i18n/translations";
 import { toPhoto } from "#shared/images/photo";
 import { toListPhoto } from "#shared/images/photo-list";
 
@@ -69,11 +71,15 @@ export function toWorkSummary(
   };
 }
 
-/** The stored work as the API returns it alone: its summary, its description and process photos. */
+/**
+ * The stored work as the API returns it alone: its summary, its description, its process photos
+ * and its translations.
+ */
 export function toWork(id: string, work: StoredWork, known: KnownData): Work {
   return {
     ...toWorkSummary(id, work, known),
     description: work.description,
     processPhotos: work.processPhotos.map(toListPhoto),
+    translations: toTranslations(work.translations, workTexts(work)),
   };
 }

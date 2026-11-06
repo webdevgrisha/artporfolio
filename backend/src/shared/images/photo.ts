@@ -7,8 +7,11 @@ import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared
 import { type Image, storedImageSchema, toImage } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
 
+/** The longest text alternative of a photo. */
+export const maxAltLength = 250;
+
 /** The text alternative of a photo. */
-export const altSchema = z.string().trim().min(1).max(250);
+export const altSchema = z.string().trim().min(1).max(maxAltLength);
 
 /**
  * A photo as a change sends it: a new file by its upload (see uploads.ts), or the saved file when

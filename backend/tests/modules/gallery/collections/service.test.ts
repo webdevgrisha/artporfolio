@@ -149,6 +149,7 @@ function storedWork(year: number, month: number, collectionId: string | null) {
     collectionId,
     colorIds: [],
     createdAt: seededAt,
+    translations: {},
     description: "Масло.",
     materialIds: [],
     month,
