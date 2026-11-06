@@ -105,7 +105,7 @@ describe("toTranslations", () => {
   });
 
   it("leaves out a language no longer in use", () => {
-    expect(toTranslations({ ja: { title: auto } }, sources)).toEqual({});
+    expect(toTranslations({ xx: { title: auto } }, sources)).toEqual({});
   });
 });
 
@@ -127,7 +127,7 @@ describe("translationsBodySchema", () => {
 
   it("rejects an empty text, an unknown language and an unknown field", () => {
     expect(schema.safeParse({ en: { title: "  " } }).success).toBe(false);
-    expect(schema.safeParse({ ja: { title: "象" } }).success).toBe(false);
+    expect(schema.safeParse({ xx: { title: "象" } }).success).toBe(false);
     expect(schema.safeParse({ en: { city: "Minsk" } }).success).toBe(false);
   });
 });

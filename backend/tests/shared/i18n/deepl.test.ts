@@ -36,8 +36,10 @@ describe("translateTexts", () => {
 
     client.translateText.mockResolvedValue([{ text: "Elefante" }]);
     await translateTexts(["Слон"], "pt");
+    await translateTexts(["Слон"], "zh");
 
-    expect(client.translateText.mock.calls[0]?.[2]).toBe("pt-PT");
+    expect(client.translateText.mock.calls[0]?.[2]).toBe("pt-BR");
+    expect(client.translateText.mock.calls[1]?.[2]).toBe("zh-HANS");
   });
 
   it("fails without a key, which a save survives", async () => {

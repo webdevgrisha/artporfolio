@@ -54,6 +54,8 @@ export function WorkTranslationFields({ isSaving, language, saved }: WorkTransla
           <Control
             key={field}
             label={fieldLabels[field]}
+            // Arabic is written from right to left.
+            dir="auto"
             hint={getTranslationHint({
               original: originals[field].trim(),
               status: saved[language]?.[field]?.status,

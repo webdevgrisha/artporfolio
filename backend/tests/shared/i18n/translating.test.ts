@@ -30,6 +30,25 @@ describe("saveTranslations", () => {
     });
   });
 
+  it("keeps the requests at once within what DeepL takes", async () => {
+    let running = 0;
+    let most = 0;
+
+    deepl.translateTexts.mockImplementation(async (texts: string[]) => {
+      running += 1;
+      most = Math.max(most, running);
+      await Promise.resolve();
+      running -= 1;
+
+      return texts;
+    });
+
+    await saveTranslations(sources, {}, {});
+
+    expect(deepl.translateTexts).toHaveBeenCalledTimes(targetLanguages.length);
+    expect(most).toBe(8);
+  });
+
   it("calls no translator when nothing changed", async () => {
     const saved = Object.fromEntries(
       targetLanguages.map((language) => [

@@ -9,6 +9,9 @@ import {
   type TranslationsBody,
 } from "#shared/i18n/translations";
 
+/** DeepL refuses too many requests at once: 27 of them failed in part, 9 never did. */
+const maxParallelRequests = 8;
+
 /** Makes the translations of one language and stores them in `translations`. */
 async function translateLanguage(
   language: TargetLanguage,
@@ -49,17 +52,21 @@ export async function saveTranslations(
 ): Promise<StoredTranslations> {
   const { kept, requests } = planTranslations(sources, saved, sent);
   const languages = targetLanguages.filter((language) => fieldsOf(requests, language).length > 0);
-  const results = await Promise.allSettled(
-    languages.map((language) =>
-      translateLanguage(language, fieldsOf(requests, language), sources, kept),
-    ),
-  );
 
-  results.forEach((result, index) => {
-    if (result.status === "rejected") {
-      warn("Could not translate", { error: result.reason, language: languages[index] });
-    }
-  });
+  for (let start = 0; start < languages.length; start += maxParallelRequests) {
+    const batch = languages.slice(start, start + maxParallelRequests);
+    const results = await Promise.allSettled(
+      batch.map((language) =>
+        translateLanguage(language, fieldsOf(requests, language), sources, kept),
+      ),
+    );
+
+    results.forEach((result, index) => {
+      if (result.status === "rejected") {
+        warn("Could not translate", { error: result.reason, language: batch[index] });
+      }
+    });
+  }
 
   return kept;
 }

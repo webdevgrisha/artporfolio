@@ -3,17 +3,33 @@ import { DeepLClient, type TargetLanguageCode } from "deepl-node";
 import { getEnv } from "#shared/config/env";
 import { sourceLanguage, type TargetLanguage } from "#shared/i18n/languages";
 
-/** DeepL asks for a regional variant of English and of Portuguese. */
+/** DeepL asks for a regional variant of English and of Portuguese, and a script of Chinese. */
 const deeplLanguages: Record<TargetLanguage, TargetLanguageCode> = {
+  ar: "ar",
   be: "be",
+  cs: "cs",
   de: "de",
+  el: "el",
   en: "en-GB",
   es: "es",
   fr: "fr",
+  hi: "hi",
+  hu: "hu",
+  id: "id",
   it: "it",
+  ja: "ja",
+  ko: "ko",
+  lt: "lt",
+  nl: "nl",
   pl: "pl",
-  pt: "pt-PT",
+  pt: "pt-BR",
+  ro: "ro",
+  sk: "sk",
+  sv: "sv",
+  tr: "tr",
   uk: "uk",
+  vi: "vi",
+  zh: "zh-HANS",
 };
 
 /** Tells DeepL what the texts are, which it is not billed for and does not translate. */
