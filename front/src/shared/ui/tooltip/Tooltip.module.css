@@ -17,9 +17,9 @@
   padding: var(--space-1) var(--space-2);
   font-size: var(--font-size-sm);
   line-height: 1.4;
-  color: var(--color-text-emphasis);
+  color: var(--color-text-inverse);
   overflow-wrap: anywhere;
-  background: var(--color-surface-emphasis);
+  background: var(--color-surface-inverse);
   transition:
     opacity var(--motion-duration-standard) var(--motion-easing-standard),
     translate var(--motion-duration-standard) var(--motion-easing-standard);

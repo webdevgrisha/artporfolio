@@ -27,7 +27,7 @@
     --color-surface-hover: #e0e0e0;
     --color-surface-disabled: #f5f5f5;
     --color-surface-inverse: #000;
-    /* A tooltip and a pressed button: they stand out at once, and in the dark theme do not glare. */
+    /* A pressed button: it stands out at once, and in the dark theme does not glare. */
     --color-surface-emphasis: #000;
     --color-text-emphasis: #fff;
     --color-border: #000;
