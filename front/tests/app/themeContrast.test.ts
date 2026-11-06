@@ -71,6 +71,9 @@ describe.each(Object.entries(themes))("the %s theme", (_name, tokens) => {
 
     expect(contrast(inverseText, color(tokens, "surface-inverse"))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(inverseText, color(tokens, "danger"))).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrast(color(tokens, "text-emphasis"), color(tokens, "surface-emphasis")),
+    ).toBeGreaterThanOrEqual(4.5);
   });
 });
 

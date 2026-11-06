@@ -25,6 +25,9 @@
     --color-surface-hover: #e0e0e0;
     --color-surface-disabled: #f5f5f5;
     --color-surface-inverse: #000;
+    /* A tooltip and a pressed button: they stand out at once, and in the dark theme do not glare. */
+    --color-surface-emphasis: #000;
+    --color-text-emphasis: #fff;
     --color-border: #000;
     --color-border-disabled: #777;
     --color-border-modified: #1d4ed8;
@@ -109,6 +112,8 @@
     /* Lighter than the raised surface too: it is the hover of the rows in a dialog as well. */
     --color-surface-disabled: #2a2a2a;
     --color-surface-inverse: #f2f2f2;
+    --color-surface-emphasis: #454545;
+    --color-text-emphasis: #f2f2f2;
     /* Gray, not white: the frames of a whole form in white would outshine what they hold. */
     --color-border: #8c8c8c;
     --color-border-disabled: #666;
