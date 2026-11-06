@@ -10,15 +10,24 @@ interface FormSkeletonProps {
   children: ReactNode;
   /** As the form it stands for, such as one that fills the frame. */
   className?: string;
-  /** For a form whose fields keep a readable line length, such as a list of titles. */
+  /** For a list of rows, such as a list of titles. */
+  isList?: boolean;
+  /** For a form whose fields keep a readable line length. */
   isNarrow?: boolean;
 }
 
 /** An EditForm that is loading: its fields, then its buttons at the bottom. */
-export function FormSkeleton({ children, className, isNarrow = false }: FormSkeletonProps) {
+export function FormSkeleton({
+  children,
+  className,
+  isList = false,
+  isNarrow = false,
+}: FormSkeletonProps) {
   return (
     <SkeletonRegion className={clsx(styles.root, className)}>
-      <div className={clsx(styles.fields, isNarrow && styles.narrow)}>{children}</div>
+      <div className={clsx(styles.fields, isList && styles.list, isNarrow && styles.narrow)}>
+        {children}
+      </div>
       <div className={styles.actions}>
         <Skeleton className={styles.revert} />
         <Skeleton className={styles.save} />

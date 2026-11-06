@@ -11,7 +11,7 @@ export function GalleryColorsSection() {
   return (
     <AwaitPageData
       fallback={
-        <FormSkeleton className={styles.form} isNarrow>
+        <FormSkeleton className={styles.form} isList>
           <FieldSkeleton />
           <ListSkeleton rows={10} />
         </FormSkeleton>

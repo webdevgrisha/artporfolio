@@ -11,9 +11,13 @@
   gap: var(--layout-space-6);
 }
 
-/* As TitleList. */
 .narrow {
   max-inline-size: 48rem;
+}
+
+/* As TitleList. */
+.list {
+  max-inline-size: var(--list-max-inline-size);
 }
 
 /* As FormActions: «Отменить» as text, «Сохранить» as a button, pushed to the bottom. */
