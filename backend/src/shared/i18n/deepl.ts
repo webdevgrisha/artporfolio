@@ -35,8 +35,11 @@ const deeplLanguages: Record<TargetLanguage, TargetLanguageCode> = {
 /** Tells DeepL what the texts are, which it is not billed for and does not translate. */
 const context = "Название и описание картины на сайте художника";
 
-/** Firebase Hosting waits 60 seconds for a save, and a save may also encode photos. */
-const requestTimeoutMilliseconds = 20_000;
+/** A save waits for the requests, so a stuck one must fail soon; see translating.ts. */
+const requestTimeoutMilliseconds = 10_000;
+
+/** DeepL answers a burst of requests with 429; the client waits longer before each new try. */
+const maxRetries = 2;
 
 let client: DeepLClient | undefined;
 
@@ -49,7 +52,7 @@ function deepl(): DeepLClient {
     }
 
     client = new DeepLClient(deeplApiKey, {
-      maxRetries: 1,
+      maxRetries,
       minTimeout: requestTimeoutMilliseconds,
     });
   }

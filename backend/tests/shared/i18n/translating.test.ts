@@ -46,7 +46,24 @@ describe("saveTranslations", () => {
     await saveTranslations(sources, {}, {});
 
     expect(deepl.translateTexts).toHaveBeenCalledTimes(targetLanguages.length);
-    expect(most).toBe(8);
+    expect(most).toBe(4);
+  });
+
+  it("leaves the rest to the next save once it runs out of time", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(0);
+
+    deepl.translateTexts.mockImplementation(async (texts: string[]) => {
+      now.mockReturnValue(30_000);
+
+      return texts;
+    });
+
+    const translations = await saveTranslations({ title: "Слон" }, {}, {});
+
+    expect(deepl.translateTexts).toHaveBeenCalledTimes(4);
+    expect(Object.keys(translations)).toHaveLength(4);
+    expect(logger.warn).toHaveBeenCalledOnce();
+    now.mockRestore();
   });
 
   it("calls no translator when nothing changed", async () => {

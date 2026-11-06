@@ -9,8 +9,14 @@ import {
   type TranslationsBody,
 } from "#shared/i18n/translations";
 
-/** DeepL refuses too many requests at once: 27 of them failed in part, 9 never did. */
-const maxParallelRequests = 8;
+/** DeepL limits how often an account may ask: a burst of requests is refused with 429. */
+const maxParallelRequests = 4;
+
+/**
+ * No new request starts after this long. Firebase Hosting waits 60 seconds for a save, and the
+ * requests under way may take up to 30 seconds more: what is left is made by the next save.
+ */
+const translationBudgetMilliseconds = 20_000;
 
 /** Makes the translations of one language and stores them in `translations`. */
 async function translateLanguage(
@@ -53,7 +59,14 @@ export async function saveTranslations(
   const { kept, requests } = planTranslations(sources, saved, sent);
   const languages = targetLanguages.filter((language) => fieldsOf(requests, language).length > 0);
 
+  const deadline = Date.now() + translationBudgetMilliseconds;
+
   for (let start = 0; start < languages.length; start += maxParallelRequests) {
+    if (Date.now() > deadline) {
+      warn("Ran out of time to translate", { languages: languages.slice(start) });
+      break;
+    }
+
     const batch = languages.slice(start, start + maxParallelRequests);
     const results = await Promise.allSettled(
       batch.map((language) =>
