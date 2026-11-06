@@ -9,13 +9,12 @@
   cursor: pointer;
   background: transparent;
   border: 0;
-  transition: background-color var(--motion-duration-fast) var(--motion-easing-standard);
+  transition: color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
 @media (hover: hover) {
-  /* The icon keeps its color: a muted one is how a disabled button looks. */
   .root:hover:not(:disabled) {
-    background: var(--color-surface-hover);
+    color: var(--color-text-muted);
   }
 }
 
