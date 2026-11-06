@@ -72,6 +72,8 @@
     --font-size-4xl: 2.25rem;
 
     --control-size: 3.5rem;
+    /* A form fills a phone and a tablet; a wide screen would stretch its fields too far. */
+    --form-max-inline-size: none;
     --focus-ring: 2px solid var(--color-focus);
     --min-tap-target-size: 44px;
 
@@ -133,6 +135,7 @@
 
   @media (width >= 75rem) {
     :root {
+      --form-max-inline-size: 48rem;
       --layout-scale: 1.5;
     }
   }

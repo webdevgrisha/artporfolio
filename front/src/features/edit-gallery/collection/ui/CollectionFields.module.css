@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--layout-space-6);
-  max-inline-size: 48rem;
+  max-inline-size: var(--form-max-inline-size);
 }
 
 /* The years in one row, as the span reads: the start first. */

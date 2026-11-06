@@ -13,7 +13,7 @@
 
 /* As TitleList. */
 .narrow {
-  max-inline-size: 48rem;
+  max-inline-size: var(--form-max-inline-size);
 }
 
 /* As FormActions: «Отменить» as text, «Сохранить» as a button, pushed to the bottom. */
