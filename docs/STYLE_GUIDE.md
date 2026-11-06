@@ -325,6 +325,7 @@ const indicatorStyle = {
 
 - The light theme is the default; `:root[data-theme="dark"]` in `globals.css` redefines the color tokens, and `features/toggle-theme` sets the attribute. Use a token for every color, so a component needs no code for a theme.
 - Surfaces rise by getting lighter: `--color-surface-raised` lies over the page, and a dialog makes it the `--color-surface` of what it holds. Keep every state surface lighter than the surface under it.
+- `--color-border` marks a control; `--color-border-layout` marks the page, and the dark theme keeps it quiet.
 - Shadows use `--shadow-*`. Dark surfaces stay neutral grays, so the colors of the works look the same in both themes.
 - `tests/app/themeContrast.test.ts` keeps the contrast of the tokens in both themes.
 

@@ -14,7 +14,7 @@
   padding-block: var(--layout-space-6) var(--layout-space-8);
   overflow-y: auto;
   background-color: var(--color-surface);
-  border-inline-end: 1px solid var(--color-border);
+  border-inline-end: 1px solid var(--color-border-layout);
   transform: translateX(-100%);
   transition:
     transform var(--motion-duration-slow) var(--motion-easing-standard),

@@ -29,6 +29,8 @@
     --color-surface-emphasis: #000;
     --color-text-emphasis: #fff;
     --color-border: #000;
+    /* The frame of the page and the line of the sidebar: they mark no control. */
+    --color-border-layout: #000;
     --color-border-disabled: #777;
     --color-border-modified: #1d4ed8;
     /* A decorative line between the rows of a list; it marks no control, so it may be pale. */
@@ -116,6 +118,7 @@
     --color-text-emphasis: #f2f2f2;
     /* Gray, not white: the frames of a whole form in white would outshine what they hold. */
     --color-border: #8c8c8c;
+    --color-border-layout: #3d3d3d;
     --color-border-disabled: #666;
     --color-border-modified: #6ea0ff;
     --color-divider: #2e2e2e;
