@@ -4,9 +4,11 @@ import { FormProvider, useForm } from "react-hook-form";
 import { type Project, projectQuery } from "@/entities/project";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
+import { LanguageForm } from "@/shared/ui/language-form";
 import {
   type ProjectFormValues,
   projectFormSchema,
+  projectLanguageFields,
   toProjectFormValues,
 } from "../model/projectFormSchema";
 import { saveProjectToastId, useSaveProject } from "../model/projectMutations";
@@ -38,7 +40,13 @@ export function EditProjectForm({ className, project }: EditProjectFormProps) {
     // The fields read the form from the context.
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <ProjectFields isSaving={editForm.isSaving} savedPhotos={saved.data.photos} />
+        <LanguageForm
+          fields={projectLanguageFields}
+          isSaving={editForm.isSaving}
+          saved={saved.data.translations}
+        >
+          <ProjectFields isSaving={editForm.isSaving} savedPhotos={saved.data.photos} />
+        </LanguageForm>
       </EditForm>
     </FormProvider>
   );

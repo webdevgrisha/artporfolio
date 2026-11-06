@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   deleteGalleryCollection,
-  type GalleryCollection,
+  type GalleryCollectionSummary,
   galleryCollectionsQueryKey,
   galleryWorksQueryKey,
 } from "@/entities/gallery";
@@ -29,7 +29,7 @@ export function useDeleteCollection() {
         toastId: "gallery-collection-delete",
       },
     },
-    mutationFn: ({ id }: GalleryCollection) => deleteGalleryCollection(id),
+    mutationFn: ({ id }: GalleryCollectionSummary) => deleteGalleryCollection(id),
     mutationKey: deleteCollectionMutationKey,
     onSettled: () =>
       Promise.all([

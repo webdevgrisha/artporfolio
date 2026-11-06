@@ -1,12 +1,12 @@
 import { http } from "@/shared/api/http";
 
 import {
-  type GalleryCollection,
+  type GalleryCollectionSummary,
   galleryCollectionsResponseSchema,
 } from "../../model/galleryCollection";
 
 /** Every collection in the order the site shows them. */
-export async function getGalleryCollections(): Promise<GalleryCollection[]> {
+export async function getGalleryCollections(): Promise<GalleryCollectionSummary[]> {
   const { collections } = await http.get({
     path: "/gallery/collections",
     schema: galleryCollectionsResponseSchema,

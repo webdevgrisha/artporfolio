@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { type CurrencyRates, currencyRatesQuery } from "@/entities/currency";
 import {
-  type GalleryCollection,
+  type GalleryCollectionSummary,
   type GalleryColor,
   type GalleryMaterial,
   type GalleryPalette,
@@ -16,7 +16,7 @@ import {
 
 /** The lists of the gallery a work refers to, each sorted as the site lists it. */
 export interface WorkReferences {
-  collections: readonly GalleryCollection[];
+  collections: readonly GalleryCollectionSummary[];
   colors: readonly GalleryColor[];
   materials: readonly GalleryMaterial[];
   palettes: readonly GalleryPalette[];

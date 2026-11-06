@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { Project } from "@/entities/project";
+import type { ProjectSummary } from "@/entities/project";
 import { routes } from "@/shared/config/routes";
 import { useConfirmation } from "@/shared/lib/useConfirmation";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
@@ -13,7 +13,7 @@ import { projectsColumns } from "./projectsColumns";
 interface ProjectsTableProps {
   className?: string;
   /** In the order the site shows them. */
-  projects: readonly Project[];
+  projects: readonly ProjectSummary[];
 }
 
 /**

@@ -10,10 +10,12 @@ import {
 } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
+import { LanguageForm } from "@/shared/ui/language-form";
 
 import {
   type CollectionFormValues,
   collectionFormSchema,
+  collectionLanguageFields,
   toCollectionFormValues,
 } from "../model/collectionFormSchema";
 import { saveCollectionToastId, useSaveCollection } from "../model/collectionMutations";
@@ -49,12 +51,18 @@ export function EditCollectionForm({ className, collection, works }: EditCollect
     // The fields read the form from the context.
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <CollectionFields
+        <LanguageForm
+          fields={collectionLanguageFields}
           isSaving={editForm.isSaving}
-          savedCover={saved.data.cover}
-          works={works}
-          collectionId={collection.data.id}
-        />
+          saved={saved.data.translations}
+        >
+          <CollectionFields
+            isSaving={editForm.isSaving}
+            savedCover={saved.data.cover}
+            works={works}
+            collectionId={collection.data.id}
+          />
+        </LanguageForm>
       </EditForm>
     </FormProvider>
   );

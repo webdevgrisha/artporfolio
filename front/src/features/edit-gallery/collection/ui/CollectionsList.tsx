@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { GalleryCollection } from "@/entities/gallery";
+import type { GalleryCollectionSummary } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
 import { useConfirmation } from "@/shared/lib/useConfirmation";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
@@ -14,7 +14,7 @@ import { collectionsColumns } from "./collectionsColumns";
 interface CollectionsListProps {
   className?: string;
   /** In the order the site shows them: the latest first. */
-  collections: readonly GalleryCollection[];
+  collections: readonly GalleryCollectionSummary[];
 }
 
 /**

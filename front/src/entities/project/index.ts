@@ -9,5 +9,5 @@ export { projectQuery } from "./api/project/projectQuery";
 export { projectsQuery } from "./api/project/projectsQuery";
 export { projectsQueryKey } from "./api/project/projectsQueryKey";
 export { replaceProject } from "./api/project/replaceProject";
-export { maxProjectPhotos, type Project } from "./model/project";
+export { maxProjectPhotos, type Project, type ProjectSummary } from "./model/project";
 export type { ProjectsIntro } from "./model/projectsIntro";

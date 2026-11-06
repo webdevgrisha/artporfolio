@@ -30,6 +30,7 @@ export { galleryWorkUsageQuery } from "./api/work/galleryWorkUsageQuery";
 export { replaceGalleryWork } from "./api/work/replaceGalleryWork";
 export {
   type GalleryCollection,
+  type GalleryCollectionSummary,
   maxCollectionWorks,
 } from "./model/galleryCollection";
 export { type GalleryColor, type GalleryColors, maxColors } from "./model/galleryColors";

@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type {
-  GalleryCollection,
+  GalleryCollectionSummary,
   GalleryMaterial,
   GallerySection,
   GalleryWorkSummary,
@@ -22,7 +22,7 @@ import { WorkTitleCell } from "./WorkTitleCell";
 
 interface WorksColumnsParams {
   /** The collections of the gallery, to name the collection of each work. */
-  collections: readonly GalleryCollection[];
+  collections: readonly GalleryCollectionSummary[];
   /** The works being deleted, by id. */
   deletingIds: readonly string[];
   /** The materials of the gallery, to name the materials of each work. */

@@ -3,13 +3,13 @@ import { renderHook } from "@testing-library/react";
 import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
-
 import type { GalleryCollection } from "@/entities/gallery";
 import { emptyCollectionFormValues } from "@/features/edit-gallery/collection/model/collectionFormSchema";
 import {
   useCreateCollection,
   useSaveCollection,
 } from "@/features/edit-gallery/collection/model/collectionMutations";
+import { targetLanguages } from "@/shared/config/languages";
 import { savedImage } from "@/shared/lib/imageFieldValue";
 
 import { csrfHandler, problem, uploadId, uploadsHandler } from "../../../../support/handlers";
@@ -45,6 +45,7 @@ function apiCollection(title: string): GalleryCollection {
       version: "version",
       width: 960,
     },
+    translations: {},
     createdAt: "2026-01-15T10:00:00.000Z",
     description: "Серия о животных.",
     endYear: null,
@@ -111,6 +112,12 @@ describe("useCreateCollection", () => {
           startYear: 2022,
           title: "Саванна",
           workIds: [workId],
+          translations: Object.fromEntries(
+            targetLanguages.map((language) => [
+              language,
+              { alt: null, description: null, title: null },
+            ]),
+          ),
         },
         ifMatch: null,
         ifNoneMatch: "*",

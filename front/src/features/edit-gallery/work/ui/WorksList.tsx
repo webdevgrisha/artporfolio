@@ -1,7 +1,7 @@
 import React from "react";
 
 import type {
-  GalleryCollection,
+  GalleryCollectionSummary,
   GalleryMaterial,
   GallerySection,
   GalleryWorkSummary,
@@ -24,7 +24,7 @@ interface WorksListProps {
   /** The materials of the gallery, to name the materials of each work. */
   materials: readonly GalleryMaterial[];
   /** The collections of the gallery, to name the collection of each work. */
-  collections: readonly GalleryCollection[];
+  collections: readonly GalleryCollectionSummary[];
 }
 
 /** Every work, in a table; a work opens by the pencil and is deleted after a confirmation. */

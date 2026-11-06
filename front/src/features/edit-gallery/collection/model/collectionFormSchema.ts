@@ -1,7 +1,14 @@
 import { z } from "zod";
 
 import { type GalleryCollection, maxCollectionWorks } from "@/entities/gallery";
-import { photoFieldsShape, refinePhoto, toPhotoFormValues } from "@/shared/lib/photoForm";
+import {
+  maxAltLength,
+  photoFieldsShape,
+  refinePhoto,
+  toPhotoFormValues,
+} from "@/shared/lib/photoForm";
+import { toTranslationValues, translationValuesSchema } from "@/shared/lib/translationsForm";
+import type { TranslatedField } from "@/shared/ui/language-form";
 
 import { toIdSet } from "../../model/idSet";
 import { yearSchema } from "../../model/yearField";
@@ -11,6 +18,16 @@ export const collectionMaxLengths = {
   description: 2_000,
   title: 100,
 } as const;
+
+/** The texts of a collection that are translated, under the names the server gives them. */
+const collectionTranslatedFields = ["title", "description", "alt"] as const;
+
+/** How the collection form shows its translated texts. */
+export const collectionLanguageFields: readonly TranslatedField[] = [
+  { field: "title", label: "Название", source: "title" },
+  { field: "description", label: "Описание", multiline: true, source: "description" },
+  { field: "alt", label: "Описание обложки", source: "photoAlt" },
+];
 
 /**
  * Checks the end year once it is typed: it is optional, as a collection of one year has none, and
@@ -62,6 +79,8 @@ export const collectionFormSchema = z
     workIds: z
       .array(z.string())
       .max(maxCollectionWorks, `Не больше ${String(maxCollectionWorks)} работ`),
+    /** The texts in the other languages; an empty one is translated anew on save. */
+    translations: translationValuesSchema({ ...collectionMaxLengths, alt: maxAltLength }),
   })
   // A collection is shown by its cover, so it cannot be removed, only replaced.
   .superRefine(refinePhoto)
@@ -77,6 +96,7 @@ export const emptyCollectionFormValues: CollectionFormValues = {
   title: "",
   ...toPhotoFormValues(null),
   workIds: [],
+  translations: toTranslationValues({}, collectionTranslatedFields),
 };
 
 /** The values of a collection as stored on the server. */
@@ -86,6 +106,7 @@ export function toCollectionFormValues({
   endYear,
   startYear,
   title,
+  translations,
   workIds,
 }: GalleryCollection): CollectionFormValues {
   return {
@@ -95,5 +116,6 @@ export function toCollectionFormValues({
     title,
     ...toPhotoFormValues(cover),
     workIds: toIdSet(workIds),
+    translations: toTranslationValues(translations, collectionTranslatedFields),
   };
 }

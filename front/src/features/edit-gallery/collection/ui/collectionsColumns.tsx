@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { GalleryCollection } from "@/entities/gallery";
+import type { GalleryCollectionSummary } from "@/entities/gallery";
 import { galleryCollectionPath } from "@/shared/config/routes";
 import { compareText } from "@/shared/lib/compareText";
 import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
@@ -12,14 +12,14 @@ import styles from "./CollectionsList.module.css";
 interface CollectionsColumnsParams {
   /** The collections being deleted, by id. */
   deletingIds: readonly string[];
-  onDelete: (collection: GalleryCollection) => void;
+  onDelete: (collection: GalleryCollectionSummary) => void;
 }
 
 /** The columns of the table of collections. */
 export function collectionsColumns({
   deletingIds,
   onDelete,
-}: CollectionsColumnsParams): ColumnDef<TableRow<GalleryCollection>>[] {
+}: CollectionsColumnsParams): ColumnDef<TableRow<GalleryCollectionSummary>>[] {
   return [
     positionColumn({ isSortable: true }),
     {

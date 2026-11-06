@@ -1,5 +1,5 @@
 import type {
-  GalleryCollection,
+  GalleryCollectionSummary,
   GalleryMaterial,
   GallerySection,
   GalleryWorkSummary,
@@ -41,7 +41,7 @@ function isInSection(
 
 /** The filters over the table of works, by the lists of the gallery. */
 export function createWorkFilters(
-  collections: readonly GalleryCollection[],
+  collections: readonly GalleryCollectionSummary[],
   materials: readonly GalleryMaterial[],
   sections: readonly GallerySection[],
 ): TableFilter<GalleryWorkSummary>[] {
