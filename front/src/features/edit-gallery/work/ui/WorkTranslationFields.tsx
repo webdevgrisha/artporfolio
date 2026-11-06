@@ -1,10 +1,10 @@
 import { useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import type { Translations } from "@/shared/api/translations";
-import type { TargetLanguage } from "@/shared/config/languages";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
+import { rightToLeftLanguages, type TargetLanguage } from "@/shared/config/languages";
+import { useClearField } from "@/shared/lib/useClearField";
+import { ClearableInput } from "@/shared/ui/clearable-input";
+import { ClearableTextarea } from "@/shared/ui/clearable-textarea";
 
 import type { WorkFormValues } from "../model/workFormSchema";
 import {
@@ -30,8 +30,9 @@ interface WorkTranslationFieldsProps {
 
 /** The texts of a work in one language, each with the Russian text it translates. */
 export function WorkTranslationFields({ isSaving, language, saved }: WorkTranslationFieldsProps) {
-  const { control, register, setValue } = useFormContext<WorkFormValues>();
+  const { control, register } = useFormContext<WorkFormValues>();
   const { dirtyFields, errors } = useFormState({ control });
+  const clearField = useClearField<WorkFormValues>();
   const texts = useWatch({ control, name: `translations.${language}` });
   const [title, description, city, alt] = useWatch({
     control,
@@ -39,23 +40,18 @@ export function WorkTranslationFields({ isSaving, language, saved }: WorkTransla
   });
   const originals: Record<WorkTranslatedField, string> = { alt, city, description, title };
 
-  function translateAnew() {
-    for (const field of workTranslatedFields) {
-      setValue(`translations.${language}.${field}`, "", { shouldDirty: true });
-    }
-  }
-
   return (
-    <div className={styles.fields}>
+    <div
+      className={styles.fields}
+      dir={rightToLeftLanguages.includes(language) ? "rtl" : undefined}
+    >
       {workTranslatedFields.map((field) => {
-        const Control = field === "description" ? Textarea : Input;
+        const Control = field === "description" ? ClearableTextarea : ClearableInput;
 
         return (
           <Control
             key={field}
             label={fieldLabels[field]}
-            // Arabic is written from right to left.
-            dir="auto"
             hint={getTranslationHint({
               original: originals[field].trim(),
               status: saved[language]?.[field]?.status,
@@ -64,14 +60,14 @@ export function WorkTranslationFields({ isSaving, language, saved }: WorkTransla
             disabled={isSaving || originals[field].trim() === ""}
             error={errors.translations?.[language]?.[field]?.message}
             isModified={Boolean(dirtyFields.translations?.[language]?.[field])}
+            hasValue={Boolean(texts[field])}
+            clearLabel="Очистить, чтобы перевести заново"
+            onClear={() => clearField(`translations.${language}.${field}`)}
             {...(field === "description" ? { rows: 8 } : {})}
             {...register(`translations.${language}.${field}`)}
           />
         );
       })}
-      <Button className={styles.translateAnew} disabled={isSaving} onClick={translateAnew}>
-        Перевести заново
-      </Button>
     </div>
   );
 }

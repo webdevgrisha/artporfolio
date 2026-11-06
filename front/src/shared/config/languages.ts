@@ -29,6 +29,9 @@ export const targetLanguages = [
 
 export type TargetLanguage = (typeof targetLanguages)[number];
 
+/** The languages written from right to left. */
+export const rightToLeftLanguages: readonly TargetLanguage[] = ["ar"];
+
 export const languageNames: Record<TargetLanguage, string> = {
   ar: "Арабский",
   be: "Белорусский",

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { getTranslationHint } from "@/features/edit-gallery/work/model/workTranslation";
+import {
+  countOutdated,
+  getTranslationHint,
+} from "@/features/edit-gallery/work/model/workTranslation";
 
 describe("getTranslationHint", () => {
   it("tells who wrote the text and gives the Russian one", () => {
@@ -34,5 +37,20 @@ describe("getTranslationHint", () => {
     expect(getTranslationHint({ original: "", status: undefined, text: "" })).toBe(
       "На русском текста нет, поэтому и перевод не нужен",
     );
+  });
+});
+
+describe("countOutdated", () => {
+  it("counts the out of date texts of one language", () => {
+    const translations = {
+      en: {
+        city: { status: "auto", text: "Minsk" },
+        title: { status: "outdated", text: "Elephant" },
+      },
+      pl: { title: { status: "outdated", text: "Słoń" } },
+    } as const;
+
+    expect(countOutdated(translations, "en")).toBe(1);
+    expect(countOutdated(translations, "de")).toBe(0);
   });
 });

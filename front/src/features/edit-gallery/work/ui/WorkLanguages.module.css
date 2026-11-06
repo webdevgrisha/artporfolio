@@ -15,7 +15,3 @@
   gap: var(--layout-space-6);
   max-inline-size: 48rem;
 }
-
-.translateAnew {
-  align-self: flex-start;
-}

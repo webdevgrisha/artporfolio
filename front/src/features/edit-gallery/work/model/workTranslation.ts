@@ -1,4 +1,4 @@
-import type { TranslationStatus } from "@/shared/api/translations";
+import type { TranslationStatus, Translations } from "@/shared/api/translations";
 
 /** The texts of a work that are translated, under the names the server gives them. */
 export const workTranslatedFields = ["title", "description", "city", "alt"] as const;
@@ -34,4 +34,10 @@ export function getTranslationHint({ original, status, text }: TranslationHintPa
         : statusLabels[status];
 
   return `${state}. Оригинал: ${original}`;
+}
+
+/** How many saved texts of `language` were made from an earlier Russian text. */
+export function countOutdated(translations: Translations, language: string): number {
+  return Object.values(translations[language] ?? {}).filter(({ status }) => status === "outdated")
+    .length;
 }

@@ -6,6 +6,7 @@ import { languageNames, type TargetLanguage, targetLanguages } from "@/shared/co
 import { Select } from "@/shared/ui/select";
 
 import type { WorkFormValues } from "../model/workFormSchema";
+import { countOutdated } from "../model/workTranslation";
 import styles from "./WorkLanguages.module.css";
 import { WorkTranslationFields } from "./WorkTranslationFields";
 
@@ -36,9 +37,14 @@ export function WorkLanguages({ children, isSaving, saved }: WorkLanguagesProps)
       .filter((target) => translationErrors?.[target] !== undefined)
       .map((target) => languageNames[target]),
   ];
+  const outdated = targetLanguages.map((target) => countOutdated(saved, target));
+  const outdatedTotal = outdated.reduce((total, count) => total + count, 0);
   const options = [
     { label: russianName, value: "ru" },
-    ...targetLanguages.map((target) => ({ label: languageNames[target], value: target })),
+    ...targetLanguages.map((target, index) => ({
+      label: outdated[index] ? `${languageNames[target]} — устарело` : languageNames[target],
+      value: target,
+    })),
   ];
 
   return (
@@ -46,6 +52,7 @@ export function WorkLanguages({ children, isSaving, saved }: WorkLanguagesProps)
       <Select
         className={styles.language}
         label="Язык"
+        hint={outdatedTotal > 0 ? `Устарело переводов: ${String(outdatedTotal)}` : undefined}
         disabled={isSaving}
         error={
           languagesWithErrors.length > 0

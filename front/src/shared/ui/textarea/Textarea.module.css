@@ -1,7 +1,24 @@
+.controlWrapper {
+  position: relative;
+}
+
 .control {
   display: block;
   min-block-size: var(--control-size);
   padding: var(--space-3) var(--space-4);
   line-height: 1.4;
   resize: vertical;
+}
+
+.controlWithAdornment {
+  padding-inline-end: var(--control-size);
+}
+
+/* A square slot at the top end of the control, which stays there as the control grows. */
+.endAdornment {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  inline-size: var(--control-size);
+  block-size: var(--control-size);
 }
