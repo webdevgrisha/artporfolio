@@ -19,6 +19,8 @@
     /* 4.5:1 on the surface and on --color-surface-disabled, the hover of a table row: 5.1 and 4.7. */
     --color-text-muted: #6e6e6e;
     --color-text-inverse: #fff;
+    /* Paler than the muted text: a hovered icon button turns muted and must not look disabled. */
+    --color-icon-disabled: #b3b3b3;
     --color-surface: #fff;
     /* What lies over the page: a dialog, a dropdown, a toast. Only the dark theme tells it apart. */
     --color-surface-raised: #fff;
@@ -108,6 +110,7 @@
     --color-text: #f2f2f2;
     --color-text-muted: #a6a6a6;
     --color-text-inverse: #141414;
+    --color-icon-disabled: #5e5e5e;
     --color-surface: #141414;
     --color-surface-raised: #232323;
     --color-surface-hover: #333;
