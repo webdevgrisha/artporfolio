@@ -16,14 +16,13 @@
   padding: 0;
 }
 
-/* The line keeps a white swatch visible on the white page. */
 .root::-webkit-color-swatch {
-  border: 1px solid var(--color-divider);
+  border: 1px solid var(--color-swatch-line);
   border-radius: 50%;
 }
 
 .root::-moz-color-swatch {
-  border: 1px solid var(--color-divider);
+  border: 1px solid var(--color-swatch-line);
   border-radius: 50%;
 }
 

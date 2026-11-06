@@ -32,8 +32,8 @@
 }
 
 .root:active:not(:disabled) {
-  color: var(--color-text-inverse);
-  background: var(--color-surface-inverse);
+  color: var(--color-text-emphasis);
+  background: var(--color-surface-emphasis);
 }
 
 .text {
@@ -52,6 +52,7 @@
 }
 
 .danger:active:not(:disabled) {
+  color: var(--color-text-inverse);
   background: var(--color-danger);
 }
 

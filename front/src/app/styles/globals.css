@@ -19,21 +19,35 @@
     /* 4.5:1 on the surface and on --color-surface-disabled, the hover of a table row: 5.1 and 4.7. */
     --color-text-muted: #6e6e6e;
     --color-text-inverse: #fff;
+    /* Paler than the muted text: a hovered icon button turns muted and must not look disabled. */
+    --color-icon-disabled: #b3b3b3;
     --color-surface: #fff;
+    /* What lies over the page: a dialog, a dropdown, a toast. Only the dark theme tells it apart. */
+    --color-surface-raised: #fff;
     --color-surface-hover: #e0e0e0;
     --color-surface-disabled: #f5f5f5;
     --color-surface-inverse: #000;
+    /* A pressed button: it stands out at once, and in the dark theme does not glare. */
+    --color-surface-emphasis: #000;
+    --color-text-emphasis: #fff;
     --color-border: #000;
+    /* The frame of the page and the line of the sidebar: they mark no control. */
+    --color-border-layout: #000;
     --color-border-disabled: #777;
     --color-border-modified: #1d4ed8;
     /* A decorative line between the rows of a list; it marks no control, so it may be pale. */
     --color-divider: #e6e6e6;
+    /* Around a color swatch: it keeps visible the swatch in the color of the page. */
+    --color-swatch-line: #e6e6e6;
     --color-focus: #000;
     --color-danger: #b00020;
     /* Text colors of a state, such as a work for sale or reserved; both 4.5:1 on the surface. */
     --color-success: #15803d;
     --color-warning: #b45309;
     --color-backdrop: rgb(0 0 0 / 31%);
+
+    --shadow-overlay: 0 4px 4px rgb(0 0 0 / 25%);
+    --shadow-dragged: 0 0.25rem 1rem rgb(0 0 0 / 15%);
 
     /* Spacing. See "Spacing system" in docs/STYLE_GUIDE.md. */
     --space-unit: 0.25rem;
@@ -65,6 +79,8 @@
     --font-size-4xl: 2.25rem;
 
     --control-size: 3.5rem;
+    /* Fills the frame on a laptop, so the rows end with the save button; a monitor stops them. */
+    --list-max-inline-size: 57rem;
     --focus-ring: 2px solid var(--color-focus);
     --min-tap-target-size: 44px;
 
@@ -84,6 +100,42 @@
 
     color-scheme: light;
     background: var(--color-surface);
+  }
+
+  /*
+   * The surfaces are neutral grays: a tint would change how the colors of the works look. The page
+   * is not pure black, on which light text glows. Every pair keeps the contrast of the light theme.
+   */
+  :root[data-theme="dark"] {
+    --color-text: #f2f2f2;
+    --color-text-muted: #a6a6a6;
+    --color-text-inverse: #141414;
+    --color-icon-disabled: #5e5e5e;
+    --color-surface: #141414;
+    --color-surface-raised: #232323;
+    --color-surface-hover: #333;
+    /* Lighter than the raised surface too: it is the hover of the rows in a dialog as well. */
+    --color-surface-disabled: #2a2a2a;
+    --color-surface-inverse: #f2f2f2;
+    --color-surface-emphasis: #454545;
+    --color-text-emphasis: #f2f2f2;
+    /* Gray, not white: the frames of a whole form in white would outshine what they hold. */
+    --color-border: #8c8c8c;
+    --color-border-layout: #3d3d3d;
+    --color-border-disabled: #666;
+    --color-border-modified: #6ea0ff;
+    --color-divider: #2e2e2e;
+    --color-swatch-line: #6e6e6e;
+    --color-focus: #f2f2f2;
+    --color-danger: #ff6b6b;
+    --color-success: #3ddc84;
+    --color-warning: #ffb020;
+    --color-backdrop: rgb(0 0 0 / 60%);
+
+    --shadow-overlay: 0 0.5rem 1.5rem rgb(0 0 0 / 60%);
+    --shadow-dragged: 0 0.25rem 1rem rgb(0 0 0 / 60%);
+
+    color-scheme: dark;
   }
 
   @media (width >= 40rem) {

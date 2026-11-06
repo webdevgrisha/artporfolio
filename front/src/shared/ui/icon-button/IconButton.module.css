@@ -24,6 +24,6 @@
 }
 
 .root:disabled {
-  color: var(--color-text-muted);
+  color: var(--color-icon-disabled);
   cursor: not-allowed;
 }

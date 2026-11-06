@@ -2,3 +2,8 @@
 .picture {
   display: contents;
 }
+
+/* Without the picture, a source would take a place of its own in a flex column, with its gap. */
+.picture source {
+  display: none;
+}
