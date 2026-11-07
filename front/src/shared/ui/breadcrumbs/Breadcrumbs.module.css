@@ -19,6 +19,17 @@
   overflow-wrap: anywhere;
 }
 
+/* A phone has little room, and the top of the way repeats the heading right above it. */
+@media (width < 40rem) {
+  .item:first-child {
+    display: none;
+  }
+
+  .item:nth-child(2) .separator {
+    display: none;
+  }
+}
+
 /* The pages above are quieter than the page itself, as in the design. */
 .link {
   color: var(--color-text-muted);

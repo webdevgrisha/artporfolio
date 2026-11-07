@@ -12,7 +12,7 @@
 }
 
 .narrow {
-  max-inline-size: 48rem;
+  max-inline-size: var(--form-max-inline-size);
 }
 
 /* As TitleList. */

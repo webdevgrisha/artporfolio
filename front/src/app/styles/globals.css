@@ -88,6 +88,8 @@
     --font-size-4xl: 2.25rem;
 
     --control-size: 3.5rem;
+    /* A column of fields, which keeps a readable line and one right edge on every form. */
+    --form-max-inline-size: 48rem;
     /* Fills the frame on a laptop, so the rows end with the save button; a monitor stops them. */
     --list-max-inline-size: 57rem;
     --focus-ring: 2px solid var(--color-focus);
