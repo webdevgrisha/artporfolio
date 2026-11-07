@@ -5,9 +5,12 @@ import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import {
   patchTranslations,
   type ResourceTranslations,
+  type TranslationEdit,
   translationsQuery,
 } from "@/shared/api/translations";
 import type { TargetLanguage } from "@/shared/config/languages";
+
+import { useWrittenFrom } from "./useWrittenFrom";
 
 /** A text of a resource that a person can edit in every language. */
 export interface TranslatedField {
@@ -49,6 +52,7 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
     values: data && toValues(data, fields, language),
   });
   const { dirtyFields } = form.formState;
+  const writtenFrom = useWrittenFrom(data?.sources, dirtyFields);
 
   function revertTo(translations: ResourceTranslations) {
     form.reset(toValues(translations, fields, language), { keepDirtyValues: false });
@@ -68,7 +72,8 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
         toastId: "translations-save",
       },
     },
-    mutationFn: (texts: TranslationValues) => patchTranslations({ language, resource, texts }),
+    mutationFn: (texts: Record<string, TranslationEdit>) =>
+      patchTranslations({ language, resource, texts }),
     onSuccess: async (saved) => {
       await showSaved(saved);
       revertTo(saved);
@@ -94,7 +99,7 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
     // A row deleted in Russian leaves its field behind: the server has no such text any more.
     const changed = Object.keys(dirtyFields)
       .filter((key) => data?.sources[key])
-      .map((key) => [key, values[key]?.trim() ?? ""]);
+      .map((key) => [key, { source: writtenFrom(key), text: values[key]?.trim() ?? "" }]);
 
     if (changed.length > 0) {
       save.mutate(Object.fromEntries(changed));

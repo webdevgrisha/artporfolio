@@ -15,12 +15,18 @@ export const languageParamsSchema = resourceParamsSchema.extend({
   language: z.enum(targetLanguages),
 });
 
+/** A person's text, with the text in the source language they wrote it from. */
+const translationEditSchema = z.strictObject({
+  source: z.string().min(1).max(maxTranslationLength),
+  text: z.string().trim().min(1).max(maxTranslationLength),
+});
+
 /**
- * What a person changed in one language, by key: a text is their edit, and null asks the translator
- * for a new one. A key left out stays as it is.
+ * What a person changed in one language, by key: their edit, or null to ask the translator for a
+ * new text. A key left out stays as it is.
  */
 export const translationPatchBodySchema = z
-  .record(z.string(), z.string().trim().min(1).max(maxTranslationLength).nullable())
+  .record(z.string(), translationEditSchema.nullable())
   .refine((texts) => Object.keys(texts).length > 0, "There is no change");
 
 export type ResourceParams = z.infer<typeof resourceParamsSchema>;

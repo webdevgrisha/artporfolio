@@ -72,21 +72,36 @@ describe("reading translations", () => {
 
 describe("changing translations", () => {
   it("saves what a person changed in one language", async () => {
-    const response = await patch("/gallery-work-1/en", { description: null, title: " Elephant " });
+    const response = await patch("/gallery-work-1/en", {
+      description: null,
+      title: { source: "Слон", text: " Elephant " },
+    });
 
     expect(response.status).toBe(200);
     expect(store.editTranslations).toHaveBeenCalledWith("gallery-work-1", "en", {
       description: null,
-      title: "Elephant",
+      title: { source: "Слон", text: "Elephant" },
     });
   });
 
   it("rejects an unknown language", async () => {
-    expect((await patch("/gallery-work-1/xx", { title: "Elephant" })).status).toBe(404);
+    const title = { source: "Слон", text: "Elephant" };
+
+    expect((await patch("/gallery-work-1/xx", { title })).status).toBe(404);
   });
 
   it("rejects an empty text", async () => {
-    expect((await patch("/gallery-work-1/en", { title: "  " })).status).toBe(400);
+    const title = { source: "Слон", text: "  " };
+
+    expect((await patch("/gallery-work-1/en", { title })).status).toBe(400);
+  });
+
+  it("rejects a text without the source it was written from", async () => {
+    expect((await patch("/gallery-work-1/en", { title: "Elephant" })).status).toBe(400);
+  });
+
+  it("rejects a change of nothing", async () => {
+    expect((await patch("/gallery-work-1/en", {})).status).toBe(400);
   });
 
   it("is the admin's alone", async () => {

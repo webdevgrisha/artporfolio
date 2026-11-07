@@ -44,6 +44,12 @@ export interface ResourceTranslations {
   failed: boolean;
 }
 
+/** A person's text, with the text in the source language they wrote it from. */
+export interface TranslationEdit {
+  source: string;
+  text: string;
+}
+
 /** How translating goes as a whole, for the admin. */
 export interface TranslationStatusResponse {
   halted: HaltReason | null;
@@ -147,13 +153,14 @@ export async function getTranslations(resource: string): Promise<ResourceTransla
 }
 
 /**
- * Saves what a person changed in one language: a text is their edit, and null asks the translator
- * for a new one. A key with no source text is rejected with 422.
+ * Saves what a person changed in one language: their edit, or null to ask the translator for a new
+ * text. An edit keeps the source it was written from, so one of an older source shows as out of
+ * date. A key with no source text is rejected with 422.
  */
 export async function editTranslations(
   resource: string,
   language: TargetLanguage,
-  texts: Record<string, string | null>,
+  texts: Record<string, TranslationEdit | null>,
 ): Promise<ResourceTranslations> {
   const asksTranslator = Object.values(texts).includes(null);
 
@@ -162,17 +169,15 @@ export async function editTranslations(
     const saved = readResource(await transaction.get(document));
     const translations: StoredTranslations = { ...saved.translations };
 
-    for (const [key, text] of Object.entries(texts)) {
-      const source = saved.sources[key];
-
-      if (!source) {
+    for (const [key, edit] of Object.entries(texts)) {
+      if (!saved.sources[key]) {
         throw new UnprocessableContentError(`There is no text ${key}`);
       }
 
-      if (text === null) {
+      if (edit === null) {
         askForNewTranslation(translations, language, key);
       } else {
-        storeTranslation(translations, language, key, { edited: true, source, text });
+        storeTranslation(translations, language, key, { ...edit, edited: true });
       }
     }
 

@@ -21,8 +21,9 @@ export const translationsRouter = Router();
 translationsRouter.get("/status", identifyReader, readStatus);
 translationsRouter.post("/retry", retry);
 
-// A person's change names only the texts it changes, so it needs no If-Match: it cannot overwrite
-// what it did not touch.
+// A person's change names only the texts it changes, so it cannot overwrite what it did not touch,
+// and each text names the source it was written from, so an edit of an older source shows as out of
+// date. Hence no If-Match: the translator changes the resource at any moment, and an ETag with it.
 translationsRouter.get(
   "/:resource",
   identifyReader,

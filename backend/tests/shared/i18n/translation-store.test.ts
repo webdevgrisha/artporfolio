@@ -86,6 +86,11 @@ import {
 
 const resource = "gallery-work-1";
 
+/** A person's text, written from the Russian text the tests start with. */
+function edit(text: string, source = "Слон") {
+  return { source, text };
+}
+
 /** A save of a resource with its texts, as the services do it. */
 async function save(saved: string, sources: Record<string, string>): Promise<void> {
   await firestore().runTransaction(async (transaction) => {
@@ -109,7 +114,7 @@ describe("a failure of the queue or of the worker", () => {
   async function translated(): Promise<void> {
     await save(resource, { title: "Слон" });
     await runTranslation(resource, false);
-    await editTranslations(resource, "en", { title: "My Elephant" });
+    await editTranslations(resource, "en", { title: edit("My Elephant") });
     queue.enqueueTranslation.mockClear();
   }
 
@@ -152,7 +157,7 @@ describe("a failure of the queue or of the worker", () => {
     await expect(runTranslation(resource, true)).rejects.toThrow("DeepL is down");
     queue.enqueueTranslation.mockClear();
 
-    await editTranslations(resource, "en", { title: "Elephant" });
+    await editTranslations(resource, "en", { title: edit("Elephant") });
 
     expect(queue.enqueueTranslation).not.toHaveBeenCalled();
     await expect(getTranslations(resource)).resolves.toMatchObject({
@@ -193,6 +198,19 @@ describe("a failure of the queue or of the worker", () => {
     expect(queue.enqueueTranslation).toHaveBeenCalledTimes(2);
     expect((await getTranslations(resource)).failed).toBe(true);
     expect((await getTranslations("gallery-work-2")).failed).toBe(false);
+  });
+});
+
+describe("an edit of an older text", () => {
+  it("shows as out of date, and stays until a person replaces it", async () => {
+    await save(resource, { title: "Слон" });
+    await save(resource, { title: "Тигр" });
+
+    const { translations } = await editTranslations(resource, "en", {
+      title: edit("Elephant", "Слон"),
+    });
+
+    expect(translations.en?.title).toEqual({ status: "outdated", text: "Elephant" });
   });
 });
 
@@ -291,7 +309,7 @@ describe("runTranslation", () => {
     await save(resource, { title: "Слон" });
     deepl.translateTexts.mockImplementation(async (texts: string[], language: string) => {
       if (language === "en") {
-        await editTranslations(resource, "en", { title: "Elephant" });
+        await editTranslations(resource, "en", { title: edit("Elephant") });
       }
 
       return texts;
@@ -380,14 +398,14 @@ describe("editTranslations", () => {
   it("saves a person's text", async () => {
     await save(resource, { title: "Слон" });
 
-    const { translations } = await editTranslations(resource, "en", { title: "Elephant" });
+    const { translations } = await editTranslations(resource, "en", { title: edit("Elephant") });
 
     expect(translations.en?.title).toEqual({ status: "edited", text: "Elephant" });
   });
 
   it("asks the translator for a text anew, and keeps the old one until then", async () => {
     await save(resource, { title: "Слон" });
-    await editTranslations(resource, "en", { title: "Elephant" });
+    await editTranslations(resource, "en", { title: edit("Elephant") });
     queue.enqueueTranslation.mockClear();
 
     const { translations } = await editTranslations(resource, "en", { title: null });
@@ -397,9 +415,9 @@ describe("editTranslations", () => {
   });
 
   it("rejects a text that has no source", async () => {
-    await expect(editTranslations(resource, "en", { title: "Elephant" })).rejects.toBeInstanceOf(
-      UnprocessableContentError,
-    );
+    await expect(
+      editTranslations(resource, "en", { title: edit("Elephant") }),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
   });
 });
 

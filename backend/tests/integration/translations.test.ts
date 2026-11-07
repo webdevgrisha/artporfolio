@@ -54,7 +54,7 @@ describe("translations on Firestore", () => {
   it("keeps a person's edit through a new save, and shows it as out of date", async () => {
     await saveText("Обо мне");
     await runTranslation(resource, false);
-    await editTranslations(resource, "en", { about: "About me" });
+    await editTranslations(resource, "en", { about: { source: "Обо мне", text: "About me" } });
 
     await saveText("Немного обо мне");
     await runTranslation(resource, false);
@@ -68,7 +68,7 @@ describe("translations on Firestore", () => {
   it("keeps a text asked anew until the new one is made", async () => {
     await saveText("Обо мне");
     await runTranslation(resource, false);
-    await editTranslations(resource, "en", { about: "About me" });
+    await editTranslations(resource, "en", { about: { source: "Обо мне", text: "About me" } });
 
     const { translations } = await editTranslations(resource, "en", { about: null });
 

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -99,7 +99,41 @@ describe("TranslationForm", () => {
     fireEvent.change(title, { target: { value: "The Elephant" } });
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
 
-    await waitFor(() => expect(patches).toEqual([{ title: "The Elephant" }]));
+    await waitFor(() =>
+      expect(patches).toEqual([{ title: { source: "Слон", text: "The Elephant" } }]),
+    );
+  });
+
+  it("sends the Russian text a change was begun from, though it changed meanwhile", async () => {
+    const queryKey = ["translations", "gallery-work-1"];
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } },
+    });
+    const patches: unknown[] = [];
+
+    client.setQueryData(queryKey, saved);
+    server.use(
+      csrfHandler,
+      mswHttp.patch(`${path}/en`, async ({ request }) => {
+        patches.push(await request.json());
+        return HttpResponse.json(saved);
+      }),
+    );
+    render(
+      <QueryClientProvider client={client}>
+        <TranslationForm fields={fields} language="en" resource="gallery-work-1" />
+      </QueryClientProvider>,
+    );
+
+    fireEvent.change(await screen.findByLabelText("Название"), { target: { value: "Elephant!" } });
+    act(() => {
+      client.setQueryData(queryKey, { ...saved, sources: { ...saved.sources, title: "Тигр" } });
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() =>
+      expect(patches).toEqual([{ title: { source: "Слон", text: "Elephant!" } }]),
+    );
   });
 
   it("empties a field without asking the translator, and refuses to save it empty", async () => {
@@ -263,7 +297,9 @@ describe("TranslationForm", () => {
     await waitFor(() => expect(screen.queryByLabelText("Описание")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
 
-    await waitFor(() => expect(patches).toEqual([{ title: "The Elephant" }]));
+    await waitFor(() =>
+      expect(patches).toEqual([{ title: { source: "Слон", text: "The Elephant" } }]),
+    );
   });
 
   it("says when there is nothing to translate yet", async () => {

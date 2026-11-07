@@ -46,11 +46,17 @@ export function translationsQuery(resource: string) {
   });
 }
 
+/** A person's text, with the Russian text they wrote it from. */
+export interface TranslationEdit {
+  source: string;
+  text: string;
+}
+
 interface PatchTranslationsParams {
   language: TargetLanguage;
   resource: string;
   /** Only what changed, by key: a person's text, or null to have it translated anew. */
-  texts: Record<string, string | null>;
+  texts: Record<string, TranslationEdit | null>;
 }
 
 export function patchTranslations({
