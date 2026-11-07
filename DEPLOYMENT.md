@@ -62,6 +62,20 @@ gcloud projects add-iam-policy-binding artportfolio-b2ef4 \
 
 Without them a save still goes through, and its texts show as failed: «Не удалось перевести».
 
+Adding a task does not prove that it can run. A task calls `translate` as the same service account,
+and a 2nd gen function is a Cloud Run service, so after the first deploy check that the account may
+invoke it:
+
+```sh
+gcloud run services add-iam-policy-binding translate --project artportfolio-b2ef4 \
+  --region=europe-west1 \
+  --member=serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com \
+  --role=roles/run.invoker
+```
+
+Tasks refused with 403 stay in the queue and retry, then the texts wait as «Переводится…»: look for
+them in the logs of `translate` and under Cloud Tasks in the Google Cloud console.
+
 ## Firestore
 
 The API stores site content in Firestore. Create the database once in the Firebase console:

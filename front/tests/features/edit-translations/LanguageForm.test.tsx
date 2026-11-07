@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/shared/ui/unsaved-changes", () => ({ useReportUnsavedChanges: vi.fn() }));
 
 import type { ResourceTranslations } from "@/entities/translation";
-import { LanguageForm } from "@/features/edit-translations";
+import { LanguageForm } from "@/features/edit-translations/ui/LanguageForm";
 
 import { recordRequests, server } from "../../support/server";
 
