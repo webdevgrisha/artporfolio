@@ -1,12 +1,7 @@
+/* One text under another at a readable line length, as in the forms of the other languages. */
 .root {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--layout-space-6) var(--layout-space-8);
-}
-
-/* The three texts side by side, as in the design. */
-@media (width >= 64rem) {
-  .root {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-space-6);
+  max-inline-size: 48rem;
 }
