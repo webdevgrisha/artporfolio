@@ -64,15 +64,24 @@ describe("TranslationForm", () => {
     expect(screen.getByText("Исправлено вручную")).toBeDefined();
   });
 
-  it("keeps the Russian text folded away", async () => {
+  it("shows the Russian text on request and hides it again", async () => {
     setUp();
 
     await screen.findByLabelText("Название");
 
-    const original = screen.getByText("Слон").closest("details");
+    const [toggle] = screen.getAllByRole("button", { name: "Показать оригинал" });
+    const original = screen.getByText("Слон").parentElement as HTMLElement;
 
-    expect(original?.open).toBe(false);
-    expect(screen.getAllByText("Показать оригинал")).toHaveLength(2);
+    expect(original.hidden).toBe(true);
+
+    fireEvent.click(toggle as HTMLElement);
+
+    expect(original.hidden).toBe(false);
+    expect(toggle?.textContent).toBe("Скрыть оригинал");
+
+    fireEvent.click(toggle as HTMLElement);
+
+    expect(original.hidden).toBe(true);
   });
 
   it("leaves out a text with no Russian text", async () => {

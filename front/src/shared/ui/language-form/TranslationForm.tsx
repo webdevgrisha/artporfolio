@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import React from "react";
 import { useForm } from "react-hook-form";
 
 import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
@@ -14,6 +15,7 @@ import { ClearableTextarea } from "@/shared/ui/clearable-textarea";
 import { EditForm } from "@/shared/ui/edit-form";
 
 import styles from "./LanguageForm.module.css";
+import { OriginalText } from "./OriginalText";
 
 /** A text of a resource that a person can edit in every language. */
 export interface TranslatedField {
@@ -52,6 +54,7 @@ function toValues(
  * stays. A save sends only what they changed, and an emptied field is translated anew.
  */
 export function TranslationForm({ fields, language, resource }: TranslationFormProps) {
+  const formId = React.useId();
   const queryClient = useQueryClient();
   const query = translationsQuery(resource);
   const { data } = useQuery(query);
@@ -116,16 +119,13 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
         {shown.map(({ key, label, multiline = false }) => {
           const Control = multiline ? ClearableTextarea : ClearableInput;
           const text = watch(key) ?? "";
+          const statusId = `${formId}-${key}`;
 
           return (
             <div key={key} className={styles.field}>
               <Control
                 label={label}
-                hint={getTranslationHint({
-                  failed: data.failed,
-                  status: data.translations[language]?.[key]?.status,
-                  text: text.trim(),
-                })}
+                aria-describedby={statusId}
                 disabled={save.isPending}
                 error={errors[key]?.message}
                 isModified={Boolean(dirtyFields[key])}
@@ -143,11 +143,15 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
                   },
                 })}
               />
-              {/* Russian reads from left to right even in the form of a language that does not. */}
-              <details className={styles.original} dir="ltr">
-                <summary className={styles.originalToggle}>Показать оригинал</summary>
-                <p className={styles.originalText}>{data.sources[key]}</p>
-              </details>
+              <OriginalText
+                original={data.sources[key] ?? ""}
+                status={getTranslationHint({
+                  failed: data.failed,
+                  status: data.translations[language]?.[key]?.status,
+                  text: text.trim(),
+                })}
+                statusId={statusId}
+              />
             </div>
           );
         })}

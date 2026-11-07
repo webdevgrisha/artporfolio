@@ -22,17 +22,39 @@
   gap: var(--space-2);
 }
 
-.original {
+/* The status at the start, the action at the end; they wrap on a narrow screen. */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  justify-content: space-between;
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }
 
-.originalToggle {
-  cursor: pointer;
+.toggle {
+  min-block-size: auto;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Set apart from the field by a line, as a quotation. */
+.original {
+  padding-inline-start: var(--space-4);
+  border-inline-start: 1px solid var(--color-border);
+}
+
+.originalLabel {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 /* Paragraphs are separated by a blank line, which the text keeps. */
 .originalText {
-  margin-block: var(--space-2) 0;
+  margin: 0;
   white-space: pre-wrap;
 }
