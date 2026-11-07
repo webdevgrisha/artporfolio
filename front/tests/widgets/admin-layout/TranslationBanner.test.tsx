@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 
-import type { TranslationState } from "@/shared/api/translations";
+import { type TranslationState, translationsQuery } from "@/shared/api/translations";
 import { TranslationBanner } from "@/widgets/admin-layout/ui/TranslationBanner";
 
 import { csrfHandler } from "../../support/handlers";
@@ -52,5 +52,47 @@ describe("TranslationBanner", () => {
     fireEvent.click(screen.getByRole("button", { name: "Повторить перевод" }));
 
     await waitFor(() => expect(requests).toContain("POST /api/translations/retry"));
+  });
+
+  it("makes an open form read its texts again after a retry", async () => {
+    const path = "/api/translations/gallery-intro";
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } },
+    });
+    const requests = recordRequests();
+
+    server.use(
+      csrfHandler,
+      mswHttp.get("/api/translations/status", () =>
+        HttpResponse.json({ halted: "limit", usage: null }),
+      ),
+      mswHttp.post("/api/translations/retry", () => new HttpResponse(null, { status: 202 })),
+      mswHttp.get(path, () =>
+        HttpResponse.json({ failed: false, isTranslating: false, sources: {}, translations: {} }),
+      ),
+    );
+
+    function Form() {
+      useQuery(translationsQuery("gallery-intro"));
+
+      return null;
+    }
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TranslationBanner />
+        <Form />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => expect(requests).toContain(`GET ${path}`));
+
+    const reads = requests.filter((request) => request === `GET ${path}`).length;
+
+    fireEvent.click(await screen.findByRole("button", { name: "Повторить перевод" }));
+
+    await waitFor(() =>
+      expect(requests.filter((request) => request === `GET ${path}`).length).toBeGreaterThan(reads),
+    );
   });
 });

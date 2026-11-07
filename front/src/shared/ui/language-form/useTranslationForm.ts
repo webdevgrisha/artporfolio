@@ -54,6 +54,12 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
     form.reset(toValues(translations, fields, language), { keepDirtyValues: false });
   }
 
+  async function showSaved(saved: ResourceTranslations) {
+    // A read begun before the change would otherwise bring the old texts back when it ends.
+    await queryClient.cancelQueries({ queryKey: query.queryKey });
+    queryClient.setQueryData(query.queryKey, saved);
+  }
+
   const save = useMutation({
     meta: {
       feedback: {
@@ -63,8 +69,8 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
       },
     },
     mutationFn: (texts: TranslationValues) => patchTranslations({ language, resource, texts }),
-    onSuccess: (saved) => {
-      queryClient.setQueryData(query.queryKey, saved);
+    onSuccess: async (saved) => {
+      await showSaved(saved);
       revertTo(saved);
     },
   });
@@ -77,17 +83,22 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
       },
     },
     mutationFn: (key: string) => patchTranslations({ language, resource, texts: { [key]: null } }),
-    onSuccess: (saved, key) => {
-      queryClient.setQueryData(query.queryKey, saved);
+    onSuccess: async (saved, key) => {
+      await showSaved(saved);
       form.resetField(key, { defaultValue: "" });
     },
   });
 
   function submit(values: TranslationValues) {
-    const changed = Object.keys(dirtyFields).map((key) => [key, values[key]?.trim() ?? ""]);
+    // A row deleted in Russian leaves its field behind: the server has no such text any more.
+    const changed = Object.keys(dirtyFields)
+      .filter((key) => data?.sources[key])
+      .map((key) => [key, values[key]?.trim() ?? ""]);
 
     if (changed.length > 0) {
       save.mutate(Object.fromEntries(changed));
+    } else if (data) {
+      revertTo(data);
     }
   }
 
@@ -95,7 +106,7 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
     data,
     form,
     isError,
-    isSaving: save.isPending,
+    isSaving: save.isPending || translateAnew.isPending,
     revertTo,
     submit: form.handleSubmit(submit),
     translateAnew: translateAnew.mutate,

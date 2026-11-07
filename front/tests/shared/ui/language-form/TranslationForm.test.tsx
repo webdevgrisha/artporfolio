@@ -137,6 +137,135 @@ describe("TranslationForm", () => {
     expect(patches).toEqual([]);
   });
 
+  it("asks before a new translation replaces what was typed over an automatic text", async () => {
+    const { patches } = setUp();
+    const description = await screen.findByLabelText("Описание");
+
+    fireEvent.change(description, { target: { value: "My draft" } });
+    fireEvent.click(screen.getAllByRole("button", { name: "Перевести заново" })[1] as HTMLElement);
+
+    expect(await screen.findByText("Заменить ручную правку?")).toBeDefined();
+    expect(patches).toEqual([]);
+    expect(description).toHaveProperty("value", "My draft");
+  });
+
+  it("takes no other action on a form while a new translation is being asked for", async () => {
+    let release = () => {};
+    const answer = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const patches: unknown[] = [];
+
+    server.use(
+      csrfHandler,
+      mswHttp.get(path, () => HttpResponse.json(saved)),
+      mswHttp.patch(`${path}/en`, async ({ request }) => {
+        patches.push(await request.json());
+        await answer;
+        return HttpResponse.json(saved);
+      }),
+    );
+    render(<TranslationForm fields={fields} language="en" resource="gallery-work-1" />, {
+      wrapper: Providers,
+    });
+    await screen.findByLabelText("Описание");
+
+    const button = screen.getAllByRole("button", { name: "Перевести заново" })[1] as HTMLElement;
+
+    fireEvent.click(button);
+    await waitFor(() => expect(patches).toHaveLength(1));
+    fireEvent.click(button);
+    release();
+
+    await waitFor(() => expect(button).toHaveProperty("disabled", false));
+    expect(patches).toHaveLength(1);
+  });
+
+  it("keeps what was saved when a read begun earlier ends later", async () => {
+    let finishRead = () => {};
+    const readEnds = new Promise<void>((resolve) => {
+      finishRead = resolve;
+    });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } },
+    });
+    const queryKey = ["translations", "gallery-work-1"];
+    const changed: ResourceTranslations = {
+      ...saved,
+      translations: {
+        en: {
+          description: { status: "auto", text: "Oil." },
+          title: { status: "edited", text: "The Elephant" },
+        },
+      },
+    };
+
+    client.setQueryData(queryKey, saved);
+    server.use(
+      csrfHandler,
+      mswHttp.get(path, async () => {
+        await readEnds;
+        return HttpResponse.json(saved);
+      }),
+      mswHttp.patch(`${path}/en`, () => HttpResponse.json(changed)),
+    );
+    render(
+      <QueryClientProvider client={client}>
+        <TranslationForm fields={fields} language="en" resource="gallery-work-1" />
+      </QueryClientProvider>,
+    );
+
+    const title = await screen.findByLabelText("Название");
+
+    void client.invalidateQueries({ queryKey });
+    fireEvent.change(title, { target: { value: "The Elephant" } });
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() => expect(client.getQueryData(queryKey)).toEqual(changed));
+    finishRead();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(client.getQueryData(queryKey)).toEqual(changed);
+    expect(title).toHaveProperty("value", "The Elephant");
+  });
+
+  it("leaves a text deleted in Russian out of a save", async () => {
+    const queryKey = ["translations", "gallery-work-1"];
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } },
+    });
+    const patches: unknown[] = [];
+    const page = (shown: typeof fields) => (
+      <QueryClientProvider client={client}>
+        <TranslationForm fields={shown} language="en" resource="gallery-work-1" />
+      </QueryClientProvider>
+    );
+
+    client.setQueryData(queryKey, saved);
+    server.use(
+      csrfHandler,
+      mswHttp.patch(`${path}/en`, async ({ request }) => {
+        patches.push(await request.json());
+        return HttpResponse.json(saved);
+      }),
+    );
+
+    const { rerender } = render(page(fields));
+
+    fireEvent.change(await screen.findByLabelText("Описание"), { target: { value: "Gone" } });
+    fireEvent.change(screen.getByLabelText("Название"), { target: { value: "The Elephant" } });
+
+    const { description: _deleted, ...sources } = saved.sources;
+
+    client.setQueryData(queryKey, { ...saved, sources });
+    rerender(page(fields.filter(({ key }) => key !== "description")));
+
+    await waitFor(() => expect(screen.queryByLabelText("Описание")).toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() => expect(patches).toEqual([{ title: "The Elephant" }]));
+  });
+
   it("says when there is nothing to translate yet", async () => {
     server.use(
       mswHttp.get(path, () => HttpResponse.json({ ...saved, sources: {}, translations: {} })),

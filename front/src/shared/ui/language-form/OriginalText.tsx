@@ -5,6 +5,8 @@ import { Button } from "@/shared/ui/button";
 import styles from "./LanguageForm.module.css";
 
 interface OriginalTextProps {
+  /** Whether a change of the form is under way, so a new translation has to wait. */
+  isDisabled: boolean;
   /** Asks the translator for this text anew; none while it is at work on it. */
   onTranslateAnew?: () => void;
   /** The Russian text of the field. */
@@ -19,7 +21,13 @@ interface OriginalTextProps {
  * The line under a translation: its status and, folded away as a description may be long, the
  * Russian text to compare it with.
  */
-export function OriginalText({ onTranslateAnew, original, status, statusId }: OriginalTextProps) {
+export function OriginalText({
+  isDisabled,
+  onTranslateAnew,
+  original,
+  status,
+  statusId,
+}: OriginalTextProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const textId = React.useId();
 
@@ -29,7 +37,12 @@ export function OriginalText({ onTranslateAnew, original, status, statusId }: Or
         <span id={statusId}>{status}</span>
         <div className={styles.actions}>
           {onTranslateAnew ? (
-            <Button className={styles.toggle} variant="text" onClick={onTranslateAnew}>
+            <Button
+              className={styles.toggle}
+              disabled={isDisabled}
+              variant="text"
+              onClick={onTranslateAnew}
+            >
               Перевести заново
             </Button>
           ) : null}

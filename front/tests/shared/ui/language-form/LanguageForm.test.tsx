@@ -66,4 +66,21 @@ describe("LanguageForm", () => {
 
     await waitFor(() => expect(requests.length).toBeGreaterThan(before));
   });
+
+  it("reads nothing again when only the page around it renders anew", async () => {
+    server.use(mswHttp.get(path, () => HttpResponse.json(translations)));
+
+    const requests = recordRequests();
+    const { rerender } = render(<Page address="/" savedTag='"1"' />);
+
+    await waitFor(() => expect(requests).toContain(`GET ${path}`));
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+
+    const before = requests.length;
+
+    rerender(<Page address="/" savedTag='"1"' />);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(requests).toHaveLength(before);
+  });
 });

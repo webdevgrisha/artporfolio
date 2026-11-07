@@ -32,12 +32,15 @@ export type ResourceTranslations = z.infer<typeof resourceTranslationsSchema>;
 /** How often an open form asks whether the translator has finished. */
 const translationPollMilliseconds = 2_000;
 
+/** The key that all the translations of the cache start with. */
+export const allTranslationsKey = ["translations"] as const;
+
 /** The translations of `resource`, read again while the translator works. */
 export function translationsQuery(resource: string) {
   return queryOptions({
     queryFn: () =>
       http.get({ path: `/translations/${resource}`, schema: resourceTranslationsSchema }),
-    queryKey: ["translations", resource],
+    queryKey: [...allTranslationsKey, resource],
     refetchInterval: ({ state }) =>
       state.data?.isTranslating ? translationPollMilliseconds : false,
   });

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import {
+  allTranslationsKey,
   retryTranslations,
   type TranslationState,
   translationStateQuery,
@@ -37,7 +38,12 @@ export function TranslationBanner() {
       },
     },
     mutationFn: retryTranslations,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: translationStateQuery.queryKey }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: translationStateQuery.queryKey }),
+        // An open form still shows the texts as failed, and only a new read starts it asking again.
+        queryClient.invalidateQueries({ queryKey: allTranslationsKey }),
+      ]),
   });
 
   if (!data) {

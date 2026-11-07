@@ -32,6 +32,7 @@ export function LanguageForm({ children, fields, resource, savedTag }: LanguageF
   const query = translationsQuery(resource);
   const { data } = useQuery(query);
   const [opened, setOpened] = React.useState<readonly TargetLanguage[]>([]);
+  const keys = fields.map(({ key }) => key);
 
   if (language !== "ru" && !opened.includes(language)) {
     setOpened([...opened, language]);
@@ -40,7 +41,7 @@ export function LanguageForm({ children, fields, resource, savedTag }: LanguageF
   const options = [
     { label: "Русский (оригинал)", value: "ru" },
     ...targetLanguages.map((target) => {
-      const mark = data && getLanguageMark(data, target);
+      const mark = data && getLanguageMark(data, target, keys);
 
       return {
         label: mark ? `${languageNames[target]} — ${mark}` : languageNames[target],
@@ -51,10 +52,10 @@ export function LanguageForm({ children, fields, resource, savedTag }: LanguageF
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new tag is what asks for a new read.
   React.useEffect(() => {
-    void queryClient.invalidateQueries({ queryKey: query.queryKey });
-  }, [query.queryKey, queryClient, savedTag]);
+    void queryClient.invalidateQueries({ queryKey: translationsQuery(resource).queryKey });
+  }, [queryClient, resource, savedTag]);
 
-  const summary = data && language !== "ru" ? getLanguageSummary(data, language) : null;
+  const summary = data && language !== "ru" ? getLanguageSummary(data, language, keys) : null;
 
   return (
     <div className={styles.root}>

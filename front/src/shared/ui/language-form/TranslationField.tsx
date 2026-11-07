@@ -20,7 +20,7 @@ interface TranslationFieldProps {
   field: TranslatedField;
   isSaving: boolean;
   language: TargetLanguage;
-  /** Asks for a new translation; `isPersonsText` tells that a person's text would be replaced. */
+  /** Asks for a new translation; `isPersonsText` tells that a person's text would be lost. */
   onTranslateAnew: (isPersonsText: boolean) => void;
   /** The Russian text as last saved. */
   original: string;
@@ -83,10 +83,14 @@ export function TranslationField({
         original={original}
         status={getTranslationHint({ failed, status, text: text.trim() })}
         statusId={statusId}
+        isDisabled={isSaving}
         onTranslateAnew={
           isOnItsWay
             ? undefined
-            : () => onTranslateAnew(status === "edited" || status === "outdated")
+            : () =>
+                onTranslateAnew(
+                  status === "edited" || status === "outdated" || Boolean(dirtyFields[key]),
+                )
         }
       />
     </div>

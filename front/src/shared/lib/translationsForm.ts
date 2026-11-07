@@ -29,14 +29,16 @@ export function getTranslationHint({ failed, status, text }: TranslationHintPara
   return statusLabels[status];
 }
 
-/** The statuses of the texts of one language; undefined for a text not translated yet. */
+/**
+ * The statuses of the texts `keys` of one language, those a person can see in the form; undefined
+ * for a text not translated yet.
+ */
 function statusesOf(
   { sources, translations }: ResourceTranslations,
   language: string,
+  keys: readonly string[],
 ): (TranslationStatus | undefined)[] {
-  return Object.entries(sources)
-    .filter(([, source]) => source !== "")
-    .map(([key]) => translations[language]?.[key]?.status);
+  return keys.filter((key) => sources[key]).map((key) => translations[language]?.[key]?.status);
 }
 
 function countIncomplete(statuses: readonly (TranslationStatus | undefined)[]): number {
@@ -44,8 +46,12 @@ function countIncomplete(statuses: readonly (TranslationStatus | undefined)[]): 
 }
 
 /** What needs attention in one language: the mark the list of languages shows beside it. */
-export function getLanguageMark(data: ResourceTranslations, language: string): string | null {
-  const statuses = statusesOf(data, language);
+export function getLanguageMark(
+  data: ResourceTranslations,
+  language: string,
+  keys: readonly string[],
+): string | null {
+  const statuses = statusesOf(data, language, keys);
 
   if (countIncomplete(statuses) > 0) {
     return data.failed ? "не переведено" : "переводится";
@@ -55,8 +61,12 @@ export function getLanguageMark(data: ResourceTranslations, language: string): s
 }
 
 /** How many texts of the language need attention, as a line beside the chosen language. */
-export function getLanguageSummary(data: ResourceTranslations, language: string): string | null {
-  const statuses = statusesOf(data, language);
+export function getLanguageSummary(
+  data: ResourceTranslations,
+  language: string,
+  keys: readonly string[],
+): string | null {
+  const statuses = statusesOf(data, language, keys);
   const incomplete = countIncomplete(statuses);
   const outdated = statuses.filter((status) => status === "outdated").length;
 

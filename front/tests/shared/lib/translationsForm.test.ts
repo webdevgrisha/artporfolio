@@ -51,21 +51,28 @@ describe("getLanguageMark", () => {
     },
   };
 
+  const keys = ["city", "title"];
+
   it("has nothing to say of a language in order, whatever has no Russian text", () => {
-    expect(getLanguageMark(data, "en")).toBeNull();
+    expect(getLanguageMark(data, "en", keys)).toBeNull();
+  });
+
+  it("leaves out the texts the form does not show", () => {
+    expect(getLanguageMark(data, "fr", ["city"])).toBeNull();
+    expect(getLanguageSummary(data, "fr", ["city"])).toBeNull();
   });
 
   it("counts what needs attention beside the chosen language", () => {
-    expect(getLanguageSummary(data, "en")).toBeNull();
-    expect(getLanguageSummary(data, "pl")).toBe("Переводится: 1");
-    expect(getLanguageSummary(data, "de")).toBe("Устарело: 1");
-    expect(getLanguageSummary({ ...data, failed: true }, "fr")).toBe("Не переведено: 1");
+    expect(getLanguageSummary(data, "en", keys)).toBeNull();
+    expect(getLanguageSummary(data, "pl", keys)).toBe("Переводится: 1");
+    expect(getLanguageSummary(data, "de", keys)).toBe("Устарело: 1");
+    expect(getLanguageSummary({ ...data, failed: true }, "fr", keys)).toBe("Не переведено: 1");
   });
 
   it("marks what is on the way, what is missing and what fell behind", () => {
-    expect(getLanguageMark(data, "pl")).toBe("переводится");
-    expect(getLanguageMark(data, "fr")).toBe("переводится");
-    expect(getLanguageMark(data, "de")).toBe("устарело");
-    expect(getLanguageMark({ ...data, failed: true }, "fr")).toBe("не переведено");
+    expect(getLanguageMark(data, "pl", keys)).toBe("переводится");
+    expect(getLanguageMark(data, "fr", keys)).toBe("переводится");
+    expect(getLanguageMark(data, "de", keys)).toBe("устарело");
+    expect(getLanguageMark({ ...data, failed: true }, "fr", keys)).toBe("не переведено");
   });
 });
