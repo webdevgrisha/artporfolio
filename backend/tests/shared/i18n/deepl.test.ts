@@ -21,7 +21,10 @@ describe("translateTexts", () => {
 
     client.translateText.mockResolvedValue([{ text: " Elephant " }, { text: "Minsk" }]);
 
-    await expect(translateTexts(["Слон", "Минск"], "en")).resolves.toEqual(["Elephant", "Minsk"]);
+    await expect(translateTexts(["Слон", "Минск"], "en", "Картина")).resolves.toEqual([
+      "Elephant",
+      "Minsk",
+    ]);
     expect(client.translateText).toHaveBeenCalledWith(
       ["Слон", "Минск"],
       "ru",
@@ -34,8 +37,8 @@ describe("translateTexts", () => {
     const { translateTexts } = await import("#shared/i18n/deepl");
 
     client.translateText.mockResolvedValue([{ text: "Elefante" }]);
-    await translateTexts(["Слон"], "pt");
-    await translateTexts(["Слон"], "zh");
+    await translateTexts(["Слон"], "pt", "Картина");
+    await translateTexts(["Слон"], "zh", "Картина");
 
     expect(client.translateText.mock.calls[0]?.[2]).toBe("pt-BR");
     expect(client.translateText.mock.calls[1]?.[2]).toBe("zh-HANS");
@@ -46,7 +49,7 @@ describe("translateTexts", () => {
 
     vi.stubEnv("DEEPL_API_KEY", "");
 
-    await expect(translateTexts(["Слон"], "en")).rejects.toThrow("DEEPL_API_KEY");
+    await expect(translateTexts(["Слон"], "en", "Картина")).rejects.toThrow("DEEPL_API_KEY");
   });
 });
 

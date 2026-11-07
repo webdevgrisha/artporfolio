@@ -22,9 +22,10 @@ async function translateLanguage(
   language: TargetLanguage,
   keys: string[],
   sources: Record<string, string>,
+  context: string,
 ): Promise<MadeTranslation[]> {
   const texts = keys.map((key) => sources[key] as string);
-  const translated = await translateTexts(texts, language);
+  const translated = await translateTexts(texts, language, context);
 
   return keys.map((key, index) => ({
     key,
@@ -41,6 +42,7 @@ async function translateLanguage(
 export async function translateAll(
   sources: Record<string, string>,
   requests: TranslationRequest[],
+  context: string,
 ): Promise<TranslationResult> {
   const languages = targetLanguages.filter((language) =>
     requests.some((request) => request.language === language),
@@ -54,6 +56,7 @@ export async function translateAll(
           language,
           requests.filter((request) => request.language === language).map(({ key }) => key),
           sources,
+          context,
         ),
       ),
     );

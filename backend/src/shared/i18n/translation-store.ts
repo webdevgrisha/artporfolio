@@ -7,6 +7,7 @@ import { UnprocessableContentError } from "#shared/http/errors";
 import { getTranslationUsage, stopsTranslating } from "#shared/i18n/deepl";
 import type { TargetLanguage } from "#shared/i18n/languages";
 import { translateAll } from "#shared/i18n/translating";
+import { translationContext } from "#shared/i18n/translation-context";
 import { type HaltReason, readHalted, setHalted } from "#shared/i18n/translation-halt";
 import { enqueueTranslation } from "#shared/i18n/translation-queue";
 import {
@@ -211,7 +212,11 @@ async function translateMissing(resource: string): Promise<void> {
     return;
   }
 
-  const { errors, made } = await translateAll(saved.sources, requests);
+  const { errors, made } = await translateAll(
+    saved.sources,
+    requests,
+    translationContext(resource),
+  );
   const halt = errors.map(stopsTranslating).find((reason) => reason !== null) ?? null;
 
   await firestore().runTransaction(async (transaction) => {

@@ -6,11 +6,12 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/shared/ui/unsaved-changes", () => ({ useReportUnsavedChanges: vi.fn() }));
 
+import { sessionExpiredMessage } from "@/shared/api/requestErrorMessages";
 import type { ResourceTranslations } from "@/shared/api/translations";
 import { TranslationForm } from "@/shared/ui/language-form/TranslationForm";
 
 import { csrfHandler } from "../../../support/handlers";
-import { server } from "../../../support/server";
+import { recordRequests, server } from "../../../support/server";
 
 const path = "/api/translations/gallery-work-1";
 const fields = [
@@ -320,6 +321,38 @@ describe("TranslationForm", () => {
     });
 
     expect(await screen.findByRole("alert")).toBeDefined();
+  });
+
+  it("tells that the session ended, keeps what was typed and stops asking", async () => {
+    const queryKey = ["translations", "gallery-work-1"];
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } },
+    });
+    const requests = recordRequests();
+
+    client.setQueryData(queryKey, { ...saved, isTranslating: true });
+    server.use(mswHttp.get(path, () => new HttpResponse(null, { status: 401 })));
+    render(
+      <QueryClientProvider client={client}>
+        <TranslationForm fields={fields} language="en" resource="gallery-work-1" />
+      </QueryClientProvider>,
+    );
+
+    const title = await screen.findByLabelText("Название");
+
+    fireEvent.change(title, { target: { value: "My draft" } });
+    void client.invalidateQueries({ queryKey });
+
+    expect(await screen.findByRole("alert")).toHaveProperty("textContent", sessionExpiredMessage);
+    expect(title).toHaveProperty("value", "My draft");
+
+    const reads = requests.length;
+
+    vi.useFakeTimers();
+    await vi.advanceTimersByTimeAsync(5_000);
+    vi.useRealTimers();
+
+    expect(requests).toHaveLength(reads);
   });
 
   it("names the language of the field for spelling and screen readers", async () => {

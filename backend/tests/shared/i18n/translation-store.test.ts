@@ -268,7 +268,11 @@ describe("requestTranslations", () => {
     await runTranslation(resource, false);
 
     expect((await getTranslations(resource)).sources).toEqual({ title: "Тигр" });
-    expect(deepl.translateTexts).toHaveBeenCalledWith(["Тигр"], "en");
+    expect(deepl.translateTexts).toHaveBeenCalledWith(
+      ["Тигр"],
+      "en",
+      "Название и описание картины на сайте художника",
+    );
   });
 
   it("does not say the texts are on their way while translating is halted", async () => {

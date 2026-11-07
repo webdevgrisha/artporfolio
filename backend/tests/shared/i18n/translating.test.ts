@@ -20,11 +20,11 @@ beforeEach(() => {
 
 describe("translateAll", () => {
   it("makes one request per language with all its texts", async () => {
-    const { errors, made } = await translateAll(sources, requests);
+    const { errors, made } = await translateAll(sources, requests, "Картина");
 
     expect(errors).toEqual([]);
     expect(deepl.translateTexts).toHaveBeenCalledTimes(targetLanguages.length);
-    expect(deepl.translateTexts).toHaveBeenCalledWith(["Минск", "Слон"], "en");
+    expect(deepl.translateTexts).toHaveBeenCalledWith(["Минск", "Слон"], "en", "Картина");
     expect(made).toContainEqual({
       key: "title",
       language: "en",
@@ -45,7 +45,7 @@ describe("translateAll", () => {
       return texts;
     });
 
-    await translateAll(sources, requests);
+    await translateAll(sources, requests, "Картина");
 
     expect(most).toBe(4);
   });
@@ -61,7 +61,7 @@ describe("translateAll", () => {
       return texts;
     });
 
-    const { errors, made } = await translateAll(sources, requests);
+    const { errors, made } = await translateAll(sources, requests, "Картина");
 
     expect(errors).toEqual([failure]);
     expect(made.some(({ language }) => language === "be")).toBe(false);

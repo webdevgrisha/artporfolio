@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { TargetLanguage } from "@/shared/config/languages";
 
 import { http } from "./http";
+import { isSessionExpiredError } from "./requestErrorMessages";
 
 /** Who wrote a translation, and whether it is about to change or fell behind the Russian text. */
 const translationStatuses = ["auto", "edited", "outdated", "pending"] as const;
@@ -35,14 +36,16 @@ const translationPollMilliseconds = 2_000;
 /** The key that all the translations of the cache start with. */
 export const allTranslationsKey = ["translations"] as const;
 
-/** The translations of `resource`, read again while the translator works. */
+/** The translations of `resource`, read again while the translator works and the session lasts. */
 export function translationsQuery(resource: string) {
   return queryOptions({
     queryFn: () =>
       http.get({ path: `/translations/${resource}`, schema: resourceTranslationsSchema }),
     queryKey: [...allTranslationsKey, resource],
     refetchInterval: ({ state }) =>
-      state.data?.isTranslating ? translationPollMilliseconds : false,
+      state.data?.isTranslating && !isSessionExpiredError(state.error)
+        ? translationPollMilliseconds
+        : false,
   });
 }
 

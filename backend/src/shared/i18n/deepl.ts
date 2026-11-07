@@ -37,9 +37,6 @@ const deeplLanguages: Record<TargetLanguage, TargetLanguageCode> = {
   zh: "zh-HANS",
 };
 
-/** Tells DeepL what the texts are, which it is not billed for and does not translate. */
-const context = "Название и описание картины на сайте художника";
-
 /** A task of the queue waits for the requests, so a stuck one must fail soon. */
 const requestTimeoutMilliseconds = 10_000;
 
@@ -66,8 +63,15 @@ function deepl(): DeepLClient {
   return client;
 }
 
-/** Translates `texts` from the source language, in one request; the result keeps their order. */
-export async function translateTexts(texts: string[], language: TargetLanguage): Promise<string[]> {
+/**
+ * Translates `texts` from the source language, in one request; the result keeps their order.
+ * `context` tells DeepL what the texts are, which it is not billed for and does not translate.
+ */
+export async function translateTexts(
+  texts: string[],
+  language: TargetLanguage,
+  context: string,
+): Promise<string[]> {
   const results = await deepl().translateText(texts, sourceLanguage, deeplLanguages[language], {
     context,
     // Paragraphs are separated by a blank line, which the translation must keep.

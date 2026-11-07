@@ -46,7 +46,7 @@ function toValues(
 export function useTranslationForm({ fields, language, resource }: UseTranslationFormParams) {
   const queryClient = useQueryClient();
   const query = translationsQuery(resource);
-  const { data, isError } = useQuery(query);
+  const { data, error } = useQuery(query);
   const form = useForm<TranslationValues>({
     resetOptions: { keepDirtyValues: true },
     values: data && toValues(data, fields, language),
@@ -110,8 +110,8 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
 
   return {
     data,
+    error,
     form,
-    isError,
     isSaving: save.isPending || translateAnew.isPending,
     revertTo,
     submit: form.handleSubmit(submit),
