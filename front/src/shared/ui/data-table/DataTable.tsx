@@ -2,6 +2,7 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -9,6 +10,7 @@ import clsx from "clsx";
 import React from "react";
 
 import type { TableFilter } from "@/shared/lib/tableView";
+import { useTableSearch } from "@/shared/lib/useTableSearch";
 import { useTableView } from "@/shared/lib/useTableView";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { SearchInput } from "@/shared/ui/search-input";
@@ -17,6 +19,7 @@ import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./DataTable.module.css";
 import { TableHead } from "./TableHead";
+import { TablePagination } from "./TablePagination";
 import columnStyles from "./tableColumns.module.css";
 import type { TableRow } from "./tableRow";
 
@@ -49,9 +52,13 @@ const everyItemOption = { label: "Все", value: "" };
 
 const noFilters: readonly never[] = [];
 
+/** So a long list stays quick to draw; a shorter one has no pages at all. */
+const pageSize = 50;
+
 /**
  * A list of the admin as a table: the search, the filters and the adding over it, the names of the
- * columns that sort it, and a line per item. All of them but the adding are kept in the address.
+ * columns that sort it, a line per item and the pages under it. All of them but the adding are kept
+ * in the address.
  */
 export function DataTable<TItem>({
   addLink,
@@ -67,8 +74,13 @@ export function DataTable<TItem>({
   sortableColumns,
   tableClassName,
 }: DataTableProps<TItem>) {
-  const { changeSorting, changeView, view } = useTableView(sortableColumns, filters);
-  const { query } = view;
+  const { changePage, changeSorting, changeView, view } = useTableView(sortableColumns, filters);
+  const { changeQuery, forgetTyped, query } = useTableSearch(view.query, (next) =>
+    changeView({ query: next }),
+  );
+  // The field follows every key at once; the rows follow when there is time for them.
+  const searchedQuery = React.useDeferredValue(query);
+  const rootRef = React.useRef<HTMLDivElement>(null);
   const isFiltered = filters.some(({ id }) => view.filters[id]);
   const [areFiltersOpen, setAreFiltersOpen] = React.useState(isFiltered);
   const filtersId = React.useId();
@@ -78,42 +90,48 @@ export function DataTable<TItem>({
         .map((item, index) => ({ item, position: index + 1 }))
         .filter(
           ({ item }) =>
-            matches(item, query) &&
+            matches(item, searchedQuery) &&
             filters.every(({ id, matches: fits }) => {
               const value = view.filters[id];
 
               return !value || fits(item, value);
             }),
         ),
-    [filters, items, matches, query, view.filters],
+    [filters, items, matches, searchedQuery, view.filters],
   );
+  const pageCount = Math.ceil(rows.length / pageSize);
+  // A search still on its way to the address already shows other rows, from their first page.
+  const pageIndex = query === view.query ? Math.min(view.page, Math.max(pageCount, 1)) - 1 : 0;
   const table = useReactTable({
     columns,
-    // There are no pages, so nothing to reset when the rows change; the reset would render again.
+    // The page comes from the address, which a change of the rows updates by itself.
     autoResetPageIndex: false,
     data: rows,
     enableMultiSort: false,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getRowId: (row) => getId(row.item),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: changeSorting,
-    state: { sorting: view.sorting },
+    state: { pagination: { pageIndex, pageSize }, sorting: view.sorting },
   });
-
-  function changeQuery(next: string) {
-    changeView({ query: next });
-  }
 
   function changeFilter(id: string, value: string) {
     changeView({ filters: { ...view.filters, [id]: value } });
   }
 
   function clearFilters(changes?: { query: string }) {
+    if (changes) forgetTyped();
     changeView({ ...changes, filters: Object.fromEntries(filters.map(({ id }) => [id, ""])) });
   }
 
+  function openPage(page: number) {
+    changePage(page);
+    rootRef.current?.scrollIntoView({ block: "start" });
+  }
+
   return (
-    <div className={clsx(styles.root, className)}>
+    <div ref={rootRef} className={clsx(styles.root, className)}>
       <div className={styles.toolbar}>
         <SearchInput
           className={styles.search}
@@ -169,35 +187,40 @@ export function DataTable<TItem>({
           </Button>
         </div>
       ) : (
-        <div className={styles.scroller}>
-          <table className={clsx(styles.table, tableClassName)}>
-            <caption>
-              <VisuallyHidden>{caption}</VisuallyHidden>
-            </caption>
-            <TableHead table={table} />
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className={styles.row}>
-                  {row.getVisibleCells().map((cell) => {
-                    const { meta } = cell.column.columnDef;
+        <>
+          <div className={styles.scroller}>
+            <table className={clsx(styles.table, tableClassName)}>
+              <caption>
+                <VisuallyHidden>{caption}</VisuallyHidden>
+              </caption>
+              <TableHead table={table} />
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className={styles.row}>
+                    {row.getVisibleCells().map((cell) => {
+                      const { meta } = cell.column.columnDef;
 
-                    return (
-                      <td
-                        key={cell.id}
-                        className={clsx(
-                          meta?.className,
-                          meta?.hiddenOnPhone && columnStyles.hiddenOnPhone,
-                        )}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      return (
+                        <td
+                          key={cell.id}
+                          className={clsx(
+                            meta?.className,
+                            meta?.hiddenOnPhone && columnStyles.hiddenOnPhone,
+                          )}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {pageCount > 1 ? (
+            <TablePagination page={pageIndex + 1} pageCount={pageCount} onChange={openPage} />
+          ) : null}
+        </>
       )}
     </div>
   );

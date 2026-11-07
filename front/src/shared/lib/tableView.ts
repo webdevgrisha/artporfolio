@@ -16,17 +16,20 @@ export interface TableFilter<TItem> {
 export interface TableView {
   /** The chosen value by the id of its filter; empty shows every row. */
   filters: Readonly<Record<string, string>>;
+  /** From 1. */
+  page: number;
   /** Narrows the rows; empty shows every row. */
   query: string;
   /** One column at most; empty keeps the order the rows come in. */
   sorting: SortingState;
 }
 
+const pageParam = "page";
 const queryParam = "q";
 const sortParam = "sort";
 
 /**
- * The view in `?q=слон&sort=title.asc&section=…`, sorted only by one of `sortableColumns` and
+ * The view in `?q=слон&sort=title.asc&page=2&section=…`, sorted only by one of `sortableColumns` and
  * narrowed only by the options of `filters`; anything else in the address is ignored, such as a
  * section deleted since the link was saved.
  */
@@ -47,19 +50,29 @@ export function readTableView<TItem>(
     return [id, options.some((option) => option.value === value) ? value : ""];
   });
 
-  return { filters: Object.fromEntries(chosen), query: params.get(queryParam) ?? "", sorting };
+  const page = Number(params.get(pageParam));
+
+  return {
+    filters: Object.fromEntries(chosen),
+    page: Number.isInteger(page) && page > 1 ? page : 1,
+    query: params.get(queryParam) ?? "",
+    sorting,
+  };
 }
 
 /** The address of the view; the other parameters of `params` stay. */
 export function writeTableView(
   params: URLSearchParams,
-  { filters, query, sorting }: TableView,
+  { filters, page, query, sorting }: TableView,
 ): URLSearchParams {
   const next = new URLSearchParams(params);
   const [sort] = sorting;
 
   if (query) next.set(queryParam, query);
   else next.delete(queryParam);
+
+  if (page > 1) next.set(pageParam, String(page));
+  else next.delete(pageParam);
 
   if (sort) next.set(sortParam, `${sort.id}.${sort.desc ? "desc" : "asc"}`);
   else next.delete(sortParam);
