@@ -7,6 +7,7 @@ import { UnprocessableContentError } from "#shared/http/errors";
 import { getTranslationUsage, stopsTranslating } from "#shared/i18n/deepl";
 import type { TargetLanguage } from "#shared/i18n/languages";
 import { translateAll } from "#shared/i18n/translating";
+import { type HaltReason, readHalted, setHalted } from "#shared/i18n/translation-halt";
 import { enqueueTranslation } from "#shared/i18n/translation-queue";
 import {
   planTranslations,
@@ -31,13 +32,6 @@ const storedResourceSchema = z.object({
 
 type StoredResource = z.infer<typeof storedResourceSchema>;
 
-/** Why nothing is translated for now: the limit of the plan, a key DeepL refuses, or on purpose. */
-const haltReasons = ["limit", "key", "paused"] as const;
-
-type HaltReason = (typeof haltReasons)[number];
-
-const stateSchema = z.object({ halted: z.enum(haltReasons).nullable() });
-
 /** The translations of a resource as the API returns them. */
 export interface ResourceTranslations {
   sources: Record<string, string>;
@@ -59,20 +53,10 @@ function resourceDocument(resource: string) {
   return firestore().collection("translations").doc(resource);
 }
 
-function stateDocument() {
-  return firestore().doc("site/translation");
-}
-
 function readResource(snapshot: DocumentSnapshot): StoredResource {
   return snapshot.exists
     ? storedResourceSchema.parse(snapshot.data())
     : { failed: false, sources: {}, translations: {} };
-}
-
-async function readHalted(): Promise<HaltReason | null> {
-  const snapshot = await stateDocument().get();
-
-  return snapshot.exists ? stateSchema.parse(snapshot.data()).halted : null;
 }
 
 function hasMissing({ sources, translations }: StoredResource): boolean {
@@ -231,7 +215,7 @@ export async function runTranslation(resource: string, isLastTry: boolean): Prom
   });
 
   if (halt !== null) {
-    await stateDocument().set({ halted: halt });
+    await setHalted(halt);
     return;
   }
 
@@ -248,7 +232,7 @@ export async function getTranslationStatus(): Promise<TranslationStatusResponse>
 
 /** Lifts a halt and puts every resource with missing translations back in the queue. */
 export async function retryTranslations(): Promise<void> {
-  await stateDocument().set({ halted: null });
+  await setHalted(null);
 
   const { docs } = await firestore().collection("translations").get();
 

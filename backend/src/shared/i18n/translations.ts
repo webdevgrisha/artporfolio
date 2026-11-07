@@ -40,7 +40,7 @@ export interface TranslationRequest {
 }
 
 /** The translations to keep, and those to make; see planTranslations. */
-export interface TranslationPlan {
+interface TranslationPlan {
   kept: StoredTranslations;
   requests: TranslationRequest[];
 }
@@ -95,7 +95,7 @@ export function planTranslations(
 export type TranslationStatus = "auto" | "edited" | "outdated" | "pending";
 
 /** One text in one language as the API returns it. */
-export interface Translation {
+interface Translation {
   status: TranslationStatus;
   text: string;
 }

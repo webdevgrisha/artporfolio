@@ -8,7 +8,8 @@ import { type FormLanguage, useFormLanguage } from "@/shared/lib/useFormLanguage
 import { Select } from "@/shared/ui/select";
 
 import styles from "./LanguageForm.module.css";
-import { type TranslatedField, TranslationForm } from "./TranslationForm";
+import { TranslationForm } from "./TranslationForm";
+import type { TranslatedField } from "./useTranslationForm";
 
 interface LanguageFormProps {
   /** The form of the resource in Russian. */

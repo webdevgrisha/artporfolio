@@ -6,14 +6,14 @@ import type { StoredTranslation, TranslationRequest } from "#shared/i18n/transla
 const maxParallelRequests = 4;
 
 /** A translation made by the translator. */
-export interface MadeTranslation {
+interface MadeTranslation {
   key: string;
   language: TargetLanguage;
   translation: StoredTranslation;
 }
 
 /** What the translator made, and the errors of the languages it failed on. */
-export interface TranslationResult {
+interface TranslationResult {
   errors: unknown[];
   made: MadeTranslation[];
 }

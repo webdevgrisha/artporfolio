@@ -6,7 +6,7 @@ import type { TargetLanguage } from "@/shared/config/languages";
 import { http } from "./http";
 
 /** Who wrote a translation, and whether it is about to change or fell behind the Russian text. */
-export const translationStatuses = ["auto", "edited", "outdated", "pending"] as const;
+const translationStatuses = ["auto", "edited", "outdated", "pending"] as const;
 
 export type TranslationStatus = (typeof translationStatuses)[number];
 
