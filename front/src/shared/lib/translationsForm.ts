@@ -29,19 +29,40 @@ export function getTranslationHint({ failed, status, text }: TranslationHintPara
   return statusLabels[status];
 }
 
-/** What needs attention in one language: the mark the list of languages shows beside it. */
-export function getLanguageMark(
-  { failed, sources, translations }: ResourceTranslations,
+/** The statuses of the texts of one language; undefined for a text not translated yet. */
+function statusesOf(
+  { sources, translations }: ResourceTranslations,
   language: string,
-): string | null {
-  const texts = Object.entries(sources)
+): (TranslationStatus | undefined)[] {
+  return Object.entries(sources)
     .filter(([, source]) => source !== "")
     .map(([key]) => translations[language]?.[key]?.status);
-  const isIncomplete = texts.some((status) => status === undefined || status === "pending");
+}
 
-  if (isIncomplete) {
-    return failed ? "не переведено" : "переводится";
+function countIncomplete(statuses: readonly (TranslationStatus | undefined)[]): number {
+  return statuses.filter((status) => status === undefined || status === "pending").length;
+}
+
+/** What needs attention in one language: the mark the list of languages shows beside it. */
+export function getLanguageMark(data: ResourceTranslations, language: string): string | null {
+  const statuses = statusesOf(data, language);
+
+  if (countIncomplete(statuses) > 0) {
+    return data.failed ? "не переведено" : "переводится";
   }
 
-  return texts.includes("outdated") ? "устарело" : null;
+  return statuses.includes("outdated") ? "устарело" : null;
+}
+
+/** How many texts of the language need attention, as a line beside the chosen language. */
+export function getLanguageSummary(data: ResourceTranslations, language: string): string | null {
+  const statuses = statusesOf(data, language);
+  const incomplete = countIncomplete(statuses);
+  const outdated = statuses.filter((status) => status === "outdated").length;
+
+  if (incomplete > 0) {
+    return `${data.failed ? "Не переведено" : "Переводится"}: ${String(incomplete)}`;
+  }
+
+  return outdated > 0 ? `Устарело: ${String(outdated)}` : null;
 }

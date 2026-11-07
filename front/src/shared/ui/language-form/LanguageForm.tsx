@@ -3,7 +3,7 @@ import React from "react";
 
 import { translationsQuery } from "@/shared/api/translations";
 import { languageNames, type TargetLanguage, targetLanguages } from "@/shared/config/languages";
-import { getLanguageMark } from "@/shared/lib/translationsForm";
+import { getLanguageMark, getLanguageSummary } from "@/shared/lib/translationsForm";
 import { type FormLanguage, useFormLanguage } from "@/shared/lib/useFormLanguage";
 import { Select } from "@/shared/ui/select";
 
@@ -44,15 +44,20 @@ export function LanguageForm({ children, fields, resource }: LanguageFormProps) 
     }),
   ];
 
+  const summary = data && language !== "ru" ? getLanguageSummary(data, language) : null;
+
   return (
     <div className={styles.root}>
-      <Select
-        className={styles.language}
-        label="Язык"
-        options={options}
-        value={language}
-        onChange={(value) => setLanguage(value as FormLanguage)}
-      />
+      <div className={styles.bar}>
+        <Select
+          className={styles.language}
+          label="Язык"
+          options={options}
+          value={language}
+          onChange={(value) => setLanguage(value as FormLanguage)}
+        />
+        {summary ? <p className={styles.summary}>{summary}</p> : null}
+      </div>
       <div hidden={language !== "ru"}>{children}</div>
       {opened.map((target) => (
         <div key={target} hidden={language !== target}>

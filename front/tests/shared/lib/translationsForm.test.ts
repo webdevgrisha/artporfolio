@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import type { ResourceTranslations } from "@/shared/api/translations";
-import { getLanguageMark, getTranslationHint } from "@/shared/lib/translationsForm";
+import {
+  getLanguageMark,
+  getLanguageSummary,
+  getTranslationHint,
+} from "@/shared/lib/translationsForm";
 
 const hint = (params: Partial<Parameters<typeof getTranslationHint>[0]>) =>
   getTranslationHint({
@@ -49,6 +53,13 @@ describe("getLanguageMark", () => {
 
   it("has nothing to say of a language in order, whatever has no Russian text", () => {
     expect(getLanguageMark(data, "en")).toBeNull();
+  });
+
+  it("counts what needs attention beside the chosen language", () => {
+    expect(getLanguageSummary(data, "en")).toBeNull();
+    expect(getLanguageSummary(data, "pl")).toBe("Переводится: 1");
+    expect(getLanguageSummary(data, "de")).toBe("Устарело: 1");
+    expect(getLanguageSummary({ ...data, failed: true }, "fr")).toBe("Не переведено: 1");
   });
 
   it("marks what is on the way, what is missing and what fell behind", () => {

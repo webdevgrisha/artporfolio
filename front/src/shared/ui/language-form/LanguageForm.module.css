@@ -4,8 +4,39 @@
   gap: var(--layout-space-8);
 }
 
-.language {
-  max-inline-size: 20rem;
+/* A setting of the page, not a field of the form, so a line sets it apart from the fields. */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  align-items: center;
+  justify-content: space-between;
+  padding-block-end: var(--space-4);
+  border-block-end: 1px solid var(--color-divider);
+}
+
+/* The label beside the control: the field reads as one line. */
+.bar .language {
+  flex-direction: row;
+  gap: var(--space-3);
+  align-items: center;
+  inline-size: auto;
+  min-inline-size: min(100%, 22rem);
+}
+
+.bar .language > label {
+  margin-block-end: 0;
+}
+
+.bar .language > div {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.summary {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 /* A readable line length, as the groups of the Russian fields. */
