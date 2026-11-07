@@ -26,10 +26,6 @@ describe("getTranslationHint", () => {
     expect(hint({ status: undefined, text: "" })).toBe("Переводится…");
   });
 
-  it("says that an emptied field is translated on save", () => {
-    expect(hint({ status: "edited", text: "" })).toBe("Переведётся при сохранении");
-  });
-
   it("calls a text typed into an untranslated field a person's", () => {
     expect(hint({ status: undefined })).toBe("Написано вручную");
   });

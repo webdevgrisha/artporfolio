@@ -12,6 +12,7 @@ import { rightToLeftLanguages, type TargetLanguage } from "@/shared/config/langu
 import { getTranslationHint } from "@/shared/lib/translationsForm";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { ClearableTextarea } from "@/shared/ui/clearable-textarea";
+import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm } from "@/shared/ui/edit-form";
 
 import styles from "./LanguageForm.module.css";
@@ -51,10 +52,12 @@ function toValues(
  * The texts of a resource in one language, each with the Russian text it translates, folded away:
  * a description may be long. A text the
  * translator finishes shows up by itself, unless the person has changed that field: what they type
- * stays. A save sends only what they changed, and an emptied field is translated anew.
+ * stays. A save sends only what they changed; a new translation is asked for by its own button.
  */
 export function TranslationForm({ fields, language, resource }: TranslationFormProps) {
   const formId = React.useId();
+  // The text whose replacement by a new translation waits for an answer.
+  const [keyToReplace, setKeyToReplace] = React.useState<string>();
   const queryClient = useQueryClient();
   const query = translationsQuery(resource);
   const { data } = useQuery(query);
@@ -66,7 +69,9 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
     formState: { dirtyFields, errors, isDirty },
     handleSubmit,
     register,
+    getFieldState,
     reset,
+    resetField,
     setFocus,
     setValue,
     watch,
@@ -79,23 +84,42 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
         toastId: "translations-save",
       },
     },
-    mutationFn: (texts: Record<string, string | null>) =>
-      patchTranslations({ language, resource, texts }),
+    mutationFn: (texts: Record<string, string>) => patchTranslations({ language, resource, texts }),
     onSuccess: (saved) => {
       queryClient.setQueryData(query.queryKey, saved);
       reset(toValues(saved, fields, language), { keepDirtyValues: false });
     },
   });
 
-  function submit(values: TranslationValues) {
-    const changed = Object.keys(dirtyFields).map((key) => {
-      const text = values[key]?.trim() ?? "";
+  const translateAnew = useMutation({
+    meta: {
+      feedback: {
+        getErrorMessage: (error: unknown) =>
+          getRequestErrorMessage(error, "Не удалось запустить перевод"),
+        toastId: "translations-save",
+      },
+    },
+    mutationFn: (key: string) => patchTranslations({ language, resource, texts: { [key]: null } }),
+    onSuccess: (saved, key) => {
+      queryClient.setQueryData(query.queryKey, saved);
+      resetField(key, { defaultValue: "" });
+    },
+  });
 
-      return [key, text === "" ? null : text] as const;
-    });
+  function submit(values: TranslationValues) {
+    const changed = Object.keys(dirtyFields).map((key) => [key, values[key]?.trim() ?? ""]);
 
     if (changed.length > 0) {
       save.mutate(Object.fromEntries(changed));
+    }
+  }
+
+  /** A person's text is theirs: replacing it is asked about first. */
+  function requestTranslateAnew(key: string, isPersonsText: boolean) {
+    if (isPersonsText) {
+      setKeyToReplace(key);
+    } else {
+      translateAnew.mutate(key);
     }
   }
 
@@ -120,6 +144,8 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
           const Control = multiline ? ClearableTextarea : ClearableInput;
           const text = watch(key) ?? "";
           const statusId = `${formId}-${key}`;
+          const status = data.translations[language]?.[key]?.status;
+          const isOnItsWay = !data.failed && (status === undefined || status === "pending");
 
           return (
             <div key={key} className={styles.field}>
@@ -130,7 +156,7 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
                 error={errors[key]?.message}
                 isModified={Boolean(dirtyFields[key])}
                 hasValue={Boolean(text)}
-                clearLabel="Очистить, чтобы перевести заново"
+                clearLabel="Очистить"
                 onClear={() => {
                   setValue(key, "", { shouldDirty: true });
                   setFocus(key);
@@ -141,21 +167,39 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
                     message: `Не длиннее ${String(maxTranslationLength)} символов`,
                     value: maxTranslationLength,
                   },
+                  // A text still on its way is empty too, and it is not the person's to fill.
+                  validate: (value) =>
+                    value.trim() !== "" ||
+                    !getFieldState(key).isDirty ||
+                    "Введите перевод или нажмите «Перевести заново»",
                 })}
               />
               <OriginalText
                 original={data.sources[key] ?? ""}
-                status={getTranslationHint({
-                  failed: data.failed,
-                  status: data.translations[language]?.[key]?.status,
-                  text: text.trim(),
-                })}
+                status={getTranslationHint({ failed: data.failed, status, text: text.trim() })}
                 statusId={statusId}
+                onTranslateAnew={
+                  isOnItsWay
+                    ? undefined
+                    : () => requestTranslateAnew(key, status === "edited" || status === "outdated")
+                }
               />
             </div>
           );
         })}
       </div>
+      <ConfirmDialog
+        isOpen={keyToReplace !== undefined}
+        title="Заменить ручную правку?"
+        description="Текст, написанный вручную, будет заменён новым автопереводом."
+        cancelLabel="Оставить"
+        confirmLabel="Перевести заново"
+        onCancel={() => setKeyToReplace(undefined)}
+        onConfirm={() => {
+          if (keyToReplace !== undefined) translateAnew.mutate(keyToReplace);
+          setKeyToReplace(undefined);
+        }}
+      />
     </EditForm>
   );
 }

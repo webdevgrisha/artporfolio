@@ -102,18 +102,39 @@ describe("TranslationForm", () => {
     await waitFor(() => expect(patches).toEqual([{ title: "The Elephant" }]));
   });
 
-  it("asks the translator for an emptied text", async () => {
+  it("empties a field without asking the translator, and refuses to save it empty", async () => {
     const { patches } = setUp();
     const title = await screen.findByLabelText("Название");
     const row = title.parentElement as HTMLElement;
 
     fireEvent.click(within(row).getByRole("button"));
-
-    expect(await screen.findByText("Переведётся при сохранении")).toBeDefined();
-
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
 
-    await waitFor(() => expect(patches).toEqual([{ title: null }]));
+    expect(await screen.findByText("Введите перевод или нажмите «Перевести заново»")).toBeDefined();
+    expect(patches).toEqual([]);
+  });
+
+  it("translates an automatic text anew at once", async () => {
+    const { patches } = setUp();
+
+    await screen.findByLabelText("Описание");
+
+    const buttons = screen.getAllByRole("button", { name: "Перевести заново" });
+
+    fireEvent.click(buttons[1] as HTMLElement);
+
+    await waitFor(() => expect(patches).toEqual([{ description: null }]));
+  });
+
+  it("asks before replacing a person's text", async () => {
+    const { patches } = setUp();
+
+    await screen.findByLabelText("Название");
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Перевести заново" })[0] as HTMLElement);
+
+    expect(await screen.findByText("Заменить ручную правку?")).toBeDefined();
+    expect(patches).toEqual([]);
   });
 
   it("lays out Arabic from right to left", async () => {

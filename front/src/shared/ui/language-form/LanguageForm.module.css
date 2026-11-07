@@ -33,6 +33,12 @@
   color: var(--color-text-muted);
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
 .toggle {
   min-block-size: auto;
   padding: 0;

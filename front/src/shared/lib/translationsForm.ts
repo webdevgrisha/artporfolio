@@ -22,10 +22,6 @@ export function getTranslationHint({ failed, status, text }: TranslationHintPara
     return "Не удалось перевести";
   }
 
-  if (text === "" && status !== undefined) {
-    return "Переведётся при сохранении";
-  }
-
   if (status === undefined) {
     return text === "" ? "Переводится…" : "Написано вручную";
   }
