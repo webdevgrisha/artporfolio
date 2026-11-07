@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { translationsSchema } from "@/shared/api/translations";
+
 /**
  * The texts of the About page: plain text, paragraphs separated by a blank line. An empty text
  * hides its section on the site; every text is empty until the texts are first saved.
@@ -9,6 +11,8 @@ export const aboutTextSchema = z.object({
   about: z.string(),
   biography: z.string(),
   creation: z.string(),
+  /** The texts in the other languages. */
+  translations: translationsSchema,
 });
 
 export type AboutText = z.infer<typeof aboutTextSchema>;

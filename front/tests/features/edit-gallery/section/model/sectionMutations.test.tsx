@@ -3,9 +3,9 @@ import { renderHook } from "@testing-library/react";
 import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
-
 import type { GallerySection } from "@/entities/gallery";
 import { useCreateSection } from "@/features/edit-gallery/section/model/sectionMutations";
+import { toTranslationValues } from "@/shared/lib/translationsForm";
 
 import { csrfHandler, problem } from "../../../../support/handlers";
 import { recordRequests, server } from "../../../../support/server";
@@ -15,11 +15,12 @@ const path = `/api/gallery/sections/${id}`;
 const values = {
   subsections: [{ id: "22222222-2222-4222-8222-222222222222", title: "Театральные" }],
   title: "Постеры",
+  translations: toTranslationValues({}, ["title"]),
 };
 const savedEtag = '"saved"';
 
 function apiSection(title: string): GallerySection {
-  return { id, subsections: values.subsections, title };
+  return { id, subsections: values.subsections, title, translations: {} };
 }
 
 function setUp() {

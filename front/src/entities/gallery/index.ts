@@ -47,6 +47,7 @@ export {
 } from "./model/galleryPalettes";
 export {
   type GallerySection,
+  type GallerySectionSummary,
   maxSubsections,
   type Subsection,
 } from "./model/gallerySection";

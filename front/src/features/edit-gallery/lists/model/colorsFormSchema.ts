@@ -2,7 +2,9 @@ import { z } from "zod";
 
 import { type GalleryColors, maxColors } from "@/entities/gallery";
 
-import { refineUniqueTitles, titleSchema } from "../../model/titles";
+import { toTranslationValues, translationValuesSchema } from "@/shared/lib/translationsForm";
+
+import { maxTitleLength, refineUniqueTitles, titleSchema } from "../../model/titles";
 
 /** The swatch of a new color until another is picked: a neutral grey. */
 export const defaultColorHex = "#808080";
@@ -21,11 +23,19 @@ export const colorsFormSchema = z.object({
     )
     .max(maxColors, `Не больше ${String(maxColors)} цветов`)
     .superRefine(refineUniqueTitles("Такой цвет уже есть")),
+  /** The titles in the other languages by id; an empty one is translated anew on save. */
+  translations: translationValuesSchema({}, maxTitleLength),
 });
 
 export type ColorsFormValues = z.infer<typeof colorsFormSchema>;
 
 /** The values of the colors as stored on the server. */
-export function toColorsFormValues(colors: GalleryColors): ColorsFormValues {
-  return { colors: colors.map(({ hex, id, title }) => ({ hex, id, title })) };
+export function toColorsFormValues({ items, translations }: GalleryColors): ColorsFormValues {
+  return {
+    colors: items.map(({ hex, id, title }) => ({ hex, id, title })),
+    translations: toTranslationValues(
+      translations,
+      items.map(({ id }) => id),
+    ),
+  };
 }

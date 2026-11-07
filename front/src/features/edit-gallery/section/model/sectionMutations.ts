@@ -8,6 +8,7 @@ import {
   gallerySectionsQueryKey,
   replaceGallerySection,
 } from "@/entities/gallery";
+import { toTranslationsBody } from "@/shared/lib/translationsForm";
 
 import { getCreateSectionErrorMessage, getSaveSectionErrorMessage } from "../lib/saveErrorMessages";
 import type { SectionFormValues } from "./sectionFormSchema";
@@ -25,8 +26,12 @@ interface SaveSectionParams {
 }
 
 /** The section as the server takes it; the schema of the form has trimmed the titles. */
-function toSectionBody({ subsections, title }: SectionFormValues): GallerySectionBody {
-  return { subsections, title };
+function toSectionBody({
+  subsections,
+  title,
+  translations,
+}: SectionFormValues): GallerySectionBody {
+  return { subsections, title, translations: toTranslationsBody(translations) };
 }
 
 /** The toasts of a section form replace each other: a later save replaces an error. */

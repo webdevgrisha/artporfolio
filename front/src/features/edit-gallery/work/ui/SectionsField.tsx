@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import React from "react";
 
-import type { GallerySection } from "@/entities/gallery";
+import type { GallerySectionSummary } from "@/entities/gallery";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Fieldset } from "@/shared/ui/fieldset";
 import {
@@ -27,7 +27,7 @@ interface SectionsFieldProps {
   /** The ids the form started with, to highlight the checkboxes that differ from them. */
   savedIds: readonly string[];
   /** The sections of the gallery, sorted by title, each followed by its subsections. */
-  sections: readonly GallerySection[];
+  sections: readonly GallerySectionSummary[];
   /** The chosen sections and subsections, by id. */
   value: readonly string[];
 }

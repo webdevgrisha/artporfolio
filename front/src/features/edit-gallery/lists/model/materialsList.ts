@@ -7,7 +7,8 @@ export const materialsList: TitleListConfig = {
   getSaveErrorMessage: getSaveMaterialsErrorMessage,
   max: maxMaterials,
   query: galleryMaterialsQuery,
-  replace: ({ etag, items }) => replaceGalleryMaterials({ etag, materials: items }),
+  replace: ({ etag, items, translations }) =>
+    replaceGalleryMaterials({ etag, materials: items, translations }),
   texts: {
     add: "Добавить материал",
     duplicate: "Такой материал уже есть",

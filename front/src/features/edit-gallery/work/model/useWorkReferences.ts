@@ -6,7 +6,7 @@ import {
   type GalleryColor,
   type GalleryMaterial,
   type GalleryPalette,
-  type GallerySection,
+  type GallerySectionSummary,
   galleryCollectionsQuery,
   galleryColorsQuery,
   galleryMaterialsQuery,
@@ -22,7 +22,7 @@ export interface WorkReferences {
   palettes: readonly GalleryPalette[];
   /** How many units of each currency in use one US dollar buys. */
   rates: CurrencyRates["rates"];
-  sections: readonly GallerySection[];
+  sections: readonly GallerySectionSummary[];
 }
 
 /** The queries of the lists a work form chooses from: its page loads them, a conflict reloads them. */
@@ -49,9 +49,9 @@ export function useWorkReferences(): WorkReferences {
 
   return {
     collections,
-    colors: colors.data,
-    materials: materials.data,
-    palettes: palettes.data,
+    colors: colors.data.items,
+    materials: materials.data.items,
+    palettes: palettes.data.items,
     rates: rates.data.rates,
     sections,
   };

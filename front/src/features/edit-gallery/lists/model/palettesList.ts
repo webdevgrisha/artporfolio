@@ -8,7 +8,8 @@ export const palettesList: TitleListConfig = {
   getSaveErrorMessage: getSavePalettesErrorMessage,
   max: maxPalettes,
   query: galleryPalettesQuery,
-  replace: ({ etag, items }) => replaceGalleryPalettes({ etag, palettes: items }),
+  replace: ({ etag, items, translations }) =>
+    replaceGalleryPalettes({ etag, palettes: items, translations }),
   texts: {
     add: "Добавить палитру",
     duplicate: "Такая палитра уже есть",

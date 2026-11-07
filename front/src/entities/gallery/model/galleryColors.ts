@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { translationsSchema } from "@/shared/api/translations";
+
 /** The most colors the gallery may have (backend/src/modules/gallery/colors/schema.ts). */
 export const maxColors = 100;
 
@@ -14,7 +16,7 @@ export type GalleryColor = z.infer<typeof galleryColorSchema>;
 
 /** Every color of the gallery, sorted by title; there are none until they are first saved. */
 export const galleryColorsSchema = z
-  .object({ colors: z.array(galleryColorSchema) })
-  .transform(({ colors }) => colors);
+  .object({ colors: z.array(galleryColorSchema), translations: translationsSchema })
+  .transform(({ colors, translations }) => ({ items: colors, translations }));
 
 export type GalleryColors = z.infer<typeof galleryColorsSchema>;

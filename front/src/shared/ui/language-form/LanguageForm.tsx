@@ -20,7 +20,7 @@ export interface TranslatedField {
   label: string;
   /** Whether the text takes several lines. */
   multiline?: boolean;
-  /** The form field that holds the text in Russian. */
+  /** The path of the form field that holds the text in Russian. */
   source: string;
 }
 

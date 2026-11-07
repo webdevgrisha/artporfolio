@@ -6,56 +6,62 @@ import { type TargetLanguage, targetLanguages } from "@/shared/config/languages"
 // Mirrors the server rule in backend/src/shared/i18n/translations.ts.
 export const translationLengthFactor = 2;
 
-/** The texts a form holds by language and then by field; an empty one is to be translated anew. */
-export type TranslationValues<Field extends string> = Record<TargetLanguage, Record<Field, string>>;
+/** The texts a form holds by language and then by key; an empty one is translated anew on save. */
+export type TranslationValues = Record<TargetLanguage, Record<string, string>>;
 
-/** The translation fields of a form, by the limit of each field in Russian. */
-export function translationValuesSchema<Field extends string>(maxLengths: Record<Field, number>) {
-  const fields = Object.keys(maxLengths) as Field[];
+function translatedTextSchema(maxLength: number) {
+  const limit = maxLength * translationLengthFactor;
+
+  return z
+    .string()
+    .trim()
+    .max(limit, `Не длиннее ${String(limit)} символов`);
+}
+
+/**
+ * The translation fields of a form, by the limit of each field in Russian, and for items of a list,
+ * which go by their ids, by the limit `maxItemLength`.
+ */
+export function translationValuesSchema(
+  maxLengths: Record<string, number>,
+  maxItemLength?: number,
+): z.ZodType<TranslationValues, TranslationValues> {
   const texts = Object.fromEntries(
-    fields.map((field) => {
-      const maxLength = maxLengths[field] * translationLengthFactor;
+    Object.entries(maxLengths).map(([field, maxLength]) => [
+      field,
+      translatedTextSchema(maxLength),
+    ]),
+  );
+  const language =
+    maxItemLength === undefined
+      ? z.object(texts)
+      : z.object(texts).catchall(translatedTextSchema(maxItemLength));
 
-      return [
-        field,
-        z
-          .string()
-          .trim()
-          .max(maxLength, `Не длиннее ${String(maxLength)} символов`),
-      ];
-    }),
-  ) as Record<Field, z.ZodString>;
-  const languages = Object.fromEntries(
-    targetLanguages.map((language) => [language, z.object(texts)]),
-  ) as Record<TargetLanguage, z.ZodObject<Record<Field, z.ZodString>>>;
-
-  return z.object(languages);
+  return z.object(
+    Object.fromEntries(targetLanguages.map((target) => [target, language])),
+  ) as unknown as z.ZodType<TranslationValues, TranslationValues>;
 }
 
 /** The saved translations as a form holds them; a text not translated yet is empty. */
-export function toTranslationValues<Field extends string>(
+export function toTranslationValues(
   translations: Translations,
-  fields: readonly Field[],
-): TranslationValues<Field> {
+  keys: readonly string[],
+): TranslationValues {
   return Object.fromEntries(
     targetLanguages.map((language) => [
       language,
-      Object.fromEntries(
-        fields.map((field) => [field, translations[language]?.[field]?.text ?? ""]),
-      ),
+      Object.fromEntries(keys.map((key) => [key, translations[language]?.[key]?.text ?? ""])),
     ]),
-  ) as TranslationValues<Field>;
+  ) as TranslationValues;
 }
 
 /** The translations the form holds as the server takes them. */
-export function toTranslationsBody<Field extends string>(
-  values: TranslationValues<Field>,
-): TranslationsBody {
+export function toTranslationsBody(values: TranslationValues): TranslationsBody {
   return Object.fromEntries(
-    Object.entries<Record<Field, string>>(values).map(([language, texts]) => [
+    Object.entries(values).map(([language, texts]) => [
       language,
       Object.fromEntries(
-        Object.entries<string>(texts).map(([field, text]) => [field, text === "" ? null : text]),
+        Object.entries(texts).map(([key, text]) => [key, text === "" ? null : text]),
       ),
     ]),
   );

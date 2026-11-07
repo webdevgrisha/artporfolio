@@ -5,16 +5,19 @@ import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form"
 import { galleryWorkUsageQuery, type WorkUsages } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
+import { toTranslationsBody } from "@/shared/lib/translationsForm";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
+import { LanguageForm } from "@/shared/ui/language-form";
 import { useRowRemoval } from "../../model/useRowRemoval";
 import { describeWorkUsage, usageOf } from "../../model/workUsage";
 import {
-  type TitleItem,
   type TitleListConfig,
+  type TitleListData,
   type TitleListFormValues,
   titleListFormSchema,
+  toTitleLanguageFields,
   toTitleListFormValues,
 } from "../model/titleList";
 import { useRowEditing } from "../model/useRowEditing";
@@ -26,7 +29,7 @@ import { TitleListRow } from "./TitleListRow";
 interface EditTitleListFormProps {
   className?: string;
   /** The list as stored on the server when the form opens, with its ETag. */
-  data: Tagged<TitleItem[]>;
+  data: Tagged<TitleListData>;
   list: TitleListConfig;
   /** How many works name each row, by its id. */
   usages: WorkUsages;
@@ -55,7 +58,8 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
     initial: data,
     query: list.query,
     related: [galleryWorkUsageQuery.queryKey],
-    save: (values, etag) => saveList.mutateAsync({ etag, items: values.items }),
+    save: ({ items, translations }, etag) =>
+      saveList.mutateAsync({ etag, items, translations: toTranslationsBody(translations) }),
     toValues: toTitleListFormValues,
     toastId: list.toastId,
   });
@@ -78,7 +82,7 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
     validate: (index) => void trigger(`items.${index}.title`),
   });
   const addFieldRef = React.useRef<HTMLInputElement>(null);
-  const savedTitles = new Map(saved.data.map(({ id, title }) => [id, title]));
+  const savedTitles = new Map(saved.data.items.map(({ id, title }) => [id, title]));
   const focusAfterUpdate = useFocusAfterUpdate();
   const removal = useRowRemoval((index) => {
     remove(index);
@@ -91,60 +95,67 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
   return (
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <div className={styles.root}>
-          <AddTitleField
-            ref={addFieldRef}
-            disabled={editForm.isSaving}
-            existingTitles={rows.map((row) => row.title)}
-            labels={{
-              add: texts.add,
-              duplicate: texts.duplicate,
-              field: texts.newItem,
-              full: texts.full,
-              placeholder: texts.placeholder,
-            }}
-            max={max}
-            onAdd={(title) => append({ id: crypto.randomUUID(), title }, { shouldFocus: false })}
-          />
+        <LanguageForm
+          fields={toTitleLanguageFields(rows, "items")}
+          isSaving={editForm.isSaving}
+          saved={saved.data.translations}
+        >
+          <div className={styles.root}>
+            <AddTitleField
+              ref={addFieldRef}
+              disabled={editForm.isSaving}
+              existingTitles={rows.map((row) => row.title)}
+              labels={{
+                add: texts.add,
+                duplicate: texts.duplicate,
+                field: texts.newItem,
+                full: texts.full,
+                placeholder: texts.placeholder,
+              }}
+              max={max}
+              onAdd={(title) => append({ id: crypto.randomUUID(), title }, { shouldFocus: false })}
+            />
 
-          <TitleList
-            heading={texts.heading}
-            hint={`${String(fields.length)} из ${String(max)}. На сайте идут по алфавиту`}
-            empty={texts.empty}
-            error={errors.items?.message ?? errors.items?.root?.message}
-            isEmpty={fields.length === 0}
-          >
-            {fields.map((field, index) => {
-              const row = rows[index] ?? field;
-              const savedTitle = savedTitles.get(row.id);
-              const isTitleModified = savedTitle !== row.title;
-              const titleError = errors.items?.[index]?.title?.message;
+            <TitleList
+              heading={texts.heading}
+              hint={`${String(fields.length)} из ${String(max)}. На сайте идут по алфавиту`}
+              empty={texts.empty}
+              error={errors.items?.message ?? errors.items?.root?.message}
+              isEmpty={fields.length === 0}
+            >
+              {fields.map((field, index) => {
+                const row = rows[index] ?? field;
+                const savedTitle = savedTitles.get(row.id);
+                const isTitleModified = savedTitle !== row.title;
+                const titleError = errors.items?.[index]?.title?.message;
 
-              return (
-                <TitleListRow
-                  key={field.id}
-                  row={{
-                    isNew: savedTitle === undefined,
-                    title: row.title,
-                    workCount: savedTitle === undefined ? undefined : usageOf(usages, row.id).count,
-                  }}
-                  titleField={register(`items.${index}.title`)}
-                  labels={{
-                    field: texts.rowField(savedTitle ?? row.title),
-                    remove: `Удалить ${row.title || texts.rowFallback}`,
-                    edit: `Переименовать ${row.title}`,
-                  }}
-                  editing={rowEditing(field.id, index, row.title, Boolean(titleError))}
-                  error={titleError}
-                  isModified={isTitleModified}
-                  isTitleModified={isTitleModified}
-                  isSaving={editForm.isSaving}
-                  onRemove={() => removal.request(index, usageOf(usages, row.id))}
-                />
-              );
-            })}
-          </TitleList>
-        </div>
+                return (
+                  <TitleListRow
+                    key={field.id}
+                    row={{
+                      isNew: savedTitle === undefined,
+                      title: row.title,
+                      workCount:
+                        savedTitle === undefined ? undefined : usageOf(usages, row.id).count,
+                    }}
+                    titleField={register(`items.${index}.title`)}
+                    labels={{
+                      field: texts.rowField(savedTitle ?? row.title),
+                      remove: `Удалить ${row.title || texts.rowFallback}`,
+                      edit: `Переименовать ${row.title}`,
+                    }}
+                    editing={rowEditing(field.id, index, row.title, Boolean(titleError))}
+                    error={titleError}
+                    isModified={isTitleModified}
+                    isTitleModified={isTitleModified}
+                    isSaving={editForm.isSaving}
+                    onRemove={() => removal.request(index, usageOf(usages, row.id))}
+                  />
+                );
+              })}
+            </TitleList>
+          </div>
+        </LanguageForm>
 
         <ConfirmDeleteDialog
           isOpen={removal.pending !== undefined}

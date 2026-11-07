@@ -1,11 +1,16 @@
 import { http, type Tagged } from "@/shared/api/http";
+import type { TranslationsBody } from "@/shared/api/translations";
 
 import { type GalleryIntro, galleryIntroSchema } from "../../model/galleryIntro";
 
 interface ReplaceGalleryIntroParams {
   /** The ETag of the text the new one was made from. */
   etag: string;
-  intro: GalleryIntro;
+  intro: {
+    text: string;
+    /** The text in the other languages; the server makes those sent as null. */
+    translations: TranslationsBody;
+  };
 }
 
 /**

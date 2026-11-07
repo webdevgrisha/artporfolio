@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import type { GallerySection } from "@/entities/gallery";
+import type { GallerySectionSummary } from "@/entities/gallery";
 import { sectionLabels, toSectionOptions } from "@/features/edit-gallery/work/model/workSections";
 
-const sections: GallerySection[] = [
+const sections: GallerySectionSummary[] = [
   { id: "graphics", subsections: [], title: "Графика" },
   {
     id: "painting",

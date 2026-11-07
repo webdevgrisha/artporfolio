@@ -12,6 +12,7 @@ import { emptyWorkFormValues } from "@/features/edit-gallery/work/model/workForm
 import { workLanguageFields } from "@/features/edit-gallery/work/model/workTranslation";
 import type { TargetLanguage } from "@/shared/config/languages";
 import { translationValuesSchema } from "@/shared/lib/translationsForm";
+import type { TranslatedField } from "@/shared/ui/language-form";
 import { TranslationFields } from "@/shared/ui/language-form/TranslationFields";
 
 const schema = z.looseObject({
@@ -30,14 +31,16 @@ const values: WorkFormValues = {
 };
 
 function Form({
+  fields = workLanguageFields,
   language = "en",
   onSave,
 }: {
+  fields?: readonly TranslatedField[];
   language?: TargetLanguage;
   onSave: (saved: WorkFormValues) => void;
 }) {
   const form = useForm<WorkFormValues>({
-    defaultValues: values,
+    defaultValues: { ...values, photos: [{ alt: "Набросок" }] as WorkFormValues["photos"] },
     resolver: zodResolver(schema) as never,
   });
 
@@ -45,7 +48,7 @@ function Form({
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSave)}>
         <TranslationFields
-          fields={workLanguageFields}
+          fields={fields}
           isSaving={false}
           language={language}
           saved={{ en: { title: { status: "edited", text: "Elephant" } } }}
@@ -100,6 +103,14 @@ describe("TranslationFields", () => {
     fireEvent.click(within(description as HTMLElement).getByRole("button"));
 
     await waitFor(() => expect(screen.getByLabelText("Описание")).toHaveProperty("value", ""));
+  });
+
+  it("reads the Russian text of a row of a list by its path", () => {
+    render(
+      <Form fields={[{ field: "row", label: "Масло", source: "photos.0.alt" }]} onSave={vi.fn()} />,
+    );
+
+    expect(screen.getByText("Переведётся при сохранении. Оригинал: Набросок")).toBeDefined();
   });
 
   it("lays out Arabic from right to left", () => {

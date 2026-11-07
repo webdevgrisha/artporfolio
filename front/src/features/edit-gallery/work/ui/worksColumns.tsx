@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type {
   GalleryCollectionSummary,
   GalleryMaterial,
-  GallerySection,
+  GallerySectionSummary,
   GalleryWorkSummary,
 } from "@/entities/gallery";
 import { galleryWorkPath } from "@/shared/config/routes";
@@ -29,7 +29,7 @@ interface WorksColumnsParams {
   materials: readonly GalleryMaterial[];
   onDelete: (work: GalleryWorkSummary) => void;
   /** The sections of the gallery, to name the sections of each work. */
-  sections: readonly GallerySection[];
+  sections: readonly GallerySectionSummary[];
 }
 
 /** The columns of the table of works. */

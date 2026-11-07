@@ -1,4 +1,4 @@
-import { type FieldValues, useFormContext, useFormState, useWatch } from "react-hook-form";
+import { type FieldValues, get, useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import type { Translations } from "@/shared/api/translations";
 import { rightToLeftLanguages, type TargetLanguage } from "@/shared/config/languages";
@@ -35,7 +35,7 @@ export function TranslationFields({ fields, isSaving, language, saved }: Transla
       {fields.map(({ field, label, multiline = false, source }) => {
         const Control = multiline ? ClearableTextarea : ClearableInput;
         const name = `translations.${language}.${field}`;
-        const original = String(values[source] ?? "").trim();
+        const original = String(get(values, source) ?? "").trim();
         const text = String(values.translations?.[language]?.[field] ?? "");
 
         return (

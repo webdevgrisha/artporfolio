@@ -1,8 +1,6 @@
-import type { AboutText } from "@/entities/about";
-
 interface AboutTextField {
   label: string;
-  name: keyof AboutText;
+  name: "about" | "biography" | "creation";
   placeholder: string;
 }
 

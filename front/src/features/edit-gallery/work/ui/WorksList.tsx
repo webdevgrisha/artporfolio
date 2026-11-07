@@ -3,7 +3,7 @@ import React from "react";
 import type {
   GalleryCollectionSummary,
   GalleryMaterial,
-  GallerySection,
+  GallerySectionSummary,
   GalleryWorkSummary,
 } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
@@ -20,7 +20,7 @@ interface WorksListProps {
   /** In the order the site shows them: the latest first. */
   works: readonly GalleryWorkSummary[];
   /** The sections of the gallery, to name the sections of each work. */
-  sections: readonly GallerySection[];
+  sections: readonly GallerySectionSummary[];
   /** The materials of the gallery, to name the materials of each work. */
   materials: readonly GalleryMaterial[];
   /** The collections of the gallery, to name the collection of each work. */

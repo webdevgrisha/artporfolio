@@ -10,10 +10,12 @@ import {
   type WorkUsages,
 } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
+import { toTranslationsBody } from "@/shared/lib/translationsForm";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ColorSwatchInput } from "@/shared/ui/color-swatch";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
+import { LanguageForm } from "@/shared/ui/language-form";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { useRowRemoval } from "../../model/useRowRemoval";
 import { describeWorkUsage, usageOf } from "../../model/workUsage";
@@ -23,6 +25,7 @@ import {
   defaultColorHex,
   toColorsFormValues,
 } from "../model/colorsFormSchema";
+import { toTitleLanguageFields } from "../model/titleList";
 import { useRowEditing } from "../model/useRowEditing";
 import { saveColorsFeedback, useSaveColors } from "../model/useSaveColors";
 import { AddTitleField } from "./AddTitleField";
@@ -63,7 +66,8 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
     initial: colors,
     query: galleryColorsQuery,
     related: [galleryWorkUsageQuery.queryKey],
-    save: (values, etag) => saveColors.mutateAsync({ colors: values.colors, etag }),
+    save: ({ colors, translations }, etag) =>
+      saveColors.mutateAsync({ colors, etag, translations: toTranslationsBody(translations) }),
     toValues: toColorsFormValues,
     toastId: saveColorsFeedback.toastId,
   });
@@ -87,7 +91,7 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
   // The swatch of the color being added; each new color starts from the neutral one.
   const [newHex, setNewHex] = React.useState(defaultColorHex);
   const addFieldRef = React.useRef<HTMLInputElement>(null);
-  const savedColors = new Map(saved.data.map((color) => [color.id, color]));
+  const savedColors = new Map(saved.data.items.map((color) => [color.id, color]));
   const focusAfterUpdate = useFocusAfterUpdate();
   const removal = useRowRemoval((index) => {
     remove(index);
@@ -100,88 +104,95 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
   return (
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <div className={styles.root}>
-          <AddTitleField
-            ref={addFieldRef}
-            disabled={editForm.isSaving}
-            existingTitles={rows.map((row) => row.title)}
-            labels={{
-              add: "Добавить цвет",
-              duplicate: "Такой цвет уже есть",
-              field: "Новый цвет",
-              full: `Цветов уже ${String(maxColors)}, больше добавить нельзя`,
-              placeholder: "Например: Синий",
-            }}
-            max={maxColors}
-            startAdornment={
-              <Tooltip content="Образец нового цвета">
-                <ColorSwatchInput
-                  label="Образец нового цвета"
-                  value={newHex}
-                  disabled={editForm.isSaving || rows.length >= maxColors}
-                  onChange={(event) => setNewHex(event.target.value)}
-                />
-              </Tooltip>
-            }
-            onAdd={(title) => {
-              append({ hex: newHex, id: crypto.randomUUID(), title }, { shouldFocus: false });
-              setNewHex(defaultColorHex);
-            }}
-          />
+        <LanguageForm
+          fields={toTitleLanguageFields(rows, "colors")}
+          isSaving={editForm.isSaving}
+          saved={saved.data.translations}
+        >
+          <div className={styles.root}>
+            <AddTitleField
+              ref={addFieldRef}
+              disabled={editForm.isSaving}
+              existingTitles={rows.map((row) => row.title)}
+              labels={{
+                add: "Добавить цвет",
+                duplicate: "Такой цвет уже есть",
+                field: "Новый цвет",
+                full: `Цветов уже ${String(maxColors)}, больше добавить нельзя`,
+                placeholder: "Например: Синий",
+              }}
+              max={maxColors}
+              startAdornment={
+                <Tooltip content="Образец нового цвета">
+                  <ColorSwatchInput
+                    label="Образец нового цвета"
+                    value={newHex}
+                    disabled={editForm.isSaving || rows.length >= maxColors}
+                    onChange={(event) => setNewHex(event.target.value)}
+                  />
+                </Tooltip>
+              }
+              onAdd={(title) => {
+                append({ hex: newHex, id: crypto.randomUUID(), title }, { shouldFocus: false });
+                setNewHex(defaultColorHex);
+              }}
+            />
 
-          <TitleList
-            heading="Цвета"
-            hint={`${String(fields.length)} из ${String(maxColors)}. На сайте идут по алфавиту`}
-            empty="Цветов пока нет"
-            error={errors.colors?.message ?? errors.colors?.root?.message}
-            isEmpty={fields.length === 0}
-          >
-            {fields.map((field, index) => {
-              const row = rows[index] ?? field;
-              const savedColor = savedColors.get(row.id);
-              const isTitleModified = savedColor?.title !== row.title;
-              const titleError = errors.colors?.[index]?.title?.message;
-              const editing = rowEditing(
-                field.id,
-                index,
-                { hex: row.hex, title: row.title },
-                Boolean(titleError),
-              );
+            <TitleList
+              heading="Цвета"
+              hint={`${String(fields.length)} из ${String(maxColors)}. На сайте идут по алфавиту`}
+              empty="Цветов пока нет"
+              error={errors.colors?.message ?? errors.colors?.root?.message}
+              isEmpty={fields.length === 0}
+            >
+              {fields.map((field, index) => {
+                const row = rows[index] ?? field;
+                const savedColor = savedColors.get(row.id);
+                const isTitleModified = savedColor?.title !== row.title;
+                const titleError = errors.colors?.[index]?.title?.message;
+                const editing = rowEditing(
+                  field.id,
+                  index,
+                  { hex: row.hex, title: row.title },
+                  Boolean(titleError),
+                );
 
-              return (
-                <TitleListRow
-                  key={field.id}
-                  row={{
-                    isNew: savedColor === undefined,
-                    title: row.title,
-                    workCount: savedColor === undefined ? undefined : usageOf(usages, row.id).count,
-                  }}
-                  titleField={register(`colors.${index}.title`)}
-                  start={
-                    <ColorRowSwatch
-                      disabled={editForm.isSaving}
-                      hex={row.hex}
-                      index={index}
-                      isEditing={editing.isEditing}
-                      label={`Образец цвета ${row.title}`}
-                    />
-                  }
-                  labels={{
-                    field: `Название цвета ${savedColor?.title ?? row.title}`,
-                    remove: `Удалить ${row.title || "цвет"}`,
-                    edit: `Изменить ${row.title}`,
-                  }}
-                  editing={editing}
-                  error={titleError}
-                  isModified={isTitleModified || savedColor?.hex !== row.hex}
-                  isTitleModified={isTitleModified}
-                  isSaving={editForm.isSaving}
-                  onRemove={() => removal.request(index, usageOf(usages, row.id))}
-                />
-              );
-            })}
-          </TitleList>
-        </div>
+                return (
+                  <TitleListRow
+                    key={field.id}
+                    row={{
+                      isNew: savedColor === undefined,
+                      title: row.title,
+                      workCount:
+                        savedColor === undefined ? undefined : usageOf(usages, row.id).count,
+                    }}
+                    titleField={register(`colors.${index}.title`)}
+                    start={
+                      <ColorRowSwatch
+                        disabled={editForm.isSaving}
+                        hex={row.hex}
+                        index={index}
+                        isEditing={editing.isEditing}
+                        label={`Образец цвета ${row.title}`}
+                      />
+                    }
+                    labels={{
+                      field: `Название цвета ${savedColor?.title ?? row.title}`,
+                      remove: `Удалить ${row.title || "цвет"}`,
+                      edit: `Изменить ${row.title}`,
+                    }}
+                    editing={editing}
+                    error={titleError}
+                    isModified={isTitleModified || savedColor?.hex !== row.hex}
+                    isTitleModified={isTitleModified}
+                    isSaving={editForm.isSaving}
+                    onRemove={() => removal.request(index, usageOf(usages, row.id))}
+                  />
+                );
+              })}
+            </TitleList>
+          </div>
+        </LanguageForm>
 
         <ConfirmDeleteDialog
           isOpen={removal.pending !== undefined}
