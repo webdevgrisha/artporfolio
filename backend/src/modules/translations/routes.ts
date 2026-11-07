@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { identifyReader } from "#modules/auth/middleware";
+import { requireAuth } from "#modules/auth/middleware";
 import {
   patchTranslations,
   readStatus,
@@ -17,8 +17,11 @@ import { validateBody, validateParams } from "#shared/middleware/validation";
 
 export const translationsRouter = Router();
 
+// Translations are the admin's for now: they hold the texts of hidden works too. The site will read
+// them through its own resources, which know what a visitor may see.
+
 // Registered before "/:resource", which would take these names too.
-translationsRouter.get("/status", identifyReader, readStatus);
+translationsRouter.get("/status", requireAuth, readStatus);
 translationsRouter.post("/retry", retry);
 
 // A person's change names only the texts it changes, so it cannot overwrite what it did not touch,
@@ -26,7 +29,7 @@ translationsRouter.post("/retry", retry);
 // date. Hence no If-Match: the translator changes the resource at any moment, and an ETag with it.
 translationsRouter.get(
   "/:resource",
-  identifyReader,
+  requireAuth,
   validateParams(resourceParamsSchema),
   readTranslations,
 );

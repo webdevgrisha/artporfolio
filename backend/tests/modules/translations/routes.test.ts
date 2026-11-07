@@ -58,15 +58,19 @@ describe("reading translations", () => {
     await expect(response.json()).resolves.toEqual(translations);
   });
 
-  it("hides them from a visitor: they hold the texts of hidden works", async () => {
+  it("needs the admin: they hold the texts of hidden works", async () => {
+    auth.verifySession.mockRejectedValue(new UnauthorizedError());
+
     const response = await read("/gallery-work-1");
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(401);
     expect(store.getTranslations).not.toHaveBeenCalled();
   });
 
-  it("hides the status of translating from a visitor", async () => {
-    expect((await read("/status")).status).toBe(404);
+  it("needs the admin for the status of translating", async () => {
+    auth.verifySession.mockRejectedValue(new UnauthorizedError());
+
+    expect((await read("/status")).status).toBe(401);
   });
 });
 
