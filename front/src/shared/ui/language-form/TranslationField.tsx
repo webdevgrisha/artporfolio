@@ -43,7 +43,6 @@ export function TranslationField({
     useFormContext<TranslationValues>();
   const { dirtyFields, errors } = useFormState({ control });
   const text = useWatch({ control, name: key }) ?? "";
-  const isOnItsWay = !failed && (status === undefined || status === "pending");
   const controlProps = {
     "aria-describedby": statusId,
     disabled: isSaving,
@@ -84,13 +83,8 @@ export function TranslationField({
         status={getTranslationHint({ failed, status, text: text.trim() })}
         statusId={statusId}
         isDisabled={isSaving}
-        onTranslateAnew={
-          isOnItsWay
-            ? undefined
-            : () =>
-                onTranslateAnew(
-                  status === "edited" || status === "outdated" || Boolean(dirtyFields[key]),
-                )
+        onTranslateAnew={() =>
+          onTranslateAnew(status === "edited" || status === "outdated" || Boolean(dirtyFields[key]))
         }
       />
     </div>

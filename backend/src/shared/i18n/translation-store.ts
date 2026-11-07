@@ -10,6 +10,7 @@ import { translateAll } from "#shared/i18n/translating";
 import { type HaltReason, readHalted, setHalted } from "#shared/i18n/translation-halt";
 import { enqueueTranslation } from "#shared/i18n/translation-queue";
 import {
+  askForNewTranslation,
   planTranslations,
   type StoredTranslations,
   storedTranslationsSchema,
@@ -138,7 +139,9 @@ export async function editTranslations(
   language: TargetLanguage,
   texts: Record<string, string | null>,
 ): Promise<ResourceTranslations> {
-  const asksTranslator = await firestore().runTransaction(async (transaction) => {
+  const asksTranslator = Object.values(texts).includes(null);
+
+  await firestore().runTransaction(async (transaction) => {
     const document = resourceDocument(resource);
     const saved = readResource(await transaction.get(document));
     const translations: StoredTranslations = { ...saved.translations };
@@ -151,35 +154,39 @@ export async function editTranslations(
       }
 
       if (text === null) {
-        const { [key]: _removed, ...rest } = translations[language] ?? {};
-
-        translations[language] = rest;
+        askForNewTranslation(translations, language, key);
       } else {
         storeTranslation(translations, language, key, { edited: true, source, text });
       }
     }
 
-    transaction.set(document, { ...saved, failed: false, translations });
-    return Object.values(texts).includes(null);
+    // Only a new task takes back a failure: an edit leaves the other texts as they were.
+    transaction.set(document, { ...saved, failed: saved.failed && !asksTranslator, translations });
   });
 
   if (asksTranslator) {
-    await enqueue(resource);
+    try {
+      await enqueue(resource);
+    } catch (error) {
+      await markFailed(resource);
+      throw error;
+    }
   }
 
   return getTranslations(resource);
 }
 
 /**
- * Makes the missing translations of `resource`, for a task of the queue. What it made is saved even
- * when a language failed. A text changed or edited meanwhile is left alone. A failure the queue may
- * outlive is thrown, so it tries again; on the last try the resource shows as failed.
+ * Makes the missing translations of `resource`. What it made is saved even when a language failed.
+ * A text changed or edited meanwhile is left alone. While translating is halted it asks DeepL for
+ * nothing: a retry puts the resource back in the queue.
  */
-export async function runTranslation(resource: string, isLastTry: boolean): Promise<void> {
-  const saved = readResource(await resourceDocument(resource).get());
+async function translateMissing(resource: string): Promise<void> {
+  const [snapshot, halted] = await Promise.all([resourceDocument(resource).get(), readHalted()]);
+  const saved = readResource(snapshot);
   const { requests } = planTranslations(saved.sources, saved.translations);
 
-  if (requests.length === 0) {
+  if (halted !== null || requests.length === 0) {
     return;
   }
 
@@ -207,11 +214,7 @@ export async function runTranslation(resource: string, isLastTry: boolean): Prom
       }
     }
 
-    transaction.set(document, {
-      ...current,
-      failed: halt === null && errors.length > 0 && isLastTry,
-      translations,
-    });
+    transaction.set(document, { ...current, translations });
   });
 
   if (halt !== null) {
@@ -224,24 +227,51 @@ export async function runTranslation(resource: string, isLastTry: boolean): Prom
   }
 }
 
+/**
+ * A task of the queue. A failure is thrown, so the queue tries again; after the last try no task
+ * comes for the texts still missing, so the resource shows as failed.
+ */
+export async function runTranslation(resource: string, isLastTry: boolean): Promise<void> {
+  try {
+    await translateMissing(resource);
+  } catch (error) {
+    if (isLastTry) {
+      await markFailed(resource);
+    }
+
+    throw error;
+  }
+}
+
 export async function getTranslationStatus(): Promise<TranslationStatusResponse> {
   const [halted, usage] = await Promise.all([readHalted(), getTranslationUsage()]);
 
   return { halted, usage };
 }
 
-/** Lifts a halt and puts every resource with missing translations back in the queue. */
+/**
+ * Lifts a halt and puts every resource with missing translations back in the queue. A resource the
+ * queue refuses shows as failed and the others still go; the first refusal is thrown at the end.
+ */
 export async function retryTranslations(): Promise<void> {
   await setHalted(null);
 
   const { docs } = await firestore().collection("translations").get();
+  const refusals: unknown[] = [];
 
   for (const snapshot of docs) {
-    const resource = readResource(snapshot);
-
-    if (hasMissing(resource)) {
-      await snapshot.ref.update({ failed: false });
-      await enqueueTranslation(snapshot.id);
+    if (hasMissing(readResource(snapshot))) {
+      try {
+        await enqueueTranslation(snapshot.id);
+        await snapshot.ref.update({ failed: false });
+      } catch (error) {
+        refusals.push(error);
+        await markFailed(snapshot.id);
+      }
     }
+  }
+
+  if (refusals.length > 0) {
+    throw refusals[0];
   }
 }

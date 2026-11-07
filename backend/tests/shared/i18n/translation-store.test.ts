@@ -8,6 +8,8 @@ const deepl = vi.hoisted(() => ({
 }));
 const queue = vi.hoisted(() => ({ enqueueTranslation: vi.fn() }));
 const logger = vi.hoisted(() => ({ warn: vi.fn() }));
+/** Set to make the next transactions fail, as a lost connection to Firestore would. */
+const commit = vi.hoisted(() => ({ error: undefined as Error | undefined }));
 
 vi.mock("#shared/i18n/deepl", () => deepl);
 vi.mock("#shared/i18n/translation-queue", () => queue);
@@ -53,7 +55,13 @@ vi.mock("#shared/firebase/firestore", () => {
         }),
       }),
       doc: reference,
-      runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
+      runTransaction: async (update: (current: typeof transaction) => unknown) => {
+        if (commit.error) {
+          throw commit.error;
+        }
+
+        return update(transaction);
+      },
     }),
   };
 });
@@ -74,12 +82,104 @@ const resource = "gallery-work-1";
 
 beforeEach(() => {
   documents.clear();
+  commit.error = undefined;
   vi.clearAllMocks();
   queue.enqueueTranslation.mockReset();
   deepl.stopsTranslating.mockReturnValue(null);
   deepl.translateTexts.mockImplementation(async (texts: string[], language: string) =>
     texts.map((text) => `${text} (${language})`),
   );
+});
+
+describe("a failure of the queue or of the worker", () => {
+  async function translated(): Promise<void> {
+    await requestTranslations(resource, { title: "Слон" });
+    await runTranslation(resource, false);
+    await editTranslations(resource, "en", { title: "My Elephant" });
+    queue.enqueueTranslation.mockClear();
+  }
+
+  it("keeps the text asked anew, and shows it as failed, when the queue refuses", async () => {
+    await translated();
+    queue.enqueueTranslation.mockRejectedValue(new Error("no queue"));
+
+    await expect(editTranslations(resource, "en", { title: null })).rejects.toThrow("no queue");
+
+    const { failed, isTranslating, translations } = await getTranslations(resource);
+
+    expect({ failed, isTranslating }).toEqual({ failed: true, isTranslating: false });
+    expect(translations.en?.title).toEqual({ status: "pending", text: "My Elephant" });
+  });
+
+  it("keeps the text asked anew while translating is halted", async () => {
+    await translated();
+    documents.set("site/translation", { halted: "limit" });
+
+    await editTranslations(resource, "en", { title: null });
+
+    expect((await getTranslations(resource)).translations.en?.title?.text).toBe("My Elephant");
+  });
+
+  it("replaces the text asked anew once the translator makes it", async () => {
+    await translated();
+    await editTranslations(resource, "en", { title: null });
+
+    await runTranslation(resource, false);
+
+    expect((await getTranslations(resource)).translations.en?.title).toEqual({
+      status: "auto",
+      text: "Слон (en)",
+    });
+  });
+
+  it("leaves a failure in place when a person edits one text", async () => {
+    deepl.translateTexts.mockRejectedValue(new Error("DeepL is down"));
+    await requestTranslations(resource, { title: "Слон" });
+    await expect(runTranslation(resource, true)).rejects.toThrow("DeepL is down");
+    queue.enqueueTranslation.mockClear();
+
+    await editTranslations(resource, "en", { title: "Elephant" });
+
+    expect(queue.enqueueTranslation).not.toHaveBeenCalled();
+    await expect(getTranslations(resource)).resolves.toMatchObject({
+      failed: true,
+      isTranslating: false,
+    });
+  });
+
+  it("shows the texts as failed when the last try cannot write them", async () => {
+    await requestTranslations(resource, { title: "Слон" });
+    commit.error = new Error("lost");
+
+    await expect(runTranslation(resource, true)).rejects.toThrow("lost");
+
+    await expect(getTranslations(resource)).resolves.toMatchObject({
+      failed: true,
+      isTranslating: false,
+    });
+  });
+
+  it("asks DeepL for nothing once translating is halted, though the task is queued", async () => {
+    await requestTranslations(resource, { title: "Слон" });
+    documents.set("site/translation", { halted: "paused" });
+
+    await runTranslation(resource, false);
+
+    expect(deepl.translateTexts).not.toHaveBeenCalled();
+  });
+
+  it("goes on with the other resources when the queue refuses one", async () => {
+    await requestTranslations(resource, { title: "Слон" });
+    await requestTranslations("gallery-work-2", { title: "Тигр" });
+    queue.enqueueTranslation.mockReset();
+    queue.enqueueTranslation.mockRejectedValueOnce(new Error("no queue"));
+
+    await expect(retryTranslations()).rejects.toThrow("no queue");
+
+    expect(queue.enqueueTranslation).toHaveBeenCalledTimes(2);
+    expect((await getTranslations(resource)).failed).toBe(true);
+    expect((await getTranslations("gallery-work-2")).failed).toBe(false);
+  });
 });
 
 describe("requestTranslations", () => {
@@ -262,14 +362,14 @@ describe("editTranslations", () => {
     expect(translations.en?.title).toEqual({ status: "edited", text: "Elephant" });
   });
 
-  it("removes a text for the translator to make it anew", async () => {
+  it("asks the translator for a text anew, and keeps the old one until then", async () => {
     await requestTranslations(resource, { title: "Слон" });
     await editTranslations(resource, "en", { title: "Elephant" });
     queue.enqueueTranslation.mockClear();
 
     const { translations } = await editTranslations(resource, "en", { title: null });
 
-    expect(translations.en).toBeUndefined();
+    expect(translations.en?.title?.status).toBe("pending");
     expect(queue.enqueueTranslation).toHaveBeenCalledWith(resource);
   });
 

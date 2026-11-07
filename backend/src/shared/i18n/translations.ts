@@ -55,6 +55,22 @@ export function storeTranslation(
 }
 
 /**
+ * Asks the translator for this text anew. The old one stays until the new one replaces it, so a
+ * failure of the translator takes nothing away: with no source of its own it reads as out of date.
+ */
+export function askForNewTranslation(
+  translations: StoredTranslations,
+  language: string,
+  key: string,
+): void {
+  const current = translations[language]?.[key];
+
+  if (current) {
+    storeTranslation(translations, language, key, { ...current, edited: false, source: "" });
+  }
+}
+
+/**
  * What becomes of the translations when the texts in the source language are `sources`. A person's
  * edit stays even when its source changes, and shows as out of date. A key with no source text has
  * no translation. A translation being replaced is kept for now, so that the site has something to

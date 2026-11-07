@@ -16,12 +16,12 @@ export const languageParamsSchema = resourceParamsSchema.extend({
 });
 
 /**
- * What a person changed in one language, by key: a text is their edit, and null removes the text, so the translator makes it anew. A key left out stays as it is.
+ * What a person changed in one language, by key: a text is their edit, and null asks the translator
+ * for a new one. A key left out stays as it is.
  */
-export const translationPatchBodySchema = z.record(
-  z.string(),
-  z.string().trim().min(1).max(maxTranslationLength).nullable(),
-);
+export const translationPatchBodySchema = z
+  .record(z.string(), z.string().trim().min(1).max(maxTranslationLength).nullable())
+  .refine((texts) => Object.keys(texts).length > 0, "There is no change");
 
 export type ResourceParams = z.infer<typeof resourceParamsSchema>;
 export type LanguageParams = z.infer<typeof languageParamsSchema>;

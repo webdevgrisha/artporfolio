@@ -85,7 +85,8 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
     mutationFn: (key: string) => patchTranslations({ language, resource, texts: { [key]: null } }),
     onSuccess: async (saved, key) => {
       await showSaved(saved);
-      form.resetField(key, { defaultValue: "" });
+      // The old text stays until the new one comes.
+      form.resetField(key, { defaultValue: saved.translations[language]?.[key]?.text ?? "" });
     },
   });
 
