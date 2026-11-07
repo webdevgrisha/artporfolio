@@ -6,7 +6,6 @@ import { getLanguageMark, getTranslationHint } from "@/shared/lib/translationsFo
 const hint = (params: Partial<Parameters<typeof getTranslationHint>[0]>) =>
   getTranslationHint({
     failed: false,
-    original: "Слон",
     status: "auto",
     text: "Elephant",
     ...params,
@@ -14,31 +13,29 @@ const hint = (params: Partial<Parameters<typeof getTranslationHint>[0]>) =>
 
 describe("getTranslationHint", () => {
   it("tells who wrote the text and gives the Russian one", () => {
-    expect(hint({})).toBe("Автоперевод. Оригинал: Слон");
-    expect(hint({ status: "edited" })).toBe("Исправлено вручную. Оригинал: Слон");
+    expect(hint({})).toBe("Автоперевод");
+    expect(hint({ status: "edited" })).toBe("Исправлено вручную");
   });
 
   it("warns of a person's text of an earlier Russian text", () => {
-    expect(hint({ status: "outdated" })).toBe("Устарел: русский текст изменился. Оригинал: Слон");
+    expect(hint({ status: "outdated" })).toBe("Устарел: русский текст изменился");
   });
 
   it("tells that the translator is at work", () => {
-    expect(hint({ status: "pending" })).toBe("Переводится…. Оригинал: Слон");
-    expect(hint({ status: undefined, text: "" })).toBe("Переводится…. Оригинал: Слон");
+    expect(hint({ status: "pending" })).toBe("Переводится…");
+    expect(hint({ status: undefined, text: "" })).toBe("Переводится…");
   });
 
   it("says that an emptied field is translated on save", () => {
-    expect(hint({ status: "edited", text: "" })).toBe("Переведётся при сохранении. Оригинал: Слон");
+    expect(hint({ status: "edited", text: "" })).toBe("Переведётся при сохранении");
   });
 
   it("calls a text typed into an untranslated field a person's", () => {
-    expect(hint({ status: undefined })).toBe("Написано вручную. Оригинал: Слон");
+    expect(hint({ status: undefined })).toBe("Написано вручную");
   });
 
   it("tells that the translator gave up", () => {
-    expect(hint({ failed: true, status: undefined, text: "" })).toBe(
-      "Не удалось перевести. Оригинал: Слон",
-    );
+    expect(hint({ failed: true, status: undefined, text: "" })).toBe("Не удалось перевести");
   });
 });
 

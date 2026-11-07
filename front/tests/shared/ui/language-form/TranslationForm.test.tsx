@@ -61,7 +61,18 @@ describe("TranslationForm", () => {
     setUp();
 
     expect(await screen.findByLabelText("Название")).toHaveProperty("value", "Elephant");
-    expect(screen.getByText("Исправлено вручную. Оригинал: Слон")).toBeDefined();
+    expect(screen.getByText("Исправлено вручную")).toBeDefined();
+  });
+
+  it("keeps the Russian text folded away", async () => {
+    setUp();
+
+    await screen.findByLabelText("Название");
+
+    const original = screen.getByText("Слон").closest("details");
+
+    expect(original?.open).toBe(false);
+    expect(screen.getAllByText("Показать оригинал")).toHaveLength(2);
   });
 
   it("leaves out a text with no Russian text", async () => {
@@ -85,11 +96,11 @@ describe("TranslationForm", () => {
   it("asks the translator for an emptied text", async () => {
     const { patches } = setUp();
     const title = await screen.findByLabelText("Название");
-    const row = title.closest("div") as HTMLElement;
+    const row = title.parentElement as HTMLElement;
 
     fireEvent.click(within(row).getByRole("button"));
 
-    expect(await screen.findByText("Переведётся при сохранении. Оригинал: Слон")).toBeDefined();
+    expect(await screen.findByText("Переведётся при сохранении")).toBeDefined();
 
     fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
 

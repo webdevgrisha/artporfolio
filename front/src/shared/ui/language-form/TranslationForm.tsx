@@ -46,7 +46,8 @@ function toValues(
 }
 
 /**
- * The texts of a resource in one language, each with the Russian text it translates. A text the
+ * The texts of a resource in one language, each with the Russian text it translates, folded away:
+ * a description may be long. A text the
  * translator finishes shows up by itself, unless the person has changed that field: what they type
  * stays. A save sends only what they changed, and an emptied field is translated anew.
  */
@@ -117,32 +118,37 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
           const text = watch(key) ?? "";
 
           return (
-            <Control
-              key={key}
-              label={label}
-              hint={getTranslationHint({
-                failed: data.failed,
-                original: data.sources[key] ?? "",
-                status: data.translations[language]?.[key]?.status,
-                text: text.trim(),
-              })}
-              disabled={save.isPending}
-              error={errors[key]?.message}
-              isModified={Boolean(dirtyFields[key])}
-              hasValue={Boolean(text)}
-              clearLabel="Очистить, чтобы перевести заново"
-              onClear={() => {
-                setValue(key, "", { shouldDirty: true });
-                setFocus(key);
-              }}
-              {...(multiline ? { rows: 8 } : {})}
-              {...register(key, {
-                maxLength: {
-                  message: `Не длиннее ${String(maxTranslationLength)} символов`,
-                  value: maxTranslationLength,
-                },
-              })}
-            />
+            <div key={key} className={styles.field}>
+              <Control
+                label={label}
+                hint={getTranslationHint({
+                  failed: data.failed,
+                  status: data.translations[language]?.[key]?.status,
+                  text: text.trim(),
+                })}
+                disabled={save.isPending}
+                error={errors[key]?.message}
+                isModified={Boolean(dirtyFields[key])}
+                hasValue={Boolean(text)}
+                clearLabel="Очистить, чтобы перевести заново"
+                onClear={() => {
+                  setValue(key, "", { shouldDirty: true });
+                  setFocus(key);
+                }}
+                {...(multiline ? { rows: 8 } : {})}
+                {...register(key, {
+                  maxLength: {
+                    message: `Не длиннее ${String(maxTranslationLength)} символов`,
+                    value: maxTranslationLength,
+                  },
+                })}
+              />
+              {/* Russian reads from left to right even in the form of a language that does not. */}
+              <details className={styles.original} dir="ltr">
+                <summary className={styles.originalToggle}>Показать оригинал</summary>
+                <p className={styles.originalText}>{data.sources[key]}</p>
+              </details>
+            </div>
           );
         })}
       </div>

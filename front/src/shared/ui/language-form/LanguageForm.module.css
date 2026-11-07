@@ -15,3 +15,24 @@
   gap: var(--layout-space-6);
   max-inline-size: 48rem;
 }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.original {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.originalToggle {
+  cursor: pointer;
+}
+
+/* Paragraphs are separated by a blank line, which the text keeps. */
+.originalText {
+  margin-block: var(--space-2) 0;
+  white-space: pre-wrap;
+}

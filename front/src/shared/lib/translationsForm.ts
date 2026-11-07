@@ -10,15 +10,14 @@ const statusLabels: Record<TranslationStatus, string> = {
 interface TranslationHintParams {
   /** Whether the server gave up on the texts still missing. */
   failed: boolean;
-  /** The Russian text as last saved. */
-  original: string;
   /** Of the saved translation; undefined when there is none. */
   status: TranslationStatus | undefined;
   /** The field as the form holds it now. */
   text: string;
 }
 
-function getState({ failed, status, text }: TranslationHintParams): string {
+/** What a translation field says about its text. */
+export function getTranslationHint({ failed, status, text }: TranslationHintParams): string {
   if (failed && (status === undefined || status === "pending")) {
     return "Не удалось перевести";
   }
@@ -32,11 +31,6 @@ function getState({ failed, status, text }: TranslationHintParams): string {
   }
 
   return statusLabels[status];
-}
-
-/** What a translation field says about its text, and the Russian text to compare it with. */
-export function getTranslationHint(params: TranslationHintParams): string {
-  return `${getState(params)}. Оригинал: ${params.original}`;
 }
 
 /** What needs attention in one language: the mark the list of languages shows beside it. */
