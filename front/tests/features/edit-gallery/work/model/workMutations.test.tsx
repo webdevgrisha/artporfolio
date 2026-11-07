@@ -5,8 +5,9 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { GalleryWork } from "@/entities/gallery";
+import { useCreateWork } from "@/features/edit-gallery/work/model/useCreateWork";
+import { useSaveWork } from "@/features/edit-gallery/work/model/useSaveWork";
 import { emptyWorkFormValues } from "@/features/edit-gallery/work/model/workFormValues";
-import { useCreateWork, useSaveWork } from "@/features/edit-gallery/work/model/workMutations";
 import { savedImage } from "@/shared/lib/imageFieldValue";
 
 import { csrfHandler, problem, uploadId, uploadsHandler } from "../../../../support/handlers";

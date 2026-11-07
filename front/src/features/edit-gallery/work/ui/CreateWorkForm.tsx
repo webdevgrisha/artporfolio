@@ -3,10 +3,10 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import { galleryWorkPath } from "@/shared/config/routes";
 import { EditForm, useCreateForm } from "@/shared/ui/edit-form";
+import { useCreateWork } from "../model/useCreateWork";
 import type { WorkReferences } from "../model/useWorkReferences";
 import { type WorkFormValues, workFormSchema } from "../model/workFormSchema";
 import { emptyWorkFormValues } from "../model/workFormValues";
-import { useCreateWork } from "../model/workMutations";
 import { WorkFields } from "./WorkFields";
 
 interface CreateWorkFormProps {

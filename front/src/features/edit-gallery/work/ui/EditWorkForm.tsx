@@ -5,10 +5,10 @@ import { type GalleryWork, galleryWorkQuery } from "@/entities/gallery";
 import type { LanguageFormSlot } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
+import { saveWorkToastId, useSaveWork } from "../model/useSaveWork";
 import { type WorkReferences, workReferenceQueries } from "../model/useWorkReferences";
 import { type WorkFormValues, workFormSchema } from "../model/workFormSchema";
 import { toWorkFormValues } from "../model/workFormValues";
-import { saveWorkToastId, useSaveWork } from "../model/workMutations";
 import { WorkFields } from "./WorkFields";
 
 /** The texts of a work a person can edit in every language. */

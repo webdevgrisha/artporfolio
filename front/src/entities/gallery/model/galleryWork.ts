@@ -56,7 +56,7 @@ export const minWorkDiscount = 1;
 export const maxWorkDiscount = 99;
 
 /** The price of a work in whole units of its currency. */
-export const workPriceSchema = z.object({
+const workPriceSchema = z.object({
   amount: z.number(),
   currency: z.enum(workCurrencies),
   /** The percent taken off the amount, or null for none. */
@@ -71,7 +71,7 @@ export type WorkPrice = z.infer<typeof workPriceSchema>;
 export const maxWorkSide = 10_000;
 
 /** The size of a work in centimetres; the site converts it for visitors who read inches. */
-export const workSizeSchema = z.object({
+const workSizeSchema = z.object({
   width: z.number(),
   height: z.number(),
 });
@@ -125,7 +125,7 @@ export type GalleryWork = z.infer<typeof galleryWorkSchema>;
  * A work in the list of works: everything but its description and its process photos, which only
  * the page of one work loads.
  */
-export const galleryWorkSummarySchema = galleryWorkSchema.omit({
+const galleryWorkSummarySchema = galleryWorkSchema.omit({
   description: true,
   processPhotos: true,
 });

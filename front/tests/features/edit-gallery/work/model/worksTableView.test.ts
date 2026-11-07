@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import type {
-  GalleryCollection,
-  GalleryMaterial,
-  GallerySection,
-  GalleryWorkSummary,
+import {
+  type GalleryCollection,
+  type GalleryMaterial,
+  type GallerySection,
+  type GalleryWorkSummary,
+  matchesWorkQuery,
 } from "@/entities/gallery";
+import { createWorkFilters } from "@/features/edit-gallery/work/model/workFilters";
+import { formatWorkPlace } from "@/features/edit-gallery/work/model/workPlace";
 import {
   compareWorkDates,
   compareWorkSizes,
-  createWorkFilters,
-  formatWorkPlace,
-  matchesWorkQuery,
 } from "@/features/edit-gallery/work/model/worksTableView";
 
 const work = { title: "Слон на закате" } as GalleryWorkSummary;

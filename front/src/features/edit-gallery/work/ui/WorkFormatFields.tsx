@@ -1,14 +1,14 @@
 import React from "react";
 import { useController, useFormContext, useFormState } from "react-hook-form";
 
-import { maxWorkSetSize, minWorkSetSize } from "@/entities/gallery";
+import { maxWorkSetSize, minWorkSetSize, monthOptions } from "@/entities/gallery";
 import { Combobox } from "@/shared/ui/combobox";
 import { Input } from "@/shared/ui/input";
 import { RadioGroup } from "@/shared/ui/radio-group";
 import { Select } from "@/shared/ui/select";
 
 import { countryOptions, useWorkCities } from "../model/workCities";
-import { monthOptions, workFormatOptions } from "../model/workDisplay";
+import { workFormatOptions } from "../model/workFormat";
 import type { WorkFormValues } from "../model/workFormSchema";
 import styles from "./WorkFields.module.css";
 

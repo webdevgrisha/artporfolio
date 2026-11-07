@@ -78,7 +78,6 @@
     --layout-space-10: calc(10 * var(--space-unit) * var(--layout-scale));
     --layout-space-12: calc(12 * var(--space-unit) * var(--layout-scale));
     --layout-space-16: calc(16 * var(--space-unit) * var(--layout-scale));
-    --layout-space-24: calc(24 * var(--space-unit) * var(--layout-scale));
 
     --font-size-sm: 0.8125rem;
     --font-size-md: 1rem;

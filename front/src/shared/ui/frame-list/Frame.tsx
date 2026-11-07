@@ -7,8 +7,8 @@ interface FrameProps {
   children: ReactNode;
   /** Sizes the frame, such as its largest height, past which its content scrolls. */
   className?: string;
-  isDisabled?: boolean;
-  isInvalid?: boolean;
+  disabled?: boolean;
+  invalid?: boolean;
   /** Highlights a choice that differs from the saved one. An error takes precedence. */
   isModified?: boolean;
 }
@@ -20,8 +20,8 @@ interface FrameProps {
 export function Frame({
   children,
   className,
-  isDisabled = false,
-  isInvalid = false,
+  disabled = false,
+  invalid = false,
   isModified = false,
 }: FrameProps) {
   return (
@@ -29,8 +29,8 @@ export function Frame({
       className={clsx(
         styles.frame,
         isModified && styles.frameModified,
-        isInvalid && styles.frameInvalid,
-        isDisabled && styles.frameDisabled,
+        invalid && styles.frameInvalid,
+        disabled && styles.frameDisabled,
         className,
       )}
     >

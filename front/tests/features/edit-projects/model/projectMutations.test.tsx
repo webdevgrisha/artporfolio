@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Project } from "@/entities/project";
 import { emptyProjectFormValues } from "@/features/edit-projects/model/projectFormSchema";
-import { useCreateProject } from "@/features/edit-projects/model/projectMutations";
+import { useCreateProject } from "@/features/edit-projects/model/useCreateProject";
 
 import { csrfHandler, problem } from "../../../support/handlers";
 import { recordRequests, server } from "../../../support/server";

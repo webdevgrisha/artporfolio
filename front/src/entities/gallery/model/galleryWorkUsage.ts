@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** How the works use one item of a gallery list, such as a material or a section. */
-export const workUsageSchema = z.object({
+const workUsageSchema = z.object({
   /** The works that name the item, or for a section, the section or any of its subsections. */
   count: z.number(),
   /** Of those, the works that name nothing else of the list: they cannot be saved until fixed. */

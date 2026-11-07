@@ -16,7 +16,7 @@ import {
   sectionFormSchema,
   toSectionFormValues,
 } from "../model/sectionFormSchema";
-import { saveSectionToastId, useSaveSection } from "../model/sectionMutations";
+import { saveSectionToastId, useSaveSection } from "../model/useSaveSection";
 import { SectionFields } from "./SectionFields";
 
 interface EditSectionFormProps {

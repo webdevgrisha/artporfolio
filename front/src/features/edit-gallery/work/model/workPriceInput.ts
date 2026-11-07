@@ -1,4 +1,3 @@
-import { type Currency, suggestedPrice } from "@/entities/currency";
 import {
   maxWorkDiscount,
   maxWorkPrice,
@@ -7,6 +6,8 @@ import {
   type WorkPrice,
 } from "@/entities/gallery";
 
+import { discountedAmount } from "./workPriceAmount";
+
 /** The currency the form sets a price in; the only one for now. */
 export const workFormCurrency: WorkCurrency = "USD";
 
@@ -14,7 +15,7 @@ export const workFormCurrency: WorkCurrency = "USD";
  * The number a price or a discount field holds, as typed: digits, which may be split by spaces into
  * thousands, such as «1 500». NaN for anything else.
  */
-export function parseWholeNumber(text: string): number {
+function parseWholeNumber(text: string): number {
   const digits = text.replace(/\s/g, "");
 
   return /^\d+$/.test(digits) ? Number(digits) : Number.NaN;
@@ -87,11 +88,6 @@ export function parseTypedPrice(
   };
 }
 
-/** The amount after the discount, rounded to a whole unit, as the server computes it. */
-export function discountedAmount(amount: number, discountPercent: number | null): number {
-  return discountPercent === null ? amount : Math.round((amount * (100 - discountPercent)) / 100);
-}
-
 /** The price the form holds, once it has been checked; null when the field is empty. */
 export function toWorkPrice({
   discountPercent,
@@ -109,34 +105,4 @@ export function toWorkPrice({
     currency: workFormCurrency,
     discountPercent: discountPercent.trim() === "" ? null : parseWholeNumber(discountPercent),
   };
-}
-
-/**
- * The price after the discount in a currency, as the server computes it: never 0, which would make
- * the work free in a currency worth more than the dollar.
- */
-export function discountedPriceIn(
-  amount: number,
-  rate: number,
-  discountPercent: number | null,
-): number {
-  return Math.max(1, discountedAmount(suggestedPrice(amount, rate), discountPercent));
-}
-
-/** One format per currency: making it is slow, and a table and a form ask for it often. */
-const priceFormats = new Map<Currency | WorkCurrency, Intl.NumberFormat>();
-
-function priceFormat(currency: Currency | WorkCurrency): Intl.NumberFormat {
-  const format =
-    priceFormats.get(currency) ??
-    new Intl.NumberFormat("ru", { currency, maximumFractionDigits: 0, style: "currency" });
-
-  priceFormats.set(currency, format);
-
-  return format;
-}
-
-/** A price as the admin reads it, in whole units: «1 500 $». */
-export function formatPrice(amount: number, currency: Currency | WorkCurrency): string {
-  return priceFormat(currency).format(amount);
 }

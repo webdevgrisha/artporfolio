@@ -1,6 +1,6 @@
 import type { GalleryWorkSummary } from "@/entities/gallery";
 
-import { formatWorkFormat } from "../model/workDisplay";
+import { formatWorkFormat } from "../model/workFormat";
 import styles from "./WorksList.module.css";
 
 interface WorkFormatCellProps {

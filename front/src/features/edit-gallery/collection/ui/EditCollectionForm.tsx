@@ -17,7 +17,7 @@ import {
   collectionFormSchema,
   toCollectionFormValues,
 } from "../model/collectionFormSchema";
-import { saveCollectionToastId, useSaveCollection } from "../model/collectionMutations";
+import { saveCollectionToastId, useSaveCollection } from "../model/useSaveCollection";
 import { CollectionFields } from "./CollectionFields";
 
 /** The texts of a collection a person can edit in every language. */

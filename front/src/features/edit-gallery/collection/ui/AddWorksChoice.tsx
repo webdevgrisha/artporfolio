@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import React from "react";
 
-import type { GalleryWorkSummary } from "@/entities/gallery";
+import { formatWorkDate, type GalleryWorkSummary, matchesWorkQuery } from "@/entities/gallery";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
@@ -15,8 +15,6 @@ import {
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { SearchInput } from "@/shared/ui/search-input";
 
-import { formatWorkDate } from "../../work/model/workDisplay";
-import { matchesWorkQuery } from "../../work/model/worksTableView";
 import styles from "./AddWorksDialog.module.css";
 
 export interface AddWorksChoiceProps {

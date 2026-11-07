@@ -9,7 +9,7 @@ import {
   type ProjectFormValues,
   projectFormSchema,
 } from "../model/projectFormSchema";
-import { useCreateProject } from "../model/projectMutations";
+import { useCreateProject } from "../model/useCreateProject";
 import { ProjectFields } from "./ProjectFields";
 
 interface CreateProjectFormProps {

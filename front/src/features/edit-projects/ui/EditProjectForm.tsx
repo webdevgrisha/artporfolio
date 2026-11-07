@@ -10,7 +10,7 @@ import {
   projectFormSchema,
   toProjectFormValues,
 } from "../model/projectFormSchema";
-import { saveProjectToastId, useSaveProject } from "../model/projectMutations";
+import { saveProjectToastId, useSaveProject } from "../model/useSaveProject";
 import { ProjectFields } from "./ProjectFields";
 
 /** The texts of a project a person can edit in every language. */

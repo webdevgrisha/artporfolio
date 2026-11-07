@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { GalleryWorkSummary } from "@/entities/gallery";
+import { formatWorkDate, type GalleryWorkSummary } from "@/entities/gallery";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { Button } from "@/shared/ui/button";
 import { Fieldset } from "@/shared/ui/fieldset";
@@ -10,7 +10,6 @@ import { IconButton } from "@/shared/ui/icon-button";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
 
-import { formatWorkDate } from "../../work/model/workDisplay";
 import { addableWorks } from "../model/addableWorks";
 import { AddWorksDialog } from "./AddWorksDialog";
 import styles from "./CollectionWorksField.module.css";
@@ -74,8 +73,8 @@ export function CollectionWorksField({
         <Frame
           className={styles.frame}
           isModified={isModified}
-          isInvalid={Boolean(error)}
-          isDisabled={disabled}
+          invalid={Boolean(error)}
+          disabled={disabled}
         >
           {chosen.length === 0 ? (
             <FrameEmpty>В коллекции пока нет работ</FrameEmpty>

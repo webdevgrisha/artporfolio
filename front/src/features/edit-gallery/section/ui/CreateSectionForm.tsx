@@ -9,7 +9,7 @@ import {
   type SectionFormValues,
   sectionFormSchema,
 } from "../model/sectionFormSchema";
-import { useCreateSection } from "../model/sectionMutations";
+import { useCreateSection } from "../model/useCreateSection";
 import { SectionFields } from "./SectionFields";
 
 interface CreateSectionFormProps {

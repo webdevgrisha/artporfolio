@@ -92,7 +92,7 @@ describe("the rules the front repeats", () => {
   });
 
   it("takes off a discount as the API does", async () => {
-    const repeated = await front("features/edit-gallery/work/model/workPrice");
+    const repeated = await front("features/edit-gallery/work/model/workPriceAmount");
     const frontAmount = repeated.discountedAmount as typeof discountedAmount;
 
     for (const amount of [1, 3, 99, 500, 1_555]) {

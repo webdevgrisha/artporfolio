@@ -6,7 +6,7 @@ import styles from "./LanguageForm.module.css";
 
 interface OriginalTextProps {
   /** Whether a change of the form is under way, so a new translation has to wait. */
-  isDisabled: boolean;
+  disabled: boolean;
   /**
    * Asks the translator for this text anew. It is there while the text is on its way too: a task
    * lost with its process leaves the text waiting, and this is what brings it back.
@@ -25,7 +25,7 @@ interface OriginalTextProps {
  * Russian text to compare it with.
  */
 export function OriginalText({
-  isDisabled,
+  disabled,
   onTranslateAnew,
   original,
   status,
@@ -41,7 +41,7 @@ export function OriginalText({
         <div className={styles.actions}>
           <Button
             className={styles.toggle}
-            disabled={isDisabled}
+            disabled={disabled}
             variant="text"
             onClick={onTranslateAnew}
           >

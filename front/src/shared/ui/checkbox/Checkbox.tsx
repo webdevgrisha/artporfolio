@@ -12,7 +12,7 @@ interface CheckboxProps {
   className?: string;
   disabled?: boolean;
   /** Marks the box invalid, for a list whose choice has an error. */
-  hasError?: boolean;
+  invalid?: boolean;
   /** Ties the box to its label, which the owner draws: `<label htmlFor={id}>`. */
   id: string;
   inputRef?: React.Ref<HTMLInputElement>;
@@ -28,7 +28,7 @@ export function Checkbox({
   checked,
   className,
   disabled = false,
-  hasError = false,
+  invalid = false,
   id,
   inputRef,
   isModified = false,
@@ -44,7 +44,7 @@ export function Checkbox({
         className={clsx(styles.box, isModified && styles.boxModified)}
         checked={checked}
         disabled={disabled}
-        aria-invalid={hasError}
+        aria-invalid={invalid}
         aria-describedby={ariaDescribedBy}
         onBlur={onBlur}
         onChange={(event) => onChange(event.target.checked)}

@@ -45,7 +45,7 @@ export function RadioGroup<TValue extends string>({
 
   return (
     <Fieldset className={clsx(styles.root, className)} legend={label} disabled={disabled}>
-      <Frame isDisabled={disabled}>
+      <Frame disabled={disabled}>
         <FrameList>
           {options.map((option) => {
             const id = `${groupId}-${option.value}`;

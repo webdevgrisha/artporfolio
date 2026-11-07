@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { GallerySection } from "@/entities/gallery";
-import { useCreateSection } from "@/features/edit-gallery/section/model/sectionMutations";
+import { useCreateSection } from "@/features/edit-gallery/section/model/useCreateSection";
 
 import { csrfHandler, problem } from "../../../../support/handlers";
 import { recordRequests, server } from "../../../../support/server";

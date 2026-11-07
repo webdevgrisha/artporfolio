@@ -82,7 +82,7 @@ export function TranslationField({
         original={original}
         status={getTranslationHint({ failed, status, text: text.trim() })}
         statusId={statusId}
-        isDisabled={isSaving}
+        disabled={isSaving}
         onTranslateAnew={() =>
           onTranslateAnew(status === "edited" || status === "outdated" || Boolean(dirtyFields[key]))
         }

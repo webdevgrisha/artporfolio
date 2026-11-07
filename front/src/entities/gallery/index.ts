@@ -74,3 +74,5 @@ export {
   workSaleStatuses,
 } from "./model/galleryWork";
 export type { GalleryWorkUsage, WorkUsage, WorkUsages } from "./model/galleryWorkUsage";
+export { formatWorkDate, monthOptions } from "./model/workDate";
+export { matchesWorkQuery } from "./model/workSearch";

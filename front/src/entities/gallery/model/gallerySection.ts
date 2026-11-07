@@ -3,7 +3,7 @@ import { z } from "zod";
 /** The most subsections one section may have (backend/src/modules/gallery/sections/schema.ts). */
 export const maxSubsections = 30;
 
-export const subsectionSchema = z.object({
+const subsectionSchema = z.object({
   id: z.string(),
   title: z.string(),
 });

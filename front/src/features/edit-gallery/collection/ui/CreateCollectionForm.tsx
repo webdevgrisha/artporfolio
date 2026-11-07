@@ -9,7 +9,7 @@ import {
   collectionFormSchema,
   emptyCollectionFormValues,
 } from "../model/collectionFormSchema";
-import { useCreateCollection } from "../model/collectionMutations";
+import { useCreateCollection } from "../model/useCreateCollection";
 import { CollectionFields } from "./CollectionFields";
 
 interface CreateCollectionFormProps {
