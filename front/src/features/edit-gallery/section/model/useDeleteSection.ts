@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   deleteGallerySection,
-  type GallerySectionSummary,
+  type GallerySection,
   gallerySectionsQueryKey,
 } from "@/entities/gallery";
 
@@ -27,7 +27,7 @@ export function useDeleteSection() {
         toastId: "gallery-section-delete",
       },
     },
-    mutationFn: ({ id }: GallerySectionSummary) => deleteGallerySection(id),
+    mutationFn: ({ id }: GallerySection) => deleteGallerySection(id),
     mutationKey: deleteSectionMutationKey,
     onSettled: () => queryClient.invalidateQueries({ queryKey: gallerySectionsQueryKey }),
   });

@@ -1,22 +1,22 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import { type ProjectsIntro, projectsIntroQuery } from "@/entities/project";
 import type { Tagged } from "@/shared/api/http";
-import { toTranslationsBody } from "@/shared/lib/translationsForm";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { LanguageForm } from "@/shared/ui/language-form";
 import { Textarea } from "@/shared/ui/textarea";
 
 import {
-  introLanguageFields,
   maxIntroLength,
   type ProjectsIntroFormValues,
   projectsIntroFormSchema,
-  toProjectsIntroFormValues,
 } from "../model/projectsIntroFormSchema";
 import { saveProjectsIntroFeedback, useSaveProjectsIntro } from "../model/useSaveProjectsIntro";
 import styles from "./EditProjectsIntroForm.module.css";
+
+/** The text a person can edit in every language. */
+const languageFields = [{ key: "text", label: "Основной текст", multiline: true }];
 
 interface EditProjectsIntroFormProps {
   className?: string;
@@ -27,20 +27,16 @@ interface EditProjectsIntroFormProps {
 /** The text above the list of projects on the site. */
 export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFormProps) {
   const form = useForm<ProjectsIntroFormValues>({
-    defaultValues: toProjectsIntroFormValues(intro.data),
+    defaultValues: intro.data,
     resolver: zodResolver(projectsIntroFormSchema),
   });
   const saveIntro = useSaveProjectsIntro();
-  const { editForm, saved } = useSavedForm({
+  const { editForm } = useSavedForm({
     form,
     initial: intro,
     query: projectsIntroQuery,
-    save: ({ text, translations }, etag) =>
-      saveIntro.mutateAsync({
-        etag,
-        intro: { text, translations: toTranslationsBody(translations) },
-      }),
-    toValues: toProjectsIntroFormValues,
+    save: (values, etag) => saveIntro.mutateAsync({ etag, intro: values }),
+    toValues: (data) => data,
     toastId: saveProjectsIntroFeedback.toastId,
   });
   const {
@@ -49,26 +45,20 @@ export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFor
   } = form;
 
   return (
-    <FormProvider {...form}>
+    <LanguageForm resource={"projects-intro"} fields={languageFields}>
       <EditForm className={className} {...editForm}>
-        <LanguageForm
-          fields={introLanguageFields}
-          isSaving={editForm.isSaving}
-          saved={saved.data.translations}
-        >
-          <Textarea
-            className={styles.text}
-            label="Основной текст"
-            hint={`До ${String(maxIntroLength)} символов. Абзацы разделяйте пустой строкой`}
-            placeholder="Например: о каких проектах эта страница"
-            rows={12}
-            disabled={editForm.isSaving}
-            error={errors.text?.message}
-            isModified={Boolean(dirtyFields.text)}
-            {...register("text")}
-          />
-        </LanguageForm>
+        <Textarea
+          className={styles.text}
+          label="Основной текст"
+          hint={`До ${String(maxIntroLength)} символов. Абзацы разделяйте пустой строкой`}
+          placeholder="Например: о каких проектах эта страница"
+          rows={12}
+          disabled={editForm.isSaving}
+          error={errors.text?.message}
+          isModified={Boolean(dirtyFields.text)}
+          {...register("text")}
+        />
       </EditForm>
-    </FormProvider>
+    </LanguageForm>
   );
 }

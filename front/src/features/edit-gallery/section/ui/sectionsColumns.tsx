@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { GallerySectionSummary, WorkUsages } from "@/entities/gallery";
+import type { GallerySection, WorkUsages } from "@/entities/gallery";
 import { gallerySectionPath } from "@/shared/config/routes";
 import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
 import { usageOf } from "../../model/workUsage";
@@ -8,7 +8,7 @@ import styles from "./SectionsList.module.css";
 interface SectionsColumnsParams {
   /** The sections being deleted, by id. */
   deletingIds: readonly string[];
-  onDelete: (section: GallerySectionSummary) => void;
+  onDelete: (section: GallerySection) => void;
   /** How many works each section has, its subsections' included, by its id. */
   usages: WorkUsages;
 }
@@ -18,7 +18,7 @@ export function sectionsColumns({
   deletingIds,
   onDelete,
   usages,
-}: SectionsColumnsParams): ColumnDef<TableRow<GallerySectionSummary>>[] {
+}: SectionsColumnsParams): ColumnDef<TableRow<GallerySection>>[] {
   return [
     positionColumn({ isSortable: false }),
     {

@@ -1,5 +1,5 @@
 import React from "react";
-import type { GallerySectionSummary, WorkUsages } from "@/entities/gallery";
+import type { GallerySection, WorkUsages } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
 import { useConfirmation } from "@/shared/lib/useConfirmation";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
@@ -14,7 +14,7 @@ import { sectionsColumns } from "./sectionsColumns";
 interface SectionsListProps {
   className?: string;
   /** Sorted by title, as the site shows them. */
-  sections: readonly GallerySectionSummary[];
+  sections: readonly GallerySection[];
   /** How many works each section has, its subsections' included, by its id. */
   usages: WorkUsages;
 }

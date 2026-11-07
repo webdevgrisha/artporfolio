@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-import type { ProjectSummary } from "@/entities/project";
+import type { Project } from "@/entities/project";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { DragHandle, MoveButtons, useSortableRow } from "@/shared/ui/sortable";
 
@@ -14,7 +14,7 @@ interface ProjectsOrderRowProps {
   isModified: boolean;
   onMoveDown: () => void;
   onMoveUp: () => void;
-  project: ProjectSummary;
+  project: Project;
 }
 
 /** One project of the order: dragged by its handle, or moved with the arrow buttons. */

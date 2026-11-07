@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { translationsSchema } from "@/shared/api/translations";
-
 /** The most materials the gallery may have (backend/src/modules/gallery/materials/schema.ts). */
 export const maxMaterials = 100;
 
@@ -14,7 +12,7 @@ export type GalleryMaterial = z.infer<typeof galleryMaterialSchema>;
 
 /** Every material of the gallery, sorted by title; there are none until they are first saved. */
 export const galleryMaterialsSchema = z
-  .object({ materials: z.array(galleryMaterialSchema), translations: translationsSchema })
-  .transform(({ materials, translations }) => ({ items: materials, translations }));
+  .object({ materials: z.array(galleryMaterialSchema) })
+  .transform(({ materials }) => materials);
 
 export type GalleryMaterials = z.infer<typeof galleryMaterialsSchema>;

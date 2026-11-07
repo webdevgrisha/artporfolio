@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { listPhotoSchema, photoSchema } from "@/shared/api/photo";
-import { translationsSchema } from "@/shared/api/translations";
 
 /** The earliest year a work can be dated (backend/src/modules/gallery/works/schema.ts). */
 export const minWorkYear = 1900;
@@ -114,8 +113,6 @@ export const galleryWorkSchema = z.object({
   saleStatus: z.enum(workSaleStatuses),
   /** Null for a work without a price. The price of a set is for all its works together. */
   price: workPriceSchema.nullable(),
-  /** The title, the description, the city and the photo's alt text in the other languages. */
-  translations: translationsSchema,
   /** When the work was created, ISO 8601. */
   createdAt: z.iso.datetime(),
   /** When the admin last saved the work, ISO 8601. */
@@ -125,13 +122,12 @@ export const galleryWorkSchema = z.object({
 export type GalleryWork = z.infer<typeof galleryWorkSchema>;
 
 /**
- * A work in the list of works: everything but its description, its process photos and its
- * translations, which only the page of one work loads.
+ * A work in the list of works: everything but its description and its process photos, which only
+ * the page of one work loads.
  */
 export const galleryWorkSummarySchema = galleryWorkSchema.omit({
   description: true,
   processPhotos: true,
-  translations: true,
 });
 
 export type GalleryWorkSummary = z.infer<typeof galleryWorkSummarySchema>;

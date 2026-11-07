@@ -9,7 +9,6 @@ import {
   replaceProject,
 } from "@/entities/project";
 import { toPhotoListItems } from "@/shared/lib/photoListForm";
-import { toTranslationsBody } from "@/shared/lib/translationsForm";
 
 import { getCreateProjectErrorMessage, getSaveProjectErrorMessage } from "../lib/saveErrorMessages";
 import type { ProjectFormValues } from "./projectFormSchema";
@@ -32,15 +31,8 @@ async function toProjectBody({
   link,
   photos,
   title,
-  translations,
 }: ProjectFormValues): Promise<ProjectBody> {
-  return {
-    description,
-    link,
-    photos: await toPhotoListItems(photos),
-    title,
-    translations: toTranslationsBody(translations),
-  };
+  return { description, link, photos: await toPhotoListItems(photos), title };
 }
 
 /** The toasts of a project form replace each other: a later save replaces an error. */

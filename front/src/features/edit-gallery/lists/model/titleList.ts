@@ -3,27 +3,14 @@ import { z } from "zod";
 
 import type { GalleryWorkUsage, WorkUsages } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
-import type { Translations, TranslationsBody } from "@/shared/api/translations";
-import {
-  type TranslationValues,
-  toTranslationValues,
-  translationValuesSchema,
-} from "@/shared/lib/translationsForm";
-import type { TranslatedField } from "@/shared/ui/language-form";
 
-import { maxTitleLength, refineUniqueTitles, titleSchema } from "../../model/titles";
+import { refineUniqueTitles, titleSchema } from "../../model/titles";
 
 /** A row of a list of titles. */
 export interface TitleItem {
   /** Picked by the form for a new row, so works can refer to it once it is saved. */
   id: string;
   title: string;
-}
-
-/** The list as the server returns it: the rows and their titles in the other languages. */
-export interface TitleListData {
-  items: TitleItem[];
-  translations: Translations;
 }
 
 /**
@@ -35,13 +22,9 @@ export interface TitleListConfig {
   /** The most rows the list may hold. */
   max: number;
   /** Reads the list with its ETag; a save puts the saved list here. */
-  query: UseSuspenseQueryOptions<Tagged<TitleListData>, Error, Tagged<TitleListData>, string[]>;
+  query: UseSuspenseQueryOptions<Tagged<TitleItem[]>, Error, Tagged<TitleItem[]>, string[]>;
   /** Replaces the whole list and returns it as saved, with its new ETag. */
-  replace: (params: {
-    etag: string;
-    items: TitleItem[];
-    translations: TranslationsBody;
-  }) => Promise<Tagged<TitleListData>>;
+  replace: (params: { etag: string; items: TitleItem[] }) => Promise<Tagged<TitleItem[]>>;
   texts: {
     /** E.g. «Добавить материал». */
     add: string;
@@ -67,36 +50,18 @@ export interface TitleListConfig {
     tooMany: string;
   };
   toastId: string;
+  /** The name of the translations of the list on the server. */
+  translationResource: string;
   /** How many works name each row, from the counts of every list. */
   usages: (usage: GalleryWorkUsage) => WorkUsages;
 }
 
 export interface TitleListFormValues {
   items: TitleItem[];
-  /** The titles in the other languages by id; an empty one is translated anew on save. */
-  translations: TranslationValues;
 }
 
-export function toTitleListFormValues({ items, translations }: TitleListData): TitleListFormValues {
-  return {
-    items: items.map(({ id, title }) => ({ id, title })),
-    translations: toTranslationValues(
-      translations,
-      items.map(({ id }) => id),
-    ),
-  };
-}
-
-/** How the form shows the translated titles, for the rows it holds now. */
-export function toTitleLanguageFields(
-  rows: readonly TitleItem[],
-  listField: string,
-): TranslatedField[] {
-  return rows.map(({ id, title }, index) => ({
-    field: id,
-    label: title || "Новая строка",
-    source: `${listField}.${String(index)}.title`,
-  }));
+export function toTitleListFormValues(items: readonly TitleItem[]): TitleListFormValues {
+  return { items: items.map(({ id, title }) => ({ id, title })) };
 }
 
 /** The rules of the form of a list: a title in every row, none twice, at most `max` rows. */
@@ -106,6 +71,5 @@ export function titleListFormSchema({ max, texts }: Pick<TitleListConfig, "max" 
       .array(z.object({ id: z.string(), title: titleSchema }))
       .max(max, texts.tooMany)
       .superRefine(refineUniqueTitles(texts.duplicate)),
-    translations: translationValuesSchema({}, maxTitleLength),
   });
 }

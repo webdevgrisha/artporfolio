@@ -10,7 +10,6 @@ import {
   type WorkUsages,
 } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
-import { toTranslationsBody } from "@/shared/lib/translationsForm";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ColorSwatchInput } from "@/shared/ui/color-swatch";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
@@ -25,7 +24,6 @@ import {
   defaultColorHex,
   toColorsFormValues,
 } from "../model/colorsFormSchema";
-import { toTitleLanguageFields } from "../model/titleList";
 import { useRowEditing } from "../model/useRowEditing";
 import { saveColorsFeedback, useSaveColors } from "../model/useSaveColors";
 import { AddTitleField } from "./AddTitleField";
@@ -66,8 +64,7 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
     initial: colors,
     query: galleryColorsQuery,
     related: [galleryWorkUsageQuery.queryKey],
-    save: ({ colors, translations }, etag) =>
-      saveColors.mutateAsync({ colors, etag, translations: toTranslationsBody(translations) }),
+    save: (values, etag) => saveColors.mutateAsync({ colors: values.colors, etag }),
     toValues: toColorsFormValues,
     toastId: saveColorsFeedback.toastId,
   });
@@ -91,7 +88,7 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
   // The swatch of the color being added; each new color starts from the neutral one.
   const [newHex, setNewHex] = React.useState(defaultColorHex);
   const addFieldRef = React.useRef<HTMLInputElement>(null);
-  const savedColors = new Map(saved.data.items.map((color) => [color.id, color]));
+  const savedColors = new Map(saved.data.map((color) => [color.id, color]));
   const focusAfterUpdate = useFocusAfterUpdate();
   const removal = useRowRemoval((index) => {
     remove(index);
@@ -102,13 +99,12 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
   const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
 
   return (
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <LanguageForm
-          fields={toTitleLanguageFields(rows, "colors")}
-          isSaving={editForm.isSaving}
-          saved={saved.data.translations}
-        >
+    <LanguageForm
+      resource={"gallery-colors"}
+      fields={saved.data.map(({ id, title }) => ({ key: id, label: title }))}
+    >
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
           <div className={styles.root}>
             <AddTitleField
               ref={addFieldRef}
@@ -192,20 +188,20 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
               })}
             </TitleList>
           </div>
-        </LanguageForm>
 
-        <ConfirmDeleteDialog
-          isOpen={removal.pending !== undefined}
-          title={`Удалить цвет «${removedTitle ?? ""}»?`}
-          description={
-            removal.pending
-              ? describeWorkUsage(removal.pending.usage, { item: "цвет", others: "цветов" })
-              : ""
-          }
-          onCancel={removal.cancel}
-          onConfirm={removal.confirm}
-        />
-      </EditForm>
-    </FormProvider>
+          <ConfirmDeleteDialog
+            isOpen={removal.pending !== undefined}
+            title={`Удалить цвет «${removedTitle ?? ""}»?`}
+            description={
+              removal.pending
+                ? describeWorkUsage(removal.pending.usage, { item: "цвет", others: "цветов" })
+                : ""
+            }
+            onCancel={removal.cancel}
+            onConfirm={removal.confirm}
+          />
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }

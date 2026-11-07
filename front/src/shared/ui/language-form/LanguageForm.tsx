@@ -1,61 +1,47 @@
-import type React from "react";
-import { type FieldValues, useFormContext, useFormState } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
 
-import type { Translations } from "@/shared/api/translations";
-import { languageNames, targetLanguages } from "@/shared/config/languages";
-import { countOutdated } from "@/shared/lib/translationsForm";
+import { translationsQuery } from "@/shared/api/translations";
+import { languageNames, type TargetLanguage, targetLanguages } from "@/shared/config/languages";
+import { getLanguageMark } from "@/shared/lib/translationsForm";
 import { type FormLanguage, useFormLanguage } from "@/shared/lib/useFormLanguage";
 import { Select } from "@/shared/ui/select";
 
 import styles from "./LanguageForm.module.css";
-import { TranslationFields } from "./TranslationFields";
-
-const russianName = "Русский (оригинал)";
-
-/** A text of the form that the site shows in every language. */
-export interface TranslatedField {
-  /** The name the server gives the text in `translations`. */
-  field: string;
-  label: string;
-  /** Whether the text takes several lines. */
-  multiline?: boolean;
-  /** The path of the form field that holds the text in Russian. */
-  source: string;
-}
+import { type TranslatedField, TranslationForm } from "./TranslationForm";
 
 interface LanguageFormProps {
-  /** The fields of the form in Russian. */
+  /** The form of the resource in Russian. */
   children: React.ReactNode;
   fields: readonly TranslatedField[];
-  isSaving: boolean;
-  /** The translations of the saved resource. */
-  saved: Translations;
+  /** The name of the translations of the resource on the server. */
+  resource: string;
 }
 
 /**
- * Switches a form between its languages. It reads a form with a `translations` field from its
- * context. All the languages are one form with one save: the Russian fields stay mounted while
- * hidden, so switching never loses what was typed.
+ * Switches an edit page between its languages. Every form opened stays mounted while hidden, so
+ * switching never loses what was typed. Each language saves on its own: a translation is a resource
+ * of its own, which the translator also changes in the background.
  */
-export function LanguageForm({ children, fields, isSaving, saved }: LanguageFormProps) {
+export function LanguageForm({ children, fields, resource }: LanguageFormProps) {
   const [language, setLanguage] = useFormLanguage();
-  const { control } = useFormContext<FieldValues>();
-  const { errors } = useFormState({ control });
-  const { translations: translationErrors, ...russianErrors } = errors;
-  const languagesWithErrors = [
-    ...(Object.keys(russianErrors).length > 0 ? [russianName] : []),
-    ...targetLanguages
-      .filter((target) => (translationErrors as FieldValues | undefined)?.[target] !== undefined)
-      .map((target) => languageNames[target]),
-  ];
-  const outdated = targetLanguages.map((target) => countOutdated(saved, target));
-  const outdatedTotal = outdated.reduce((total, count) => total + count, 0);
+  const { data } = useQuery(translationsQuery(resource));
+  const [opened, setOpened] = React.useState<readonly TargetLanguage[]>([]);
+
+  if (language !== "ru" && !opened.includes(language)) {
+    setOpened([...opened, language]);
+  }
+
   const options = [
-    { label: russianName, value: "ru" },
-    ...targetLanguages.map((target, index) => ({
-      label: outdated[index] ? `${languageNames[target]} — устарело` : languageNames[target],
-      value: target,
-    })),
+    { label: "Русский (оригинал)", value: "ru" },
+    ...targetLanguages.map((target) => {
+      const mark = data && getLanguageMark(data, target);
+
+      return {
+        label: mark ? `${languageNames[target]} — ${mark}` : languageNames[target],
+        value: target,
+      };
+    }),
   ];
 
   return (
@@ -63,21 +49,16 @@ export function LanguageForm({ children, fields, isSaving, saved }: LanguageForm
       <Select
         className={styles.language}
         label="Язык"
-        hint={outdatedTotal > 0 ? `Устарело переводов: ${String(outdatedTotal)}` : undefined}
-        disabled={isSaving}
-        error={
-          languagesWithErrors.length > 0
-            ? `Есть ошибки: ${languagesWithErrors.join(", ")}`
-            : undefined
-        }
         options={options}
         value={language}
         onChange={(value) => setLanguage(value as FormLanguage)}
       />
       <div hidden={language !== "ru"}>{children}</div>
-      {language !== "ru" && (
-        <TranslationFields fields={fields} isSaving={isSaving} language={language} saved={saved} />
-      )}
+      {opened.map((target) => (
+        <div key={target} hidden={language !== target}>
+          <TranslationForm fields={fields} language={target} resource={resource} />
+        </div>
+      ))}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { GallerySectionSummary } from "@/entities/gallery";
+import type { GallerySection } from "@/entities/gallery";
 import { containsText } from "@/shared/lib/containsText";
 
 /**
@@ -9,7 +9,7 @@ export const sectionsSortableColumns = ["subsections", "works"] as const;
 
 /** Whether the title of the section or of one of its subsections contains the query, in any case. */
 export function matchesSectionQuery(
-  { subsections, title }: GallerySectionSummary,
+  { subsections, title }: GallerySection,
   query: string,
 ): boolean {
   return [title, ...subsections.map((subsection) => subsection.title)].some((text) =>

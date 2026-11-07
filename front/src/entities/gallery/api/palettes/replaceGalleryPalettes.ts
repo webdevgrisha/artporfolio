@@ -1,5 +1,4 @@
 import { http, type Tagged } from "@/shared/api/http";
-import type { TranslationsBody } from "@/shared/api/translations";
 
 import { type GalleryPalettes, galleryPalettesSchema } from "../../model/galleryPalettes";
 
@@ -7,9 +6,7 @@ interface ReplaceGalleryPalettesParams {
   /** The ETag of the palettes the new list was made from. */
   etag: string;
   /** In any order: the server sorts them by title. A saved palette left out is deleted. */
-  palettes: GalleryPalettes["items"];
-  /** The titles in the other languages by id; the server makes those sent as null. */
-  translations: TranslationsBody;
+  palettes: GalleryPalettes;
 }
 
 /**
@@ -19,11 +16,10 @@ interface ReplaceGalleryPalettesParams {
 export function replaceGalleryPalettes({
   etag,
   palettes,
-  translations,
 }: ReplaceGalleryPalettesParams): Promise<Tagged<GalleryPalettes>> {
   return http.putIfMatch({
     path: "/gallery/palettes",
-    body: { palettes, translations },
+    body: { palettes },
     etag,
     schema: galleryPalettesSchema,
   });

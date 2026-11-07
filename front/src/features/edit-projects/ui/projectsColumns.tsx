@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { ProjectSummary } from "@/entities/project";
+import type { Project } from "@/entities/project";
 import { projectPath } from "@/shared/config/routes";
 import { compareText } from "@/shared/lib/compareText";
 import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
@@ -14,14 +14,14 @@ import styles from "./ProjectsTable.module.css";
 interface ProjectsColumnsParams {
   /** The projects being deleted, by id. */
   deletingIds: readonly string[];
-  onDelete: (project: ProjectSummary) => void;
+  onDelete: (project: Project) => void;
 }
 
 /** The columns of the table of projects. */
 export function projectsColumns({
   deletingIds,
   onDelete,
-}: ProjectsColumnsParams): ColumnDef<TableRow<ProjectSummary>>[] {
+}: ProjectsColumnsParams): ColumnDef<TableRow<Project>>[] {
   return [
     positionColumn({ isSortable: true }),
     {

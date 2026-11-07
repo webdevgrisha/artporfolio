@@ -49,7 +49,7 @@ interface PostVoidOptions extends HttpOptions {
 interface RequestOptions extends HttpOptions {
   /** Sent as JSON; `FormData` is sent as `multipart/form-data`. */
   body?: object;
-  method: "DELETE" | "GET" | "POST" | "PUT";
+  method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 }
 
 function withIfMatch(headers: HeadersInit | undefined, etag: string): Headers {
@@ -105,6 +105,25 @@ class Http {
     return { data: schema.parse(await response.json()), etag: readETag(response) };
   }
 
+  async patch<TBody extends object, TSchema extends ZodType>({
+    body,
+    path,
+    schema,
+    ...options
+  }: BodyOptions<TBody, TSchema>): Promise<z.output<TSchema>> {
+    const response = await this.request(path, {
+      ...options,
+      body,
+      method: "PATCH",
+    });
+
+    return schema.parse(await response.json());
+  }
+
+  /**
+   * A PUT that replaces the representation only while it still has the tag `etag`; the server
+   * rejects it with 412 otherwise. Returns the new representation and its tag.
+   */
   async post<TBody extends object, TSchema extends ZodType>({
     body,
     path,

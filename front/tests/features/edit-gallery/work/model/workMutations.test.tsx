@@ -3,10 +3,10 @@ import { renderHook } from "@testing-library/react";
 import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
+
 import type { GalleryWork } from "@/entities/gallery";
 import { emptyWorkFormValues } from "@/features/edit-gallery/work/model/workFormValues";
 import { useCreateWork, useSaveWork } from "@/features/edit-gallery/work/model/workMutations";
-import { targetLanguages } from "@/shared/config/languages";
 import { savedImage } from "@/shared/lib/imageFieldValue";
 
 import { csrfHandler, problem, uploadId, uploadsHandler } from "../../../../support/handlers";
@@ -71,7 +71,6 @@ function apiWork(title: string): GalleryWork {
     month: 4,
     country: null,
     city: "",
-    translations: {},
   };
 }
 
@@ -140,12 +139,6 @@ describe("useCreateWork", () => {
           month: 4,
           country: null,
           city: "",
-          translations: Object.fromEntries(
-            targetLanguages.map((language) => [
-              language,
-              { alt: null, city: null, description: null, title: null },
-            ]),
-          ),
         },
         ifMatch: null,
         ifNoneMatch: "*",

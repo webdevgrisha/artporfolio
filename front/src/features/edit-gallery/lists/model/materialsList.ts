@@ -7,8 +7,7 @@ export const materialsList: TitleListConfig = {
   getSaveErrorMessage: getSaveMaterialsErrorMessage,
   max: maxMaterials,
   query: galleryMaterialsQuery,
-  replace: ({ etag, items, translations }) =>
-    replaceGalleryMaterials({ etag, materials: items, translations }),
+  replace: ({ etag, items }) => replaceGalleryMaterials({ etag, materials: items }),
   texts: {
     add: "Добавить материал",
     duplicate: "Такой материал уже есть",
@@ -23,5 +22,6 @@ export const materialsList: TitleListConfig = {
     tooMany: `Не больше ${String(maxMaterials)} материалов`,
   },
   toastId: "gallery-materials-save",
+  translationResource: "gallery-materials",
   usages: (usage) => usage.materials,
 };

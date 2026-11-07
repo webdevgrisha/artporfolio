@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 
 import {
   type GallerySection,
@@ -15,7 +15,6 @@ import {
   type SectionFormValues,
   sectionFormSchema,
   toSectionFormValues,
-  toSectionLanguageFields,
 } from "../model/sectionFormSchema";
 import { saveSectionToastId, useSaveSection } from "../model/sectionMutations";
 import { SectionFields } from "./SectionFields";
@@ -45,24 +44,24 @@ export function EditSectionForm({ className, section, usages }: EditSectionFormP
     toastId: saveSectionToastId,
   });
 
-  const subsections = useWatch({ control: form.control, name: "subsections" });
-
   return (
-    // The fields read the form from the context.
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <LanguageForm
-          fields={toSectionLanguageFields(subsections)}
-          isSaving={editForm.isSaving}
-          saved={saved.data.translations}
-        >
+    <LanguageForm
+      resource={`gallery-section-${section.data.id}`}
+      fields={[
+        { key: "title", label: "Название" },
+        ...saved.data.subsections.map(({ id, title }) => ({ key: id, label: title })),
+      ]}
+    >
+      {/* The fields read the form from the context. */}
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
           <SectionFields
             isSaving={editForm.isSaving}
             savedSubsections={saved.data.subsections}
             usages={usages}
           />
-        </LanguageForm>
-      </EditForm>
-    </FormProvider>
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }

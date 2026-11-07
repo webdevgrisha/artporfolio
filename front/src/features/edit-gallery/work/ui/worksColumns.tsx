@@ -1,8 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type {
-  GalleryCollectionSummary,
+  GalleryCollection,
   GalleryMaterial,
-  GallerySectionSummary,
+  GallerySection,
   GalleryWorkSummary,
 } from "@/entities/gallery";
 import { galleryWorkPath } from "@/shared/config/routes";
@@ -22,14 +22,14 @@ import { WorkTitleCell } from "./WorkTitleCell";
 
 interface WorksColumnsParams {
   /** The collections of the gallery, to name the collection of each work. */
-  collections: readonly GalleryCollectionSummary[];
+  collections: readonly GalleryCollection[];
   /** The works being deleted, by id. */
   deletingIds: readonly string[];
   /** The materials of the gallery, to name the materials of each work. */
   materials: readonly GalleryMaterial[];
   onDelete: (work: GalleryWorkSummary) => void;
   /** The sections of the gallery, to name the sections of each work. */
-  sections: readonly GallerySectionSummary[];
+  sections: readonly GallerySection[];
 }
 
 /** The columns of the table of works. */

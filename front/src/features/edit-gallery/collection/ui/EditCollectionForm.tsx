@@ -15,11 +15,17 @@ import { LanguageForm } from "@/shared/ui/language-form";
 import {
   type CollectionFormValues,
   collectionFormSchema,
-  collectionLanguageFields,
   toCollectionFormValues,
 } from "../model/collectionFormSchema";
 import { saveCollectionToastId, useSaveCollection } from "../model/collectionMutations";
 import { CollectionFields } from "./CollectionFields";
+
+/** The texts of a collection a person can edit in every language. */
+const languageFields = [
+  { key: "title", label: "Название" },
+  { key: "description", label: "Описание", multiline: true },
+  { key: "alt", label: "Описание обложки" },
+];
 
 interface EditCollectionFormProps {
   className?: string;
@@ -48,22 +54,18 @@ export function EditCollectionForm({ className, collection, works }: EditCollect
   });
 
   return (
-    // The fields read the form from the context.
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <LanguageForm
-          fields={collectionLanguageFields}
-          isSaving={editForm.isSaving}
-          saved={saved.data.translations}
-        >
+    <LanguageForm resource={`gallery-collection-${collection.data.id}`} fields={languageFields}>
+      {/* The fields read the form from the context. */}
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
           <CollectionFields
             isSaving={editForm.isSaving}
             savedCover={saved.data.cover}
             works={works}
             collectionId={collection.data.id}
           />
-        </LanguageForm>
-      </EditForm>
-    </FormProvider>
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }

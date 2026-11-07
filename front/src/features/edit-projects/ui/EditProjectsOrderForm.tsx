@@ -2,7 +2,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import React from "react";
 import { useForm, useWatch } from "react-hook-form";
 
-import { type ProjectSummary, projectsOrderQuery, projectsQuery } from "@/entities/project";
+import { type Project, projectsOrderQuery, projectsQuery } from "@/entities/project";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import {
@@ -23,7 +23,7 @@ interface EditProjectsOrderFormProps {
   /** The order as stored on the server when the form opens, with its ETag. */
   order: Tagged<string[]>;
   /** The projects, for their titles and covers; their own order does not count. */
-  projects: readonly ProjectSummary[];
+  projects: readonly Project[];
 }
 
 interface ProjectsOrderFormValues {

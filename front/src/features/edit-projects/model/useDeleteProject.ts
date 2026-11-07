@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { deleteProject, type ProjectSummary, projectsQueryKey } from "@/entities/project";
+import { deleteProject, type Project, projectsQueryKey } from "@/entities/project";
 
 import { usePendingIds } from "@/shared/lib/usePendingIds";
 
@@ -23,7 +23,7 @@ export function useDeleteProject() {
         toastId: "project-delete",
       },
     },
-    mutationFn: ({ id }: ProjectSummary) => deleteProject(id),
+    mutationFn: ({ id }: Project) => deleteProject(id),
     mutationKey: deleteProjectMutationKey,
     onSettled: () => queryClient.invalidateQueries({ queryKey: projectsQueryKey }),
   });

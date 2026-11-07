@@ -16,6 +16,7 @@ import styles from "./AdminLayout.module.css";
 import { AdminSidebar } from "./AdminSidebar";
 import { MobileMenuButton } from "./MobileMenuButton";
 import { NavigationProgress } from "./NavigationProgress";
+import { TranslationBanner } from "./TranslationBanner";
 
 const sidebarId = "admin-sidebar";
 
@@ -69,6 +70,7 @@ export function AdminLayout() {
 
         <main className={styles.page}>
           <title>{documentTitle(pageTitle)}</title>
+          <TranslationBanner />
           <div className={styles.pageHeader}>
             <div className={styles.titleRow}>
               <h1 className={styles.title}>{pageTitle}</h1>

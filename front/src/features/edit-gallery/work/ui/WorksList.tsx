@@ -1,9 +1,9 @@
 import React from "react";
 
 import type {
-  GalleryCollectionSummary,
+  GalleryCollection,
   GalleryMaterial,
-  GallerySectionSummary,
+  GallerySection,
   GalleryWorkSummary,
 } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
@@ -20,11 +20,11 @@ interface WorksListProps {
   /** In the order the site shows them: the latest first. */
   works: readonly GalleryWorkSummary[];
   /** The sections of the gallery, to name the sections of each work. */
-  sections: readonly GallerySectionSummary[];
+  sections: readonly GallerySection[];
   /** The materials of the gallery, to name the materials of each work. */
   materials: readonly GalleryMaterial[];
   /** The collections of the gallery, to name the collection of each work. */
-  collections: readonly GalleryCollectionSummary[];
+  collections: readonly GalleryCollection[];
 }
 
 /** Every work, in a table; a work opens by the pencil and is deleted after a confirmation. */

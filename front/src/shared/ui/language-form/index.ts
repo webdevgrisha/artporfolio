@@ -1,1 +1,2 @@
-export { LanguageForm, type TranslatedField } from "./LanguageForm";
+export { LanguageForm } from "./LanguageForm";
+export type { TranslatedField } from "./TranslationForm";

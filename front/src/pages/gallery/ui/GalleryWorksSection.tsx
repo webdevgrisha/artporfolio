@@ -28,7 +28,7 @@ function GalleryWorks() {
     <WorksList
       works={works}
       sections={sections}
-      materials={materials.data.items}
+      materials={materials.data}
       collections={collections}
     />
   );

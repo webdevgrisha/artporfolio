@@ -1,12 +1,9 @@
 import { http } from "@/shared/api/http";
 
-import {
-  type GallerySectionSummary,
-  gallerySectionsResponseSchema,
-} from "../../model/gallerySection";
+import { type GallerySection, gallerySectionsResponseSchema } from "../../model/gallerySection";
 
 /** Every section, sorted by title. */
-export async function getGallerySections(): Promise<GallerySectionSummary[]> {
+export async function getGallerySections(): Promise<GallerySection[]> {
   const { sections } = await http.get({
     path: "/gallery/sections",
     schema: gallerySectionsResponseSchema,

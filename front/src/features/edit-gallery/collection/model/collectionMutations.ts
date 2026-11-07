@@ -10,7 +10,6 @@ import {
   replaceGalleryCollection,
 } from "@/entities/gallery";
 import { toPhotoBody } from "@/shared/lib/photoForm";
-import { toTranslationsBody } from "@/shared/lib/translationsForm";
 
 import {
   getCreateCollectionErrorMessage,
@@ -41,7 +40,6 @@ async function toCollectionBody(values: CollectionFormValues): Promise<GalleryCo
     startYear: Number(startYear),
     title,
     workIds,
-    translations: toTranslationsBody(values.translations),
   };
 }
 

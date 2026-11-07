@@ -1,13 +1,11 @@
 import type { GalleryWork, WorkSize } from "@/entities/gallery";
 import { toPhotoFormValues } from "@/shared/lib/photoForm";
 import { toPhotoListRows } from "@/shared/lib/photoListForm";
-import { toTranslationValues } from "@/shared/lib/translationsForm";
 
 import { toIdSet } from "../../model/idSet";
 import { formatSide } from "./workDisplay";
 import type { WorkFormValues } from "./workFormSchema";
 import { parseSide } from "./workSide";
-import { workTranslatedFields } from "./workTranslation";
 
 /** The values of a new work: every field empty. */
 export const emptyWorkFormValues: WorkFormValues = {
@@ -33,7 +31,6 @@ export const emptyWorkFormValues: WorkFormValues = {
   saleStatus: "available",
   price: "",
   discountPercent: "",
-  translations: toTranslationValues({}, workTranslatedFields),
 };
 
 /** The values of a work as stored on the server. */
@@ -56,7 +53,6 @@ export function toWorkFormValues({
   sectionIds,
   size,
   title,
-  translations,
   year,
 }: GalleryWork): WorkFormValues {
   return {
@@ -82,7 +78,6 @@ export function toWorkFormValues({
     price: price === null ? "" : String(price.amount),
     discountPercent:
       price === null || price.discountPercent === null ? "" : String(price.discountPercent),
-    translations: toTranslationValues(translations, workTranslatedFields),
   };
 }
 

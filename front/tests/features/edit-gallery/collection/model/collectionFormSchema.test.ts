@@ -60,7 +60,6 @@ describe("toCollectionFormValues", () => {
       endYear: null,
       startYear: 2024,
       title: "Саванна",
-      translations: {},
       workIds: ["work-1"],
     } as unknown as GalleryCollection;
 

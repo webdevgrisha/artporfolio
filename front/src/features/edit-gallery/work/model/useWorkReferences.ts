@@ -2,11 +2,11 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { type CurrencyRates, currencyRatesQuery } from "@/entities/currency";
 import {
-  type GalleryCollectionSummary,
+  type GalleryCollection,
   type GalleryColor,
   type GalleryMaterial,
   type GalleryPalette,
-  type GallerySectionSummary,
+  type GallerySection,
   galleryCollectionsQuery,
   galleryColorsQuery,
   galleryMaterialsQuery,
@@ -16,13 +16,13 @@ import {
 
 /** The lists of the gallery a work refers to, each sorted as the site lists it. */
 export interface WorkReferences {
-  collections: readonly GalleryCollectionSummary[];
+  collections: readonly GalleryCollection[];
   colors: readonly GalleryColor[];
   materials: readonly GalleryMaterial[];
   palettes: readonly GalleryPalette[];
   /** How many units of each currency in use one US dollar buys. */
   rates: CurrencyRates["rates"];
-  sections: readonly GallerySectionSummary[];
+  sections: readonly GallerySection[];
 }
 
 /** The queries of the lists a work form chooses from: its page loads them, a conflict reloads them. */
@@ -49,9 +49,9 @@ export function useWorkReferences(): WorkReferences {
 
   return {
     collections,
-    colors: colors.data.items,
-    materials: materials.data.items,
-    palettes: palettes.data.items,
+    colors: colors.data,
+    materials: materials.data,
+    palettes: palettes.data,
     rates: rates.data.rates,
     sections,
   };

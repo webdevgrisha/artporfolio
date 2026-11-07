@@ -1,4 +1,4 @@
-import type { ProjectSummary } from "@/entities/project";
+import type { Project } from "@/entities/project";
 import { containsText } from "@/shared/lib/containsText";
 
 /** The columns the table sorts by, as named in the address. */
@@ -14,6 +14,6 @@ export function linkHost(link: string): string {
 }
 
 /** Whether the project's title or link contains the query, in any case. */
-export function matchesQuery({ link, title }: ProjectSummary, query: string): boolean {
+export function matchesQuery({ link, title }: Project, query: string): boolean {
   return containsText(title, query) || containsText(link, query);
 }

@@ -1,7 +1,7 @@
 import type {
-  GalleryCollectionSummary,
+  GalleryCollection,
   GalleryMaterial,
-  GallerySectionSummary,
+  GallerySection,
   GalleryWorkSummary,
 } from "@/entities/gallery";
 import { containsText } from "@/shared/lib/containsText";
@@ -30,7 +30,7 @@ const noCollection = "none";
 function isInSection(
   { sectionIds }: GalleryWorkSummary,
   id: string,
-  sections: readonly GallerySectionSummary[],
+  sections: readonly GallerySection[],
 ): boolean {
   const subsections = sections.find((section) => section.id === id)?.subsections ?? [];
 
@@ -41,9 +41,9 @@ function isInSection(
 
 /** The filters over the table of works, by the lists of the gallery. */
 export function createWorkFilters(
-  collections: readonly GalleryCollectionSummary[],
+  collections: readonly GalleryCollection[],
   materials: readonly GalleryMaterial[],
-  sections: readonly GallerySectionSummary[],
+  sections: readonly GallerySection[],
 ): TableFilter<GalleryWorkSummary>[] {
   return [
     {

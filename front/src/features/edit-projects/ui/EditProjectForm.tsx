@@ -8,11 +8,16 @@ import { LanguageForm } from "@/shared/ui/language-form";
 import {
   type ProjectFormValues,
   projectFormSchema,
-  projectLanguageFields,
   toProjectFormValues,
 } from "../model/projectFormSchema";
 import { saveProjectToastId, useSaveProject } from "../model/projectMutations";
 import { ProjectFields } from "./ProjectFields";
+
+/** The texts of a project a person can edit in every language. */
+const languageFields = [
+  { key: "title", label: "Название" },
+  { key: "description", label: "Описание", multiline: true },
+];
 
 interface EditProjectFormProps {
   className?: string;
@@ -37,17 +42,13 @@ export function EditProjectForm({ className, project }: EditProjectFormProps) {
   });
 
   return (
-    // The fields read the form from the context.
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <LanguageForm
-          fields={projectLanguageFields}
-          isSaving={editForm.isSaving}
-          saved={saved.data.translations}
-        >
+    <LanguageForm resource={`project-${project.data.id}`} fields={languageFields}>
+      {/* The fields read the form from the context. */}
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
           <ProjectFields isSaving={editForm.isSaving} savedPhotos={saved.data.photos} />
-        </LanguageForm>
-      </EditForm>
-    </FormProvider>
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }

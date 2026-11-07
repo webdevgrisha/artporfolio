@@ -3,18 +3,19 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import { type AboutText, aboutTextQuery } from "@/entities/about";
 import type { Tagged } from "@/shared/api/http";
-import { toTranslationsBody } from "@/shared/lib/translationsForm";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { LanguageForm } from "@/shared/ui/language-form";
 
-import {
-  type AboutTextFormValues,
-  aboutLanguageFields,
-  aboutTextFormSchema,
-  toAboutTextFormValues,
-} from "../model/aboutTextFormSchema";
+import { type AboutTextFormValues, aboutTextFormSchema } from "../model/aboutTextFormSchema";
 import { saveAboutTextFeedback, useSaveAboutText } from "../model/useSaveAboutText";
 import { AboutTextFields } from "./AboutTextFields";
+
+/** The texts of the page a person can edit in every language. */
+const languageFields = [
+  { key: "about", label: "О себе", multiline: true },
+  { key: "biography", label: "Биография", multiline: true },
+  { key: "creation", label: "Творчество", multiline: true },
+];
 
 interface EditAboutTextFormProps {
   className?: string;
@@ -24,36 +25,28 @@ interface EditAboutTextFormProps {
 
 export function EditAboutTextForm({ className, text }: EditAboutTextFormProps) {
   const form = useForm<AboutTextFormValues>({
-    defaultValues: toAboutTextFormValues(text.data),
+    defaultValues: text.data,
     resolver: zodResolver(aboutTextFormSchema),
   });
   const saveText = useSaveAboutText();
-  const { editForm, saved } = useSavedForm({
+  const { editForm } = useSavedForm({
     form,
     initial: text,
     query: aboutTextQuery,
     // The server replaces all texts at once.
-    save: (values, etag) =>
-      saveText.mutateAsync({
-        etag,
-        text: { ...values, translations: toTranslationsBody(values.translations) },
-      }),
-    toValues: toAboutTextFormValues,
+    save: (values, etag) => saveText.mutateAsync({ etag, text: values }),
+    toValues: (data) => data,
     toastId: saveAboutTextFeedback.toastId,
   });
 
   return (
-    // The fields read the form from the context.
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <LanguageForm
-          fields={aboutLanguageFields}
-          isSaving={editForm.isSaving}
-          saved={saved.data.translations}
-        >
+    <LanguageForm resource={"about-text"} fields={languageFields}>
+      {/* The fields read the form from the context. */}
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
           <AboutTextFields isSaving={editForm.isSaving} />
-        </LanguageForm>
-      </EditForm>
-    </FormProvider>
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }

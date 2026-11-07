@@ -5,7 +5,6 @@ import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form"
 import { galleryWorkUsageQuery, type WorkUsages } from "@/entities/gallery";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
-import { toTranslationsBody } from "@/shared/lib/translationsForm";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
@@ -13,11 +12,10 @@ import { LanguageForm } from "@/shared/ui/language-form";
 import { useRowRemoval } from "../../model/useRowRemoval";
 import { describeWorkUsage, usageOf } from "../../model/workUsage";
 import {
+  type TitleItem,
   type TitleListConfig,
-  type TitleListData,
   type TitleListFormValues,
   titleListFormSchema,
-  toTitleLanguageFields,
   toTitleListFormValues,
 } from "../model/titleList";
 import { useRowEditing } from "../model/useRowEditing";
@@ -29,7 +27,7 @@ import { TitleListRow } from "./TitleListRow";
 interface EditTitleListFormProps {
   className?: string;
   /** The list as stored on the server when the form opens, with its ETag. */
-  data: Tagged<TitleListData>;
+  data: Tagged<TitleItem[]>;
   list: TitleListConfig;
   /** How many works name each row, by its id. */
   usages: WorkUsages;
@@ -58,8 +56,7 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
     initial: data,
     query: list.query,
     related: [galleryWorkUsageQuery.queryKey],
-    save: ({ items, translations }, etag) =>
-      saveList.mutateAsync({ etag, items, translations: toTranslationsBody(translations) }),
+    save: (values, etag) => saveList.mutateAsync({ etag, items: values.items }),
     toValues: toTitleListFormValues,
     toastId: list.toastId,
   });
@@ -82,7 +79,7 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
     validate: (index) => void trigger(`items.${index}.title`),
   });
   const addFieldRef = React.useRef<HTMLInputElement>(null);
-  const savedTitles = new Map(saved.data.items.map(({ id, title }) => [id, title]));
+  const savedTitles = new Map(saved.data.map(({ id, title }) => [id, title]));
   const focusAfterUpdate = useFocusAfterUpdate();
   const removal = useRowRemoval((index) => {
     remove(index);
@@ -93,13 +90,12 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
   const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
 
   return (
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <LanguageForm
-          fields={toTitleLanguageFields(rows, "items")}
-          isSaving={editForm.isSaving}
-          saved={saved.data.translations}
-        >
+    <LanguageForm
+      resource={list.translationResource}
+      fields={saved.data.map(({ id, title }) => ({ key: id, label: title }))}
+    >
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
           <div className={styles.root}>
             <AddTitleField
               ref={addFieldRef}
@@ -155,23 +151,23 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
               })}
             </TitleList>
           </div>
-        </LanguageForm>
 
-        <ConfirmDeleteDialog
-          isOpen={removal.pending !== undefined}
-          title={`Удалить ${texts.rowFallback} «${removedTitle ?? ""}»?`}
-          description={
-            removal.pending
-              ? describeWorkUsage(removal.pending.usage, {
-                  item: texts.rowFallback,
-                  others: texts.others,
-                })
-              : ""
-          }
-          onCancel={removal.cancel}
-          onConfirm={removal.confirm}
-        />
-      </EditForm>
-    </FormProvider>
+          <ConfirmDeleteDialog
+            isOpen={removal.pending !== undefined}
+            title={`Удалить ${texts.rowFallback} «${removedTitle ?? ""}»?`}
+            description={
+              removal.pending
+                ? describeWorkUsage(removal.pending.usage, {
+                    item: texts.rowFallback,
+                    others: texts.others,
+                  })
+                : ""
+            }
+            onCancel={removal.cancel}
+            onConfirm={removal.confirm}
+          />
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }

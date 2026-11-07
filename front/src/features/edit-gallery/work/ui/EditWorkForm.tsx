@@ -9,8 +9,15 @@ import { type WorkReferences, workReferenceQueries } from "../model/useWorkRefer
 import { type WorkFormValues, workFormSchema } from "../model/workFormSchema";
 import { toWorkFormValues } from "../model/workFormValues";
 import { saveWorkToastId, useSaveWork } from "../model/workMutations";
-import { workLanguageFields } from "../model/workTranslation";
 import { WorkFields } from "./WorkFields";
+
+/** The texts of a work a person can edit in every language. */
+const languageFields = [
+  { key: "title", label: "Название" },
+  { key: "description", label: "Описание", multiline: true },
+  { key: "city", label: "Город" },
+  { key: "alt", label: "Описание фото" },
+];
 
 interface EditWorkFormProps {
   className?: string;
@@ -38,22 +45,18 @@ export function EditWorkForm({ className, references, work }: EditWorkFormProps)
   });
 
   return (
-    // The fields read the form from the context.
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <LanguageForm
-          fields={workLanguageFields}
-          isSaving={editForm.isSaving}
-          saved={saved.data.translations}
-        >
+    <LanguageForm resource={`gallery-work-${work.data.id}`} fields={languageFields}>
+      {/* The fields read the form from the context. */}
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
           <WorkFields
             isSaving={editForm.isSaving}
             savedPhoto={saved.data.photo}
             savedProcessPhotos={saved.data.processPhotos}
             references={references}
           />
-        </LanguageForm>
-      </EditForm>
-    </FormProvider>
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }
