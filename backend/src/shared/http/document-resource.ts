@@ -70,8 +70,11 @@ export function documentResource<TData extends object>({
  * The routes of a resource: reading it is public, as the site shows it to every visitor. A change
  * replaces all of it, and only what the client read: it sends the ETag in If-Match.
  */
-export function documentResourceRouter<TData extends object>(
-  resource: DocumentResource<TData>,
+export function documentResourceRouter<TData extends object, TBody = TData>(
+  resource: {
+    get(): Promise<Tagged<TData>>;
+    replace(body: TBody, ifMatch: string): Promise<Tagged<TData>>;
+  },
   bodySchema: ZodType,
 ): Router {
   const read: RequestHandler<object, TData> = async (_request, response) => {
@@ -80,7 +83,7 @@ export function documentResourceRouter<TData extends object>(
     response.status(200).set("ETag", etag).json(data);
   };
 
-  const replace: RequestHandler<object, TData, TData> = async (request, response) => {
+  const replace: RequestHandler<object, TData, TBody> = async (request, response) => {
     const { data, etag } = await resource.replace(request.body, ifMatchHeader(request));
 
     response.status(200).set("ETag", etag).json(data);

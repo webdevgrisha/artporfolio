@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+import { translationsBodySchema } from "#shared/i18n/translations";
+
+/** The limit of each text. */
+const aboutTextLimits = {
+  about: 500,
+  biography: 2_000,
+  creation: 2_000,
+};
+
 /**
  * Plain text: no HTML or Markdown. Paragraphs are separated by a blank line. It cannot be empty:
  * the page looks unfinished without any of its sections.
@@ -11,11 +20,13 @@ function aboutText(maxLength: number) {
 /** The texts of the About page; every text is sent. */
 export const aboutTextBodySchema = z.strictObject({
   /** The short introduction next to «My photo». */
-  about: aboutText(500),
+  about: aboutText(aboutTextLimits.about),
   /** The «Biography» section. */
-  biography: aboutText(2_000),
+  biography: aboutText(aboutTextLimits.biography),
   /** The «Artistic creation» section. */
-  creation: aboutText(2_000),
+  creation: aboutText(aboutTextLimits.creation),
+  /** The texts above in the other languages; the server makes those not written by a person. */
+  translations: translationsBodySchema(aboutTextLimits),
 });
 
 /**

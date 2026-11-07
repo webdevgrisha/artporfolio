@@ -71,6 +71,8 @@ interface PlannedPhoto {
 
 /** A new list whose files are already copied from their uploads, waiting to be saved. */
 export interface PhotoListDraft {
+  /** The alt text of each photo of the new list, a new photo with the id it will have. */
+  alts: { alt: string; id: string }[];
   /** The new list from the saved one; rejects a saved photo that is not there with 422. */
   build(saved: StoredListPhoto[]): StoredListPhoto[];
   /** Once the list is saved, names the files it no longer uses: deleted photos, replaced versions. */
@@ -137,5 +139,5 @@ export async function preparePhotoList(
     }
   }
 
-  return { build, removeUnused };
+  return { alts: planned.map(({ alt, id }) => ({ alt, id })), build, removeUnused };
 }

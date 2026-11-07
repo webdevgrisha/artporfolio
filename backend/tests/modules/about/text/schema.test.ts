@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { aboutTextBodySchema, aboutTextSchema } from "#modules/about/text/schema";
 
-const text = { about: "Иллюстратор.", biography: "Родилась в Минске.", creation: "Пишет маслом." };
+const text = {
+  about: "Иллюстратор.",
+  biography: "Родилась в Минске.",
+  creation: "Пишет маслом.",
+  translations: {},
+};
 
 function isValid(body: unknown): boolean {
   return aboutTextBodySchema.safeParse(body).success;

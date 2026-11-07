@@ -582,7 +582,7 @@ async function seedHeroes(api) {
 }
 
 async function seedAbout(api) {
-  await api.put("/about/text", aboutText);
+  await api.put("/about/text", { ...aboutText, translations: {} });
 
   const portrait = await uploadArtwork(api, {
     kind: "painting",
@@ -625,7 +625,7 @@ async function seedCurrencies(api) {
 }
 
 async function seedProjects(api) {
-  await api.put("/projects/intro", { text: projectsIntro });
+  await api.put("/projects/intro", { text: projectsIntro, translations: {} });
 
   // A new project goes to the top of the list, so the last one is created first.
   for (const [index, project] of projects.map((project, index) => [index, project]).reverse()) {
@@ -654,7 +654,7 @@ async function seedProjects(api) {
 }
 
 async function seedGallery(api) {
-  await api.put("/gallery/intro", { text: galleryIntro });
+  await api.put("/gallery/intro", { text: galleryIntro, translations: {} });
 
   // The ids of the sections and subsections by title, for the works to refer to.
   const sectionIds = new Map();
@@ -663,7 +663,11 @@ async function seedGallery(api) {
     const id = randomUUID();
     const subsections = section.subsections.map((title) => ({ id: randomUUID(), title }));
 
-    await api.create(`/gallery/sections/${id}`, { title: section.title, subsections });
+    await api.create(`/gallery/sections/${id}`, {
+      title: section.title,
+      subsections,
+      translations: {},
+    });
     sectionIds.set(section.title, id);
     for (const subsection of subsections) sectionIds.set(subsection.title, subsection.id);
   }
@@ -672,17 +676,17 @@ async function seedGallery(api) {
   // The ids of the materials by title, for the works to refer to.
   const materialIds = new Map(materials.map(({ id, title }) => [title, id]));
 
-  await api.put("/gallery/materials", { materials });
+  await api.put("/gallery/materials", { materials, translations: {} });
   const colors = galleryColors.map((color) => ({ id: randomUUID(), ...color }));
   // The ids of the colors by title, for the works to refer to.
   const colorIds = new Map(colors.map(({ id, title }) => [title, id]));
 
-  await api.put("/gallery/colors", { colors });
+  await api.put("/gallery/colors", { colors, translations: {} });
   const palettes = galleryPalettes.map((title) => ({ id: randomUUID(), title }));
   // The ids of the palettes by title, for the works to refer to.
   const paletteIds = new Map(palettes.map(({ id, title }) => [title, id]));
 
-  await api.put("/gallery/palettes", { palettes });
+  await api.put("/gallery/palettes", { palettes, translations: {} });
 
   // The ids of the collections by title, for the works to refer to. A collection is created empty:
   // each work names its own when it is created.

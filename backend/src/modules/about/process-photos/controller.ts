@@ -13,7 +13,10 @@ export const listPhotos: RequestHandler<object, ProcessPhotosResponse> = async (
 ) => {
   const { data, etag } = await listProcessPhotos();
 
-  response.status(200).set("ETag", etag).json({ processPhotos: data });
+  response
+    .status(200)
+    .set("ETag", etag)
+    .json({ processPhotos: data.photos, translations: data.translations });
 };
 
 export const replacePhotos: RequestHandler<
@@ -26,5 +29,8 @@ export const replacePhotos: RequestHandler<
     ifMatchHeader(request),
   );
 
-  response.status(200).set("ETag", etag).json({ processPhotos: data });
+  response
+    .status(200)
+    .set("ETag", etag)
+    .json({ processPhotos: data.photos, translations: data.translations });
 };

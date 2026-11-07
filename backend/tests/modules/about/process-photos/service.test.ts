@@ -26,6 +26,7 @@ vi.mock("#shared/firebase/firestore", () => ({
   }),
 }));
 vi.mock("#shared/firebase/storage", () => storage);
+vi.mock("#shared/i18n/deepl", () => ({ translateTexts: vi.fn().mockRejectedValue(new Error()) }));
 vi.mock("#shared/images/uploads", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...uploads,
@@ -79,11 +80,11 @@ function publishedImage(folder: string) {
 
 /** The If-Match of a client that read the two saved photos. */
 function readTag(): string {
-  return entityTag([storedPhoto(firstId), storedPhoto(secondId)]);
+  return entityTag({ photos: [storedPhoto(firstId), storedPhoto(secondId)], translations: {} });
 }
 
 function storedAs(photos: unknown[] | undefined) {
-  const snapshot = { get: () => photos };
+  const snapshot = { get: (field: string) => (field === "processPhotos" ? photos : undefined) };
 
   document.get.mockResolvedValue(snapshot);
   transaction.get.mockResolvedValue(snapshot);
@@ -110,13 +111,15 @@ describe("listProcessPhotos", () => {
     storedAs(undefined);
 
     await expect(listProcessPhotos()).resolves.toEqual({
-      data: [],
-      etag: entityTag([]),
+      data: { photos: [], translations: {} },
+      etag: entityTag({ photos: [], translations: {} }),
     });
   });
 
   it("lists the photos in order with download URLs", async () => {
-    const { data: photos } = await listProcessPhotos();
+    const {
+      data: { photos },
+    } = await listProcessPhotos();
 
     expect(photos.map((photo) => photo.id)).toEqual([firstId, secondId]);
     expect(photos[0]?.sources.avif[0]?.url).toBe(
@@ -141,8 +144,8 @@ describe("replaceProcessPhotos", () => {
       { alt: "Second", id: secondId },
       { alt: "First", id: firstId },
     ]);
-    expect(list.data.map((photo) => photo.id)).toEqual([secondId, firstId]);
-    expect(list.etag).toBe(entityTag(writtenPhotos()));
+    expect(list.data.photos.map((photo) => photo.id)).toEqual([secondId, firstId]);
+    expect(list.etag).toBe(entityTag({ photos: writtenPhotos(), translations: {} }));
     expect(uploads.publishUpload).not.toHaveBeenCalled();
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
@@ -156,7 +159,7 @@ describe("replaceProcessPhotos", () => {
       ],
       readTag(),
     );
-    const added = list.data[2];
+    const added = list.data.photos[2];
 
     expect(uploads.publishUpload).toHaveBeenCalledWith(
       uploadId,
@@ -188,9 +191,25 @@ describe("replaceProcessPhotos", () => {
     expect(storage.deleteFolder).toHaveBeenCalledWith(`about/process-photos/${secondId}`);
   });
 
-  it("returns 412 when the list has changed since it was read, and removes the copies", async () => {
+  it("returns 412 when the list has changed since it was read, before making any copy", async () => {
     await expect(
-      replaceProcessPhotos([{ alt: "New", uploadId }], entityTag([storedPhoto(firstId)])),
+      replaceProcessPhotos(
+        [{ alt: "New", uploadId }],
+        entityTag({ photos: [storedPhoto(firstId)], translations: {} }),
+      ),
+    ).rejects.toBeInstanceOf(PreconditionFailedError);
+
+    expect(transaction.set).not.toHaveBeenCalled();
+    expect(uploads.publishUpload).not.toHaveBeenCalled();
+  });
+
+  it("returns 412 when the list changes during the save, and removes the copies", async () => {
+    transaction.get.mockResolvedValue({
+      get: (field: string) => (field === "processPhotos" ? [storedPhoto(firstId)] : undefined),
+    });
+
+    await expect(
+      replaceProcessPhotos([{ alt: "New", uploadId }], readTag()),
     ).rejects.toBeInstanceOf(PreconditionFailedError);
 
     expect(transaction.set).not.toHaveBeenCalled();

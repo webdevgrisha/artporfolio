@@ -172,9 +172,13 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
   }
 
   return saveWithImages(async (files) => {
-    const translations = await saveTranslations(workTexts(body), {}, body.translations);
     const image = await files.publish(uploadId, photoFolder(id));
     const draft = await preparePhotoList(files, body.processPhotos, processPhotosFolder(id));
+    const translations = await saveTranslations(
+      workTexts({ ...body, processPhotos: draft.alts }),
+      {},
+      body.translations,
+    );
     const [work, known] = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(workDocument(id))).exists) {
         throw new PreconditionFailedError("The work already exists");
@@ -220,14 +224,14 @@ export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promis
     // Nothing is paid for a change that the check in the transaction would reject anyway.
     assertWorkIfMatch(ifMatch, id, saved, knownBefore);
 
-    const translations = await saveTranslations(
-      workTexts(body),
-      saved.translations,
-      body.translations,
-    );
     const image =
       uploadId === undefined ? undefined : await files.publish(uploadId, photoFolder(id));
     const draft = await preparePhotoList(files, body.processPhotos, processPhotosFolder(id));
+    const translations = await saveTranslations(
+      workTexts({ ...body, processPhotos: draft.alts }),
+      saved.translations,
+      body.translations,
+    );
     const [previous, work, known] = await firestore().runTransaction(async (transaction) => {
       const document = workDocument(id);
       const current = readWork(await transaction.get(document));

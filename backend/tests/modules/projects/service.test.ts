@@ -368,7 +368,7 @@ describe("replaceProject", () => {
       await readTag(elephantId),
     );
 
-    expect(edited.data.translations.en).toEqual({
+    expect(edited.data.translations.en).toMatchObject({
       description: { status: "auto", text: "Иллюстрации к книге. (en)" },
       title: { status: "edited", text: "Big Elephant" },
     });
@@ -377,6 +377,17 @@ describe("replaceProject", () => {
 
     expect(data.translations.en?.title).toEqual({ status: "outdated", text: "Big Elephant" });
     expect(data.translations.pl?.title).toEqual({ status: "auto", text: "Слоник (pl)" });
+  });
+
+  it("translates the alt texts of the photos by their ids", async () => {
+    deepl.translateTexts.mockImplementation(async (texts: string[], language: string) =>
+      texts.map((text) => `${text} (${language})`),
+    );
+
+    const { data } = await replaceProject(elephantId, body, await readTag(elephantId));
+    const photoId = data.photos[0]?.id as string;
+
+    expect(data.translations.en?.[photoId]).toEqual({ status: "auto", text: "Новое фото (en)" });
   });
 
   it("returns 404 for a project that does not exist", async () => {

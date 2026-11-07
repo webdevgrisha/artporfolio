@@ -13,6 +13,8 @@ const auth = vi.hoisted(() => ({
 }));
 
 vi.mock("#modules/auth/service", () => auth);
+vi.mock("#shared/i18n/deepl", () => ({ translateTexts: vi.fn().mockRejectedValue(new Error()) }));
+vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 vi.mock("#shared/firebase/firestore", () => {
   function snapshot(path: string) {
     const data = store.get(path);
@@ -75,18 +77,18 @@ const links = {
 
 const resources: Resource[] = [
   {
-    body: { text: "  Живопись.  " },
-    data: { text: "Живопись." },
-    empty: { text: "" },
-    invalid: { text: "а".repeat(1_001) },
+    body: { text: "  Живопись.  ", translations: {} },
+    data: { text: "Живопись.", translations: {} },
+    empty: { text: "", translations: {} },
+    invalid: { text: "а".repeat(1_001), translations: {} },
     path: "site/galleryIntro",
     url: "/api/gallery/intro",
   },
   {
-    body: { text: "  Проекты.  " },
-    data: { text: "Проекты." },
-    empty: { text: "" },
-    invalid: { text: "" },
+    body: { text: "  Проекты.  ", translations: {} },
+    data: { text: "Проекты.", translations: {} },
+    empty: { text: "", translations: {} },
+    invalid: { text: "", translations: {} },
     path: "site/projectsIntro",
     url: "/api/projects/intro",
   },
@@ -96,15 +98,17 @@ const resources: Resource[] = [
         { hex: "#FFFFFF", id: otherMaterialId, title: "Белый" },
         { hex: "#000000", id: materialId, title: " Антрацит " },
       ],
+      translations: {},
     },
     data: {
       colors: [
         { hex: "#000000", id: materialId, title: "Антрацит" },
         { hex: "#ffffff", id: otherMaterialId, title: "Белый" },
       ],
+      translations: {},
     },
-    empty: { colors: [] },
-    invalid: { colors: [{ hex: "red", id: materialId, title: "Красный" }] },
+    empty: { colors: [], translations: {} },
+    invalid: { colors: [{ hex: "red", id: materialId, title: "Красный" }], translations: {} },
     path: "site/galleryColors",
     url: "/api/gallery/colors",
   },
@@ -114,15 +118,17 @@ const resources: Resource[] = [
         { id: otherMaterialId, title: "Масло" },
         { id: materialId, title: " Акварель " },
       ],
+      translations: {},
     },
     data: {
       materials: [
         { id: materialId, title: "Акварель" },
         { id: otherMaterialId, title: "Масло" },
       ],
+      translations: {},
     },
-    empty: { materials: [] },
-    invalid: { materials: [{ id: materialId, title: "" }] },
+    empty: { materials: [], translations: {} },
+    invalid: { materials: [{ id: materialId, title: "" }], translations: {} },
     path: "site/galleryMaterials",
     url: "/api/gallery/materials",
   },
@@ -132,15 +138,17 @@ const resources: Resource[] = [
         { id: otherMaterialId, title: "Яркая" },
         { id: materialId, title: " Пастельная " },
       ],
+      translations: {},
     },
     data: {
       palettes: [
         { id: materialId, title: "Пастельная" },
         { id: otherMaterialId, title: "Яркая" },
       ],
+      translations: {},
     },
-    empty: { palettes: [] },
-    invalid: { palettes: [{ id: "not-a-uuid", title: "Яркая" }] },
+    empty: { palettes: [], translations: {} },
+    invalid: { palettes: [{ id: "not-a-uuid", title: "Яркая" }], translations: {} },
     path: "site/galleryPalettes",
     url: "/api/gallery/palettes",
   },
@@ -153,11 +161,11 @@ const resources: Resource[] = [
     url: "/api/currencies",
   },
   {
-    body: { about: " О себе ", biography: "Биография", creation: "Творчество" },
-    data: { about: "О себе", biography: "Биография", creation: "Творчество" },
-    empty: { about: "", biography: "", creation: "" },
+    body: { about: " О себе ", biography: "Биография", creation: "Творчество", translations: {} },
+    data: { about: "О себе", biography: "Биография", creation: "Творчество", translations: {} },
+    empty: { about: "", biography: "", creation: "", translations: {} },
     field: "text",
-    invalid: { about: "", biography: "Биография", creation: "Творчество" },
+    invalid: { about: "", biography: "Биография", creation: "Творчество", translations: {} },
     path: "site/about",
     url: "/api/about/text",
   },

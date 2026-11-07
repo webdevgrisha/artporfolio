@@ -16,7 +16,7 @@ import {
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import { saveTranslations } from "#shared/i18n/translating";
-import { toTranslations } from "#shared/i18n/translations";
+import { textsById, toTranslations } from "#shared/i18n/translations";
 import { preparePhotoList, toListPhoto } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
@@ -66,12 +66,18 @@ function assertTitleIsFree(id: string, title: string, { docs }: QuerySnapshot): 
   }
 }
 
-/** The texts of a project in the source language, by the field their translations go under. */
+/**
+ * The texts of a project in the source language, by the key of their translations: a photo by its
+ * id. Its alt text is translated too, so the site has it in every language; no form shows it.
+ */
 function projectTexts({
   description,
+  photos,
   title,
-}: Pick<StoredProject, "description" | "title">): Record<string, string> {
-  return { description, title };
+}: Pick<StoredProject, "description" | "title"> & {
+  photos: readonly { alt: string; id: string }[];
+}): Record<string, string> {
+  return { description, title, ...textsById(photos, (photo) => photo.alt) };
 }
 
 /** The stored project as the list returns it, with download URLs and ISO 8601 dates. */
@@ -131,8 +137,12 @@ export async function getProject(id: string): Promise<Tagged<Project>> {
  */
 export function createProject(id: string, body: ProjectBody): Promise<Tagged<Project>> {
   return saveWithImages(async (files) => {
-    const translations = await saveTranslations(projectTexts(body), {}, body.translations);
     const draft = await preparePhotoList(files, body.photos, photosFolder(id));
+    const translations = await saveTranslations(
+      projectTexts({ ...body, photos: draft.alts }),
+      {},
+      body.translations,
+    );
     const project = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(projectDocument(id))).exists) {
         throw new PreconditionFailedError("The project already exists");
@@ -178,12 +188,12 @@ export function replaceProject(
     // Nothing is paid for a change that the check in the transaction would reject anyway.
     assertIfMatch(ifMatch, toProject(id, saved));
 
+    const draft = await preparePhotoList(files, body.photos, photosFolder(id));
     const translations = await saveTranslations(
-      projectTexts(body),
+      projectTexts({ ...body, photos: draft.alts }),
       saved.translations,
       body.translations,
     );
-    const draft = await preparePhotoList(files, body.photos, photosFolder(id));
     const [savedPhotos, project] = await firestore().runTransaction(async (transaction) => {
       const document = projectDocument(id);
       const current = readProject(await transaction.get(document));

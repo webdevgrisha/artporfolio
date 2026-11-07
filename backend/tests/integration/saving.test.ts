@@ -144,9 +144,9 @@ describe("a resource in a document with other fields", () => {
       photo.etag,
     );
 
-    await aboutText.replace(text, empty.etag);
+    await aboutText.replace({ ...text, translations: {} }, empty.etag);
 
-    expect((await aboutText.get()).data).toEqual(text);
+    expect((await aboutText.get()).data).toEqual({ ...text, translations: {} });
     expect((await getPhoto(aboutPhoto)).etag).toBe(saved.etag);
   });
 });

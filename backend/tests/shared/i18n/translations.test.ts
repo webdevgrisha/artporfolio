@@ -131,3 +131,14 @@ describe("translationsBodySchema", () => {
     expect(schema.safeParse({ en: { city: "Minsk" } }).success).toBe(false);
   });
 });
+
+describe("translationsBodySchema with a list", () => {
+  const schema = translationsBodySchema({ title: 5 }, 3);
+
+  it("takes the items of a list, by their ids, up to their own limit", () => {
+    const id = "11111111-1111-4111-8111-111111111111";
+
+    expect(schema.safeParse({ en: { title: "Elephant"[0], [id]: "Oil" } }).success).toBe(true);
+    expect(schema.safeParse({ en: { [id]: "a".repeat(7) } }).success).toBe(false);
+  });
+});

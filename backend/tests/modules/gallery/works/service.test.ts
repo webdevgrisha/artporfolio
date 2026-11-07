@@ -235,7 +235,11 @@ beforeEach(() => {
   vi.clearAllMocks();
   works.clear();
   sections.clear();
-  sections.set(animalsId, { subsections: [{ id: birdsId, title: "Птицы" }], title: "Животные" });
+  sections.set(animalsId, {
+    translations: {},
+    subsections: [{ id: birdsId, title: "Птицы" }],
+    title: "Животные",
+  });
   collections.clear();
   collections.set(animalsCollectionId, { title: "Звери" });
   lists.clear();

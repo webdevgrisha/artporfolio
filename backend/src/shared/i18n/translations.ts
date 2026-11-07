@@ -31,28 +31,45 @@ export const storedTranslationsSchema = z.record(
 export type StoredTranslation = z.infer<typeof storedTranslationSchema>;
 export type StoredTranslations = z.infer<typeof storedTranslationsSchema>;
 
+function translatedTextSchema(maxLength: number) {
+  return z
+    .string()
+    .trim()
+    .min(1)
+    .max(maxLength * translationLengthFactor)
+    .nullable()
+    .optional();
+}
+
 /**
  * The translations as the client sends them, for the fields named in `maxLengths` with the limit
- * of each in the source language. A text is what the form shows: one that differs from the saved
- * text is a person's edit. Null asks for a new translation, replacing even a person's edit. A field
- * left out keeps its translation until its source changes.
+ * of each in the source language, and for items of a list by their ids, with the limit
+ * `maxItemLength`. A text is what the form shows: one that differs from the saved text is a
+ * person's edit. Null asks for a new translation, replacing even a person's edit. A field left out
+ * keeps its translation until its source changes.
  */
-export function translationsBodySchema<Field extends string>(maxLengths: Record<Field, number>) {
-  const fields = Object.keys(maxLengths) as [Field, ...Field[]];
+export function translationsBodySchema<Field extends string>(
+  maxLengths: Record<Field, number>,
+  maxItemLength?: number,
+) {
+  const fields = Object.keys(maxLengths) as Field[];
   const texts = Object.fromEntries(
-    fields.map((field) => [
-      field,
-      z
-        .string()
-        .trim()
-        .min(1)
-        .max(maxLengths[field] * translationLengthFactor)
-        .nullable()
-        .optional(),
-    ]),
-  ) as Record<Field, z.ZodOptional<z.ZodNullable<z.ZodString>>>;
+    fields.map((field) => [field, translatedTextSchema(maxLengths[field])]),
+  );
+  const language: z.ZodType<Partial<Record<string, string | null>>> =
+    maxItemLength === undefined
+      ? z.strictObject(texts)
+      : z.object(texts).catchall(translatedTextSchema(maxItemLength));
 
-  return z.partialRecord(z.enum(targetLanguages), z.strictObject(texts));
+  return z.partialRecord(z.enum(targetLanguages), language);
+}
+
+/** The texts of the items of a list, by the ids their translations are stored under. */
+export function textsById<Item extends { id: string }>(
+  items: readonly Item[],
+  text: (item: Item) => string,
+): Record<string, string> {
+  return Object.fromEntries(items.map((item) => [item.id, text(item)]));
 }
 
 /** What the client sent for each language and field; see translationsBodySchema. */

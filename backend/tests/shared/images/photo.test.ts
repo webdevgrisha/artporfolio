@@ -26,6 +26,7 @@ vi.mock("#shared/firebase/firestore", () => ({
   }),
 }));
 vi.mock("#shared/firebase/storage", () => storage);
+vi.mock("#shared/i18n/deepl", () => ({ translateTexts: vi.fn().mockRejectedValue(new Error()) }));
 vi.mock("#shared/images/uploads", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...uploads,
@@ -41,7 +42,7 @@ import {
   photoSlot,
   readPhoto,
   savePhoto,
-  toPhoto,
+  toSlotPhoto,
 } from "#shared/images/photo";
 
 const slot = photoSlot({
@@ -68,6 +69,7 @@ const published = {
 
 const storedPhoto = {
   alt: "Portrait",
+  translations: {},
   fileName: "old.png",
   fileSize: 100,
   height: 700,
@@ -83,6 +85,7 @@ const storedPhoto = {
 /** storedPhoto as the API returns it. */
 const returnedPhoto = {
   alt: "Portrait",
+  translations: {},
   fileName: "old.png",
   fileSize: 100,
   height: 700,
@@ -104,6 +107,7 @@ function snapshotWith(photo: unknown) {
 }
 
 function storedAs(photo: unknown) {
+  document.get.mockResolvedValue(snapshotWith(photo));
   transaction.get.mockResolvedValue(snapshotWith(photo));
 }
 
@@ -111,7 +115,7 @@ function storedAs(photo: unknown) {
 function returned(photo: unknown) {
   const stored = readPhoto(slot, snapshotWith(photo));
 
-  return stored && toPhoto(stored);
+  return stored && toSlotPhoto(stored);
 }
 
 beforeEach(() => {
@@ -143,7 +147,7 @@ describe("photo", () => {
 
   it("puts the upload into a new version folder of the slot and keeps the upload", async () => {
     const { created, data, etag } = await savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag);
-    const stored = { ...published, alt: "Portrait" };
+    const stored = { ...published, alt: "Portrait", translations: {} };
 
     expect(created).toBe(true);
     expect(uploads.publishUpload).toHaveBeenCalledWith(uploadId, "contacts/photo");
@@ -160,7 +164,6 @@ describe("photo", () => {
     await savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag);
 
     expect(transaction.get).toHaveBeenCalledWith(document);
-    expect(document.get).not.toHaveBeenCalled();
   });
 
   it("deletes the previous version after saving the new one", async () => {
@@ -206,8 +209,20 @@ describe("photo", () => {
     expect(storage.deleteFolder).toHaveBeenCalledWith("contacts/photo/new-version");
   });
 
-  it("refuses a photo saved against an outdated read and removes its copy", async () => {
+  it("refuses a photo saved against an outdated read before making any copy", async () => {
     storedAs(storedPhoto);
+
+    await expect(savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag)).rejects.toBeInstanceOf(
+      PreconditionFailedError,
+    );
+
+    expect(transaction.set).not.toHaveBeenCalled();
+    expect(uploads.publishUpload).not.toHaveBeenCalled();
+  });
+
+  it("refuses a photo changed during the save and removes its copy", async () => {
+    document.get.mockResolvedValue(snapshotWith(undefined));
+    transaction.get.mockResolvedValue(snapshotWith(storedPhoto));
 
     await expect(savePhoto(slot, { alt: "Portrait", uploadId }, emptyTag)).rejects.toBeInstanceOf(
       PreconditionFailedError,

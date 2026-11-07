@@ -31,7 +31,11 @@ import {
 const admin = { email: "admin@example.com", uid: "admin-uid" };
 const id = "11111111-1111-4111-8111-111111111111";
 const theatreId = "33333333-3333-4333-8333-333333333333";
-const body = { title: "Постеры", subsections: [{ id: theatreId, title: "Театральные" }] };
+const body = {
+  title: "Постеры",
+  subsections: [{ id: theatreId, title: "Театральные" }],
+  translations: {},
+};
 const section = { id, ...body };
 const etag = '"read"';
 const savedEtag = '"saved"';
@@ -132,6 +136,7 @@ describe("creating a section", () => {
     const response = await send("PUT", `/${id}`, await createHeaders(), {
       title: "",
       subsections: [{ id: theatreId, title: "" }],
+      translations: {},
     });
 
     expect(response.status).toBe(400);

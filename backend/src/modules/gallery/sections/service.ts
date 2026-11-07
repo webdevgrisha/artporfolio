@@ -3,12 +3,15 @@ import type { DocumentSnapshot, QuerySnapshot } from "firebase-admin/firestore";
 import {
   type Section,
   type SectionBody,
+  type SectionSummary,
   type StoredSection,
   storedSectionSchema,
 } from "#modules/gallery/sections/schema";
 import { firestore } from "#shared/firebase/firestore";
 import { ConflictError, NotFoundError, PreconditionFailedError } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import { saveTranslations } from "#shared/i18n/translating";
+import { type StoredTranslations, textsById, toTranslations } from "#shared/i18n/translations";
 import { byTitle, titleKey } from "#shared/text/titles";
 
 /** Every section; works read it to check the sections they refer to. */
@@ -28,13 +31,27 @@ function readSection(snapshot: DocumentSnapshot): StoredSection {
   return storedSectionSchema.parse(snapshot.data());
 }
 
+/** The texts of a section in the source language, by the key of their translations. */
+function sectionTexts({
+  subsections,
+  title,
+}: Pick<StoredSection, "subsections" | "title">): Record<string, string> {
+  return { title, ...textsById(subsections, (subsection) => subsection.title) };
+}
+
 /** The section as stored: the subsections sorted by title, as the site shows them. */
-function toStoredSection({ subsections, title }: SectionBody): StoredSection {
-  return { subsections: subsections.toSorted(byTitle), title };
+function toStoredSection(
+  { subsections, title }: SectionBody,
+  translations: StoredTranslations,
+): StoredSection {
+  return { subsections: subsections.toSorted(byTitle), title, translations };
 }
 
 function toSavedSection(id: string, section: StoredSection): Tagged<Section> {
-  return { data: { id, ...section }, etag: entityTag(section) };
+  const { subsections, title } = section;
+  const translations = toTranslations(section.translations, sectionTexts(section));
+
+  return { data: { id, subsections, title, translations }, etag: entityTag(section) };
 }
 
 /**
@@ -103,10 +120,14 @@ export function sectionGroupsIn({ docs }: QuerySnapshot): Map<string, Set<string
 }
 
 /** Every section sorted by title, tagged by the stored list. */
-export async function listSections(): Promise<Tagged<Section[]>> {
+export async function listSections(): Promise<Tagged<SectionSummary[]>> {
   const { docs } = await sectionsCollection().get();
   const sections = docs
-    .map((snapshot): Section => ({ id: snapshot.id, ...readSection(snapshot) }))
+    .map((snapshot): SectionSummary => {
+      const { subsections, title } = readSection(snapshot);
+
+      return { id: snapshot.id, subsections, title };
+    })
     .toSorted(byTitle);
 
   return { data: sections, etag: entityTag(sections) };
@@ -121,7 +142,8 @@ export async function getSection(id: string): Promise<Tagged<Section>> {
  * id, such as one an earlier try of the same request created.
  */
 export async function createSection(id: string, body: SectionBody): Promise<Tagged<Section>> {
-  const section = toStoredSection(body);
+  const translations = await saveTranslations(sectionTexts(body), {}, body.translations);
+  const section = toStoredSection(body, translations);
 
   await firestore().runTransaction(async (transaction) => {
     const document = sectionDocument(id);
@@ -139,14 +161,25 @@ export async function createSection(id: string, body: SectionBody): Promise<Tagg
 
 /**
  * Replaces the section while it is still the one the client read (`ifMatch`). A saved subsection
- * left out is deleted.
+ * left out is deleted. The translator runs before the transaction, which may run several times: the
+ * tag checked there covers the translations, so the ones it started from are still the saved ones.
  */
 export async function replaceSection(
   id: string,
   body: SectionBody,
   ifMatch: string,
 ): Promise<Tagged<Section>> {
-  const section = toStoredSection(body);
+  const saved = readSection(await sectionDocument(id).get());
+
+  // Nothing is paid for a change that the check in the transaction would reject anyway.
+  assertIfMatch(ifMatch, saved);
+
+  const translations = await saveTranslations(
+    sectionTexts(body),
+    saved.translations,
+    body.translations,
+  );
+  const section = toStoredSection(body, translations);
 
   await firestore().runTransaction(async (transaction) => {
     const document = sectionDocument(id);

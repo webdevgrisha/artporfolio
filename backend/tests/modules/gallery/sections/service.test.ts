@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 /** The `gallerySections` collection: documents by id. Transactions write to it at once. */
 const sections = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 
+vi.mock("#shared/i18n/deepl", () => ({ translateTexts: vi.fn().mockRejectedValue(new Error()) }));
+vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 vi.mock("#shared/firebase/firestore", () => {
   function snapshot(id: string) {
     const data = sections.get(id);
@@ -58,8 +60,9 @@ const posters = {
     { id: adsId, title: "Рекламные" },
     { id: theatreId, title: "Театральные" },
   ],
+  translations: {},
 };
-const graphics = { title: "Графика", subsections: [] };
+const graphics = { title: "Графика", subsections: [], translations: {} };
 
 beforeEach(() => {
   sections.clear();
@@ -70,8 +73,8 @@ beforeEach(() => {
 describe("reading the sections", () => {
   it("lists every section by title, tagged by the list", async () => {
     const list = [
-      { id: graphicsId, ...graphics },
-      { id: postersId, ...posters },
+      { id: graphicsId, title: graphics.title, subsections: graphics.subsections },
+      { id: postersId, title: posters.title, subsections: posters.subsections },
     ];
 
     await expect(listSections()).resolves.toEqual({ data: list, etag: entityTag(list) });
@@ -79,9 +82,9 @@ describe("reading the sections", () => {
 
   it("sorts by the Russian alphabet, not by code points", async () => {
     sections.clear();
-    sections.set(postersId, { title: "Ёлочные", subsections: [] });
-    sections.set(graphicsId, { title: "Живопись", subsections: [] });
-    sections.set(newId, { title: "Евро", subsections: [] });
+    sections.set(postersId, { translations: {}, title: "Ёлочные", subsections: [] });
+    sections.set(graphicsId, { translations: {}, title: "Живопись", subsections: [] });
+    sections.set(newId, { translations: {}, title: "Евро", subsections: [] });
 
     const { data } = await listSections();
 
@@ -108,6 +111,7 @@ describe("creating a section", () => {
         { id: landscapeId, title: "Пейзаж" },
         { id: abstractId, title: "Абстракция" },
       ],
+      translations: {},
     };
     const stored = { ...painting, subsections: painting.subsections.toReversed() };
 
@@ -123,23 +127,29 @@ describe("creating a section", () => {
   });
 
   it("refuses the title of another section, whatever the case", async () => {
-    await expect(createSection(newId, { title: "ГРАФИКА", subsections: [] })).rejects.toEqual(
-      new ConflictError("Another section has this title"),
-    );
+    await expect(
+      createSection(newId, { title: "ГРАФИКА", subsections: [], translations: {} }),
+    ).rejects.toEqual(new ConflictError("Another section has this title"));
     expect(sections.has(newId)).toBe(false);
   });
 
   it("refuses a subsection id that another section or its subsection has", async () => {
     for (const id of [theatreId, graphicsId, newId]) {
       await expect(
-        createSection(newId, { title: "Живопись", subsections: [{ id, title: "Пейзаж" }] }),
+        createSection(newId, {
+          title: "Живопись",
+          subsections: [{ id, title: "Пейзаж" }],
+          translations: {},
+        }),
       ).rejects.toBeInstanceOf(ConflictError);
     }
     expect(sections.has(newId)).toBe(false);
   });
 
   it("refuses an id that a subsection of another section has", async () => {
-    await expect(createSection(theatreId, { title: "Живопись", subsections: [] })).rejects.toEqual(
+    await expect(
+      createSection(theatreId, { title: "Живопись", subsections: [], translations: {} }),
+    ).rejects.toEqual(
       new ConflictError("The section has the id of a subsection of another section"),
     );
     expect(sections.has(theatreId)).toBe(false);
@@ -148,7 +158,11 @@ describe("creating a section", () => {
 
 describe("replacing a section", () => {
   it("renames the section and drops a subsection left out", async () => {
-    const next = { title: "Плакаты", subsections: [{ id: theatreId, title: "Театральные" }] };
+    const next = {
+      title: "Плакаты",
+      subsections: [{ id: theatreId, title: "Театральные" }],
+      translations: {},
+    };
 
     await expect(replaceSection(postersId, next, entityTag(posters))).resolves.toEqual({
       data: { id: postersId, ...next },
