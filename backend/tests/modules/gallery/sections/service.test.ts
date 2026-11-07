@@ -6,6 +6,7 @@ const sections = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 vi.mock("#shared/i18n/translation-store", () => ({
   deleteTranslations: vi.fn(),
   requestTranslations: vi.fn(),
+  saveSources: vi.fn(),
 }));
 vi.mock("#shared/firebase/firestore", () => {
   function snapshot(id: string) {

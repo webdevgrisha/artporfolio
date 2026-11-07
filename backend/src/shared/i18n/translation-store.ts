@@ -1,4 +1,4 @@
-import type { DocumentSnapshot } from "firebase-admin/firestore";
+import type { DocumentSnapshot, Transaction } from "firebase-admin/firestore";
 import { warn } from "firebase-functions/logger";
 import { z } from "zod";
 
@@ -26,7 +26,8 @@ import {
 const storedResourceSchema = z.object({
   /** The texts in the source language, as last saved, by key. */
   sources: z.record(z.string(), z.string()),
-  translations: storedTranslationsSchema,
+  /** A resource saved for the first time has none yet: see saveSources. */
+  translations: storedTranslationsSchema.default({}),
   /** Whether the queue gave up on the translations still missing. */
   failed: z.boolean(),
 });
@@ -81,20 +82,35 @@ async function markFailed(resource: string): Promise<void> {
 }
 
 /**
- * Records the texts of a resource just saved and asks for the translations they need. The save has
- * already gone through, so a failure here is only logged: the next save asks again.
+ * Records the texts of a resource in the transaction that saves it, so that they can never differ
+ * from what was saved: of two saves the later one wins here too. It only writes, as a transaction
+ * reads everything first; requestTranslations does the rest after the save.
  */
-export async function requestTranslations(
+export function saveSources(
+  transaction: Transaction,
   resource: string,
   sources: Record<string, string>,
-): Promise<void> {
+): void {
+  transaction.set(
+    resourceDocument(resource),
+    { failed: false, sources },
+    { mergeFields: ["failed", "sources"] },
+  );
+}
+
+/**
+ * Asks for the translations the texts recorded by saveSources need. The save has already gone
+ * through, so a failure here is only logged, and the texts show as failed: a new translation of
+ * any of them asks again.
+ */
+export async function requestTranslations(resource: string): Promise<void> {
   try {
     const needsTranslator = await firestore().runTransaction(async (transaction) => {
       const document = resourceDocument(resource);
       const saved = readResource(await transaction.get(document));
-      const { kept, requests } = planTranslations(sources, saved.translations);
+      const { kept, requests } = planTranslations(saved.sources, saved.translations);
 
-      transaction.set(document, { failed: false, sources, translations: kept });
+      transaction.set(document, { ...saved, translations: kept });
       return requests.length > 0;
     });
 

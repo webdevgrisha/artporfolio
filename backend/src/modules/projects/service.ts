@@ -14,7 +14,11 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { deleteTranslations, requestTranslations } from "#shared/i18n/translation-store";
+import {
+  deleteTranslations,
+  requestTranslations,
+  saveSources,
+} from "#shared/i18n/translation-store";
 import { textsById } from "#shared/i18n/translations";
 import { preparePhotoList, toListPhoto } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
@@ -148,10 +152,11 @@ export function createProject(id: string, body: ProjectBody): Promise<Tagged<Pro
       };
 
       transaction.create(projectDocument(id), created);
+      saveSources(transaction, projectTranslations(id), projectTexts(created));
       return created;
     });
 
-    await requestTranslations(projectTranslations(id), projectTexts(project));
+    await requestTranslations(projectTranslations(id));
 
     return toSavedProject(id, project);
   });
@@ -184,11 +189,12 @@ export function replaceProject(
       };
 
       transaction.set(document, next);
+      saveSources(transaction, projectTranslations(id), projectTexts(next));
       return [current.photos, next] as const;
     });
 
     draft.removeUnused(savedPhotos, project.photos);
-    await requestTranslations(projectTranslations(id), projectTexts(project));
+    await requestTranslations(projectTranslations(id));
 
     return toSavedProject(id, project);
   });

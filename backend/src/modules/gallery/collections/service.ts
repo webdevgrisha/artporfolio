@@ -23,7 +23,11 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { deleteTranslations, requestTranslations } from "#shared/i18n/translation-store";
+import {
+  deleteTranslations,
+  requestTranslations,
+  saveSources,
+} from "#shared/i18n/translation-store";
 import { toPhoto } from "#shared/images/photo";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
@@ -251,10 +255,11 @@ export async function createCollection(
 
       transaction.create(collectionDocument(id), created);
       moveWorks(transaction, id, [], ordered);
+      saveSources(transaction, collectionTranslations(id), collectionTexts(created));
       return [created, ordered] as const;
     });
 
-    await requestTranslations(collectionTranslations(id), collectionTexts(collection));
+    await requestTranslations(collectionTranslations(id));
 
     return toSavedCollection(id, collection, members);
   });
@@ -295,6 +300,7 @@ export function replaceCollection(
 
         transaction.set(document, next);
         moveWorks(transaction, id, currentWorkIds, ordered);
+        saveSources(transaction, collectionTranslations(id), collectionTexts(next));
         return [current, next, ordered] as const;
       },
     );
@@ -303,7 +309,7 @@ export function replaceCollection(
       files.removeAfterSave(coverVersionFolder(id, previous.cover.version));
     }
 
-    await requestTranslations(collectionTranslations(id), collectionTexts(collection));
+    await requestTranslations(collectionTranslations(id));
 
     return toSavedCollection(id, collection, members);
   });

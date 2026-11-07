@@ -13,6 +13,7 @@ describe("photo slots", () => {
       field: "photo",
       folder: "about/photo",
       resource: "about-photo",
+      saveAlong: expect.any(Function),
       schema: storedPhotoSchema,
     });
   });
@@ -23,6 +24,7 @@ describe("photo slots", () => {
       field: "photo",
       folder: "contacts/photo",
       resource: "contacts-photo",
+      saveAlong: expect.any(Function),
       schema: storedPhotoSchema,
     });
   });

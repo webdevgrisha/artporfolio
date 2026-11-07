@@ -39,8 +39,12 @@ vi.mock("#shared/firebase/firestore", () => {
 
   const transaction = {
     get: (target: { path: string }) => snapshot(target.path),
-    set: (target: { path: string }, data: Record<string, unknown>) => {
-      documents.set(target.path, data);
+    set: (
+      target: { path: string },
+      data: Record<string, unknown>,
+      options?: { mergeFields: string[] },
+    ) => {
+      documents.set(target.path, options ? { ...documents.get(target.path), ...data } : data);
     },
   };
 
@@ -66,6 +70,7 @@ vi.mock("#shared/firebase/firestore", () => {
   };
 });
 
+import { firestore } from "#shared/firebase/firestore";
 import { UnprocessableContentError } from "#shared/http/errors";
 import { targetLanguages } from "#shared/i18n/languages";
 import {
@@ -76,9 +81,18 @@ import {
   requestTranslations,
   retryTranslations,
   runTranslation,
+  saveSources,
 } from "#shared/i18n/translation-store";
 
 const resource = "gallery-work-1";
+
+/** A save of a resource with its texts, as the services do it. */
+async function save(saved: string, sources: Record<string, string>): Promise<void> {
+  await firestore().runTransaction(async (transaction) => {
+    saveSources(transaction, saved, sources);
+  });
+  await requestTranslations(saved);
+}
 
 beforeEach(() => {
   documents.clear();
@@ -93,7 +107,7 @@ beforeEach(() => {
 
 describe("a failure of the queue or of the worker", () => {
   async function translated(): Promise<void> {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     await runTranslation(resource, false);
     await editTranslations(resource, "en", { title: "My Elephant" });
     queue.enqueueTranslation.mockClear();
@@ -134,7 +148,7 @@ describe("a failure of the queue or of the worker", () => {
 
   it("leaves a failure in place when a person edits one text", async () => {
     deepl.translateTexts.mockRejectedValue(new Error("DeepL is down"));
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     await expect(runTranslation(resource, true)).rejects.toThrow("DeepL is down");
     queue.enqueueTranslation.mockClear();
 
@@ -148,7 +162,7 @@ describe("a failure of the queue or of the worker", () => {
   });
 
   it("shows the texts as failed when the last try cannot write them", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     commit.error = new Error("lost");
 
     await expect(runTranslation(resource, true)).rejects.toThrow("lost");
@@ -160,7 +174,7 @@ describe("a failure of the queue or of the worker", () => {
   });
 
   it("asks DeepL for nothing once translating is halted, though the task is queued", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     documents.set("site/translation", { halted: "paused" });
 
     await runTranslation(resource, false);
@@ -169,8 +183,8 @@ describe("a failure of the queue or of the worker", () => {
   });
 
   it("goes on with the other resources when the queue refuses one", async () => {
-    await requestTranslations(resource, { title: "Слон" });
-    await requestTranslations("gallery-work-2", { title: "Тигр" });
+    await save(resource, { title: "Слон" });
+    await save("gallery-work-2", { title: "Тигр" });
     queue.enqueueTranslation.mockReset();
     queue.enqueueTranslation.mockRejectedValueOnce(new Error("no queue"));
 
@@ -184,7 +198,7 @@ describe("a failure of the queue or of the worker", () => {
 
 describe("requestTranslations", () => {
   it("records the texts and puts the resource in the queue, without waiting for DeepL", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
 
     expect(queue.enqueueTranslation).toHaveBeenCalledWith(resource);
     expect(deepl.translateTexts).not.toHaveBeenCalled();
@@ -197,11 +211,11 @@ describe("requestTranslations", () => {
   });
 
   it("asks for nothing when the texts did not change", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     await runTranslation(resource, false);
     queue.enqueueTranslation.mockClear();
 
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
 
     expect(queue.enqueueTranslation).not.toHaveBeenCalled();
   });
@@ -209,7 +223,7 @@ describe("requestTranslations", () => {
   it("queues nothing while translating is halted; a retry does", async () => {
     documents.set("site/translation", { halted: "limit" });
 
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
 
     expect(queue.enqueueTranslation).not.toHaveBeenCalled();
 
@@ -222,7 +236,7 @@ describe("requestTranslations", () => {
   it("never fails the save it follows, and shows the texts as failed", async () => {
     queue.enqueueTranslation.mockRejectedValue(new Error("Unavailable"));
 
-    await expect(requestTranslations(resource, { title: "Слон" })).resolves.toBeUndefined();
+    await expect(save(resource, { title: "Слон" })).resolves.toBeUndefined();
     expect(logger.warn).toHaveBeenCalledOnce();
     await expect(getTranslations(resource)).resolves.toMatchObject({
       failed: true,
@@ -230,10 +244,19 @@ describe("requestTranslations", () => {
     });
   });
 
+  it("works from the texts last saved, however late a request of an earlier save comes", async () => {
+    await save(resource, { title: "Тигр" });
+    await requestTranslations(resource);
+    await runTranslation(resource, false);
+
+    expect((await getTranslations(resource)).sources).toEqual({ title: "Тигр" });
+    expect(deepl.translateTexts).toHaveBeenCalledWith(["Тигр"], "en");
+  });
+
   it("does not say the texts are on their way while translating is halted", async () => {
     documents.set("site/translation", { halted: "limit" });
 
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
 
     await expect(getTranslations(resource)).resolves.toMatchObject({
       failed: true,
@@ -244,7 +267,7 @@ describe("requestTranslations", () => {
 
 describe("runTranslation", () => {
   it("makes every language", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     await runTranslation(resource, false);
 
     const { isTranslating, translations } = await getTranslations(resource);
@@ -255,9 +278,9 @@ describe("runTranslation", () => {
   });
 
   it("shows the old text as pending until the new one is made", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     await runTranslation(resource, false);
-    await requestTranslations(resource, { title: "Тигр" });
+    await save(resource, { title: "Тигр" });
 
     const { translations } = await getTranslations(resource);
 
@@ -265,7 +288,7 @@ describe("runTranslation", () => {
   });
 
   it("leaves a text a person edited while the translator worked", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     deepl.translateTexts.mockImplementation(async (texts: string[], language: string) => {
       if (language === "en") {
         await editTranslations(resource, "en", { title: "Elephant" });
@@ -283,9 +306,9 @@ describe("runTranslation", () => {
   });
 
   it("drops a text whose source changed while the translator worked", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     deepl.translateTexts.mockImplementationOnce(async (texts: string[]) => {
-      await requestTranslations(resource, { title: "Тигр" });
+      await save(resource, { title: "Тигр" });
 
       return texts;
     });
@@ -296,7 +319,7 @@ describe("runTranslation", () => {
   });
 
   it("leaves nothing behind of a resource deleted while the translator worked", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     deepl.translateTexts.mockImplementationOnce(async (texts: string[]) => {
       await deleteTranslations(resource);
 
@@ -311,7 +334,7 @@ describe("runTranslation", () => {
   it("saves what it made and throws for the queue to try again", async () => {
     const failure = new Error("Too many requests");
 
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     deepl.translateTexts.mockImplementation(async (texts: string[], language: string) => {
       if (language === "be") {
         throw failure;
@@ -331,7 +354,7 @@ describe("runTranslation", () => {
   });
 
   it("shows the texts as failed after the last try", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     deepl.translateTexts.mockRejectedValue(new Error("Unavailable"));
 
     await expect(runTranslation(resource, true)).rejects.toThrow("Unavailable");
@@ -343,7 +366,7 @@ describe("runTranslation", () => {
   });
 
   it("halts translating on the end of the plan, without trying again", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     deepl.translateTexts.mockRejectedValue(new Error("Quota"));
     deepl.stopsTranslating.mockReturnValue("limit");
 
@@ -355,7 +378,7 @@ describe("runTranslation", () => {
 
 describe("editTranslations", () => {
   it("saves a person's text", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
 
     const { translations } = await editTranslations(resource, "en", { title: "Elephant" });
 
@@ -363,7 +386,7 @@ describe("editTranslations", () => {
   });
 
   it("asks the translator for a text anew, and keeps the old one until then", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     await editTranslations(resource, "en", { title: "Elephant" });
     queue.enqueueTranslation.mockClear();
 
@@ -382,7 +405,7 @@ describe("editTranslations", () => {
 
 describe("deleteTranslations", () => {
   it("drops the translations of a deleted resource", async () => {
-    await requestTranslations(resource, { title: "Слон" });
+    await save(resource, { title: "Слон" });
     await deleteTranslations(resource);
 
     expect(documents.size).toBe(0);

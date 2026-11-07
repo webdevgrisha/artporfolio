@@ -4,7 +4,7 @@ import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { requestTranslations } from "#shared/i18n/translation-store";
+import { requestTranslations, saveSources } from "#shared/i18n/translation-store";
 import { requireContentType } from "#shared/middleware/content-type";
 import { ifMatchHeader, requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody } from "#shared/middleware/validation";
@@ -62,10 +62,14 @@ export function documentResource<TData extends object>({
       assertIfMatch(ifMatch, read(await transaction.get(reference)));
       // Only these fields are replaced: the document may hold others, such as a photo.
       transaction.set(reference, fields, { mergeFields: Object.keys(fields) });
+
+      if (translated) {
+        saveSources(transaction, translated.resource, translated.texts(data));
+      }
     });
 
     if (translated) {
-      await requestTranslations(translated.resource, translated.texts(data));
+      await requestTranslations(translated.resource);
     }
 
     return { data, etag: entityTag(data) };

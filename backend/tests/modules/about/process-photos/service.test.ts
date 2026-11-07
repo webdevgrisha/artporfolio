@@ -22,6 +22,7 @@ const uploads = vi.hoisted(() => ({
 vi.mock("#shared/i18n/translation-store", () => ({
   deleteTranslations: vi.fn(),
   requestTranslations: vi.fn(),
+  saveSources: vi.fn(),
 }));
 vi.mock("#modules/about/document", () => ({ aboutDocument: () => document }));
 vi.mock("#shared/firebase/firestore", () => ({

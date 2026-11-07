@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { UnprocessableContentError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
-import { requestTranslations } from "#shared/i18n/translation-store";
+import { requestTranslations, saveSources } from "#shared/i18n/translation-store";
 import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
 import { type Image, storedImageSchema, toImage } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
@@ -57,7 +57,11 @@ export function photoSlot(place: {
   folder: string;
   resource: string;
 }): PhotoSlot {
-  return { ...place, schema: storedPhotoSchema };
+  return {
+    ...place,
+    saveAlong: (transaction, { alt }) => saveSources(transaction, place.resource, { alt }),
+    schema: storedPhotoSchema,
+  };
 }
 
 export function readPhoto(slot: PhotoSlot, snapshot: DocumentSnapshot): StoredPhoto | null {
@@ -94,7 +98,7 @@ export async function savePhoto(
       return { ...photo, alt };
     });
 
-    await requestTranslations(slot.resource, { alt });
+    await requestTranslations(slot.resource);
 
     return { created: false, data: toPhoto(data), etag };
   }
@@ -104,7 +108,7 @@ export async function savePhoto(
     alt,
   }));
 
-  await requestTranslations(slot.resource, { alt });
+  await requestTranslations(slot.resource);
 
   return { created, data: toPhoto(data), etag };
 }

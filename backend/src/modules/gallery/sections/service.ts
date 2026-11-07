@@ -9,7 +9,11 @@ import {
 import { firestore } from "#shared/firebase/firestore";
 import { ConflictError, NotFoundError, PreconditionFailedError } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { deleteTranslations, requestTranslations } from "#shared/i18n/translation-store";
+import {
+  deleteTranslations,
+  requestTranslations,
+  saveSources,
+} from "#shared/i18n/translation-store";
 import { textsById } from "#shared/i18n/translations";
 import { byTitle, titleKey } from "#shared/text/titles";
 
@@ -144,9 +148,10 @@ export async function createSection(id: string, body: SectionBody): Promise<Tagg
 
     assertNoClash(id, section, await transaction.get(sectionsCollection()));
     transaction.create(document, section);
+    saveSources(transaction, sectionTranslations(id), sectionTexts(section));
   });
 
-  await requestTranslations(sectionTranslations(id), sectionTexts(section));
+  await requestTranslations(sectionTranslations(id));
 
   return toSavedSection(id, section);
 }
@@ -168,9 +173,10 @@ export async function replaceSection(
     assertIfMatch(ifMatch, readSection(await transaction.get(document)));
     assertNoClash(id, section, await transaction.get(sectionsCollection()));
     transaction.set(document, section);
+    saveSources(transaction, sectionTranslations(id), sectionTexts(section));
   });
 
-  await requestTranslations(sectionTranslations(id), sectionTexts(section));
+  await requestTranslations(sectionTranslations(id));
 
   return toSavedSection(id, section);
 }

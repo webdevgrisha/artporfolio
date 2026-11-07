@@ -28,7 +28,11 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { deleteTranslations, requestTranslations } from "#shared/i18n/translation-store";
+import {
+  deleteTranslations,
+  requestTranslations,
+  saveSources,
+} from "#shared/i18n/translation-store";
 import { textsById } from "#shared/i18n/translations";
 import { preparePhotoList } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
@@ -212,10 +216,11 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
       };
 
       transaction.create(workDocument(id), created);
+      saveSources(transaction, workTranslations(id), workTexts(created));
       return [created, references] as const;
     });
 
-    await requestTranslations(workTranslations(id), workTexts(work));
+    await requestTranslations(workTranslations(id));
 
     return toSavedWork(id, work, known);
   });
@@ -251,6 +256,7 @@ export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promis
       };
 
       transaction.set(document, next);
+      saveSources(transaction, workTranslations(id), workTexts(next));
       return [current, next, references] as const;
     });
 
@@ -259,7 +265,7 @@ export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promis
     }
 
     draft.removeUnused(previous.processPhotos, work.processPhotos);
-    await requestTranslations(workTranslations(id), workTexts(work));
+    await requestTranslations(workTranslations(id));
 
     return toSavedWork(id, work, known);
   });
