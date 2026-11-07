@@ -7,7 +7,7 @@ interface EditAboutTextFormSkeletonProps {
   className?: string;
 }
 
-/** EditAboutTextForm while its texts load: the texts side by side, as the form lays them out. */
+/** EditAboutTextForm while its texts load: one under another, as the form lays them out. */
 export function EditAboutTextFormSkeleton({ className }: EditAboutTextFormSkeletonProps) {
   return (
     <FormSkeleton className={className}>
