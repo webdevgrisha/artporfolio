@@ -1,17 +1,23 @@
-import {
-  type DocumentSnapshot,
-  type QuerySnapshot,
-  Timestamp,
-  type Transaction,
-} from "firebase-admin/firestore";
+import { type QuerySnapshot, Timestamp } from "firebase-admin/firestore";
 
 import type { Reader } from "#modules/auth/schema";
-import { collectionDocument, collectionsCollection } from "#modules/gallery/collections/document";
 import {
-  type Collection,
-  type CollectionBody,
-  type StoredCollection,
-  storedCollectionSchema,
+  collectionDocument,
+  collectionsCollection,
+  readCollection,
+} from "#modules/gallery/collections/document";
+import {
+  idsInOrder,
+  membersQuery,
+  moveWorks,
+  readMembers,
+} from "#modules/gallery/collections/members";
+import { compareCollections } from "#modules/gallery/collections/order";
+import { toCollection, toSavedCollection } from "#modules/gallery/collections/representation";
+import type {
+  Collection,
+  CollectionBody,
+  StoredCollection,
 } from "#modules/gallery/collections/schema";
 import { worksCollection } from "#modules/gallery/works/document";
 import { worksInOrder } from "#modules/gallery/works/order";
@@ -19,7 +25,6 @@ import { isVisibleTo } from "#modules/gallery/works/visibility";
 import { firestore } from "#shared/firebase/firestore";
 import {
   ConflictError,
-  NotFoundError,
   PreconditionFailedError,
   UnprocessableContentError,
 } from "#shared/http/errors";
@@ -29,10 +34,9 @@ import {
   requestTranslations,
   saveSources,
 } from "#shared/i18n/translation-requests";
-import { toPhoto } from "#shared/images/photo";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
-import { byTitle, titleKey } from "#shared/text/titles";
+import { titleKey } from "#shared/text/titles";
 
 /** Every file of the collection; deleting the collection removes the folder. */
 function collectionFolder(id: string): string {
@@ -48,18 +52,6 @@ function coverVersionFolder(id: string, version: string): string {
   return `${coverFolder(id)}/${version}`;
 }
 
-/** The works of the collection `id`: each work names the collection it is in. */
-function membersQuery(id: string) {
-  return worksCollection().where("collectionId", "==", id);
-}
-
-/** The ids of the works `reader` sees in the order the site shows them; the admin sees them all. */
-function idsInOrder(docs: DocumentSnapshot[], reader: Reader): string[] {
-  return worksInOrder(docs)
-    .filter(({ work }) => isVisibleTo(work, reader))
-    .map(({ id }) => id);
-}
-
 /** Where the translations of the collection go. */
 function collectionTranslations(id: string): string {
   return `gallery-collection-${id}`;
@@ -68,44 +60,6 @@ function collectionTranslations(id: string): string {
 /** The texts of a collection the site shows in every language. */
 function collectionTexts({ cover, description, title }: StoredCollection) {
   return { alt: cover.alt, description, title };
-}
-
-function readCollection(snapshot: DocumentSnapshot): StoredCollection {
-  if (!snapshot.exists) {
-    throw new NotFoundError("There is no collection");
-  }
-
-  return storedCollectionSchema.parse(snapshot.data());
-}
-
-/** The stored collection as the API returns it, with download URLs and ISO 8601 dates. */
-function toCollection(
-  id: string,
-  { cover, createdAt, description, endYear, startYear, title, updatedAt }: StoredCollection,
-  workIds: string[],
-): Collection {
-  return {
-    cover: toPhoto(cover),
-    createdAt: createdAt.toDate().toISOString(),
-    description,
-    endYear,
-    id,
-    startYear,
-    title,
-    updatedAt: updatedAt.toDate().toISOString(),
-    workIds,
-  };
-}
-
-/** The collection as the API returns it, tagged by that representation, its works included. */
-function toSavedCollection(
-  id: string,
-  collection: StoredCollection,
-  workIds: string[],
-): Tagged<Collection> {
-  const data = toCollection(id, collection, workIds);
-
-  return { data, etag: entityTag(data) };
 }
 
 /**
@@ -121,66 +75,6 @@ function assertTitleIsFree(id: string, title: string, { docs }: QuerySnapshot): 
   if (isTaken) {
     throw new ConflictError("Another collection has this title");
   }
-}
-
-/**
- * The works `ids` of the collection `collectionId` in the order the site shows them. Rejects with
- * 422 a work that does not exist, such as one deleted while the page was open, and a work of another
- * collection: the If-Match of this collection says nothing about that one, so a form opened earlier
- * would take the work away without having seen where it went. A work moves in its own form.
- */
-async function readWorks(
-  transaction: Transaction,
-  collectionId: string,
-  ids: string[],
-): Promise<string[]> {
-  if (ids.length === 0) {
-    return [];
-  }
-
-  const snapshots = await transaction.getAll(...ids.map((id) => worksCollection().doc(id)));
-  const missing = snapshots.find((snapshot) => !snapshot.exists);
-
-  if (missing) {
-    throw new UnprocessableContentError(`There is no work ${missing.id}`);
-  }
-
-  const works = worksInOrder(snapshots);
-  const taken = works.find(
-    ({ work }) => work.collectionId !== null && work.collectionId !== collectionId,
-  );
-
-  if (taken) {
-    throw new UnprocessableContentError(`The work ${taken.id} is in another collection`);
-  }
-
-  return works.map(({ id }) => id);
-}
-
-/**
- * Puts the works `next` in the collection `id` and takes out those of `current` left out. The date
- * a work was saved stays: the admin did not edit the work itself.
- */
-function moveWorks(transaction: Transaction, id: string, current: string[], next: string[]): void {
-  const previous = new Set(current);
-  const kept = new Set(next);
-
-  for (const workId of next.filter((workId) => !previous.has(workId))) {
-    transaction.update(worksCollection().doc(workId), { collectionId: id });
-  }
-
-  for (const workId of current.filter((workId) => !kept.has(workId))) {
-    transaction.update(worksCollection().doc(workId), { collectionId: null });
-  }
-}
-
-/** The latest finished first, then the latest started; collections of the same years by title. */
-function compareCollections(a: StoredCollection, b: StoredCollection): number {
-  return (
-    (b.endYear ?? b.startYear) - (a.endYear ?? a.startYear) ||
-    b.startYear - a.startYear ||
-    byTitle(a, b)
-  );
 }
 
 /**
@@ -245,7 +139,7 @@ export async function createCollection(
 
       assertTitleIsFree(id, body.title, await transaction.get(collectionsCollection()));
 
-      const ordered = await readWorks(transaction, id, workIds);
+      const ordered = await readMembers(transaction, id, workIds);
       const now = Timestamp.now();
       const created: StoredCollection = {
         ...fields,
@@ -291,7 +185,7 @@ export function replaceCollection(
         assertIfMatch(ifMatch, toCollection(id, current, currentWorkIds));
         assertTitleIsFree(id, body.title, await transaction.get(collectionsCollection()));
 
-        const ordered = await readWorks(transaction, id, workIds);
+        const ordered = await readMembers(transaction, id, workIds);
         const next: StoredCollection = {
           ...current,
           ...fields,

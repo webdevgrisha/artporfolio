@@ -66,15 +66,13 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import { Timestamp } from "firebase-admin/firestore";
-
+import { getProjectsOrder, replaceProjectsOrder } from "#modules/projects/order";
 import {
   createProject,
   deleteProject,
   getProject,
-  getProjectsOrder,
   listProjects,
   replaceProject,
-  replaceProjectsOrder,
 } from "#modules/projects/service";
 import {
   ConflictError,
