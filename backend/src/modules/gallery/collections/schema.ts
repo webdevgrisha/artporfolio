@@ -2,6 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { minWorkYear } from "#modules/gallery/works/schema";
+import { latestToday } from "#shared/dates/latest-today";
 import { type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
 
 /** A collection holds works, so it starts no earlier than a work can be dated. */
@@ -49,7 +50,7 @@ export const collectionBodySchema = z
       .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once"),
   })
   .superRefine(({ endYear, startYear }, context) => {
-    const thisYear = new Date().getFullYear();
+    const thisYear = latestToday().year;
 
     if (startYear > thisYear) {
       context.addIssue({

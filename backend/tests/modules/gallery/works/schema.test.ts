@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   maxWorkCityLength,
@@ -93,13 +93,25 @@ describe("work body", () => {
     expect(isValid({ ...work, month: undefined })).toBe(false);
   });
 
-  it("takes this month, but not a month to come", () => {
-    const now = new Date();
-    const next = new Date(now.getFullYear(), now.getMonth() + 1);
+  describe("dated by the month", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
 
-    expect(isValid({ ...work, year: now.getFullYear(), month: now.getMonth() + 1 })).toBe(true);
-    expect(isValid({ ...work, year: next.getFullYear(), month: next.getMonth() + 1 })).toBe(false);
-    expect(isValid({ ...work, year: now.getFullYear() + 1, month: 1 })).toBe(false);
+    it("takes this month, but not a month to come", () => {
+      vi.useFakeTimers({ now: new Date("2026-06-15T12:00:00Z"), toFake: ["Date"] });
+
+      expect(isValid({ ...work, year: 2026, month: 6 })).toBe(true);
+      expect(isValid({ ...work, year: 2026, month: 7 })).toBe(false);
+      expect(isValid({ ...work, year: 2027, month: 1 })).toBe(false);
+    });
+
+    it("takes a month that has come east of the server, which runs in UTC", () => {
+      // Already 1 July in Minsk, UTC+3.
+      vi.useFakeTimers({ now: new Date("2026-06-30T22:00:00Z"), toFake: ["Date"] });
+
+      expect(isValid({ ...work, year: 2026, month: 7 })).toBe(true);
+    });
   });
 
   it("needs a photo with its alt text; the upload may be left out to keep the saved file", () => {

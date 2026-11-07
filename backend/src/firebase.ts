@@ -16,8 +16,9 @@ export const api = onRequest(
     // Encoding uploaded photos to AVIF needs more than the default 256 MiB and 60 seconds.
     memory: "1GiB",
     // Instead of the default 80 requests per instance. Encoding a 50-megapixel photo takes about
-    // 150 MiB and one CPU for several seconds, so four uploads at once still fit in the memory
-    // and in the 60 seconds that Firebase Hosting waits. The admin sends at most two at once.
+    // 300 MiB and one CPU for over 15 seconds (measured locally, docs/TODO.md B07): two uploads at
+    // once fit in the memory, four would reach it. The memory holds because the admin sends at
+    // most two at once; lower this if that limit is ever raised.
     concurrency: 4,
     timeoutSeconds: 120,
     region: "europe-west1",
