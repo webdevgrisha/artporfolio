@@ -86,6 +86,15 @@ async function enqueue(resource: string): Promise<void> {
   }
 }
 
+/** Shows the texts as failed when no task will come for them, so the form does not wait forever. */
+async function markFailed(resource: string): Promise<void> {
+  try {
+    await resourceDocument(resource).update({ failed: true });
+  } catch (error) {
+    warn("Could not mark translations as failed", { error, resource });
+  }
+}
+
 /**
  * Records the texts of a resource just saved and asks for the translations they need. The save has
  * already gone through, so a failure here is only logged: the next save asks again.
@@ -109,6 +118,7 @@ export async function requestTranslations(
     }
   } catch (error) {
     warn("Could not ask for translations", { error, resource });
+    await markFailed(resource);
   }
 }
 
@@ -122,11 +132,14 @@ export async function deleteTranslations(resource: string): Promise<void> {
 }
 
 export async function getTranslations(resource: string): Promise<ResourceTranslations> {
-  const saved = readResource(await resourceDocument(resource).get());
+  const [snapshot, halted] = await Promise.all([resourceDocument(resource).get(), readHalted()]);
+  const saved = readResource(snapshot);
+  // While translating is halted no task runs, so what is missing is not on its way.
+  const failed = saved.failed || (halted !== null && hasMissing(saved));
 
   return {
-    failed: saved.failed,
-    isTranslating: !saved.failed && hasMissing(saved),
+    failed,
+    isTranslating: !failed && hasMissing(saved),
     sources: saved.sources,
     translations: toTranslations(saved.translations, saved.sources),
   };
@@ -191,7 +204,14 @@ export async function runTranslation(resource: string, isLastTry: boolean): Prom
 
   await firestore().runTransaction(async (transaction) => {
     const document = resourceDocument(resource);
-    const current = readResource(await transaction.get(document));
+    const snapshot = await transaction.get(document);
+
+    // The resource was deleted while the translator worked.
+    if (!snapshot.exists) {
+      return;
+    }
+
+    const current = readResource(snapshot);
     const translations: StoredTranslations = { ...current.translations };
 
     for (const { key, language, translation } of made) {

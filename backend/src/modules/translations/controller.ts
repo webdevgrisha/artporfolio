@@ -1,4 +1,4 @@
-import type { RequestHandler } from "express";
+import type { RequestHandler, Response } from "express";
 
 import { readerOf } from "#modules/auth/middleware";
 import type {
@@ -16,14 +16,21 @@ import {
   type TranslationStatusResponse,
 } from "#shared/i18n/translation-store";
 
+/**
+ * Translations are the admin's for now: they hold the texts of hidden works too. The site will read
+ * them through its own resources, which know what a visitor may see.
+ */
+function assertAdmin(locals: Response["locals"]): void {
+  if (readerOf(locals) !== "admin") {
+    throw new NotFoundError("There is no such page");
+  }
+}
+
 export const readStatus: RequestHandler<object, TranslationStatusResponse> = async (
   _request,
   response,
 ) => {
-  // How the plan is used is the admin's business alone.
-  if (readerOf(response.locals) !== "admin") {
-    throw new NotFoundError("There is no such page");
-  }
+  assertAdmin(response.locals);
 
   response
     .status(200)
@@ -41,10 +48,12 @@ export const readTranslations: RequestHandler<ResourceParams, ResourceTranslatio
   request,
   response,
 ) => {
+  assertAdmin(response.locals);
+
   // The translator changes them at any moment, so no cache may keep them.
   response
     .status(200)
-    .set("Cache-Control", "no-cache")
+    .set("Cache-Control", "private, no-cache")
     .json(await getTranslations(request.params.resource));
 };
 

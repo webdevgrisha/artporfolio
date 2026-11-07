@@ -119,11 +119,26 @@ describe("requestTranslations", () => {
     expect(documents.get("site/translation")).toEqual({ halted: null });
   });
 
-  it("never fails the save it follows", async () => {
+  it("never fails the save it follows, and shows the texts as failed", async () => {
     queue.enqueueTranslation.mockRejectedValue(new Error("Unavailable"));
 
     await expect(requestTranslations(resource, { title: "Слон" })).resolves.toBeUndefined();
     expect(logger.warn).toHaveBeenCalledOnce();
+    await expect(getTranslations(resource)).resolves.toMatchObject({
+      failed: true,
+      isTranslating: false,
+    });
+  });
+
+  it("does not say the texts are on their way while translating is halted", async () => {
+    documents.set("site/translation", { halted: "limit" });
+
+    await requestTranslations(resource, { title: "Слон" });
+
+    await expect(getTranslations(resource)).resolves.toMatchObject({
+      failed: true,
+      isTranslating: false,
+    });
   });
 });
 
@@ -178,6 +193,19 @@ describe("runTranslation", () => {
     await runTranslation(resource, false);
 
     expect((await getTranslations(resource)).translations.en).toBeUndefined();
+  });
+
+  it("leaves nothing behind of a resource deleted while the translator worked", async () => {
+    await requestTranslations(resource, { title: "Слон" });
+    deepl.translateTexts.mockImplementationOnce(async (texts: string[]) => {
+      await deleteTranslations(resource);
+
+      return texts;
+    });
+
+    await runTranslation(resource, false);
+
+    expect(documents.has(`translations/${resource}`)).toBe(false);
   });
 
   it("saves what it made and throws for the queue to try again", async () => {

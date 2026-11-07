@@ -12,11 +12,6 @@ const envSchema = z.object({
   ADMIN_UID: z.string().trim().min(1),
   /** A Secret Manager value, which the function receives as a variable; see firebase.ts. */
   CSRF_SECRET: z.string().trim().min(32),
-  /**
-   * A Secret Manager value too. Without it a save goes through and its texts stay untranslated, so
-   * the emulators work without an account.
-   */
-  DEEPL_API_KEY: z.string().trim().min(1).optional(),
   CORS_ORIGINS: z
     .string()
     .default(isLocalRuntime ? "http://localhost:5173" : "")
@@ -39,7 +34,6 @@ interface Env {
   adminUid: string;
   corsOrigins: ReadonlySet<string>;
   csrfSecret: string;
-  deeplApiKey: string | undefined;
   sessionTtlMilliseconds: number;
 }
 
@@ -57,7 +51,6 @@ export function getEnv(): Env {
       adminUid: parsed.ADMIN_UID,
       corsOrigins: new Set(parsed.CORS_ORIGINS),
       csrfSecret: parsed.CSRF_SECRET,
-      deeplApiKey: parsed.DEEPL_API_KEY,
       sessionTtlMilliseconds: parsed.SESSION_TTL_MINUTES * 60 * 1_000,
     });
   }

@@ -21,9 +21,14 @@ export const translationsRouter = Router();
 translationsRouter.get("/status", identifyReader, readStatus);
 translationsRouter.post("/retry", retry);
 
-// The translations are public: the site shows them to every visitor. A person's change names only
-// the texts it changes, so it needs no If-Match: it cannot overwrite what it did not touch.
-translationsRouter.get("/:resource", validateParams(resourceParamsSchema), readTranslations);
+// A person's change names only the texts it changes, so it needs no If-Match: it cannot overwrite
+// what it did not touch.
+translationsRouter.get(
+  "/:resource",
+  identifyReader,
+  validateParams(resourceParamsSchema),
+  readTranslations,
+);
 translationsRouter.patch(
   "/:resource/:language",
   requireContentType("application/json"),

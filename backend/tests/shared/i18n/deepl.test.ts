@@ -1,19 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const client = vi.hoisted(() => ({ translateText: vi.fn() }));
-const config = vi.hoisted(() => ({ getEnv: vi.fn() }));
+const client = vi.hoisted(() => ({ getUsage: vi.fn(), translateText: vi.fn() }));
 
 vi.mock("deepl-node", () => ({
   DeepLClient: vi.fn(function DeepLClient() {
     return client;
   }),
 }));
-vi.mock("#shared/config/env", () => config);
+vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.resetModules();
-  config.getEnv.mockReturnValue({ deeplApiKey: "key" });
+  vi.stubEnv("DEEPL_API_KEY", "key");
 });
 
 describe("translateTexts", () => {
@@ -45,8 +44,29 @@ describe("translateTexts", () => {
   it("fails without a key, which a save survives", async () => {
     const { translateTexts } = await import("#shared/i18n/deepl");
 
-    config.getEnv.mockReturnValue({});
+    vi.stubEnv("DEEPL_API_KEY", "");
 
     await expect(translateTexts(["Слон"], "en")).rejects.toThrow("DEEPL_API_KEY");
+  });
+});
+
+describe("getTranslationUsage", () => {
+  it("asks DeepL once for a while, as it limits every request", async () => {
+    const { getTranslationUsage } = await import("#shared/i18n/deepl");
+
+    client.getUsage.mockResolvedValue({ character: { count: 90, limit: 100 } });
+
+    await expect(getTranslationUsage()).resolves.toEqual({ limit: 100, used: 90 });
+    await getTranslationUsage();
+
+    expect(client.getUsage).toHaveBeenCalledOnce();
+  });
+
+  it("does not know the use when DeepL does not answer", async () => {
+    const { getTranslationUsage } = await import("#shared/i18n/deepl");
+
+    client.getUsage.mockRejectedValue(new Error("Too many requests"));
+
+    await expect(getTranslationUsage()).resolves.toBeNull();
   });
 });

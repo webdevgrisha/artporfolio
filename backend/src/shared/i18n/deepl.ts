@@ -6,7 +6,6 @@ import {
 } from "deepl-node";
 import { warn } from "firebase-functions/logger";
 
-import { getEnv } from "#shared/config/env";
 import { sourceLanguage, type TargetLanguage } from "#shared/i18n/languages";
 
 /** DeepL asks for a regional variant of English and of Portuguese, and a script of Chinese. */
@@ -51,13 +50,14 @@ let client: DeepLClient | undefined;
 
 function deepl(): DeepLClient {
   if (!client) {
-    const { deeplApiKey } = getEnv();
+    // Read here, not in getEnv: the function that translates has this secret and none of the API's.
+    const key = process.env.DEEPL_API_KEY?.trim();
 
-    if (deeplApiKey === undefined) {
+    if (!key) {
       throw new Error("DEEPL_API_KEY is not set");
     }
 
-    client = new DeepLClient(deeplApiKey, {
+    client = new DeepLClient(key, {
       maxRetries,
       minTimeout: requestTimeoutMilliseconds,
     });
@@ -86,14 +86,32 @@ export function stopsTranslating(error: unknown): "key" | "limit" | null {
   return error instanceof AuthorizationError ? "key" : null;
 }
 
+/** How long an instance trusts the use of the plan it read: DeepL limits every request. */
+const usageLifetimeMilliseconds = 5 * 60 * 1_000;
+
+interface TranslationUsage {
+  limit: number;
+  used: number;
+}
+
+let readUsage: { at: number; usage: TranslationUsage | null } | undefined;
+
 /** How much of the plan is used; null when DeepL does not answer or there is no key. */
-export async function getTranslationUsage(): Promise<{ limit: number; used: number } | null> {
+export async function getTranslationUsage(): Promise<TranslationUsage | null> {
+  if (readUsage && Date.now() - readUsage.at < usageLifetimeMilliseconds) {
+    return readUsage.usage;
+  }
+
+  let usage: TranslationUsage | null = null;
+
   try {
     const { character } = await deepl().getUsage();
 
-    return character ? { limit: character.limit, used: character.count } : null;
+    usage = character ? { limit: character.limit, used: character.count } : null;
   } catch (error) {
     warn("Could not read the use of the plan", { error });
-    return null;
   }
+
+  readUsage = { at: Date.now(), usage };
+  return usage;
 }

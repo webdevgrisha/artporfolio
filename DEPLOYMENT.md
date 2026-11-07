@@ -44,6 +44,24 @@ pnpm exec firebase functions:secrets:set DEEPL_API_KEY --project artportfolio-b2
 The deployed `api` function declares both secrets in its runtime configuration. For the emulators,
 add `DEEPL_API_KEY` to `backend/.secret.local`; without it a save goes through untranslated.
 
+## Translation queue
+
+The `api` function puts texts in a Cloud Tasks queue, and the `translate` function takes them from it.
+Once per project, enable the API and let the runtime service account of `api` add tasks. `PROJECT_NUMBER`
+is the number of the project in the Google Cloud console:
+
+```sh
+gcloud services enable cloudtasks.googleapis.com --project artportfolio-b2ef4
+gcloud projects add-iam-policy-binding artportfolio-b2ef4 \
+  --member=serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com \
+  --role=roles/cloudtasks.enqueuer
+gcloud projects add-iam-policy-binding artportfolio-b2ef4 \
+  --member=serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com \
+  --role=roles/iam.serviceAccountUser
+```
+
+Without them a save still goes through, and its texts show as failed: «Не удалось перевести».
+
 ## Firestore
 
 The API stores site content in Firestore. Create the database once in the Firebase console:
