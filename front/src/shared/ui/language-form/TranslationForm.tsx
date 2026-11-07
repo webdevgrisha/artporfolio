@@ -11,9 +11,9 @@ import {
 import { rightToLeftLanguages, type TargetLanguage } from "@/shared/config/languages";
 import { getTranslationHint } from "@/shared/lib/translationsForm";
 import { ClearableInput } from "@/shared/ui/clearable-input";
-import { ClearableTextarea } from "@/shared/ui/clearable-textarea";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm } from "@/shared/ui/edit-form";
+import { Textarea } from "@/shared/ui/textarea";
 
 import styles from "./LanguageForm.module.css";
 import { OriginalText } from "./OriginalText";
@@ -141,39 +141,45 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
         dir={rightToLeftLanguages.includes(language) ? "rtl" : undefined}
       >
         {shown.map(({ key, label, multiline = false }) => {
-          const Control = multiline ? ClearableTextarea : ClearableInput;
           const text = watch(key) ?? "";
           const statusId = `${formId}-${key}`;
           const status = data.translations[language]?.[key]?.status;
           const isOnItsWay = !data.failed && (status === undefined || status === "pending");
+          const controlProps = {
+            "aria-describedby": statusId,
+            disabled: save.isPending,
+            error: errors[key]?.message,
+            isModified: Boolean(dirtyFields[key]),
+            label,
+          };
+          const field = register(key, {
+            maxLength: {
+              message: `Не длиннее ${String(maxTranslationLength)} символов`,
+              value: maxTranslationLength,
+            },
+            // A text still on its way is empty too, and it is not the person's to fill.
+            validate: (value) =>
+              value.trim() !== "" ||
+              !getFieldState(key).isDirty ||
+              "Введите перевод или нажмите «Перевести заново»",
+          });
 
           return (
             <div key={key} className={styles.field}>
-              <Control
-                label={label}
-                aria-describedby={statusId}
-                disabled={save.isPending}
-                error={errors[key]?.message}
-                isModified={Boolean(dirtyFields[key])}
-                hasValue={Boolean(text)}
-                clearLabel="Очистить"
-                onClear={() => {
-                  setValue(key, "", { shouldDirty: true });
-                  setFocus(key);
-                }}
-                {...(multiline ? { rows: 8 } : {})}
-                {...register(key, {
-                  maxLength: {
-                    message: `Не длиннее ${String(maxTranslationLength)} символов`,
-                    value: maxTranslationLength,
-                  },
-                  // A text still on its way is empty too, and it is not the person's to fill.
-                  validate: (value) =>
-                    value.trim() !== "" ||
-                    !getFieldState(key).isDirty ||
-                    "Введите перевод или нажмите «Перевести заново»",
-                })}
-              />
+              {multiline ? (
+                <Textarea rows={8} {...controlProps} {...field} />
+              ) : (
+                <ClearableInput
+                  hasValue={Boolean(text)}
+                  clearLabel="Очистить"
+                  onClear={() => {
+                    setValue(key, "", { shouldDirty: true });
+                    setFocus(key);
+                  }}
+                  {...controlProps}
+                  {...field}
+                />
+              )}
               <OriginalText
                 original={data.sources[key] ?? ""}
                 status={getTranslationHint({ failed: data.failed, status, text: text.trim() })}
