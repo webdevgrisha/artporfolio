@@ -5,8 +5,8 @@ import { aboutPhoto } from "#modules/about/photo";
 import { processPhotosRouter } from "#modules/about/process-photos/routes";
 import { aboutText } from "#modules/about/text/resource";
 import { aboutTextBodySchema } from "#modules/about/text/schema";
-import { photoSlotRouter } from "#modules/photo-slot/routes";
-import { documentResourceRouter } from "#shared/http/document-resource";
+import { documentResourceRouter } from "#shared/http/document-resource-router";
+import { photoSlotRouter } from "#shared/http/photo-slot-router";
 
 export const aboutRouter = Router();
 

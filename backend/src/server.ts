@@ -17,7 +17,7 @@ import { projectsRouter } from "#modules/projects/routes";
 import { translationsRouter } from "#modules/translations/routes";
 import { uploadsRouter } from "#modules/uploads/routes";
 import { corsOptions } from "#shared/config/cors";
-import { documentResourceRouter } from "#shared/http/document-resource";
+import { documentResourceRouter } from "#shared/http/document-resource-router";
 import { NotFoundError } from "#shared/http/errors";
 import { parseJsonBody } from "#shared/middleware/content-type";
 import { errorHandler } from "#shared/middleware/error";

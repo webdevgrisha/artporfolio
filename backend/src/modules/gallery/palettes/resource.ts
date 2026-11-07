@@ -1,8 +1,8 @@
 import type { DocumentSnapshot } from "firebase-admin/firestore";
 
 import { type GalleryPalettes, galleryPalettesSchema } from "#modules/gallery/palettes/schema";
+import { documentResource } from "#shared/firebase/document-resource";
 import { firestore } from "#shared/firebase/firestore";
-import { documentResource } from "#shared/http/document-resource";
 import { textsById } from "#shared/i18n/translations";
 
 /** Every palette of the gallery, in the order the site and the admin list them. */

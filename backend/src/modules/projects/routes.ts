@@ -15,7 +15,7 @@ import {
   projectParamsSchema,
   projectsOrderBodySchema,
 } from "#modules/projects/schema";
-import { documentResourceRouter } from "#shared/http/document-resource";
+import { documentResourceRouter } from "#shared/http/document-resource-router";
 import { requireContentType } from "#shared/middleware/content-type";
 import { requireIfMatch, requireIfMatchOrCreateOnly } from "#shared/middleware/preconditions";
 import { validateBody, validateParams } from "#shared/middleware/validation";

@@ -143,23 +143,22 @@ backend/src/
 │   ├── health/
 │   ├── originals/      GET /api/originals, загруженные файлы, только для админа
 │   ├── pages/          страницы публичного сайта и их главные фото (hero)
-│   ├── photo-slot/     маршруты одного места для фото, для места, которое называет модуль
 │   ├── projects/       проекты, каждый в своём документе Firestore, и их порядок
 │   │   └── intro/      текст над проектами
 │   └── uploads/        POST /api/uploads, единственный маршрут с multipart
 └── shared/             без знания о предметной области
     ├── config/         env, cors
-    ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage
-    ├── http/           HttpError, entity tags, Problem Details, documentResource, типы запроса Express
+    ├── firebase/       клиенты Firebase Admin: app, auth, firestore, storage; documentResource
+    ├── http/           HttpError, entity tags, Problem Details, общие роутеры (ресурс-документ, место для фото), типы запроса Express
     ├── images/         обработка изображений через sharp, загрузки, хранимые изображения, сохранение с файлами, места для фото, списки фото
     ├── middleware/     content-type, preconditions (If-Match), validation, upload, error
     └── text/           названия: сравнение без учёта регистра, сортировка по русскому алфавиту
 ```
 
 - В модуле по файлу на роль: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. Запрос проходит путь: маршрут → middleware → контроллер → сервис.
-- Данные, которые сайт читает целиком, а админ заменяет целиком и которые лежат в одном документе, — это `documentResource` (`shared/http/document-resource.ts`): тексты-вступления, цвета, материалы и палитры, курсы, тексты «О себе», ссылки контактов. В таком модуле только `schema.ts` и `resource.ts`, который говорит, где лежат данные; его маршруты — `documentResourceRouter(resource, bodySchema)`. Изменение заменяет только поля ресурса (`mergeFields`), поэтому остальное содержимое документа не меняется.
+- Данные, которые сайт читает целиком, а админ заменяет целиком и которые лежат в одном документе, — это `documentResource` (`shared/firebase/document-resource.ts`): тексты-вступления, цвета, материалы и палитры, курсы, тексты «О себе», ссылки контактов. В таком модуле только `schema.ts` и `resource.ts`, который говорит, где лежат данные; его маршруты — `documentResourceRouter(resource, bodySchema)` (`shared/http/document-resource-router.ts`). Изменение заменяет только поля ресурса (`mergeFields`), поэтому остальное содержимое документа не меняется.
 - `shared/` никогда не импортирует `modules/`, это проверяет Biome. Модуль может использовать другой модуль, как `originals` использует `requireAuth` из `auth`, но никогда его `service.ts`: то, что нужно другим, например где лежат документы и как они читаются (`document.ts`), лежит в отдельном файле.
-- `server.ts` подключает только модули верхнего уровня. Вложенный модуль подключает роутер родителя, как `contacts` подключает `links`. Место для фото подключается как `photoSlotRouter(contactPhoto)` (`modules/photo-slot`).
+- `server.ts` подключает только модули верхнего уровня. Вложенный модуль подключает роутер родителя, как `contacts` подключает `links`. Место для фото подключается как `photoSlotRouter(contactPhoto)` (`shared/http/photo-slot-router.ts`). В `modules/` только ресурсы API; роутер, который подключают разные модули, лежит в `shared/http`.
 - Каждая часть страницы, которую админ сохраняет отдельно, — отдельный ресурс со своими `GET` и `PUT`: `/api/about/text`, `/api/about/photo`, `/api/about/process-photos`. `PUT` заменяет весь ресурс по своему URL (RFC 9110 §9.3.4), а не часть большего. Сама страница (`GET /api/about`) — агрегат только для чтения, чтобы сайт читал её одним запросом.
 - Одиночное изображение — это `ImageSlot` из `shared/images/slot.ts`: документ Firestore, поле, схема того, что хранит поле, и папка в Storage. Заполнение и замена места общие. Главное фото страницы хранит только изображение; фото с alt (фото контактов, «Моё фото») — это `PhotoSlot` из `shared/images/photo.ts`, который добавляет alt и его изменение. Модуль только называет своё место (`modules/contacts/photo.ts`).
 - Данные, прочитанные из Firestore, проверяются только на форму (`stored…Schema`): лимиты и форматы проверяются один раз, когда API записывает данные. Поэтому ужесточение правила позже никогда не делает сохранённые данные нечитаемыми. Zod работает только с тем, что приходит извне: с телами запросов и хранимыми данными. То, что отдаёт API, описано обычными типами TypeScript в `schema.ts`.

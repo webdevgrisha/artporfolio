@@ -22,9 +22,8 @@ vi.mock("#shared/images/photo", async (importOriginal) => ({
 }));
 
 import type { DocumentReference } from "firebase-admin/firestore";
-
-import { photoSlotRouter } from "#modules/photo-slot/routes";
 import { PreconditionFailedError, UnauthorizedError } from "#shared/http/errors";
+import { photoSlotRouter } from "#shared/http/photo-slot-router";
 import { photoSlot } from "#shared/images/photo";
 
 const admin = { email: "admin@example.com", uid: "admin-uid" };

@@ -1,6 +1,6 @@
 import { aboutDocument } from "#modules/about/document";
 import { type AboutText, aboutTextSchema } from "#modules/about/text/schema";
-import { documentResource } from "#shared/http/document-resource";
+import { documentResource } from "#shared/firebase/document-resource";
 
 /** The texts of the About page, in a field of the document that also holds the photos. */
 export const aboutText = documentResource<AboutText>({
