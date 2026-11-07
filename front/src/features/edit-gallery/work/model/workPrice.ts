@@ -123,11 +123,20 @@ export function discountedPriceIn(
   return Math.max(1, discountedAmount(suggestedPrice(amount, rate), discountPercent));
 }
 
+/** One format per currency: making it is slow, and a table and a form ask for it often. */
+const priceFormats = new Map<Currency | WorkCurrency, Intl.NumberFormat>();
+
+function priceFormat(currency: Currency | WorkCurrency): Intl.NumberFormat {
+  const format =
+    priceFormats.get(currency) ??
+    new Intl.NumberFormat("ru", { currency, maximumFractionDigits: 0, style: "currency" });
+
+  priceFormats.set(currency, format);
+
+  return format;
+}
+
 /** A price as the admin reads it, in whole units: «1 500 $». */
 export function formatPrice(amount: number, currency: Currency | WorkCurrency): string {
-  return new Intl.NumberFormat("ru", {
-    currency,
-    maximumFractionDigits: 0,
-    style: "currency",
-  }).format(amount);
+  return priceFormat(currency).format(amount);
 }
