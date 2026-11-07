@@ -1,12 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 
-import { isPreconditionFailed } from "@/shared/api/httpError";
 import { projectPath } from "@/shared/config/routes";
-import { EditForm } from "@/shared/ui/edit-form";
-import { useAllowNextNavigation } from "@/shared/ui/unsaved-changes";
+import { EditForm, useCreateForm } from "@/shared/ui/edit-form";
 
 import {
   emptyProjectFormValues,
@@ -22,58 +18,17 @@ interface CreateProjectFormProps {
 
 /** A new project; once it is created, its edit page opens in place of this one. */
 export function CreateProjectForm({ className }: CreateProjectFormProps) {
-  const navigate = useNavigate();
-  const allowNextNavigation = useAllowNextNavigation();
-  // Every try of this form creates the same project, so a retry after a lost response never
-  // creates a second one.
-  const [id] = React.useState(() => crypto.randomUUID());
   const form = useForm<ProjectFormValues>({
     defaultValues: emptyProjectFormValues,
     resolver: zodResolver(projectFormSchema),
   });
-  const createProject = useCreateProject();
-  const {
-    formState: { isDirty },
-    handleSubmit,
-    reset,
-  } = form;
-  const isSaving = createProject.isPending;
-
-  function openCreated() {
-    const path = projectPath(id);
-
-    allowNextNavigation(path);
-    // Back from the edit page leads to the list, not to an empty form again.
-    void navigate(path, { replace: true });
-  }
-
-  function create(values: ProjectFormValues) {
-    // On failure the mutation shows the error and the values stay for another try; if an earlier
-    // try already saved the data, its response was lost, so the saved data opens.
-    createProject.mutate(
-      { id, values },
-      {
-        onError: (error) => {
-          if (isPreconditionFailed(error)) openCreated();
-        },
-        // Called only while this form is open: once the user has left it, perhaps for another new
-        // project, the created one just appears in the list.
-        onSuccess: openCreated,
-      },
-    );
-  }
+  const editForm = useCreateForm({ form, mutation: useCreateProject(), toPath: projectPath });
 
   return (
     // The fields read the form from the context.
     <FormProvider {...form}>
-      <EditForm
-        className={className}
-        hasUnsavedChanges={isDirty}
-        isSaving={isSaving}
-        onRevert={() => reset()}
-        onSubmit={handleSubmit(create)}
-      >
-        <ProjectFields isSaving={isSaving} savedPhotos={[]} />
+      <EditForm className={className} {...editForm}>
+        <ProjectFields isSaving={editForm.isSaving} savedPhotos={[]} />
       </EditForm>
     </FormProvider>
   );
