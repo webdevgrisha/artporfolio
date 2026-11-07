@@ -14,4 +14,4 @@ export const originalParamsSchema = z.object({
     .pipe(originalPathSchema),
 });
 
-export type OriginalParams = z.input<typeof originalParamsSchema>;
+export type OriginalParams = z.infer<typeof originalParamsSchema>;

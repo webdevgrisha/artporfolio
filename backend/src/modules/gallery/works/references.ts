@@ -6,15 +6,18 @@ import { maxCollectionWorks } from "#modules/gallery/collections/schema";
 import { colorIdsIn, galleryColors } from "#modules/gallery/colors/resource";
 import { galleryMaterials, materialIdsIn } from "#modules/gallery/materials/resource";
 import { galleryPalettes, paletteIdsIn } from "#modules/gallery/palettes/resource";
-import { sectionIdsIn, sectionsCollection } from "#modules/gallery/sections/document";
+import { sectionGroupsIn, sectionsCollection } from "#modules/gallery/sections/document";
 import { worksCollection } from "#modules/gallery/works/document";
 import type { WorkBody } from "#modules/gallery/works/schema";
 import { ConflictError, UnprocessableContentError } from "#shared/http/errors";
 
 /** What a work is returned by: the saved items of each list it refers to, and the rates. */
 export interface KnownData {
-  /** Every section and subsection. */
-  sections: Set<string>;
+  /**
+   * Every section and subsection, with the ids it covers: a section covers itself and its
+   * subsections, a subsection only itself.
+   */
+  sections: Map<string, Set<string>>;
   materials: Set<string>;
   colors: Set<string>;
   palettes: Set<string>;
@@ -40,12 +43,16 @@ export async function readKnownData(transaction?: Transaction): Promise<KnownDat
     materials: materialIdsIn(materials),
     palettes: paletteIdsIn(palettes),
     rates: currencyRates.read(rates).rates,
-    sections: sectionIdsIn(sections),
+    sections: sectionGroupsIn(sections),
   };
 }
 
 /** Rejects with 422 an id the work names that is not one of `known`, saying what it should be. */
-function assertKnown(ids: string[], known: Set<string>, kind: string): void {
+function assertKnown(
+  ids: string[],
+  known: ReadonlySet<string> | ReadonlyMap<string, unknown>,
+  kind: string,
+): void {
   const unknown = ids.find((id) => !known.has(id));
 
   if (unknown !== undefined) {

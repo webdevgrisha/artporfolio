@@ -1,10 +1,6 @@
 import { Timestamp } from "firebase-admin/firestore";
 
 import type { Reader } from "#modules/auth/schema";
-import { colorIdsIn, galleryColors } from "#modules/gallery/colors/resource";
-import { galleryMaterials, materialIdsIn } from "#modules/gallery/materials/resource";
-import { galleryPalettes, paletteIdsIn } from "#modules/gallery/palettes/resource";
-import { sectionGroupsIn, sectionsCollection } from "#modules/gallery/sections/document";
 import { readWork, workDocument, worksCollection } from "#modules/gallery/works/document";
 import { worksInOrder } from "#modules/gallery/works/order";
 import {
@@ -115,30 +111,24 @@ export async function listWorks(reader: Reader): Promise<Tagged<WorkSummary[]>> 
  * returned. Counted afresh from every work on each request, so it never drifts from the works.
  */
 export async function getWorkUsage(): Promise<Tagged<WorkUsage>> {
-  const [{ docs }, sections, materials, colors, palettes] = await Promise.all([
-    worksCollection().get(),
-    sectionsCollection().get(),
-    galleryMaterials.document().get(),
-    galleryColors.document().get(),
-    galleryPalettes.document().get(),
-  ]);
+  const [{ docs }, known] = await Promise.all([worksCollection().get(), readKnownData()]);
   const works = docs.map(readWork);
   const data: WorkUsage = {
     sections: usageByItem(
       works.map((work) => work.sectionIds),
-      sectionGroupsIn(sections),
+      known.sections,
     ),
     materials: usageByItem(
       works.map((work) => work.materialIds),
-      ownGroups(materialIdsIn(materials)),
+      ownGroups(known.materials),
     ),
     colors: usageByItem(
       works.map((work) => work.colorIds),
-      ownGroups(colorIdsIn(colors)),
+      ownGroups(known.colors),
     ),
     palettes: usageByItem(
       works.map((work) => work.paletteIds),
-      ownGroups(paletteIdsIn(palettes)),
+      ownGroups(known.palettes),
     ),
   };
 

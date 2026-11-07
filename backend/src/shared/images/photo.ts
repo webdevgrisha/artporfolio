@@ -1,10 +1,10 @@
-import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
+import type { DocumentReference } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { UnprocessableContentError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
 import { requestTranslations, saveSources } from "#shared/i18n/translation-requests";
-import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
+import { changeSlot, fillSlot, getSlot, type ImageSlot } from "#shared/images/slot";
 import { type Image, storedImageSchema, toImage } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
 
@@ -62,10 +62,6 @@ export function photoSlot(place: {
     saveAlong: (transaction, { alt }) => saveSources(transaction, place.resource, { alt }),
     schema: storedPhotoSchema,
   };
-}
-
-export function readPhoto(slot: PhotoSlot, snapshot: DocumentSnapshot): StoredPhoto | null {
-  return readSlot(slot, snapshot);
 }
 
 /** The stored photo as the API returns it, with download URLs. */

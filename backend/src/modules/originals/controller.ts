@@ -2,14 +2,13 @@ import { pipeline } from "node:stream/promises";
 
 import type { RequestHandler } from "express";
 
-import { type OriginalParams, originalParamsSchema } from "#modules/originals/schema";
+import type { OriginalParams } from "#modules/originals/schema";
 import { openFile } from "#shared/firebase/storage";
 import { NotFoundError } from "#shared/http/errors";
 
 /** Sends the original as a download, without keeping it in a cache: it is the admin's alone. */
 export const downloadOriginal: RequestHandler<OriginalParams> = async (request, response) => {
-  const params = originalParamsSchema.safeParse(request.params);
-  const file = params.success ? await openFile(params.data.path) : undefined;
+  const file = await openFile(request.params.path);
 
   if (!file) {
     throw new NotFoundError();

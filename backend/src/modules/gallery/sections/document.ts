@@ -22,21 +22,9 @@ export function readSection(snapshot: DocumentSnapshot): StoredSection {
 }
 
 /**
- * The ids a work can refer to: every saved section and every subsection. They never clash: see
- * assertNoClash in service.ts.
- */
-export function sectionIdsIn({ docs }: QuerySnapshot): Set<string> {
-  return new Set(
-    docs.flatMap((snapshot) => [
-      snapshot.id,
-      ...readSection(snapshot).subsections.map((subsection) => subsection.id),
-    ]),
-  );
-}
-
-/**
  * The ids each saved section and subsection covers, by its id: a section covers itself and its
- * subsections, a subsection only itself.
+ * subsections, a subsection only itself. Its keys are the ids a work can refer to, which never
+ * clash: see assertNoClash in service.ts.
  */
 export function sectionGroupsIn({ docs }: QuerySnapshot): Map<string, Set<string>> {
   const groups = new Map<string, Set<string>>();
