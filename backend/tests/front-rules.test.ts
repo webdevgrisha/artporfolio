@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import * as aboutPhotos from "#modules/about/process-photos/schema";
+import { discountedAmount } from "#modules/currencies/discounted-amount";
 import * as currencyRates from "#modules/currencies/schema";
 import { suggestedPrice } from "#modules/currencies/suggested-price";
 import * as collections from "#modules/gallery/collections/schema";
@@ -8,7 +9,6 @@ import * as colors from "#modules/gallery/colors/schema";
 import * as materials from "#modules/gallery/materials/schema";
 import * as palettes from "#modules/gallery/palettes/schema";
 import * as sections from "#modules/gallery/sections/schema";
-import { discountedAmount } from "#modules/gallery/works/prices";
 import * as works from "#modules/gallery/works/schema";
 import * as pages from "#modules/pages/schema";
 import * as projects from "#modules/projects/schema";

@@ -1,7 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
-import { discountedAmount } from "#modules/gallery/works/prices";
+import { discountedAmount } from "#modules/currencies/discounted-amount";
 import { latestToday } from "#shared/dates/latest-today";
 import { countryCodes } from "#shared/geo/countries";
 import { type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
