@@ -80,7 +80,6 @@ describe("the admin's way through the API", () => {
     const id = randomUUID();
     const body = {
       description: "Описание",
-      translations: {},
       link: "",
       photos: [{ alt: "Фото", uploadId }],
       title: `Проект ${id}`,

@@ -9,7 +9,7 @@ function material(title: string) {
 }
 
 function issuesOf(materials: unknown): { message: string; path: PropertyKey[] }[] {
-  const result = galleryMaterialsBodySchema.safeParse({ materials, translations: {} });
+  const result = galleryMaterialsBodySchema.safeParse({ materials });
 
   return result.success ? [] : result.error.issues.map(({ message, path }) => ({ message, path }));
 }
@@ -18,12 +18,9 @@ describe("gallery materials body", () => {
   it("trims the titles", () => {
     const watercolor = material("  Акварель ");
 
-    expect(galleryMaterialsBodySchema.parse({ materials: [watercolor], translations: {} })).toEqual(
-      {
-        materials: [{ id: watercolor.id, title: "Акварель" }],
-        translations: {},
-      },
-    );
+    expect(galleryMaterialsBodySchema.parse({ materials: [watercolor] })).toEqual({
+      materials: [{ id: watercolor.id, title: "Акварель" }],
+    });
   });
 
   it("takes no materials at all", () => {

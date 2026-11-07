@@ -4,6 +4,7 @@ import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import { requestTranslations } from "#shared/i18n/translation-store";
 import { requireContentType } from "#shared/middleware/content-type";
 import { ifMatchHeader, requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody } from "#shared/middleware/validation";
@@ -19,6 +20,8 @@ interface DocumentResourceOptions<TData extends object> {
    * tightening a rule later never makes saved data unreadable.
    */
   schema: ZodType<TData>;
+  /** For data the site shows in every language: where its translations go, and its texts by key. */
+  translated?: { resource: string; texts: (data: TData) => Record<string, string> };
 }
 
 /** Data the site reads as a whole and the admin replaces as a whole, kept in one document. */
@@ -36,6 +39,7 @@ export function documentResource<TData extends object>({
   empty,
   field,
   schema,
+  translated,
 }: DocumentResourceOptions<TData>): DocumentResource<TData> {
   function read(snapshot: DocumentSnapshot): TData {
     const saved: unknown = field === undefined ? snapshot.data() : snapshot.get(field);
@@ -60,6 +64,10 @@ export function documentResource<TData extends object>({
       transaction.set(reference, fields, { mergeFields: Object.keys(fields) });
     });
 
+    if (translated) {
+      await requestTranslations(translated.resource, translated.texts(data));
+    }
+
     return { data, etag: entityTag(data) };
   }
 
@@ -70,11 +78,8 @@ export function documentResource<TData extends object>({
  * The routes of a resource: reading it is public, as the site shows it to every visitor. A change
  * replaces all of it, and only what the client read: it sends the ETag in If-Match.
  */
-export function documentResourceRouter<TData extends object, TBody = TData>(
-  resource: {
-    get(): Promise<Tagged<TData>>;
-    replace(body: TBody, ifMatch: string): Promise<Tagged<TData>>;
-  },
+export function documentResourceRouter<TData extends object>(
+  resource: DocumentResource<TData>,
   bodySchema: ZodType,
 ): Router {
   const read: RequestHandler<object, TData> = async (_request, response) => {
@@ -83,7 +88,7 @@ export function documentResourceRouter<TData extends object, TBody = TData>(
     response.status(200).set("ETag", etag).json(data);
   };
 
-  const replace: RequestHandler<object, TData, TBody> = async (request, response) => {
+  const replace: RequestHandler<object, TData, TData> = async (request, response) => {
     const { data, etag } = await resource.replace(request.body, ifMatchHeader(request));
 
     response.status(200).set("ETag", etag).json(data);

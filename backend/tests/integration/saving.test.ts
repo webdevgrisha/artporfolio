@@ -37,7 +37,6 @@ async function newProject() {
   const body = {
     title: `Проект ${id}`,
     description: "Описание",
-    translations: {},
     link: "",
     photos: [{ alt: "Фото", uploadId: await upload() }],
   };
@@ -144,9 +143,9 @@ describe("a resource in a document with other fields", () => {
       photo.etag,
     );
 
-    await aboutText.replace({ ...text, translations: {} }, empty.etag);
+    await aboutText.replace(text, empty.etag);
 
-    expect((await aboutText.get()).data).toEqual({ ...text, translations: {} });
+    expect((await aboutText.get()).data).toEqual(text);
     expect((await getPhoto(aboutPhoto)).etag).toBe(saved.etag);
   });
 });

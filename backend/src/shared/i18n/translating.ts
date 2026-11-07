@@ -1,85 +1,71 @@
-import { warn } from "firebase-functions/logger";
-
 import { translateTexts } from "#shared/i18n/deepl";
 import { type TargetLanguage, targetLanguages } from "#shared/i18n/languages";
-import {
-  planTranslations,
-  type StoredTranslations,
-  type TranslationRequest,
-  type TranslationsBody,
-} from "#shared/i18n/translations";
+import type { StoredTranslation, TranslationRequest } from "#shared/i18n/translations";
 
 /** DeepL limits how often an account may ask: a burst of requests is refused with 429. */
 const maxParallelRequests = 4;
 
-/**
- * No new request starts after this long. Firebase Hosting waits 60 seconds for a save, and the
- * requests under way may take up to 30 seconds more: what is left is made by the next save.
- */
-const translationBudgetMilliseconds = 20_000;
+/** A translation made by the translator. */
+export interface MadeTranslation {
+  key: string;
+  language: TargetLanguage;
+  translation: StoredTranslation;
+}
 
-/** Makes the translations of one language and stores them in `translations`. */
+/** What the translator made, and the errors of the languages it failed on. */
+export interface TranslationResult {
+  errors: unknown[];
+  made: MadeTranslation[];
+}
+
 async function translateLanguage(
   language: TargetLanguage,
-  fields: string[],
+  keys: string[],
   sources: Record<string, string>,
-  translations: StoredTranslations,
-): Promise<void> {
-  const texts = await translateTexts(
-    fields.map((field) => sources[field] as string),
+): Promise<MadeTranslation[]> {
+  const texts = keys.map((key) => sources[key] as string);
+  const translated = await translateTexts(texts, language);
+
+  return keys.map((key, index) => ({
+    key,
     language,
-  );
-
-  fields.forEach((field, index) => {
-    const source = sources[field] as string;
-    const text = texts[index] as string;
-
-    translations[language] = {
-      ...translations[language],
-      [field]: { text, source, edited: false },
-    };
-  });
+    translation: {
+      edited: false,
+      source: texts[index] as string,
+      text: translated[index] as string,
+    },
+  }));
 }
 
-function fieldsOf(requests: TranslationRequest[], language: TargetLanguage): string[] {
-  return requests.filter((request) => request.language === language).map(({ field }) => field);
-}
-
-/**
- * The translations to save with a resource, which makes those it needs; see planTranslations. Call
- * it outside a transaction, which may run several times. A language the translator fails on keeps
- * what it had: the save goes through, the texts show as out of date or missing, and the next save
- * asks for them again.
- */
-export async function saveTranslations(
+/** Makes the translations `requests` asks for, one request per language, a few at a time. */
+export async function translateAll(
   sources: Record<string, string>,
-  saved: StoredTranslations,
-  sent: TranslationsBody,
-): Promise<StoredTranslations> {
-  const { kept, requests } = planTranslations(sources, saved, sent);
-  const languages = targetLanguages.filter((language) => fieldsOf(requests, language).length > 0);
-
-  const deadline = Date.now() + translationBudgetMilliseconds;
+  requests: TranslationRequest[],
+): Promise<TranslationResult> {
+  const languages = targetLanguages.filter((language) =>
+    requests.some((request) => request.language === language),
+  );
+  const result: TranslationResult = { errors: [], made: [] };
 
   for (let start = 0; start < languages.length; start += maxParallelRequests) {
-    if (Date.now() > deadline) {
-      warn("Ran out of time to translate", { languages: languages.slice(start) });
-      break;
-    }
-
-    const batch = languages.slice(start, start + maxParallelRequests);
-    const results = await Promise.allSettled(
-      batch.map((language) =>
-        translateLanguage(language, fieldsOf(requests, language), sources, kept),
+    const settled = await Promise.allSettled(
+      languages.slice(start, start + maxParallelRequests).map((language) =>
+        translateLanguage(
+          language,
+          requests.filter((request) => request.language === language).map(({ key }) => key),
+          sources,
+        ),
       ),
     );
 
-    results.forEach((result, index) => {
-      if (result.status === "rejected") {
-        warn("Could not translate", { error: result.reason, language: batch[index] });
+    for (const outcome of settled) {
+      if (outcome.status === "fulfilled") {
+        result.made.push(...outcome.value);
+      } else {
+        result.errors.push(outcome.reason);
       }
-    });
+    }
   }
 
-  return kept;
+  return result;
 }

@@ -3,15 +3,14 @@ import type { DocumentSnapshot, QuerySnapshot } from "firebase-admin/firestore";
 import {
   type Section,
   type SectionBody,
-  type SectionSummary,
   type StoredSection,
   storedSectionSchema,
 } from "#modules/gallery/sections/schema";
 import { firestore } from "#shared/firebase/firestore";
 import { ConflictError, NotFoundError, PreconditionFailedError } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { saveTranslations } from "#shared/i18n/translating";
-import { type StoredTranslations, textsById, toTranslations } from "#shared/i18n/translations";
+import { deleteTranslations, requestTranslations } from "#shared/i18n/translation-store";
+import { textsById } from "#shared/i18n/translations";
 import { byTitle, titleKey } from "#shared/text/titles";
 
 /** Every section; works read it to check the sections they refer to. */
@@ -23,6 +22,16 @@ function sectionDocument(id: string) {
   return sectionsCollection().doc(id);
 }
 
+/** Where the translations of the section go. */
+function sectionTranslations(id: string): string {
+  return `gallery-section-${id}`;
+}
+
+/** The titles of a section and of its subsections, each by its id. */
+function sectionTexts({ subsections, title }: StoredSection): Record<string, string> {
+  return { title, ...textsById(subsections, (subsection) => subsection.title) };
+}
+
 function readSection(snapshot: DocumentSnapshot): StoredSection {
   if (!snapshot.exists) {
     throw new NotFoundError("There is no section");
@@ -31,27 +40,13 @@ function readSection(snapshot: DocumentSnapshot): StoredSection {
   return storedSectionSchema.parse(snapshot.data());
 }
 
-/** The texts of a section in the source language, by the key of their translations. */
-function sectionTexts({
-  subsections,
-  title,
-}: Pick<StoredSection, "subsections" | "title">): Record<string, string> {
-  return { title, ...textsById(subsections, (subsection) => subsection.title) };
-}
-
 /** The section as stored: the subsections sorted by title, as the site shows them. */
-function toStoredSection(
-  { subsections, title }: SectionBody,
-  translations: StoredTranslations,
-): StoredSection {
-  return { subsections: subsections.toSorted(byTitle), title, translations };
+function toStoredSection({ subsections, title }: SectionBody): StoredSection {
+  return { subsections: subsections.toSorted(byTitle), title };
 }
 
 function toSavedSection(id: string, section: StoredSection): Tagged<Section> {
-  const { subsections, title } = section;
-  const translations = toTranslations(section.translations, sectionTexts(section));
-
-  return { data: { id, subsections, title, translations }, etag: entityTag(section) };
+  return { data: { id, ...section }, etag: entityTag(section) };
 }
 
 /**
@@ -120,14 +115,10 @@ export function sectionGroupsIn({ docs }: QuerySnapshot): Map<string, Set<string
 }
 
 /** Every section sorted by title, tagged by the stored list. */
-export async function listSections(): Promise<Tagged<SectionSummary[]>> {
+export async function listSections(): Promise<Tagged<Section[]>> {
   const { docs } = await sectionsCollection().get();
   const sections = docs
-    .map((snapshot): SectionSummary => {
-      const { subsections, title } = readSection(snapshot);
-
-      return { id: snapshot.id, subsections, title };
-    })
+    .map((snapshot): Section => ({ id: snapshot.id, ...readSection(snapshot) }))
     .toSorted(byTitle);
 
   return { data: sections, etag: entityTag(sections) };
@@ -142,8 +133,7 @@ export async function getSection(id: string): Promise<Tagged<Section>> {
  * id, such as one an earlier try of the same request created.
  */
 export async function createSection(id: string, body: SectionBody): Promise<Tagged<Section>> {
-  const translations = await saveTranslations(sectionTexts(body), {}, body.translations);
-  const section = toStoredSection(body, translations);
+  const section = toStoredSection(body);
 
   await firestore().runTransaction(async (transaction) => {
     const document = sectionDocument(id);
@@ -156,30 +146,21 @@ export async function createSection(id: string, body: SectionBody): Promise<Tagg
     transaction.create(document, section);
   });
 
+  await requestTranslations(sectionTranslations(id), sectionTexts(section));
+
   return toSavedSection(id, section);
 }
 
 /**
  * Replaces the section while it is still the one the client read (`ifMatch`). A saved subsection
- * left out is deleted. The translator runs before the transaction, which may run several times: the
- * tag checked there covers the translations, so the ones it started from are still the saved ones.
+ * left out is deleted.
  */
 export async function replaceSection(
   id: string,
   body: SectionBody,
   ifMatch: string,
 ): Promise<Tagged<Section>> {
-  const saved = readSection(await sectionDocument(id).get());
-
-  // Nothing is paid for a change that the check in the transaction would reject anyway.
-  assertIfMatch(ifMatch, saved);
-
-  const translations = await saveTranslations(
-    sectionTexts(body),
-    saved.translations,
-    body.translations,
-  );
-  const section = toStoredSection(body, translations);
+  const section = toStoredSection(body);
 
   await firestore().runTransaction(async (transaction) => {
     const document = sectionDocument(id);
@@ -188,6 +169,8 @@ export async function replaceSection(
     assertNoClash(id, section, await transaction.get(sectionsCollection()));
     transaction.set(document, section);
   });
+
+  await requestTranslations(sectionTranslations(id), sectionTexts(section));
 
   return toSavedSection(id, section);
 }
@@ -200,4 +183,6 @@ export async function deleteSection(id: string, ifMatch: string): Promise<void> 
     assertIfMatch(ifMatch, readSection(await transaction.get(document)));
     transaction.delete(document);
   });
+
+  await deleteTranslations(sectionTranslations(id));
 }

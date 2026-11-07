@@ -3,7 +3,6 @@ import { type DocumentSnapshot, type QuerySnapshot, Timestamp } from "firebase-a
 import {
   type Project,
   type ProjectBody,
-  type ProjectSummary,
   type StoredProject,
   storedProjectSchema,
 } from "#modules/projects/schema";
@@ -15,8 +14,8 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { saveTranslations } from "#shared/i18n/translating";
-import { textsById, toTranslations } from "#shared/i18n/translations";
+import { deleteTranslations, requestTranslations } from "#shared/i18n/translation-store";
+import { textsById } from "#shared/i18n/translations";
 import { preparePhotoList, toListPhoto } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
@@ -44,6 +43,19 @@ function photosFolder(id: string): string {
   return `${projectFolder(id)}/photos`;
 }
 
+/** Where the translations of the project go. */
+function projectTranslations(id: string): string {
+  return `project-${id}`;
+}
+
+/**
+ * The texts of a project the site shows in every language: the alt text of a photo goes by the id
+ * of the photo. No form shows those: they are translated and stay as made.
+ */
+function projectTexts({ description, photos, title }: StoredProject) {
+  return { description, title, ...textsById(photos, ({ alt }) => alt) };
+}
+
 function readProject(snapshot: DocumentSnapshot): StoredProject {
   if (!snapshot.exists) {
     throw new NotFoundError("There is no project");
@@ -66,25 +78,11 @@ function assertTitleIsFree(id: string, title: string, { docs }: QuerySnapshot): 
   }
 }
 
-/**
- * The texts of a project in the source language, by the key of their translations: a photo by its
- * id. Its alt text is translated too, so the site has it in every language; no form shows it.
- */
-function projectTexts({
-  description,
-  photos,
-  title,
-}: Pick<StoredProject, "description" | "title"> & {
-  photos: readonly { alt: string; id: string }[];
-}): Record<string, string> {
-  return { description, title, ...textsById(photos, (photo) => photo.alt) };
-}
-
-/** The stored project as the list returns it, with download URLs and ISO 8601 dates. */
-function toProjectSummary(
+/** The stored project as the API returns it, with download URLs and ISO 8601 dates. */
+function toProject(
   id: string,
   { createdAt, description, link, photos, title, updatedAt }: StoredProject,
-): ProjectSummary {
+): Project {
   return {
     createdAt: createdAt.toDate().toISOString(),
     description,
@@ -93,14 +91,6 @@ function toProjectSummary(
     photos: photos.map(toListPhoto),
     title,
     updatedAt: updatedAt.toDate().toISOString(),
-  };
-}
-
-/** The stored project as the API returns it alone: its summary and its translations. */
-function toProject(id: string, project: StoredProject): Project {
-  return {
-    ...toProjectSummary(id, project),
-    translations: toTranslations(project.translations, projectTexts(project)),
   };
 }
 
@@ -115,12 +105,12 @@ function toSavedProject(id: string, project: StoredProject): Tagged<Project> {
 }
 
 /** Every project in the order the site shows them, tagged by the stored list. */
-export async function listProjects(): Promise<Tagged<ProjectSummary[]>> {
+export async function listProjects(): Promise<Tagged<Project[]>> {
   const { docs } = await orderedProjects().get();
   const projects = docs.map((snapshot) => ({ id: snapshot.id, project: readProject(snapshot) }));
 
   return {
-    data: projects.map(({ id, project }) => toProjectSummary(id, project)),
+    data: projects.map(({ id, project }) => toProject(id, project)),
     etag: entityTag(projects),
   };
 }
@@ -138,11 +128,6 @@ export async function getProject(id: string): Promise<Tagged<Project>> {
 export function createProject(id: string, body: ProjectBody): Promise<Tagged<Project>> {
   return saveWithImages(async (files) => {
     const draft = await preparePhotoList(files, body.photos, photosFolder(id));
-    const translations = await saveTranslations(
-      projectTexts({ ...body, photos: draft.alts }),
-      {},
-      body.translations,
-    );
     const project = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(projectDocument(id))).exists) {
         throw new PreconditionFailedError("The project already exists");
@@ -159,13 +144,14 @@ export function createProject(id: string, body: ProjectBody): Promise<Tagged<Pro
         createdAt: now,
         photos: draft.build([]),
         position,
-        translations,
         updatedAt: now,
       };
 
       transaction.create(projectDocument(id), created);
       return created;
     });
+
+    await requestTranslations(projectTranslations(id), projectTexts(project));
 
     return toSavedProject(id, project);
   });
@@ -174,8 +160,7 @@ export function createProject(id: string, body: ProjectBody): Promise<Tagged<Pro
 /**
  * Replaces the project while it is still the one the client read (`ifMatch`); it keeps its place
  * in the list. The photos are saved as one list: a saved photo left out is deleted, see
- * preparePhotoList. The translator runs before the transaction, which may run several times: the
- * tag checked there covers the translations, so the ones it started from are still the saved ones.
+ * preparePhotoList.
  */
 export function replaceProject(
   id: string,
@@ -183,17 +168,7 @@ export function replaceProject(
   ifMatch: string,
 ): Promise<Tagged<Project>> {
   return saveWithImages(async (files) => {
-    const saved = readProject(await projectDocument(id).get());
-
-    // Nothing is paid for a change that the check in the transaction would reject anyway.
-    assertIfMatch(ifMatch, toProject(id, saved));
-
     const draft = await preparePhotoList(files, body.photos, photosFolder(id));
-    const translations = await saveTranslations(
-      projectTexts({ ...body, photos: draft.alts }),
-      saved.translations,
-      body.translations,
-    );
     const [savedPhotos, project] = await firestore().runTransaction(async (transaction) => {
       const document = projectDocument(id);
       const current = readProject(await transaction.get(document));
@@ -205,7 +180,6 @@ export function replaceProject(
         ...current,
         ...body,
         photos: draft.build(current.photos),
-        translations,
         updatedAt: Timestamp.now(),
       };
 
@@ -214,6 +188,7 @@ export function replaceProject(
     });
 
     draft.removeUnused(savedPhotos, project.photos);
+    await requestTranslations(projectTranslations(id), projectTexts(project));
 
     return toSavedProject(id, project);
   });
@@ -229,6 +204,7 @@ export async function deleteProject(id: string, ifMatch: string): Promise<void> 
   });
 
   await deleteImageFilesOrWarn(projectFolder(id));
+  await deleteTranslations(projectTranslations(id));
 }
 
 /** The order alone: the query reads no field of a project but its position. */

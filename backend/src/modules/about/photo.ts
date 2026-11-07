@@ -6,4 +6,5 @@ export const aboutPhoto = photoSlot({
   document: aboutDocument,
   field: "photo",
   folder: "about/photo",
+  resource: "about-photo",
 });

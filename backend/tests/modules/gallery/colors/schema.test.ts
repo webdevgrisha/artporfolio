@@ -9,7 +9,7 @@ function color(title: string) {
 }
 
 function issuesOf(colors: unknown): { message: string; path: PropertyKey[] }[] {
-  const result = galleryColorsBodySchema.safeParse({ colors, translations: {} });
+  const result = galleryColorsBodySchema.safeParse({ colors });
 
   return result.success ? [] : result.error.issues.map(({ message, path }) => ({ message, path }));
 }
@@ -18,9 +18,8 @@ describe("gallery colors body", () => {
   it("trims the titles", () => {
     const blue = color("  Синий ");
 
-    expect(galleryColorsBodySchema.parse({ colors: [blue], translations: {} })).toEqual({
+    expect(galleryColorsBodySchema.parse({ colors: [blue] })).toEqual({
       colors: [{ id: blue.id, title: "Синий", hex: "#1f4e9c" }],
-      translations: {},
     });
   });
 
@@ -39,10 +38,7 @@ describe("gallery colors body", () => {
     expect(issuesOf([{ ...color("Синий"), hex: "#1f4e9" }])).toHaveLength(1);
     expect(issuesOf([{ ...color("Синий"), hex: "blue" }])).toHaveLength(1);
     expect(
-      galleryColorsBodySchema.parse({
-        colors: [{ ...color("Синий"), hex: "#1F4E9C" }],
-        translations: {},
-      }),
+      galleryColorsBodySchema.parse({ colors: [{ ...color("Синий"), hex: "#1F4E9C" }] }),
     ).toMatchObject({ colors: [{ hex: "#1f4e9c" }] });
   });
 

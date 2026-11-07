@@ -22,7 +22,6 @@ import {
 
 const work = {
   published: true,
-  translations: {},
   title: "Слон",
   description: "Масло, холст.",
   size: { width: 50, height: 70 },
@@ -279,18 +278,5 @@ describe("work body", () => {
 
   it("rejects unknown fields", () => {
     expect(isValid({ ...work, cost: 100 })).toBe(false);
-  });
-});
-
-describe("the translations of a work", () => {
-  it("is sent with every work", () => {
-    expect(isValid({ ...work, translations: undefined })).toBe(false);
-  });
-
-  it("takes the translated texts of a work, and no others", () => {
-    expect(isValid({ ...work, translations: { en: { alt: "Dusk", title: "Elephant" } } })).toBe(
-      true,
-    );
-    expect(isValid({ ...work, translations: { en: { format: "Single" } } })).toBe(false);
   });
 });

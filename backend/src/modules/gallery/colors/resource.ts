@@ -2,15 +2,18 @@ import type { DocumentSnapshot } from "firebase-admin/firestore";
 
 import { type GalleryColors, galleryColorsSchema } from "#modules/gallery/colors/schema";
 import { firestore } from "#shared/firebase/firestore";
-import { translatedResource } from "#shared/i18n/translated-resource";
+import { documentResource } from "#shared/http/document-resource";
 import { textsById } from "#shared/i18n/translations";
 
 /** Every color of the gallery, in the order the site and the admin list them. */
-export const galleryColors = translatedResource<GalleryColors>({
+export const galleryColors = documentResource<GalleryColors>({
   document: () => firestore().doc("site/galleryColors"),
   empty: { colors: [] },
   schema: galleryColorsSchema,
-  sources: ({ colors }) => textsById(colors, ({ title }) => title),
+  translated: {
+    resource: "gallery-colors",
+    texts: ({ colors }) => textsById(colors, ({ title }) => title),
+  },
 });
 
 /** The ids of every saved color, which a work may refer to. */

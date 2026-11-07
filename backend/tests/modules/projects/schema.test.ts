@@ -13,7 +13,6 @@ const project = {
   description: "Иллюстрации к книге.",
   link: "https://elephant.com",
   photos: [{ alt: "Обложка", uploadId: randomUUID() }],
-  translations: {},
 };
 
 function isValid(body: unknown): boolean {

@@ -1,4 +1,10 @@
-import { DeepLClient, type TargetLanguageCode } from "deepl-node";
+import {
+  AuthorizationError,
+  DeepLClient,
+  QuotaExceededError,
+  type TargetLanguageCode,
+} from "deepl-node";
+import { warn } from "firebase-functions/logger";
 
 import { getEnv } from "#shared/config/env";
 import { sourceLanguage, type TargetLanguage } from "#shared/i18n/languages";
@@ -35,7 +41,7 @@ const deeplLanguages: Record<TargetLanguage, TargetLanguageCode> = {
 /** Tells DeepL what the texts are, which it is not billed for and does not translate. */
 const context = "Название и описание картины на сайте художника";
 
-/** A save waits for the requests, so a stuck one must fail soon; see translating.ts. */
+/** A task of the queue waits for the requests, so a stuck one must fail soon. */
 const requestTimeoutMilliseconds = 10_000;
 
 /** DeepL answers a burst of requests with 429; the client waits longer before each new try. */
@@ -69,4 +75,25 @@ export async function translateTexts(texts: string[], language: TargetLanguage):
   });
 
   return results.map(({ text }) => text.trim());
+}
+
+/** Whether `error` stops all translating until a person acts, and why; null for any other. */
+export function stopsTranslating(error: unknown): "key" | "limit" | null {
+  if (error instanceof QuotaExceededError) {
+    return "limit";
+  }
+
+  return error instanceof AuthorizationError ? "key" : null;
+}
+
+/** How much of the plan is used; null when DeepL does not answer or there is no key. */
+export async function getTranslationUsage(): Promise<{ limit: number; used: number } | null> {
+  try {
+    const { character } = await deepl().getUsage();
+
+    return character ? { limit: character.limit, used: character.count } : null;
+  } catch (error) {
+    warn("Could not read the use of the plan", { error });
+    return null;
+  }
 }

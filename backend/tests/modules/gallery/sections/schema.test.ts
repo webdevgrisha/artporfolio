@@ -8,7 +8,6 @@ function body(title: string, subsections: string[] = []) {
   return {
     title,
     subsections: subsections.map((subsection) => ({ id: randomUUID(), title: subsection })),
-    translations: {},
   };
 }
 
@@ -25,7 +24,6 @@ describe("section body", () => {
     expect(sectionBodySchema.parse(posters)).toEqual({
       title: "Постеры",
       subsections: [{ id: posters.subsections[0]?.id, title: "Театральные" }],
-      translations: {},
     });
   });
 

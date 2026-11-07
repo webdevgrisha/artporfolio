@@ -50,7 +50,6 @@ const body = {
   link: "https://elephant.com",
   photos: [{ alt: "Обложка", uploadId }],
   title: "Слон",
-  translations: { en: { title: "Elephant" } },
 };
 const etag = '"read"';
 const savedEtag = '"saved"';

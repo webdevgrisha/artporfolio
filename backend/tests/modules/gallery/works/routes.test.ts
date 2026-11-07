@@ -86,7 +86,6 @@ const body = {
   month: 3,
   country: "PL",
   city: "Варшава",
-  translations: { en: { title: "Elephant" }, pl: { title: null } },
 };
 const usage = {
   sections: { [otherId]: { count: 1, onlyCount: 1 } },

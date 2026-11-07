@@ -20,7 +20,6 @@ import {
   type WorkSummary,
   type WorkUsage,
 } from "#modules/gallery/works/schema";
-import { workTexts } from "#modules/gallery/works/texts";
 import { ownGroups, usageByItem } from "#modules/gallery/works/usage";
 import { firestore } from "#shared/firebase/firestore";
 import {
@@ -29,7 +28,8 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { saveTranslations } from "#shared/i18n/translating";
+import { deleteTranslations, requestTranslations } from "#shared/i18n/translation-store";
+import { textsById } from "#shared/i18n/translations";
 import { preparePhotoList } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
@@ -51,6 +51,25 @@ function photoVersionFolder(id: string, version: string): string {
 /** Each process photo keeps its versions in a subfolder of its own. */
 function processPhotosFolder(id: string): string {
   return `${workFolder(id)}/process`;
+}
+
+/** Where the translations of the work go. */
+function workTranslations(id: string): string {
+  return `gallery-work-${id}`;
+}
+
+/**
+ * The texts of a work the site shows in every language: the alt text of a process photo goes by the
+ * id of the photo. No form shows those: they are translated and stay as made.
+ */
+function workTexts({ city, description, photo, processPhotos, title }: StoredWork) {
+  return {
+    alt: photo.alt,
+    city,
+    description,
+    title,
+    ...textsById(processPhotos, ({ alt }) => alt),
+  };
 }
 
 function readWork(snapshot: DocumentSnapshot): StoredWork {
@@ -174,11 +193,6 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
   return saveWithImages(async (files) => {
     const image = await files.publish(uploadId, photoFolder(id));
     const draft = await preparePhotoList(files, body.processPhotos, processPhotosFolder(id));
-    const translations = await saveTranslations(
-      workTexts({ ...body, processPhotos: draft.alts }),
-      {},
-      body.translations,
-    );
     const [work, known] = await firestore().runTransaction(async (transaction) => {
       if ((await transaction.get(workDocument(id))).exists) {
         throw new PreconditionFailedError("The work already exists");
@@ -194,13 +208,14 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
         createdAt: now,
         photo: { ...image, alt },
         processPhotos: draft.build([]),
-        translations,
         updatedAt: now,
       };
 
       transaction.create(workDocument(id), created);
       return [created, references] as const;
     });
+
+    await requestTranslations(workTranslations(id), workTexts(work));
 
     return toSavedWork(id, work, known);
   });
@@ -210,28 +225,15 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
  * Replaces the work while it is still the one the client read (`ifMatch`). The process photos are
  * saved as one list: a saved photo left out is deleted, see preparePhotoList. A section, a
  * material, a color, a palette or a collection that does not exist is rejected with 422. Moving
- * the work to another collection changes both collections. The translator runs before the
- * transaction, which may run several times: the tag checked there covers the translations, so the
- * ones it started from are still the saved ones.
+ * the work to another collection changes both collections.
  */
 export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promise<Tagged<Work>> {
   const { alt, uploadId } = body.photo;
 
   return saveWithImages(async (files) => {
-    const [snapshot, knownBefore] = await Promise.all([workDocument(id).get(), readKnownData()]);
-    const saved = readWork(snapshot);
-
-    // Nothing is paid for a change that the check in the transaction would reject anyway.
-    assertWorkIfMatch(ifMatch, id, saved, knownBefore);
-
     const image =
       uploadId === undefined ? undefined : await files.publish(uploadId, photoFolder(id));
     const draft = await preparePhotoList(files, body.processPhotos, processPhotosFolder(id));
-    const translations = await saveTranslations(
-      workTexts({ ...body, processPhotos: draft.alts }),
-      saved.translations,
-      body.translations,
-    );
     const [previous, work, known] = await firestore().runTransaction(async (transaction) => {
       const document = workDocument(id);
       const current = readWork(await transaction.get(document));
@@ -245,7 +247,6 @@ export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promis
         ...body,
         photo: { ...(image ?? current.photo), alt },
         processPhotos: draft.build(current.processPhotos),
-        translations,
         updatedAt: Timestamp.now(),
       };
 
@@ -258,6 +259,7 @@ export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promis
     }
 
     draft.removeUnused(previous.processPhotos, work.processPhotos);
+    await requestTranslations(workTranslations(id), workTexts(work));
 
     return toSavedWork(id, work, known);
   });
@@ -274,4 +276,5 @@ export async function deleteWork(id: string, ifMatch: string): Promise<void> {
   });
 
   await deleteImageFilesOrWarn(workFolder(id));
+  await deleteTranslations(workTranslations(id));
 }

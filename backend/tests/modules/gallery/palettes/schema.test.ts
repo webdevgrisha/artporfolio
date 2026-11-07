@@ -9,7 +9,7 @@ function palette(title: string) {
 }
 
 function issuesOf(palettes: unknown): { message: string; path: PropertyKey[] }[] {
-  const result = galleryPalettesBodySchema.safeParse({ palettes, translations: {} });
+  const result = galleryPalettesBodySchema.safeParse({ palettes });
 
   return result.success ? [] : result.error.issues.map(({ message, path }) => ({ message, path }));
 }
@@ -18,9 +18,8 @@ describe("gallery palettes body", () => {
   it("trims the titles", () => {
     const pastel = palette("  Пастельная ");
 
-    expect(galleryPalettesBodySchema.parse({ palettes: [pastel], translations: {} })).toEqual({
+    expect(galleryPalettesBodySchema.parse({ palettes: [pastel] })).toEqual({
       palettes: [{ id: pastel.id, title: "Пастельная" }],
-      translations: {},
     });
   });
 

@@ -79,6 +79,9 @@
     "storage": {
       "port": 5503
     },
+    "tasks": {
+      "port": 5504
+    },
     "ui": {
       "enabled": false
     },

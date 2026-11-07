@@ -3,12 +3,7 @@ import { z } from "zod";
 
 import { discountedAmount } from "#modules/gallery/works/prices";
 import { countryCodes } from "#shared/geo/countries";
-import {
-  storedTranslationsSchema,
-  type Translations,
-  translationsBodySchema,
-} from "#shared/i18n/translations";
-import { maxAltLength, type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
+import { type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
 import {
   type ListPhoto,
   photoListBodySchema,
@@ -114,26 +109,18 @@ function isFutureMonth(year: number, month: number): boolean {
   return year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth() + 1);
 }
 
-/** The texts of a work that the site shows in every language, with the limit of each. */
-const workTextLimits = {
-  alt: maxAltLength,
-  city: maxWorkCityLength,
-  description: 2_000,
-  title: 100,
-};
-
 /** A work as the client sends it, to create one or to replace a saved one. Every field is sent. */
 export const workBodySchema = z
   .strictObject({
     /** Whether the site shows the work; a hidden one is kept, as a draft or put aside. */
     published: z.boolean(),
     /** The name in the gallery, so it cannot be empty. */
-    title: z.string().trim().min(1).max(workTextLimits.title),
+    title: z.string().trim().min(1).max(100),
     /**
      * What the work is about, which the visitor reads beside it. Plain text: no HTML or Markdown.
      * Paragraphs are separated by a blank line.
      */
-    description: z.string().trim().min(1).max(workTextLimits.description),
+    description: z.string().trim().min(1).max(2_000),
     size: workSizeSchema,
     /** A work is dated by the month it was finished, which cannot be in the future. */
     year: z.number().int().min(minWorkYear),
@@ -168,8 +155,6 @@ export const workBodySchema = z
     saleStatus: z.enum(workSaleStatuses),
     /** Null for a work without a price. The price of a set is for all its works together. */
     price: workPriceBodySchema.nullable(),
-    /** The texts above in the other languages; the server makes those not written by a person. */
-    translations: translationsBodySchema(workTextLimits),
   })
   .refine(({ month, year }) => !isFutureMonth(year, month), {
     message: "The month cannot be in the future",
@@ -216,7 +201,6 @@ export const storedWorkSchema = z.object({
       discountPercent: z.number().nullable(),
     })
     .nullable(),
-  translations: storedTranslationsSchema,
   /** Set by the server when the work is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the work. */
@@ -284,8 +268,6 @@ export interface Work {
   saleStatus: (typeof workSaleStatuses)[number];
   /** Null for a work without a price. */
   price: WorkPrice | null;
-  /** The title, the description, the city and the photo's alt text in the other languages. */
-  translations: Translations;
   /** ISO 8601. */
   createdAt: string;
   /** ISO 8601. */
@@ -293,11 +275,10 @@ export interface Work {
 }
 
 /**
- * A work in the list of works: everything but its description, its process photos and its
- * translations, the heavy parts that only the page of one work needs. A list of many works stays
- * light.
+ * A work in the list of works: everything but its description and its process photos, the heavy
+ * parts that only the page of one work needs. A list of many works stays light.
  */
-export type WorkSummary = Omit<Work, "description" | "processPhotos" | "translations">;
+export type WorkSummary = Omit<Work, "description" | "processPhotos">;
 
 export interface WorksResponse {
   /** In the order the site shows them: the latest first. */

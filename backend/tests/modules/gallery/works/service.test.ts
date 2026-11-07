@@ -22,8 +22,10 @@ const uploads = vi.hoisted(() => ({
   publishUpload: vi.fn(),
 }));
 
-const deepl = vi.hoisted(() => ({ translateTexts: vi.fn() }));
-
+vi.mock("#shared/i18n/translation-store", () => ({
+  deleteTranslations: vi.fn(),
+  requestTranslations: vi.fn(),
+}));
 vi.mock("#shared/firebase/firestore", () => {
   function snapshot(collection: Map<string, Record<string, unknown>>, id: string) {
     const data = collection.get(id);
@@ -72,7 +74,6 @@ vi.mock("#shared/firebase/firestore", () => {
   };
 });
 vi.mock("#shared/firebase/storage", () => storage);
-vi.mock("#shared/i18n/deepl", () => deepl);
 vi.mock("#shared/images/uploads", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...uploads,
@@ -80,6 +81,7 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import { Timestamp } from "firebase-admin/firestore";
+
 import { maxCollectionWorks } from "#modules/gallery/collections/schema";
 import type { WorkBody } from "#modules/gallery/works/schema";
 import {
@@ -97,7 +99,6 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
-import { targetLanguages } from "#shared/i18n/languages";
 
 const elephantId = "11111111-1111-4111-8111-111111111111";
 const tigerId = "22222222-2222-4222-8222-222222222222";
@@ -181,7 +182,6 @@ function storedWork(id: string, title: string, year: number, month: number, crea
     collectionId: null,
     size: { width: 50, height: 70 },
     title,
-    translations: {},
     updatedAt: createdAt,
     year,
   };
@@ -223,7 +223,6 @@ const body: WorkBody = {
   month: 4,
   country: null,
   city: "",
-  translations: {},
 };
 
 /** The If-Match of a client that read the work. */
@@ -235,11 +234,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   works.clear();
   sections.clear();
-  sections.set(animalsId, {
-    translations: {},
-    subsections: [{ id: birdsId, title: "Птицы" }],
-    title: "Животные",
-  });
+  sections.set(animalsId, { subsections: [{ id: birdsId, title: "Птицы" }], title: "Животные" });
   collections.clear();
   collections.set(animalsCollectionId, { title: "Звери" });
   lists.clear();
@@ -908,7 +903,7 @@ describe("replaceWork", () => {
     expect(Date.parse(data.updatedAt)).toBeGreaterThan(seededAt.toMillis());
   });
 
-  it("returns 412 for a work changed since it was read, before making any copy", async () => {
+  it("returns 412 for a work changed since it was read, and removes the copy", async () => {
     const saved = works.get(elephantId);
 
     await expect(replaceWork(elephantId, body, '"stale"')).rejects.toBeInstanceOf(
@@ -916,23 +911,6 @@ describe("replaceWork", () => {
     );
 
     expect(works.get(elephantId)).toBe(saved);
-    expect(uploads.publishUpload).not.toHaveBeenCalled();
-  });
-
-  it("returns 412 for a work changed during the save, and removes the copy", async () => {
-    const etag = await readTag(elephantId);
-    const changed = { ...storedWork(elephantId, "Слоник", 2023, 5) };
-
-    deepl.translateTexts.mockImplementationOnce(async () => {
-      works.set(elephantId, changed);
-      return [];
-    });
-
-    await expect(replaceWork(elephantId, body, etag)).rejects.toBeInstanceOf(
-      PreconditionFailedError,
-    );
-
-    expect(works.get(elephantId)).toBe(changed);
     expect(storage.deleteFolder).toHaveBeenCalledWith(
       `galleryWorks/${elephantId}/photo/new-version`,
     );
@@ -956,99 +934,5 @@ describe("deleteWork", () => {
 
     expect(works.has(elephantId)).toBe(true);
     expect(storage.deleteFolder).not.toHaveBeenCalled();
-  });
-});
-
-describe("the translations of a work", () => {
-  beforeEach(() => {
-    deepl.translateTexts.mockImplementation(async (texts: string[], language: string) =>
-      texts.map((text) => `${text} (${language})`),
-    );
-  });
-
-  it("translates the texts of a new work into every language", async () => {
-    const { data } = await createWork(newId, { ...body, city: "Минск" });
-
-    expect(deepl.translateTexts).toHaveBeenCalledTimes(targetLanguages.length);
-    expect(data.translations.en).toEqual({
-      alt: { status: "auto", text: "Новое фото (en)" },
-      city: { status: "auto", text: "Минск (en)" },
-      description: { status: "auto", text: "Масло, холст. (en)" },
-      title: { status: "auto", text: "Жираф (en)" },
-    });
-  });
-
-  it("leaves an empty text untranslated", async () => {
-    const { data } = await createWork(newId, body);
-
-    expect(data.translations.en).not.toHaveProperty("city");
-  });
-
-  it("saves a work the translator failed on, without its translations", async () => {
-    deepl.translateTexts.mockRejectedValue(new Error("Unavailable"));
-
-    const { data } = await createWork(newId, body);
-
-    expect(data.title).toBe("Жираф");
-    expect(data.translations).toEqual({});
-  });
-
-  it("translates only the text that changed", async () => {
-    const { data, etag } = await createWork(newId, body);
-
-    deepl.translateTexts.mockClear();
-
-    const saved = await replaceWork(
-      newId,
-      { ...body, photo: { alt: "Новое фото" }, title: "Зебра" },
-      etag,
-    );
-
-    expect(deepl.translateTexts).toHaveBeenCalledWith(["Зебра"], "en");
-    expect(saved.data.translations.en?.title).toEqual({ status: "auto", text: "Зебра (en)" });
-    expect(saved.data.translations.en?.description).toEqual(data.translations.en?.description);
-  });
-
-  it("keeps a person's edit, and shows it as out of date once the source changes", async () => {
-    const { etag } = await createWork(newId, body);
-    const next = { ...body, photo: { alt: "Новое фото" } };
-    const edited = await replaceWork(
-      newId,
-      { ...next, translations: { en: { title: "Giraffe" } } },
-      etag,
-    );
-
-    expect(edited.data.translations.en?.title).toEqual({ status: "edited", text: "Giraffe" });
-
-    const changed = await replaceWork(newId, { ...next, title: "Зебра" }, edited.etag);
-
-    expect(changed.data.translations.en?.title).toEqual({ status: "outdated", text: "Giraffe" });
-  });
-
-  it("replaces a person's edit when asked to", async () => {
-    const { etag } = await createWork(newId, body);
-    const next = { ...body, photo: { alt: "Новое фото" } };
-    const edited = await replaceWork(
-      newId,
-      { ...next, translations: { en: { title: "Giraffe" } } },
-      etag,
-    );
-    const { data } = await replaceWork(
-      newId,
-      { ...next, translations: { en: { title: null } } },
-      edited.etag,
-    );
-
-    expect(data.translations.en?.title).toEqual({ status: "auto", text: "Жираф (en)" });
-  });
-
-  it("pays for no translation of a change it rejects with 412", async () => {
-    await createWork(newId, body);
-    deepl.translateTexts.mockClear();
-
-    await expect(
-      replaceWork(newId, { ...body, photo: { alt: "Новое фото" }, title: "Зебра" }, '"stale"'),
-    ).rejects.toMatchObject({ status: 412 });
-    expect(deepl.translateTexts).not.toHaveBeenCalled();
   });
 });

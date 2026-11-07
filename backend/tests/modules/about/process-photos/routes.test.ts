@@ -53,14 +53,8 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  service.listProcessPhotos.mockResolvedValue({
-    data: { photos: [processPhoto], translations: {} },
-    etag,
-  });
-  service.replaceProcessPhotos.mockResolvedValue({
-    data: { photos: [processPhoto], translations: {} },
-    etag: newEtag,
-  });
+  service.listProcessPhotos.mockResolvedValue({ data: [processPhoto], etag });
+  service.replaceProcessPhotos.mockResolvedValue({ data: [processPhoto], etag: newEtag });
 });
 
 afterAll(() => server.close());
@@ -71,10 +65,7 @@ describe("listing the process photos", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(etag);
-    await expect(response.json()).resolves.toEqual({
-      processPhotos: [processPhoto],
-      translations: {},
-    });
+    await expect(response.json()).resolves.toEqual({ processPhotos: [processPhoto] });
   });
 });
 
@@ -93,10 +84,7 @@ describe("replacing the process photos", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("ETag")).toBe(newEtag);
-    await expect(response.json()).resolves.toEqual({
-      processPhotos: [processPhoto],
-      translations: {},
-    });
+    await expect(response.json()).resolves.toEqual({ processPhotos: [processPhoto] });
     expect(service.replaceProcessPhotos).toHaveBeenCalledWith(
       [
         { alt: "Sketch", id },

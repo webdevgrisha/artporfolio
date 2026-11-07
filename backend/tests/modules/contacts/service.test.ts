@@ -26,7 +26,6 @@ const emptyLinks = { email: "", instagram: "", linkedin: "", youtube: "" };
 
 const storedPhoto = {
   alt: "Portrait",
-  translations: {},
   fileName: "photo.png",
   fileSize: 466_000,
   height: 640,
@@ -60,7 +59,7 @@ describe("contacts service", () => {
 
     await expect(getContacts()).resolves.toEqual({
       links,
-      photo: { ...apiImage("photo.png"), alt: "Portrait", translations: {} },
+      photo: { ...apiImage("photo.png"), alt: "Portrait" },
     });
     expect(document.get).toHaveBeenCalledOnce();
   });

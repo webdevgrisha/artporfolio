@@ -1,7 +1,10 @@
 import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
+import { onTaskDispatched } from "firebase-functions/v2/tasks";
 
 import { server } from "#server";
+import type { TranslationTask } from "#shared/i18n/translation-queue";
+import { runTranslation } from "#shared/i18n/translation-store";
 
 const csrfSecret = defineSecret("CSRF_SECRET");
 const deeplApiKey = defineSecret("DEEPL_API_KEY");
@@ -21,4 +24,22 @@ export const api = onRequest(
     secrets: [csrfSecret, deeplApiKey],
   },
   server,
+);
+
+/** How many times the queue tries a task before the texts show as failed. */
+const maxTranslationAttempts = 5;
+
+/**
+ * Translates in the background, so a save never waits for DeepL. One task at a time keeps within
+ * its rate limit, whatever the number of saves; a failed task comes back later.
+ */
+export const translate = onTaskDispatched<TranslationTask>(
+  {
+    rateLimits: { maxConcurrentDispatches: 1 },
+    region: "europe-west1",
+    retryConfig: { maxAttempts: maxTranslationAttempts, minBackoffSeconds: 60 },
+    secrets: [deeplApiKey],
+    timeoutSeconds: 300,
+  },
+  ({ data, retryCount }) => runTranslation(data.resource, retryCount >= maxTranslationAttempts - 1),
 );

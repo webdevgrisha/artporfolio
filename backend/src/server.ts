@@ -14,6 +14,7 @@ import { healthRouter } from "#modules/health/routes";
 import { originalsRouter } from "#modules/originals/routes";
 import { pagesRouter } from "#modules/pages/routes";
 import { projectsRouter } from "#modules/projects/routes";
+import { translationsRouter } from "#modules/translations/routes";
 import { uploadsRouter } from "#modules/uploads/routes";
 import { corsOptions } from "#shared/config/cors";
 import { documentResourceRouter } from "#shared/http/document-resource";
@@ -40,6 +41,7 @@ server.use("/api/about", aboutRouter);
 server.use("/api/currencies", documentResourceRouter(currencyRates, currencyRatesBodySchema));
 server.use("/api/gallery", galleryRouter);
 server.use("/api/projects", projectsRouter);
+server.use("/api/translations", translationsRouter);
 server.use("/api/uploads", uploadsRouter);
 
 server.use((_request, _response, next) => {

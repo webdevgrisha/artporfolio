@@ -1,18 +1,11 @@
 import { z } from "zod";
 
-import { translationsBodySchema } from "#shared/i18n/translations";
-
-/** The longest text. */
-const maxIntroLength = 1_000;
-
 /**
  * The text above the works in the gallery. Plain text: no HTML or Markdown; paragraphs are
  * separated by a blank line. An empty string means the site shows no text there.
  */
 export const galleryIntroBodySchema = z.strictObject({
-  text: z.string().trim().max(maxIntroLength),
-  /** The text in the other languages; the server makes those not written by a person. */
-  translations: translationsBodySchema({ text: maxIntroLength }),
+  text: z.string().trim().max(1_000),
 });
 
 /**

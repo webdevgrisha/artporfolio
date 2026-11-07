@@ -13,8 +13,10 @@ const uploads = vi.hoisted(() => ({
   publishUpload: vi.fn(),
 }));
 
-const deepl = vi.hoisted(() => ({ translateTexts: vi.fn() }));
-
+vi.mock("#shared/i18n/translation-store", () => ({
+  deleteTranslations: vi.fn(),
+  requestTranslations: vi.fn(),
+}));
 vi.mock("#shared/firebase/firestore", () => {
   function snapshot(id: string) {
     const data = projects.get(id);
@@ -56,7 +58,6 @@ vi.mock("#shared/firebase/firestore", () => {
   };
 });
 vi.mock("#shared/firebase/storage", () => storage);
-vi.mock("#shared/i18n/deepl", () => deepl);
 vi.mock("#shared/images/uploads", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...uploads,
@@ -118,7 +119,6 @@ function storedProject(id: string, title: string, position: number) {
     photos: [storedPhoto(id)],
     position,
     title,
-    translations: {},
     updatedAt: seededAt,
   };
 }
@@ -149,7 +149,6 @@ const body = {
   link: "https://elephant.com",
   photos: [{ alt: "Новое фото", uploadId }],
   title: "Слон",
-  translations: {},
 };
 
 beforeEach(() => {
@@ -327,67 +326,18 @@ describe("replaceProject", () => {
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
-  it("returns 412 when the project has changed since it was read, before making any copy", async () => {
+  it("returns 412 when the project has changed since it was read, and removes the copies", async () => {
     const tag = await readTag(elephantId);
     await replaceProject(elephantId, { ...body, photos: [] }, tag);
-    uploads.publishUpload.mockClear();
+    storage.deleteFolder.mockClear();
 
     await expect(replaceProject(elephantId, body, tag)).rejects.toBeInstanceOf(
       PreconditionFailedError,
     );
     expect(projects.get(elephantId)?.photos).toEqual([]);
-    expect(uploads.publishUpload).not.toHaveBeenCalled();
-  });
-
-  it("returns 412 when the project changes during the save, and removes the copies", async () => {
-    const tag = await readTag(elephantId);
-    const changed = storedProject(elephantId, "Слоник", 0);
-
-    deepl.translateTexts.mockImplementationOnce(async () => {
-      projects.set(elephantId, changed);
-      return [];
-    });
-
-    await expect(replaceProject(elephantId, body, tag)).rejects.toBeInstanceOf(
-      PreconditionFailedError,
-    );
-    expect(projects.get(elephantId)).toBe(changed);
     expect(storage.deleteFolder).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`^projects/${elephantId}/photos/.+/new-version$`)),
     );
-  });
-
-  it("translates the texts, keeping a person's edit when the source changes", async () => {
-    deepl.translateTexts.mockImplementation(async (texts: string[], language: string) =>
-      texts.map((text) => `${text} (${language})`),
-    );
-
-    const edited = await replaceProject(
-      elephantId,
-      { ...body, translations: { en: { title: "Big Elephant" } } },
-      await readTag(elephantId),
-    );
-
-    expect(edited.data.translations.en).toMatchObject({
-      description: { status: "auto", text: "Иллюстрации к книге. (en)" },
-      title: { status: "edited", text: "Big Elephant" },
-    });
-
-    const { data } = await replaceProject(elephantId, { ...body, title: "Слоник" }, edited.etag);
-
-    expect(data.translations.en?.title).toEqual({ status: "outdated", text: "Big Elephant" });
-    expect(data.translations.pl?.title).toEqual({ status: "auto", text: "Слоник (pl)" });
-  });
-
-  it("translates the alt texts of the photos by their ids", async () => {
-    deepl.translateTexts.mockImplementation(async (texts: string[], language: string) =>
-      texts.map((text) => `${text} (${language})`),
-    );
-
-    const { data } = await replaceProject(elephantId, body, await readTag(elephantId));
-    const photoId = data.photos[0]?.id as string;
-
-    expect(data.translations.en?.[photoId]).toEqual({ status: "auto", text: "Новое фото (en)" });
   });
 
   it("returns 404 for a project that does not exist", async () => {

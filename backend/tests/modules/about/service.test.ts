@@ -40,10 +40,9 @@ describe("about service", () => {
     storedAs({});
 
     await expect(getAbout()).resolves.toEqual({
-      text: { about: "", biography: "", creation: "", translations: {} },
+      text: { about: "", biography: "", creation: "" },
       photo: null,
       processPhotos: [],
-      processPhotoTranslations: {},
     });
   });
 
@@ -51,13 +50,13 @@ describe("about service", () => {
     const processId = "11111111-1111-4111-8111-111111111111";
     storedAs({
       text,
-      photo: { ...storedImage, alt: "Portrait", translations: {} },
+      photo: { ...storedImage, alt: "Portrait" },
       processPhotos: [{ ...storedImage, alt: "Sketch", id: processId }],
     });
 
     const about = await getAbout();
 
-    expect(about.text).toEqual({ ...text, translations: {} });
+    expect(about.text).toEqual(text);
     expect(about.photo).toMatchObject({ alt: "Portrait" });
     expect(about.photo?.sources.avif[0]?.url).toBe(
       "https://storage.test/about/photo/v/640.avif?token=token",

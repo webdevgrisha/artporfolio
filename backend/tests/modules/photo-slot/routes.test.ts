@@ -36,6 +36,7 @@ const slot = photoSlot({
   document: () => ({}) as DocumentReference,
   field: "photo",
   folder: "test/photo",
+  resource: "test-photo",
 });
 
 let server: TestServer;

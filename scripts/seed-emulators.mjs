@@ -582,7 +582,7 @@ async function seedHeroes(api) {
 }
 
 async function seedAbout(api) {
-  await api.put("/about/text", { ...aboutText, translations: {} });
+  await api.put("/about/text", aboutText);
 
   const portrait = await uploadArtwork(api, {
     kind: "painting",
@@ -625,7 +625,7 @@ async function seedCurrencies(api) {
 }
 
 async function seedProjects(api) {
-  await api.put("/projects/intro", { text: projectsIntro, translations: {} });
+  await api.put("/projects/intro", { text: projectsIntro });
 
   // A new project goes to the top of the list, so the last one is created first.
   for (const [index, project] of projects.map((project, index) => [index, project]).reverse()) {
@@ -647,14 +647,13 @@ async function seedProjects(api) {
       link: project.link,
       photos,
       title: project.title,
-      translations: {},
     });
     console.log(`  project: ${project.title} (${String(photos.length)} photos)`);
   }
 }
 
 async function seedGallery(api) {
-  await api.put("/gallery/intro", { text: galleryIntro, translations: {} });
+  await api.put("/gallery/intro", { text: galleryIntro });
 
   // The ids of the sections and subsections by title, for the works to refer to.
   const sectionIds = new Map();
@@ -663,11 +662,7 @@ async function seedGallery(api) {
     const id = randomUUID();
     const subsections = section.subsections.map((title) => ({ id: randomUUID(), title }));
 
-    await api.create(`/gallery/sections/${id}`, {
-      title: section.title,
-      subsections,
-      translations: {},
-    });
+    await api.create(`/gallery/sections/${id}`, { title: section.title, subsections });
     sectionIds.set(section.title, id);
     for (const subsection of subsections) sectionIds.set(subsection.title, subsection.id);
   }
@@ -676,17 +671,17 @@ async function seedGallery(api) {
   // The ids of the materials by title, for the works to refer to.
   const materialIds = new Map(materials.map(({ id, title }) => [title, id]));
 
-  await api.put("/gallery/materials", { materials, translations: {} });
+  await api.put("/gallery/materials", { materials });
   const colors = galleryColors.map((color) => ({ id: randomUUID(), ...color }));
   // The ids of the colors by title, for the works to refer to.
   const colorIds = new Map(colors.map(({ id, title }) => [title, id]));
 
-  await api.put("/gallery/colors", { colors, translations: {} });
+  await api.put("/gallery/colors", { colors });
   const palettes = galleryPalettes.map((title) => ({ id: randomUUID(), title }));
   // The ids of the palettes by title, for the works to refer to.
   const paletteIds = new Map(palettes.map(({ id, title }) => [title, id]));
 
-  await api.put("/gallery/palettes", { palettes, translations: {} });
+  await api.put("/gallery/palettes", { palettes });
 
   // The ids of the collections by title, for the works to refer to. A collection is created empty:
   // each work names its own when it is created.
@@ -698,7 +693,6 @@ async function seedGallery(api) {
     await api.create(`/gallery/collections/${id}`, {
       title: collection.title,
       description: `${collection.title}. Серия работ о животных.`,
-      translations: {},
       cover: {
         alt: collection.title,
         uploadId: await uploadArtwork(api, {
@@ -766,7 +760,6 @@ async function seedGallery(api) {
       colorIds: (kind === "etching" ? workEtchingColors : workPaintingColors[work.palette]).map(
         (title) => colorIds.get(title),
       ),
-      translations: {},
       paletteIds: (kind === "etching"
         ? workEtchingPalettes
         : workPaintingPalettes[index % workPaintingPalettes.length]
@@ -805,10 +798,28 @@ async function clearFirestore() {
   }
 }
 
+/**
+ * Pauses translating, so seeding does not spend the plan of DeepL on test data. The banner of the
+ * admin offers to go on.
+ */
+async function pauseTranslating() {
+  const url = `${firestoreDocumentsUrl.replace("/emulator/v1", "/v1")}/site/translation`;
+  const response = await fetch(url, {
+    body: JSON.stringify({ fields: { halted: { stringValue: "paused" } } }),
+    headers: { Authorization: "Bearer owner", "Content-Type": "application/json" },
+    method: "PATCH",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Cannot pause translating: ${String(response.status)}`);
+  }
+}
+
 const startedAt = Date.now();
 const api = new Api();
 
 await clearFirestore();
+await pauseTranslating();
 
 await api.signIn();
 console.log(`Seeding ${apiUrl} as ${email}`);

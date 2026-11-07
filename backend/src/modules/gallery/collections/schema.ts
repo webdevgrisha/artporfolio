@@ -2,12 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { minWorkYear } from "#modules/gallery/works/schema";
-import {
-  storedTranslationsSchema,
-  type Translations,
-  translationsBodySchema,
-} from "#shared/i18n/translations";
-import { maxAltLength, type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
+import { type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
 
 /** A collection holds works, so it starts no earlier than a work can be dated. */
 export const minCollectionYear = minWorkYear;
@@ -28,23 +23,16 @@ export const collectionParamsSchema = z.object({
 
 const collectionYearSchema = z.number().int().min(minCollectionYear);
 
-/** The texts of a collection that the site shows in every language, with the limit of each. */
-const collectionTextLimits = {
-  alt: maxAltLength,
-  description: 2_000,
-  title: 100,
-};
-
 /** A collection as the client sends it, to create one or to replace a saved one. Every field is sent. */
 export const collectionBodySchema = z
   .strictObject({
     /** The name in the gallery, which tells the collections apart, so it cannot be empty. */
-    title: z.string().trim().min(1).max(collectionTextLimits.title),
+    title: z.string().trim().min(1).max(100),
     /**
      * What the collection is about, which the visitor reads beside it. Plain text: no HTML or
      * Markdown. Paragraphs are separated by a blank line.
      */
-    description: z.string().trim().min(1).max(collectionTextLimits.description),
+    description: z.string().trim().min(1).max(2_000),
     cover: photoBodySchema,
     /** The year the collection was started, which cannot be in the future. */
     startYear: collectionYearSchema,
@@ -59,8 +47,6 @@ export const collectionBodySchema = z
       .array(z.uuid())
       .max(maxCollectionWorks)
       .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once"),
-    /** The texts above in the other languages; the server makes those not written by a person. */
-    translations: translationsBodySchema(collectionTextLimits),
   })
   .superRefine(({ endYear, startYear }, context) => {
     const thisYear = new Date().getFullYear();
@@ -105,7 +91,6 @@ export const storedCollectionSchema = z.object({
   cover: storedPhotoSchema,
   startYear: z.number(),
   endYear: z.number().nullable(),
-  translations: storedTranslationsSchema,
   /** Set by the server when the collection is created. */
   createdAt: z.instanceof(Timestamp),
   /** Set by the server whenever the admin saves the collection. */
@@ -127,18 +112,13 @@ export interface Collection {
   endYear: number | null;
   /** In the order the site shows them: the latest first. */
   workIds: string[];
-  /** The title, the description and the cover's alt text in the other languages. */
-  translations: Translations;
   /** ISO 8601. */
   createdAt: string;
   /** ISO 8601. */
   updatedAt: string;
 }
 
-/** A collection in the list: everything but its translations, which only its own page needs. */
-export type CollectionSummary = Omit<Collection, "translations">;
-
 export interface CollectionsResponse {
   /** In the order the site shows them: the latest first. */
-  collections: CollectionSummary[];
+  collections: Collection[];
 }

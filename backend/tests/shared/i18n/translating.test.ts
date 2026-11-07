@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const deepl = vi.hoisted(() => ({ translateTexts: vi.fn() }));
-const logger = vi.hoisted(() => ({ warn: vi.fn() }));
 
 vi.mock("#shared/i18n/deepl", () => deepl);
-vi.mock("firebase-functions/logger", () => logger);
 
 import { targetLanguages } from "#shared/i18n/languages";
-import { saveTranslations } from "#shared/i18n/translating";
+import { translateAll } from "#shared/i18n/translating";
+import { planTranslations } from "#shared/i18n/translations";
 
 const sources = { city: "Минск", title: "Слон" };
+const { requests } = planTranslations(sources, {});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -18,15 +18,17 @@ beforeEach(() => {
   );
 });
 
-describe("saveTranslations", () => {
+describe("translateAll", () => {
   it("makes one request per language with all its texts", async () => {
-    const translations = await saveTranslations(sources, {}, {});
+    const { errors, made } = await translateAll(sources, requests);
 
+    expect(errors).toEqual([]);
     expect(deepl.translateTexts).toHaveBeenCalledTimes(targetLanguages.length);
     expect(deepl.translateTexts).toHaveBeenCalledWith(["Минск", "Слон"], "en");
-    expect(translations.en).toEqual({
-      city: { edited: false, source: "Минск", text: "Минск (en)" },
-      title: { edited: false, source: "Слон", text: "Слон (en)" },
+    expect(made).toContainEqual({
+      key: "title",
+      language: "en",
+      translation: { edited: false, source: "Слон", text: "Слон (en)" },
     });
   });
 
@@ -43,62 +45,26 @@ describe("saveTranslations", () => {
       return texts;
     });
 
-    await saveTranslations(sources, {}, {});
+    await translateAll(sources, requests);
 
-    expect(deepl.translateTexts).toHaveBeenCalledTimes(targetLanguages.length);
     expect(most).toBe(4);
   });
 
-  it("leaves the rest to the next save once it runs out of time", async () => {
-    const now = vi.spyOn(Date, "now").mockReturnValue(0);
-
-    deepl.translateTexts.mockImplementation(async (texts: string[]) => {
-      now.mockReturnValue(30_000);
-
-      return texts;
-    });
-
-    const translations = await saveTranslations({ title: "Слон" }, {}, {});
-
-    expect(deepl.translateTexts).toHaveBeenCalledTimes(4);
-    expect(Object.keys(translations)).toHaveLength(4);
-    expect(logger.warn).toHaveBeenCalledOnce();
-    now.mockRestore();
-  });
-
-  it("calls no translator when nothing changed", async () => {
-    const saved = Object.fromEntries(
-      targetLanguages.map((language) => [
-        language,
-        { title: { edited: false, source: "Слон", text: "Elephant" } },
-      ]),
-    );
-
-    await expect(saveTranslations({ title: "Слон" }, saved, {})).resolves.toEqual(saved);
-    expect(deepl.translateTexts).not.toHaveBeenCalled();
-  });
-
-  it("saves the other languages when one fails, which keeps its old text", async () => {
-    const old = { edited: false, source: "Старый", text: "Old" };
+  it("gives what it made and the error of the language that failed", async () => {
+    const failure = new Error("Unavailable");
 
     deepl.translateTexts.mockImplementation(async (texts: string[], language: string) => {
       if (language === "be") {
-        throw new Error("Unavailable");
+        throw failure;
       }
 
       return texts;
     });
 
-    const translations = await saveTranslations({ title: "Слон" }, { be: { title: old } }, {});
+    const { errors, made } = await translateAll(sources, requests);
 
-    expect(translations.be?.title).toEqual(old);
-    expect(translations.en?.title).toEqual({ edited: false, source: "Слон", text: "Слон" });
-    expect(logger.warn).toHaveBeenCalledOnce();
-  });
-
-  it("saves without a translation when the translator fails for all", async () => {
-    deepl.translateTexts.mockRejectedValue(new Error("DEEPL_API_KEY is not set"));
-
-    await expect(saveTranslations({ title: "Слон" }, {}, {})).resolves.toEqual({});
+    expect(errors).toEqual([failure]);
+    expect(made.some(({ language }) => language === "be")).toBe(false);
+    expect(made.some(({ language }) => language === "en")).toBe(true);
   });
 });

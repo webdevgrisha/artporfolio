@@ -17,7 +17,6 @@ const collection = {
   startYear: 2023,
   endYear: 2024,
   workIds: [randomUUID()],
-  translations: {},
 };
 
 function isValid(body: unknown): boolean {

@@ -35,7 +35,7 @@ pnpm exec firebase functions:secrets:set CSRF_SECRET --project artportfolio-b2ef
 ```
 
 `DEEPL_API_KEY` is the key of the DeepL API, which translates the texts of the site when they are
-saved. Configure it the same way:
+saved, in the background through a Cloud Tasks queue. Configure it the same way:
 
 ```sh
 pnpm exec firebase functions:secrets:set DEEPL_API_KEY --project artportfolio-b2ef4
