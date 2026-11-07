@@ -1,5 +1,4 @@
-import { IconButton } from "@/shared/ui/icon-button";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { IconAction } from "@/shared/ui/icon-button";
 
 import { MediaImage } from "./MediaImage";
 import styles from "./MediaThumbnailButton.module.css";
@@ -18,10 +17,13 @@ export function MediaThumbnailButton({ className, item, onOpen }: MediaThumbnail
   const openLabel = `Открыть ${item.name}`;
 
   return (
-    <Tooltip className={className} content={openLabel}>
-      <IconButton className={styles.button} label={openLabel} onClick={onOpen}>
-        <MediaImage className={styles.image} sizes="3.5rem" source={item.source} />
-      </IconButton>
-    </Tooltip>
+    <IconAction
+      tooltipClassName={className}
+      className={styles.button}
+      label={openLabel}
+      onClick={onOpen}
+    >
+      <MediaImage className={styles.image} sizes="3.5rem" source={item.source} />
+    </IconAction>
   );
 }

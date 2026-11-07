@@ -1,6 +1,5 @@
 import {
   type ColumnDef,
-  flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -14,13 +13,13 @@ import { useTableSearch } from "@/shared/lib/useTableSearch";
 import { useTableView } from "@/shared/lib/useTableView";
 import { Button, ButtonLink } from "@/shared/ui/button";
 import { SearchInput } from "@/shared/ui/search-input";
-import { Select } from "@/shared/ui/select";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./DataTable.module.css";
+import { TableBody } from "./TableBody";
+import { TableFilters } from "./TableFilters";
 import { TableHead } from "./TableHead";
 import { TablePagination } from "./TablePagination";
-import columnStyles from "./tableColumns.module.css";
 import type { TableRow } from "./tableRow";
 
 interface DataTableProps<TItem> {
@@ -46,9 +45,6 @@ interface DataTableProps<TItem> {
   /** Sets the widths of the table, such as its minimum before it scrolls. */
   tableClassName?: string;
 }
-
-/** The choice of a filter that shows every row. */
-const everyItemOption = { label: "Все", value: "" };
 
 const noFilters: readonly never[] = [];
 
@@ -160,21 +156,13 @@ export function DataTable<TItem>({
       </div>
 
       {filters.length > 0 ? (
-        <div
+        <TableFilters
           id={filtersId}
-          className={clsx(styles.filters, !areFiltersOpen && styles.filtersClosed)}
-        >
-          {filters.map(({ id, label, options }) => (
-            <Select
-              key={id}
-              className={styles.filter}
-              label={label}
-              options={[everyItemOption, ...options]}
-              value={view.filters[id] ?? ""}
-              onChange={(value) => changeFilter(id, value)}
-            />
-          ))}
-        </div>
+          filters={filters}
+          isOpen={areFiltersOpen}
+          values={view.filters}
+          onChange={changeFilter}
+        />
       ) : null}
 
       {items.length === 0 ? (
@@ -194,27 +182,7 @@ export function DataTable<TItem>({
                 <VisuallyHidden>{caption}</VisuallyHidden>
               </caption>
               <TableHead table={table} />
-              <tbody>
-                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className={styles.row}>
-                    {row.getVisibleCells().map((cell) => {
-                      const { meta } = cell.column.columnDef;
-
-                      return (
-                        <td
-                          key={cell.id}
-                          className={clsx(
-                            meta?.className,
-                            meta?.hiddenOnPhone && columnStyles.hiddenOnPhone,
-                          )}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
+              <TableBody table={table} />
             </table>
           </div>
           {pageCount > 1 ? (

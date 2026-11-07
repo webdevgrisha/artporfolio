@@ -1,9 +1,8 @@
 import React, { type ReactNode } from "react";
 
 import { PlusIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { IconAction } from "@/shared/ui/icon-button";
 import { Input } from "@/shared/ui/input";
-import { Tooltip } from "@/shared/ui/tooltip";
 
 import { titleKey, titleSchema } from "../../model/titles";
 import styles from "./TitleList.module.css";
@@ -89,16 +88,15 @@ export function AddTitleField({
         }
       }}
       endAdornment={
-        <Tooltip className={styles.addTooltip} content={labels.add}>
-          <IconButton
-            className={styles.addButton}
-            label={labels.add}
-            disabled={disabled || isFull}
-            onClick={add}
-          >
-            <PlusIcon className={styles.addIcon} />
-          </IconButton>
-        </Tooltip>
+        <IconAction
+          tooltipClassName={styles.addTooltip}
+          className={styles.addButton}
+          label={labels.add}
+          disabled={disabled || isFull}
+          onClick={add}
+        >
+          <PlusIcon className={styles.addIcon} />
+        </IconAction>
       }
     />
   );

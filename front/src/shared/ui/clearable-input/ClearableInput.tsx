@@ -1,7 +1,6 @@
 import { TrashIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { IconAction } from "@/shared/ui/icon-button";
 import { Input, type InputProps } from "@/shared/ui/input";
-import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./ClearableInput.module.css";
 
@@ -29,16 +28,15 @@ export function ClearableInput({
       disabled={disabled}
       endAdornment={
         hasValue ? (
-          <Tooltip className={styles.clearTooltip} content={clearLabel}>
-            <IconButton
-              className={styles.clearButton}
-              label={clearLabel}
-              disabled={disabled}
-              onClick={onClear}
-            >
-              <TrashIcon className={styles.clearIcon} />
-            </IconButton>
-          </Tooltip>
+          <IconAction
+            tooltipClassName={styles.clearTooltip}
+            className={styles.clearButton}
+            label={clearLabel}
+            disabled={disabled}
+            onClick={onClear}
+          >
+            <TrashIcon className={styles.clearIcon} />
+          </IconAction>
         ) : null
       }
     />

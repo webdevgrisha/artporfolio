@@ -1,9 +1,8 @@
 import React from "react";
 
 import { EyeIcon, EyeOffIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { IconAction } from "@/shared/ui/icon-button";
 import { Input, type InputProps } from "@/shared/ui/input";
-import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./PasswordInput.module.css";
 
@@ -28,16 +27,15 @@ export function PasswordInput({
       disabled={disabled}
       type={isVisible ? "text" : "password"}
       endAdornment={
-        <Tooltip className={styles.visibilityTooltip} content={toggleLabel}>
-          <IconButton
-            className={styles.visibilityButton}
-            label={toggleLabel}
-            disabled={disabled}
-            onClick={() => setIsVisible((currentVisibility) => !currentVisibility)}
-          >
-            {isVisible ? <EyeOffIcon /> : <EyeIcon />}
-          </IconButton>
-        </Tooltip>
+        <IconAction
+          tooltipClassName={styles.visibilityTooltip}
+          className={styles.visibilityButton}
+          label={toggleLabel}
+          disabled={disabled}
+          onClick={() => setIsVisible((currentVisibility) => !currentVisibility)}
+        >
+          {isVisible ? <EyeOffIcon /> : <EyeIcon />}
+        </IconAction>
       }
     />
   );

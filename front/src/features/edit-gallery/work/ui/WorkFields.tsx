@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import React from "react";
 import { useFormContext, useFormState, useWatch } from "react-hook-form";
 
 import { maxWorkProcessPhotos } from "@/entities/gallery";
@@ -12,6 +11,7 @@ import { Textarea } from "@/shared/ui/textarea";
 
 import type { WorkReferences } from "../model/useWorkReferences";
 import { type WorkFormValues, workMaxLengths } from "../model/workFormSchema";
+import { WorkFieldGroup } from "./WorkFieldGroup";
 import styles from "./WorkFields.module.css";
 import { WorkFormatFields } from "./WorkFormatFields";
 import { WorkPlacementFields } from "./WorkPlacementFields";
@@ -46,15 +46,11 @@ export function WorkFields({
   // the picker of the work photo takes no focus.
   const titleField = register("title");
   const descriptionField = register("description");
-  const headingId = React.useId();
 
   // The fields in groups under headings, in one column: a form is read and filled top to bottom.
   return (
     <div className={clsx(styles.root, className)}>
-      <section className={styles.group} aria-labelledby={`${headingId}-work`}>
-        <h2 id={`${headingId}-work`} className={styles.heading}>
-          Работа
-        </h2>
+      <WorkFieldGroup title="Работа">
         <PhotoFields label="Фото работы" isSaving={isSaving} serverPhoto={savedPhoto} />
         <ClearableInput
           label="Название"
@@ -78,45 +74,30 @@ export function WorkFields({
           isModified={Boolean(dirtyFields.description)}
           {...descriptionField}
         />
-      </section>
+      </WorkFieldGroup>
 
-      <section className={styles.group} aria-labelledby={`${headingId}-size`}>
-        <h2 id={`${headingId}-size`} className={styles.heading}>
-          Формат и размер
-        </h2>
+      <WorkFieldGroup title="Формат и размер">
         <WorkFormatFields isSaving={isSaving} />
-      </section>
+      </WorkFieldGroup>
 
-      <section className={styles.group} aria-labelledby={`${headingId}-place`}>
-        <h2 id={`${headingId}-place`} className={styles.heading}>
-          Где показывать
-        </h2>
+      <WorkFieldGroup title="Где показывать">
         <WorkPlacementFields collections={collections} isSaving={isSaving} sections={sections} />
-      </section>
+      </WorkFieldGroup>
 
-      <section className={styles.group} aria-labelledby={`${headingId}-search`}>
-        <h2 id={`${headingId}-search`} className={styles.heading}>
-          Для поиска на сайте
-        </h2>
+      <WorkFieldGroup title="Для поиска на сайте">
         <WorkSearchFields
           colors={colors}
           isSaving={isSaving}
           materials={materials}
           palettes={palettes}
         />
-      </section>
+      </WorkFieldGroup>
 
-      <section className={styles.group} aria-labelledby={`${headingId}-sale`}>
-        <h2 id={`${headingId}-sale`} className={styles.heading}>
-          Продажа
-        </h2>
+      <WorkFieldGroup title="Продажа">
         <WorkSaleFields isSaving={isSaving} rates={rates} />
-      </section>
+      </WorkFieldGroup>
 
-      <section className={styles.group} aria-labelledby={`${headingId}-process`}>
-        <h2 id={`${headingId}-process`} className={styles.heading}>
-          Процесс
-        </h2>
+      <WorkFieldGroup title="Процесс">
         <PhotoListField
           label="Фото процесса"
           altPlaceholder="Например: первые наброски карандашом"
@@ -124,7 +105,7 @@ export function WorkFields({
           isSaving={isSaving}
           savedPhotos={savedProcessPhotos}
         />
-      </section>
+      </WorkFieldGroup>
     </div>
   );
 }

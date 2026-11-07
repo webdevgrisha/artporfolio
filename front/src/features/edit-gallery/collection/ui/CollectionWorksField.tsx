@@ -6,9 +6,8 @@ import { Button } from "@/shared/ui/button";
 import { Fieldset } from "@/shared/ui/fieldset";
 import { Frame, FrameEmpty, FrameList, FrameListItem, FrameRow } from "@/shared/ui/frame-list";
 import { TrashIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { IconAction } from "@/shared/ui/icon-button";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
-import { Tooltip } from "@/shared/ui/tooltip";
 
 import { addableWorks } from "../model/addableWorks";
 import { AddWorksDialog } from "./AddWorksDialog";
@@ -89,19 +88,17 @@ export function CollectionWorksField({
                       <PhotoThumbnail image={work.photo} />
                       <span className={styles.title}>{work.title}</span>
                       <span className={styles.date}>{formatWorkDate(work)}</span>
-                      <Tooltip content={removeLabel}>
-                        <IconButton
-                          ref={(button) => {
-                            if (button) removeButtons.current.set(work.id, button);
-                            else removeButtons.current.delete(work.id);
-                          }}
-                          label={removeLabel}
-                          disabled={disabled}
-                          onClick={() => remove(work.id)}
-                        >
-                          <TrashIcon className={styles.removeIcon} />
-                        </IconButton>
-                      </Tooltip>
+                      <IconAction
+                        ref={(button) => {
+                          if (button) removeButtons.current.set(work.id, button);
+                          else removeButtons.current.delete(work.id);
+                        }}
+                        label={removeLabel}
+                        disabled={disabled}
+                        onClick={() => remove(work.id)}
+                      >
+                        <TrashIcon className={styles.removeIcon} />
+                      </IconAction>
                     </FrameRow>
                   </FrameListItem>
                 );

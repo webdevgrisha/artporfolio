@@ -3,9 +3,8 @@ import React from "react";
 
 import { Button } from "@/shared/ui/button";
 import { ArrowLeftIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { IconAction } from "@/shared/ui/icon-button";
 import { Spinner } from "@/shared/ui/spinner";
-import { Tooltip } from "@/shared/ui/tooltip";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./FormActions.module.css";
@@ -40,11 +39,9 @@ export function FormActions({
   return (
     <div className={clsx(styles.root, className)}>
       {hasUnsavedChanges ? (
-        <Tooltip content={revertLabel}>
-          <IconButton label={revertLabel} disabled={isSaving} onClick={revert}>
-            <ArrowLeftIcon />
-          </IconButton>
-        </Tooltip>
+        <IconAction label={revertLabel} disabled={isSaving} onClick={revert}>
+          <ArrowLeftIcon />
+        </IconAction>
       ) : null}
       <Button
         ref={saveButtonRef}

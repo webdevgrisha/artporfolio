@@ -1,5 +1,5 @@
 import { EditIcon, TrashIcon } from "@/shared/ui/icon";
-import { IconButton, IconButtonLink } from "@/shared/ui/icon-button";
+import { IconAction, IconButtonLink } from "@/shared/ui/icon-button";
 import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./RowActions.module.css";
@@ -27,11 +27,9 @@ export function RowActions({ editTo, isDeleting, onDelete, title }: RowActionsPr
           <EditIcon className={styles.icon} />
         </IconButtonLink>
       </Tooltip>
-      <Tooltip content={deleteLabel}>
-        <IconButton label={deleteLabel} disabled={isDeleting} onClick={onDelete}>
-          <TrashIcon className={styles.icon} />
-        </IconButton>
-      </Tooltip>
+      <IconAction label={deleteLabel} disabled={isDeleting} onClick={onDelete}>
+        <TrashIcon className={styles.icon} />
+      </IconAction>
     </div>
   );
 }
