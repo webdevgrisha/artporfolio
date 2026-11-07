@@ -27,7 +27,7 @@ async function translateMissing(resource: string): Promise<void> {
   const { errors, made } = await translateAll(
     saved.sources,
     requests,
-    translationContext(resource),
+    translationContext(resource, saved.sources),
   );
   const halt = errors.map(stopsTranslating).find((reason) => reason !== null) ?? null;
 

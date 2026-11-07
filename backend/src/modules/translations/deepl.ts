@@ -74,6 +74,8 @@ export async function translateTexts(
 ): Promise<string[]> {
   const results = await deepl().translateText(texts, sourceLanguage, deeplLanguages[language], {
     context,
+    // A task of the queue has time to spare; a language without this model takes the usual one.
+    modelType: "prefer_quality_optimized",
     // Paragraphs are separated by a blank line, which the translation must keep.
     preserveFormatting: true,
   });

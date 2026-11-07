@@ -29,7 +29,11 @@ describe("translateTexts", () => {
       ["Слон", "Минск"],
       "ru",
       "en-GB",
-      expect.objectContaining({ preserveFormatting: true }),
+      expect.objectContaining({
+        context: "Картина",
+        modelType: "prefer_quality_optimized",
+        preserveFormatting: true,
+      }),
     );
   });
 

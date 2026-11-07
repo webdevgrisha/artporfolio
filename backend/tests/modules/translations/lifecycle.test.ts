@@ -273,7 +273,7 @@ describe("requestTranslations", () => {
     expect(deepl.translateTexts).toHaveBeenCalledWith(
       ["Тигр"],
       "en",
-      "Название и описание картины на сайте художника",
+      "Название и описание картины на сайте художника. Название: Тигр",
     );
   });
 
