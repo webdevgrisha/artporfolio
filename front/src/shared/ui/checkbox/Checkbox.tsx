@@ -22,7 +22,7 @@ interface CheckboxProps {
   onChange: (checked: boolean) => void;
 }
 
-/** A square checkbox in the style of the admin: black when checked, with a white check mark. */
+/** A square checkbox in the style of the admin: filled when checked, with a check mark over it. */
 export function Checkbox({
   "aria-describedby": ariaDescribedBy,
   checked,

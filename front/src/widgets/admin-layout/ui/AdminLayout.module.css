@@ -26,6 +26,10 @@
   padding: 0 var(--page-gutter) var(--page-gutter);
 }
 
+.banner {
+  margin-block-end: var(--layout-space-6);
+}
+
 /* The title with the main action of the page, then the breadcrumbs, above the frame. */
 .pageHeader {
   display: flex;

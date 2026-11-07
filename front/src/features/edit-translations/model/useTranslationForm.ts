@@ -8,12 +8,16 @@ import {
   type TranslationEdit,
   translationsQuery,
 } from "@/entities/translation";
-import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
+import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import type { TargetLanguage } from "@/shared/config/languages";
+import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
 import { useWrittenFrom } from "./useWrittenFrom";
 
 export type TranslationValues = Record<string, string>;
+
+/** The toasts of the translations replace each other: a later result replaces an error. */
+const toastId = "translations-save";
 
 interface UseTranslationFormParams {
   fields: readonly TranslatedField[];
@@ -60,8 +64,8 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
     meta: {
       feedback: {
         getErrorMessage: (error: unknown) =>
-          getRequestErrorMessage(error, "Не удалось сохранить перевод"),
-        toastId: "translations-save",
+          getSaveErrorMessage(error, { fallback: "Не удалось сохранить перевод" }),
+        toastId,
       },
     },
     mutationFn: (texts: Record<string, TranslationEdit>) =>
@@ -75,8 +79,8 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
     meta: {
       feedback: {
         getErrorMessage: (error: unknown) =>
-          getRequestErrorMessage(error, "Не удалось запустить перевод"),
-        toastId: "translations-save",
+          getSaveErrorMessage(error, { fallback: "Не удалось запустить перевод" }),
+        toastId,
       },
     },
     mutationFn: (key: string) => patchTranslations({ language, resource, texts: { [key]: null } }),
@@ -95,8 +99,9 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
 
     if (changed.length > 0) {
       save.mutate(Object.fromEntries(changed));
-    } else if (data) {
-      revertTo(data);
+    } else {
+      if (data) revertTo(data);
+      showSuccessToast(savedMessage, { id: toastId });
     }
   }
 

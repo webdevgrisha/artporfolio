@@ -5,10 +5,15 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/shared/ui/unsaved-changes", () => ({ useReportUnsavedChanges: vi.fn() }));
+vi.mock("@/shared/ui/toast", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/ui/toast")>()),
+  showSuccessToast: vi.fn(),
+}));
 
 import type { ResourceTranslations } from "@/entities/translation";
 import { TranslationForm } from "@/features/edit-translations/ui/TranslationForm";
 import { sessionExpiredMessage } from "@/shared/api/requestErrorMessages";
+import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
 import { csrfHandler } from "../../support/handlers";
 import { recordRequests, server } from "../../support/server";
@@ -91,6 +96,18 @@ describe("TranslationForm", () => {
     await screen.findByLabelText("Название");
 
     expect(screen.queryByLabelText("Город")).toBeNull();
+  });
+
+  it("tells a save with nothing to send is done, and sends nothing", async () => {
+    const { patches } = setUp();
+
+    await screen.findByLabelText("Название");
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() =>
+      expect(showSuccessToast).toHaveBeenCalledWith(savedMessage, { id: "translations-save" }),
+    );
+    expect(patches).toEqual([]);
   });
 
   it("sends only what changed", async () => {

@@ -51,7 +51,7 @@ export function AdminLayout() {
 
         <main className={styles.page}>
           <title>{documentTitle(pageTitle)}</title>
-          <TranslationBanner />
+          <TranslationBanner className={styles.banner} />
           <div className={styles.pageHeader}>
             <div className={styles.titleRow}>
               <h1 className={styles.title}>{pageTitle}</h1>

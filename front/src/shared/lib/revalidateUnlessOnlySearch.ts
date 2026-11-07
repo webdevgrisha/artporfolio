@@ -1,8 +1,8 @@
 import type { ShouldRevalidateFunctionArgs } from "react-router";
 
 /**
- * For a page whose search parameters are only a view of it, such as the search of a table: a
- * change of them alone loads nothing again.
+ * For a page whose search parameters are only a view of it, such as the search of a table or the
+ * language of a form: a change of them alone loads nothing again.
  */
 export function revalidateUnlessOnlySearch({
   currentUrl,

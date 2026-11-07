@@ -1,7 +1,7 @@
 import { type RefinementCtx, z } from "zod";
 
-// Mirrors the server rules for the titles of the sections, the subsections, the materials and the
-// colors (backend/src/modules/gallery-*/schema.ts).
+// Mirrors the server rules for the titles of the sections, the subsections, the materials, the
+// colors and the palettes (their schema.ts in backend/src/modules/gallery).
 export const maxTitleLength = 50;
 
 export const titleSchema = z
