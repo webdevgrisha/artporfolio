@@ -1,15 +1,14 @@
-import React from "react";
+import type React from "react";
 import { type FieldValues, useFormContext, useFormState } from "react-hook-form";
 
 import type { Translations } from "@/shared/api/translations";
-import { languageNames, type TargetLanguage, targetLanguages } from "@/shared/config/languages";
+import { languageNames, targetLanguages } from "@/shared/config/languages";
 import { countOutdated } from "@/shared/lib/translationsForm";
+import { type FormLanguage, useFormLanguage } from "@/shared/lib/useFormLanguage";
 import { Select } from "@/shared/ui/select";
 
 import styles from "./LanguageForm.module.css";
 import { TranslationFields } from "./TranslationFields";
-
-type FormLanguage = "ru" | TargetLanguage;
 
 const russianName = "Русский (оригинал)";
 
@@ -39,7 +38,7 @@ interface LanguageFormProps {
  * hidden, so switching never loses what was typed.
  */
 export function LanguageForm({ children, fields, isSaving, saved }: LanguageFormProps) {
-  const [language, setLanguage] = React.useState<FormLanguage>("ru");
+  const [language, setLanguage] = useFormLanguage();
   const { control } = useFormContext<FieldValues>();
   const { errors } = useFormState({ control });
   const { translations: translationErrors, ...russianErrors } = errors;
