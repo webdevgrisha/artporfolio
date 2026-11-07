@@ -9,12 +9,12 @@ import {
   maxColors,
   type WorkUsages,
 } from "@/entities/gallery";
+import type { LanguageFormSlot } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ColorSwatchInput } from "@/shared/ui/color-swatch";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { LanguageForm } from "@/shared/ui/language-form";
 import { Tooltip } from "@/shared/ui/tooltip";
 import { useRowRemoval } from "../../model/useRowRemoval";
 import { describeWorkUsage, usageOf } from "../../model/workUsage";
@@ -34,6 +34,8 @@ import { TitleListRow } from "./TitleListRow";
 
 interface EditColorsFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The colors as stored on the server when the form opens, with their ETag. */
   colors: Tagged<GalleryColors>;
   /** How many works have each color, by its id. */
@@ -53,7 +55,12 @@ interface ColorStart {
  * the list once it is saved; the colors added since stay at its end until then. A color tells how
  * many works have it, and its removal asks first if any do.
  */
-export function EditColorsForm({ className, colors, usages }: EditColorsFormProps) {
+export function EditColorsForm({
+  className,
+  languageForm: LanguageForm,
+  colors,
+  usages,
+}: EditColorsFormProps) {
   const form = useForm<ColorsFormValues>({
     defaultValues: toColorsFormValues(colors.data),
     resolver: zodResolver(colorsFormSchema),

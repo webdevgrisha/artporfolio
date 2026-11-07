@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { aboutTextQuery } from "@/entities/about";
 import { EditAboutTextForm, EditAboutTextFormSkeleton } from "@/features/edit-about";
+import { LanguageForm } from "@/features/edit-translations";
 import { AwaitPageData } from "@/shared/ui/page-data";
 
 import styles from "./AboutPage.module.css";
@@ -17,5 +18,5 @@ export function AboutTextSection() {
 function AboutText() {
   const { data: text } = useSuspenseQuery(aboutTextQuery);
 
-  return <EditAboutTextForm className={styles.form} text={text} />;
+  return <EditAboutTextForm className={styles.form} languageForm={LanguageForm} text={text} />;
 }

@@ -1,25 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
-import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import {
   patchTranslations,
   type ResourceTranslations,
+  type TranslatedField,
   type TranslationEdit,
   translationsQuery,
-} from "@/shared/api/translations";
+} from "@/entities/translation";
+import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import type { TargetLanguage } from "@/shared/config/languages";
 
 import { useWrittenFrom } from "./useWrittenFrom";
-
-/** A text of a resource that a person can edit in every language. */
-export interface TranslatedField {
-  /** The name the server gives the text. */
-  key: string;
-  label: string;
-  /** Whether the text takes several lines. */
-  multiline?: boolean;
-}
 
 export type TranslationValues = Record<string, string>;
 

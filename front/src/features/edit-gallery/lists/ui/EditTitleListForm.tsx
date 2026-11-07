@@ -3,12 +3,12 @@ import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { galleryWorkUsageQuery, type WorkUsages } from "@/entities/gallery";
+import type { LanguageFormSlot } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { LanguageForm } from "@/shared/ui/language-form";
 import { useRowRemoval } from "../../model/useRowRemoval";
 import { describeWorkUsage, usageOf } from "../../model/workUsage";
 import {
@@ -26,6 +26,8 @@ import { TitleListRow } from "./TitleListRow";
 
 interface EditTitleListFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The list as stored on the server when the form opens, with its ETag. */
   data: Tagged<TitleItem[]>;
   list: TitleListConfig;
@@ -39,7 +41,13 @@ interface EditTitleListFormProps {
  * first if any do. The site lists the rows by title, and so does the list once
  * it is saved; the rows added since stay at its end until then.
  */
-export function EditTitleListForm({ className, data, list, usages }: EditTitleListFormProps) {
+export function EditTitleListForm({
+  className,
+  languageForm: LanguageForm,
+  data,
+  list,
+  usages,
+}: EditTitleListFormProps) {
   const { max, texts } = list;
   const schema = React.useMemo(() => titleListFormSchema(list), [list]);
   const form = useForm<TitleListFormValues>({

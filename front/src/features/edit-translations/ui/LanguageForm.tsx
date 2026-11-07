@@ -1,25 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 
-import { translationsQuery } from "@/shared/api/translations";
+import { type LanguageFormProps, translationsQuery } from "@/entities/translation";
 import { languageNames, type TargetLanguage, targetLanguages } from "@/shared/config/languages";
-import { getLanguageMark, getLanguageSummary } from "@/shared/lib/translationsForm";
-import { type FormLanguage, useFormLanguage } from "@/shared/lib/useFormLanguage";
 import { Select } from "@/shared/ui/select";
 
+import { getLanguageMark, getLanguageSummary } from "../lib/translationsForm";
+import { type FormLanguage, useFormLanguage } from "../model/useFormLanguage";
 import styles from "./LanguageForm.module.css";
 import { TranslationForm } from "./TranslationForm";
-import type { TranslatedField } from "./useTranslationForm";
-
-interface LanguageFormProps {
-  /** The form of the resource in Russian. */
-  children: React.ReactNode;
-  fields: readonly TranslatedField[];
-  /** The name of the translations of the resource on the server. */
-  resource: string;
-  /** The ETag of the saved resource: a save may send texts to the translator. */
-  savedTag: string;
-}
 
 /**
  * Switches an edit page between its languages. Every form opened stays mounted while hidden, so

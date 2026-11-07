@@ -7,9 +7,9 @@ import {
   galleryWorkUsageQuery,
   type WorkUsages,
 } from "@/entities/gallery";
+import type { LanguageFormSlot } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { LanguageForm } from "@/shared/ui/language-form";
 
 import {
   type SectionFormValues,
@@ -21,13 +21,20 @@ import { SectionFields } from "./SectionFields";
 
 interface EditSectionFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The section as stored on the server when the form opens, with its ETag. */
   section: Tagged<GallerySection>;
   /** How many works each section and subsection has, by its id. */
   usages: WorkUsages;
 }
 
-export function EditSectionForm({ className, section, usages }: EditSectionFormProps) {
+export function EditSectionForm({
+  className,
+  languageForm: LanguageForm,
+  section,
+  usages,
+}: EditSectionFormProps) {
   const form = useForm<SectionFormValues>({
     defaultValues: toSectionFormValues(section.data),
     resolver: zodResolver(sectionFormSchema),

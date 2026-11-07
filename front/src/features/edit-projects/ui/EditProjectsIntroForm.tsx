@@ -2,9 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { type ProjectsIntro, projectsIntroQuery } from "@/entities/project";
+import type { LanguageFormSlot } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { LanguageForm } from "@/shared/ui/language-form";
 import { Textarea } from "@/shared/ui/textarea";
 
 import {
@@ -20,12 +20,18 @@ const languageFields = [{ key: "text", label: "Основной текст", mul
 
 interface EditProjectsIntroFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The text as stored on the server when the form opens, with its ETag. */
   intro: Tagged<ProjectsIntro>;
 }
 
 /** The text above the list of projects on the site. */
-export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFormProps) {
+export function EditProjectsIntroForm({
+  className,
+  languageForm: LanguageForm,
+  intro,
+}: EditProjectsIntroFormProps) {
   const form = useForm<ProjectsIntroFormValues>({
     defaultValues: intro.data,
     resolver: zodResolver(projectsIntroFormSchema),

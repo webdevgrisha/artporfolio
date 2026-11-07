@@ -1,6 +1,7 @@
 import React from "react";
 import { FormProvider } from "react-hook-form";
 
+import type { TranslatedField } from "@/entities/translation";
 import {
   getRequestErrorMessage,
   isSessionExpiredError,
@@ -10,9 +11,9 @@ import { rightToLeftLanguages, type TargetLanguage } from "@/shared/config/langu
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { EditForm } from "@/shared/ui/edit-form";
 
+import { useTranslationForm } from "../model/useTranslationForm";
 import styles from "./LanguageForm.module.css";
 import { TranslationField } from "./TranslationField";
-import { type TranslatedField, useTranslationForm } from "./useTranslationForm";
 
 /** Why the texts on the screen may be behind the server: what is typed stays either way. */
 function getReadErrorMessage(error: unknown): string {

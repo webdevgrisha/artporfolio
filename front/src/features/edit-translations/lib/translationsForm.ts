@@ -1,4 +1,4 @@
-import type { ResourceTranslations, TranslationStatus } from "@/shared/api/translations";
+import type { ResourceTranslations, TranslationStatus } from "@/entities/translation";
 
 const statusLabels: Record<TranslationStatus, string> = {
   auto: "Автоперевод",

@@ -2,9 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { type AboutText, aboutTextQuery } from "@/entities/about";
+import type { LanguageFormSlot } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { LanguageForm } from "@/shared/ui/language-form";
 
 import { type AboutTextFormValues, aboutTextFormSchema } from "../model/aboutTextFormSchema";
 import { saveAboutTextFeedback, useSaveAboutText } from "../model/useSaveAboutText";
@@ -19,11 +19,17 @@ const languageFields = [
 
 interface EditAboutTextFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The texts as stored on the server when the form opens, with their ETag. */
   text: Tagged<AboutText>;
 }
 
-export function EditAboutTextForm({ className, text }: EditAboutTextFormProps) {
+export function EditAboutTextForm({
+  className,
+  languageForm: LanguageForm,
+  text,
+}: EditAboutTextFormProps) {
   const form = useForm<AboutTextFormValues>({
     defaultValues: text.data,
     resolver: zodResolver(aboutTextFormSchema),

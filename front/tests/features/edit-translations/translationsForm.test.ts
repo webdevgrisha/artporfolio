@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import type { ResourceTranslations } from "@/shared/api/translations";
+import type { ResourceTranslations } from "@/entities/translation";
 import {
   getLanguageMark,
   getLanguageSummary,
   getTranslationHint,
-} from "@/shared/lib/translationsForm";
+} from "@/features/edit-translations/lib/translationsForm";
 
 const hint = (params: Partial<Parameters<typeof getTranslationHint>[0]>) =>
   getTranslationHint({

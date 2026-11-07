@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import { galleryCollectionQuery, galleryWorksQuery } from "@/entities/gallery";
 import { EditCollectionForm } from "@/features/edit-gallery";
+import { LanguageForm } from "@/features/edit-translations";
 import { AwaitPageData } from "@/shared/ui/page-data";
 
 import { CollectionFormSkeleton } from "./CollectionFormSkeleton";
@@ -30,5 +31,12 @@ function EditCollection({ id }: EditCollectionProps) {
   const { data: collection } = useSuspenseQuery(galleryCollectionQuery(id));
   const { data: works } = useSuspenseQuery(galleryWorksQuery);
 
-  return <EditCollectionForm className={styles.form} collection={collection} works={works} />;
+  return (
+    <EditCollectionForm
+      className={styles.form}
+      languageForm={LanguageForm}
+      collection={collection}
+      works={works}
+    />
+  );
 }

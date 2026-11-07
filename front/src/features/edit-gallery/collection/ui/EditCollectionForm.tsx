@@ -8,9 +8,9 @@ import {
   galleryCollectionsQuery,
   galleryWorksQuery,
 } from "@/entities/gallery";
+import type { LanguageFormSlot } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { LanguageForm } from "@/shared/ui/language-form";
 
 import {
   type CollectionFormValues,
@@ -29,13 +29,20 @@ const languageFields = [
 
 interface EditCollectionFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The collection as stored on the server when the form opens, with its ETag. */
   collection: Tagged<GalleryCollection>;
   /** Every work of the gallery, in the order the site shows them, to add to the collection. */
   works: readonly GalleryWorkSummary[];
 }
 
-export function EditCollectionForm({ className, collection, works }: EditCollectionFormProps) {
+export function EditCollectionForm({
+  className,
+  languageForm: LanguageForm,
+  collection,
+  works,
+}: EditCollectionFormProps) {
   const form = useForm<CollectionFormValues>({
     defaultValues: toCollectionFormValues(collection.data),
     resolver: zodResolver(collectionFormSchema),

@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { galleryWorkUsageQuery } from "@/entities/gallery";
 
 import { EditTitleListForm, type TitleListConfig } from "@/features/edit-gallery";
+import { LanguageForm } from "@/features/edit-translations";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, ListSkeleton } from "@/shared/ui/skeleton";
 
@@ -35,6 +36,7 @@ function TitleList({ list }: TitleListSectionProps) {
   return (
     <EditTitleListForm
       className={styles.form}
+      languageForm={LanguageForm}
       list={list}
       data={data}
       usages={list.usages(usage)}

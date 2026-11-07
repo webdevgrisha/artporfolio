@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import { projectQuery } from "@/entities/project";
 import { EditProjectForm } from "@/features/edit-projects";
+import { LanguageForm } from "@/features/edit-translations";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton, MediaSkeleton } from "@/shared/ui/skeleton";
 
@@ -39,5 +40,5 @@ interface EditProjectProps {
 function EditProject({ id }: EditProjectProps) {
   const { data: project } = useSuspenseQuery(projectQuery(id));
 
-  return <EditProjectForm className={styles.form} project={project} />;
+  return <EditProjectForm className={styles.form} languageForm={LanguageForm} project={project} />;
 }

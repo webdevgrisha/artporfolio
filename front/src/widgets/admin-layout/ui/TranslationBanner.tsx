@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import {
   allTranslationsKey,
   retryTranslations,
   type TranslationState,
   translationStateQuery,
-} from "@/shared/api/translations";
+} from "@/entities/translation";
+import { getRequestErrorMessage } from "@/shared/api/requestErrorMessages";
 import { Button } from "@/shared/ui/button";
 
 import styles from "./TranslationBanner.module.css";

@@ -7,10 +7,10 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/shared/ui/unsaved-changes", () => ({ useReportUnsavedChanges: vi.fn() }));
 
-import type { ResourceTranslations } from "@/shared/api/translations";
-import { LanguageForm } from "@/shared/ui/language-form";
+import type { ResourceTranslations } from "@/entities/translation";
+import { LanguageForm } from "@/features/edit-translations";
 
-import { recordRequests, server } from "../../../support/server";
+import { recordRequests, server } from "../../support/server";
 
 const path = "/api/translations/gallery-intro";
 const fields = [{ key: "text", label: "Основной текст" }];

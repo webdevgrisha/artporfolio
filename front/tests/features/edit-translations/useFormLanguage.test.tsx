@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router";
 import { describe, expect, it } from "vitest";
 
-import { useFormLanguage } from "@/shared/lib/useFormLanguage";
+import { useFormLanguage } from "@/features/edit-translations/model/useFormLanguage";
 
 function setUp(address: string) {
   function wrapper({ children }: { children: ReactNode }) {

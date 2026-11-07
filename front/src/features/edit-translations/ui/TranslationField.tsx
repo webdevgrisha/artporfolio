@@ -1,15 +1,15 @@
 import React from "react";
 import { useFormContext, useFormState, useWatch } from "react-hook-form";
 
-import type { TranslationStatus } from "@/shared/api/translations";
+import type { TranslatedField, TranslationStatus } from "@/entities/translation";
 import type { TargetLanguage } from "@/shared/config/languages";
-import { getTranslationHint } from "@/shared/lib/translationsForm";
 import { ClearableInput } from "@/shared/ui/clearable-input";
 import { Textarea } from "@/shared/ui/textarea";
 
+import { getTranslationHint } from "../lib/translationsForm";
+import type { TranslationValues } from "../model/useTranslationForm";
 import styles from "./LanguageForm.module.css";
 import { OriginalText } from "./OriginalText";
-import type { TranslatedField, TranslationValues } from "./useTranslationForm";
 
 /** Mirrors the server rule in backend/src/modules/translations/schema.ts. */
 const maxTranslationLength = 4_000;

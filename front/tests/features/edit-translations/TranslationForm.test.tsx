@@ -6,12 +6,12 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/shared/ui/unsaved-changes", () => ({ useReportUnsavedChanges: vi.fn() }));
 
+import type { ResourceTranslations } from "@/entities/translation";
+import { TranslationForm } from "@/features/edit-translations/ui/TranslationForm";
 import { sessionExpiredMessage } from "@/shared/api/requestErrorMessages";
-import type { ResourceTranslations } from "@/shared/api/translations";
-import { TranslationForm } from "@/shared/ui/language-form/TranslationForm";
 
-import { csrfHandler } from "../../../support/handlers";
-import { recordRequests, server } from "../../../support/server";
+import { csrfHandler } from "../../support/handlers";
+import { recordRequests, server } from "../../support/server";
 
 const path = "/api/translations/gallery-work-1";
 const fields = [

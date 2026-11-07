@@ -4,7 +4,7 @@ import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 
-import { type TranslationState, translationsQuery } from "@/shared/api/translations";
+import { type TranslationState, translationsQuery } from "@/entities/translation";
 import { TranslationBanner } from "@/widgets/admin-layout/ui/TranslationBanner";
 
 import { csrfHandler } from "../../support/handlers";

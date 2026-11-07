@@ -2,9 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { type GalleryWork, galleryWorkQuery } from "@/entities/gallery";
+import type { LanguageFormSlot } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
-import { LanguageForm } from "@/shared/ui/language-form";
 import { type WorkReferences, workReferenceQueries } from "../model/useWorkReferences";
 import { type WorkFormValues, workFormSchema } from "../model/workFormSchema";
 import { toWorkFormValues } from "../model/workFormValues";
@@ -21,13 +21,20 @@ const languageFields = [
 
 interface EditWorkFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The work as stored on the server when the form opens, with its ETag. */
   work: Tagged<GalleryWork>;
   /** The lists of the gallery to choose from. */
   references: WorkReferences;
 }
 
-export function EditWorkForm({ className, references, work }: EditWorkFormProps) {
+export function EditWorkForm({
+  className,
+  languageForm: LanguageForm,
+  references,
+  work,
+}: EditWorkFormProps) {
   const form = useForm<WorkFormValues>({
     defaultValues: toWorkFormValues(work.data),
     resolver: zodResolver(workFormSchema),
