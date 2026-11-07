@@ -31,7 +31,7 @@ export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFor
     resolver: zodResolver(projectsIntroFormSchema),
   });
   const saveIntro = useSaveProjectsIntro();
-  const { editForm } = useSavedForm({
+  const { editForm, saved } = useSavedForm({
     form,
     initial: intro,
     query: projectsIntroQuery,
@@ -45,7 +45,7 @@ export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFor
   } = form;
 
   return (
-    <LanguageForm resource={"projects-intro"} fields={languageFields}>
+    <LanguageForm savedTag={saved.etag} resource={"projects-intro"} fields={languageFields}>
       <EditForm className={className} {...editForm}>
         <Textarea
           className={styles.text}

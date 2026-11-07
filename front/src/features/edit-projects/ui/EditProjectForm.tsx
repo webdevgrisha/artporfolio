@@ -42,7 +42,11 @@ export function EditProjectForm({ className, project }: EditProjectFormProps) {
   });
 
   return (
-    <LanguageForm resource={`project-${project.data.id}`} fields={languageFields}>
+    <LanguageForm
+      savedTag={saved.etag}
+      resource={`project-${project.data.id}`}
+      fields={languageFields}
+    >
       {/* The fields read the form from the context. */}
       <FormProvider {...form}>
         <EditForm className={className} {...editForm}>

@@ -31,7 +31,7 @@ export function EditGalleryIntroForm({ className, intro }: EditGalleryIntroFormP
     resolver: zodResolver(galleryIntroFormSchema),
   });
   const saveIntro = useSaveGalleryIntro();
-  const { editForm } = useSavedForm({
+  const { editForm, saved } = useSavedForm({
     form,
     initial: intro,
     query: galleryIntroQuery,
@@ -45,7 +45,7 @@ export function EditGalleryIntroForm({ className, intro }: EditGalleryIntroFormP
   } = form;
 
   return (
-    <LanguageForm resource={"gallery-intro"} fields={languageFields}>
+    <LanguageForm savedTag={saved.etag} resource={"gallery-intro"} fields={languageFields}>
       <EditForm className={className} {...editForm}>
         <Textarea
           className={styles.text}

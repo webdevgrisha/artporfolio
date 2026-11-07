@@ -54,7 +54,11 @@ export function EditCollectionForm({ className, collection, works }: EditCollect
   });
 
   return (
-    <LanguageForm resource={`gallery-collection-${collection.data.id}`} fields={languageFields}>
+    <LanguageForm
+      savedTag={saved.etag}
+      resource={`gallery-collection-${collection.data.id}`}
+      fields={languageFields}
+    >
       {/* The fields read the form from the context. */}
       <FormProvider {...form}>
         <EditForm className={className} {...editForm}>

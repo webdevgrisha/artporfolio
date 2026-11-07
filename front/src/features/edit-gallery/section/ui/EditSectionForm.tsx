@@ -46,6 +46,7 @@ export function EditSectionForm({ className, section, usages }: EditSectionFormP
 
   return (
     <LanguageForm
+      savedTag={saved.etag}
       resource={`gallery-section-${section.data.id}`}
       fields={[
         { key: "title", label: "Название" },

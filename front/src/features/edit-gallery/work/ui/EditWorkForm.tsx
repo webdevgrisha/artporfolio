@@ -45,7 +45,11 @@ export function EditWorkForm({ className, references, work }: EditWorkFormProps)
   });
 
   return (
-    <LanguageForm resource={`gallery-work-${work.data.id}`} fields={languageFields}>
+    <LanguageForm
+      savedTag={saved.etag}
+      resource={`gallery-work-${work.data.id}`}
+      fields={languageFields}
+    >
       {/* The fields read the form from the context. */}
       <FormProvider {...form}>
         <EditForm className={className} {...editForm}>

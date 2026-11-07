@@ -137,6 +137,32 @@ describe("TranslationForm", () => {
     expect(patches).toEqual([]);
   });
 
+  it("says when there is nothing to translate yet", async () => {
+    server.use(
+      mswHttp.get(path, () => HttpResponse.json({ ...saved, sources: {}, translations: {} })),
+    );
+    render(<TranslationForm fields={fields} language="en" resource="gallery-work-1" />, {
+      wrapper: Providers,
+    });
+
+    expect(await screen.findByText(/сначала сохраните текст на русском/)).toBeDefined();
+  });
+
+  it("says when the translations cannot be read", async () => {
+    server.use(mswHttp.get(path, () => new HttpResponse(null, { status: 404 })));
+    render(<TranslationForm fields={fields} language="en" resource="gallery-work-1" />, {
+      wrapper: Providers,
+    });
+
+    expect(await screen.findByRole("alert")).toBeDefined();
+  });
+
+  it("names the language of the field for spelling and screen readers", async () => {
+    setUp();
+
+    expect((await screen.findByLabelText("Название")).getAttribute("lang")).toBe("en");
+  });
+
   it("lays out Arabic from right to left", async () => {
     const { view } = setUp("ar");
 

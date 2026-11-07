@@ -100,6 +100,7 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
 
   return (
     <LanguageForm
+      savedTag={saved.etag}
       resource={"gallery-colors"}
       fields={saved.data.map(({ id, title }) => ({ key: id, label: title }))}
     >

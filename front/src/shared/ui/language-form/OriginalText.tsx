@@ -47,7 +47,9 @@ export function OriginalText({ onTranslateAnew, original, status, statusId }: Or
       {/* Russian reads from left to right even in the form of a language that does not. */}
       <div id={textId} className={styles.original} dir="ltr" hidden={!isOpen}>
         <p className={styles.originalLabel}>Оригинал</p>
-        <p className={styles.originalText}>{original}</p>
+        <p className={styles.originalText} lang="ru">
+          {original}
+        </p>
       </div>
     </>
   );

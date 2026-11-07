@@ -91,6 +91,7 @@ export function EditTitleListForm({ className, data, list, usages }: EditTitleLi
 
   return (
     <LanguageForm
+      savedTag={saved.etag}
       resource={list.translationResource}
       fields={saved.data.map(({ id, title }) => ({ key: id, label: title }))}
     >

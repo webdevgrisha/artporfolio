@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 
 import { translationsQuery } from "@/shared/api/translations";
@@ -16,6 +16,8 @@ interface LanguageFormProps {
   fields: readonly TranslatedField[];
   /** The name of the translations of the resource on the server. */
   resource: string;
+  /** The ETag of the saved resource: a save may send texts to the translator. */
+  savedTag: string;
 }
 
 /**
@@ -23,9 +25,11 @@ interface LanguageFormProps {
  * switching never loses what was typed. Each language saves on its own: a translation is a resource
  * of its own, which the translator also changes in the background.
  */
-export function LanguageForm({ children, fields, resource }: LanguageFormProps) {
+export function LanguageForm({ children, fields, resource, savedTag }: LanguageFormProps) {
   const [language, setLanguage] = useFormLanguage();
-  const { data } = useQuery(translationsQuery(resource));
+  const queryClient = useQueryClient();
+  const query = translationsQuery(resource);
+  const { data } = useQuery(query);
   const [opened, setOpened] = React.useState<readonly TargetLanguage[]>([]);
 
   if (language !== "ru" && !opened.includes(language)) {
@@ -44,6 +48,11 @@ export function LanguageForm({ children, fields, resource }: LanguageFormProps) 
     }),
   ];
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a new tag is what asks for a new read.
+  React.useEffect(() => {
+    void queryClient.invalidateQueries({ queryKey: query.queryKey });
+  }, [query.queryKey, queryClient, savedTag]);
+
   const summary = data && language !== "ru" ? getLanguageSummary(data, language) : null;
 
   return (
@@ -56,7 +65,10 @@ export function LanguageForm({ children, fields, resource }: LanguageFormProps) 
           value={language}
           onChange={(value) => setLanguage(value as FormLanguage)}
         />
-        {summary ? <p className={styles.summary}>{summary}</p> : null}
+        {/* Always there: a screen reader announces a change in a live region it already knows. */}
+        <p className={styles.summary} aria-live="polite">
+          {summary}
+        </p>
       </div>
       <div hidden={language !== "ru"}>{children}</div>
       {opened.map((target) => (

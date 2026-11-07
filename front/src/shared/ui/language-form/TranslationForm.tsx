@@ -60,7 +60,7 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
   const [keyToReplace, setKeyToReplace] = React.useState<string>();
   const queryClient = useQueryClient();
   const query = translationsQuery(resource);
-  const { data } = useQuery(query);
+  const { data, isError } = useQuery(query);
   const form = useForm<TranslationValues>({
     resetOptions: { keepDirtyValues: true },
     values: data && toValues(data, fields, language),
@@ -123,11 +123,19 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
     }
   }
 
+  if (isError && !data) {
+    return <p role="alert">Не удалось загрузить переводы. Обновите страницу</p>;
+  }
+
   if (!data) {
     return null;
   }
 
   const shown = fields.filter(({ key }) => data.sources[key]);
+
+  if (shown.length === 0) {
+    return <p>Переводить пока нечего: сначала сохраните текст на русском</p>;
+  }
 
   return (
     <EditForm
@@ -151,6 +159,7 @@ export function TranslationForm({ fields, language, resource }: TranslationFormP
             error: errors[key]?.message,
             isModified: Boolean(dirtyFields[key]),
             label,
+            lang: language,
           };
           const field = register(key, {
             maxLength: {

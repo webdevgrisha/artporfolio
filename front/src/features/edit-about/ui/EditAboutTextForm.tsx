@@ -29,7 +29,7 @@ export function EditAboutTextForm({ className, text }: EditAboutTextFormProps) {
     resolver: zodResolver(aboutTextFormSchema),
   });
   const saveText = useSaveAboutText();
-  const { editForm } = useSavedForm({
+  const { editForm, saved } = useSavedForm({
     form,
     initial: text,
     query: aboutTextQuery,
@@ -40,7 +40,7 @@ export function EditAboutTextForm({ className, text }: EditAboutTextFormProps) {
   });
 
   return (
-    <LanguageForm resource={"about-text"} fields={languageFields}>
+    <LanguageForm savedTag={saved.etag} resource={"about-text"} fields={languageFields}>
       {/* The fields read the form from the context. */}
       <FormProvider {...form}>
         <EditForm className={className} {...editForm}>
