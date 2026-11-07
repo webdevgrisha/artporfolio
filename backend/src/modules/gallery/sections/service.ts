@@ -1,13 +1,13 @@
-import type { DocumentSnapshot, QuerySnapshot } from "firebase-admin/firestore";
+import type { QuerySnapshot } from "firebase-admin/firestore";
 
 import {
-  type Section,
-  type SectionBody,
-  type StoredSection,
-  storedSectionSchema,
-} from "#modules/gallery/sections/schema";
+  readSection,
+  sectionDocument,
+  sectionsCollection,
+} from "#modules/gallery/sections/document";
+import type { Section, SectionBody, StoredSection } from "#modules/gallery/sections/schema";
 import { firestore } from "#shared/firebase/firestore";
-import { ConflictError, NotFoundError, PreconditionFailedError } from "#shared/http/errors";
+import { ConflictError, PreconditionFailedError } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
 import {
   deleteTranslations,
@@ -17,15 +17,6 @@ import {
 import { textsById } from "#shared/i18n/translations";
 import { byTitle, titleKey } from "#shared/text/titles";
 
-/** Every section; works read it to check the sections they refer to. */
-export function sectionsCollection() {
-  return firestore().collection("gallerySections");
-}
-
-function sectionDocument(id: string) {
-  return sectionsCollection().doc(id);
-}
-
 /** Where the translations of the section go. */
 function sectionTranslations(id: string): string {
   return `gallery-section-${id}`;
@@ -34,14 +25,6 @@ function sectionTranslations(id: string): string {
 /** The titles of a section and of its subsections, each by its id. */
 function sectionTexts({ subsections, title }: StoredSection): Record<string, string> {
   return { title, ...textsById(subsections, (subsection) => subsection.title) };
-}
-
-function readSection(snapshot: DocumentSnapshot): StoredSection {
-  if (!snapshot.exists) {
-    throw new NotFoundError("There is no section");
-  }
-
-  return storedSectionSchema.parse(snapshot.data());
 }
 
 /** The section as stored: the subsections sorted by title, as the site shows them. */
@@ -86,36 +69,6 @@ function assertNoClash(id: string, section: StoredSection, { docs }: QuerySnapsh
       throw new ConflictError("A subsection has the id of another section or its subsection");
     }
   }
-}
-
-/**
- * The ids a work can refer to: every saved section and every subsection. They never clash, see
- * assertNoClash.
- */
-export function sectionIdsIn({ docs }: QuerySnapshot): Set<string> {
-  return new Set(
-    docs.flatMap((snapshot) => [
-      snapshot.id,
-      ...readSection(snapshot).subsections.map((subsection) => subsection.id),
-    ]),
-  );
-}
-
-/**
- * The ids each saved section and subsection covers, by its id: a section covers itself and its
- * subsections, a subsection only itself.
- */
-export function sectionGroupsIn({ docs }: QuerySnapshot): Map<string, Set<string>> {
-  const groups = new Map<string, Set<string>>();
-
-  for (const snapshot of docs) {
-    const subsectionIds = readSection(snapshot).subsections.map((subsection) => subsection.id);
-
-    groups.set(snapshot.id, new Set([snapshot.id, ...subsectionIds]));
-    for (const id of subsectionIds) groups.set(id, new Set([id]));
-  }
-
-  return groups;
 }
 
 /** Every section sorted by title, tagged by the stored list. */

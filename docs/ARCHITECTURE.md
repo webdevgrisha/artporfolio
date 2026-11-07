@@ -138,7 +138,7 @@ backend/src/
 │   │   ├── materials/  the materials, one list sorted by title
 │   │   ├── palettes/   the palettes (pastel, bright…), one list sorted by title
 │   │   ├── sections/   the sections, each a Firestore document with its subsections
-│   │   └── works/      the works, each a Firestore document; representation.ts is what the API returns (sizes in cm and inches), prices.ts the prices computed from the rates, references.ts what a work refers to
+│   │   └── works/      the works, each a Firestore document; representation.ts is what the API returns (sizes in cm and inches), prices.ts the prices computed from the rates, references.ts what a work refers to, order.ts and visibility.ts how the works are listed
 │   ├── health/
 │   ├── originals/      GET /api/originals, the uploaded files, for the admin alone
 │   ├── pages/          the pages of the public site and their main photos (heroes)
@@ -157,7 +157,7 @@ backend/src/
 
 - A module has one file per role: `routes.ts`, `controller.ts`, `service.ts`, `schema.ts`. The request flow is route → middleware → controller → service.
 - Data the site reads as a whole and the admin replaces as a whole, kept in one document, is a `documentResource` (`shared/http/document-resource.ts`): the intros, the colors, materials and palettes, the rates, the About texts, the contact links. Such a module has only `schema.ts` and `resource.ts`, which says where the data lives; its routes are `documentResourceRouter(resource, bodySchema)`. A change replaces only the fields of the resource (`mergeFields`), so what else the document holds stays.
-- `shared/` never imports `modules/`; Biome enforces it. A module may use another module, as `originals` uses `requireAuth` from `auth`.
+- `shared/` never imports `modules/`; Biome enforces it. A module may use another module, as `originals` uses `requireAuth` from `auth`, but never its `service.ts`: what others need, such as where the documents are and how they are read (`document.ts`), lives in a file of its own.
 - `server.ts` mounts only top-level modules. A submodule is mounted by its parent's router, as `contacts` mounts `links`. A photo slot is mounted as `photoSlotRouter(contactPhoto)` (`modules/photo-slot`).
 - Each part of a page that the admin saves on its own is a resource of its own, with its own `GET` and `PUT`: `/api/about/text`, `/api/about/photo`, `/api/about/process-photos`. A `PUT` replaces the whole resource at its URL (RFC 9110 §9.3.4), never a part of a larger one. The page itself (`GET /api/about`) is a read-only aggregate, so the site reads it in one request.
 - A single image is an `ImageSlot` from `shared/images/slot.ts`: a Firestore document, a field, the schema of what the field stores, and a Storage folder. Filling and replacing a slot are shared. A page hero stores the image alone; a photo with alt text (the contact photo, «My photo») is a `PhotoSlot` from `shared/images/photo.ts`, which adds the alt text and its update. The module only names its slot (`modules/contacts/photo.ts`).

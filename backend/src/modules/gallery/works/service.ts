@@ -1,26 +1,27 @@
-import { type DocumentSnapshot, Timestamp } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 
 import type { Reader } from "#modules/auth/schema";
 import { colorIdsIn, galleryColors } from "#modules/gallery/colors/resource";
 import { galleryMaterials, materialIdsIn } from "#modules/gallery/materials/resource";
 import { galleryPalettes, paletteIdsIn } from "#modules/gallery/palettes/resource";
-import { sectionGroupsIn, sectionsCollection } from "#modules/gallery/sections/service";
-import { workDocument, worksCollection } from "#modules/gallery/works/document";
+import { sectionGroupsIn, sectionsCollection } from "#modules/gallery/sections/document";
+import { readWork, workDocument, worksCollection } from "#modules/gallery/works/document";
+import { worksInOrder } from "#modules/gallery/works/order";
 import {
   assertReferencesExist,
   type KnownData,
   readKnownData,
 } from "#modules/gallery/works/references";
 import { toWork, toWorkSummary } from "#modules/gallery/works/representation";
-import {
-  type StoredWork,
-  storedWorkSchema,
-  type Work,
-  type WorkBody,
-  type WorkSummary,
-  type WorkUsage,
+import type {
+  StoredWork,
+  Work,
+  WorkBody,
+  WorkSummary,
+  WorkUsage,
 } from "#modules/gallery/works/schema";
 import { ownGroups, usageByItem } from "#modules/gallery/works/usage";
+import { isVisibleTo } from "#modules/gallery/works/visibility";
 import { firestore } from "#shared/firebase/firestore";
 import {
   NotFoundError,
@@ -76,14 +77,6 @@ function workTexts({ city, description, photo, processPhotos, title }: StoredWor
   };
 }
 
-function readWork(snapshot: DocumentSnapshot): StoredWork {
-  if (!snapshot.exists) {
-    throw new NotFoundError("There is no work");
-  }
-
-  return storedWorkSchema.parse(snapshot.data());
-}
-
 /**
  * The work as the API returns it, tagged by that representation: deleting a section, a material, a
  * color or a palette the work refers to, or changing a rate, changes what is returned, and so its
@@ -101,23 +94,6 @@ function toSavedWork(id: string, work: StoredWork, known: KnownData): Tagged<Wor
  */
 function assertWorkIfMatch(ifMatch: string, id: string, work: StoredWork, known: KnownData): void {
   assertIfMatch(ifMatch, toWork(id, work, known));
-}
-
-/** The latest month first; works of one month, the latest created first. */
-function compareWorks(a: StoredWork, b: StoredWork): number {
-  return b.year - a.year || b.month - a.month || b.createdAt.toMillis() - a.createdAt.toMillis();
-}
-
-/** Whether `reader` sees the work: a hidden work is the admin's alone. */
-export function isVisibleTo(work: StoredWork, reader: Reader): boolean {
-  return work.published || reader === "admin";
-}
-
-/** The saved works in the order the site shows them. */
-export function worksInOrder(docs: DocumentSnapshot[]): { id: string; work: StoredWork }[] {
-  return docs
-    .map((snapshot) => ({ id: snapshot.id, work: readWork(snapshot) }))
-    .sort((a, b) => compareWorks(a.work, b.work));
 }
 
 /**

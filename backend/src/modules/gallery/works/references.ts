@@ -6,7 +6,7 @@ import { maxCollectionWorks } from "#modules/gallery/collections/schema";
 import { colorIdsIn, galleryColors } from "#modules/gallery/colors/resource";
 import { galleryMaterials, materialIdsIn } from "#modules/gallery/materials/resource";
 import { galleryPalettes, paletteIdsIn } from "#modules/gallery/palettes/resource";
-import { sectionIdsIn, sectionsCollection } from "#modules/gallery/sections/service";
+import { sectionIdsIn, sectionsCollection } from "#modules/gallery/sections/document";
 import { worksCollection } from "#modules/gallery/works/document";
 import type { WorkBody } from "#modules/gallery/works/schema";
 import { ConflictError, UnprocessableContentError } from "#shared/http/errors";

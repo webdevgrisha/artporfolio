@@ -14,7 +14,8 @@ import {
   storedCollectionSchema,
 } from "#modules/gallery/collections/schema";
 import { worksCollection } from "#modules/gallery/works/document";
-import { isVisibleTo, worksInOrder } from "#modules/gallery/works/service";
+import { worksInOrder } from "#modules/gallery/works/order";
+import { isVisibleTo } from "#modules/gallery/works/visibility";
 import { firestore } from "#shared/firebase/firestore";
 import {
   ConflictError,
