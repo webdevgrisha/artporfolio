@@ -17,7 +17,7 @@ beforeEach(() => {
 
 describe("translateTexts", () => {
   it("translates from Russian and returns the texts in order, trimmed", async () => {
-    const { translateTexts } = await import("#shared/i18n/deepl");
+    const { translateTexts } = await import("#modules/translations/deepl");
 
     client.translateText.mockResolvedValue([{ text: " Elephant " }, { text: "Minsk" }]);
 
@@ -34,7 +34,7 @@ describe("translateTexts", () => {
   });
 
   it("names the regional variant DeepL needs", async () => {
-    const { translateTexts } = await import("#shared/i18n/deepl");
+    const { translateTexts } = await import("#modules/translations/deepl");
 
     client.translateText.mockResolvedValue([{ text: "Elefante" }]);
     await translateTexts(["Слон"], "pt", "Картина");
@@ -45,7 +45,7 @@ describe("translateTexts", () => {
   });
 
   it("fails without a key, which a save survives", async () => {
-    const { translateTexts } = await import("#shared/i18n/deepl");
+    const { translateTexts } = await import("#modules/translations/deepl");
 
     vi.stubEnv("DEEPL_API_KEY", "");
 
@@ -55,7 +55,7 @@ describe("translateTexts", () => {
 
 describe("getTranslationUsage", () => {
   it("asks DeepL once for a while, as it limits every request", async () => {
-    const { getTranslationUsage } = await import("#shared/i18n/deepl");
+    const { getTranslationUsage } = await import("#modules/translations/deepl");
 
     client.getUsage.mockResolvedValue({ character: { count: 90, limit: 100 } });
 
@@ -66,7 +66,7 @@ describe("getTranslationUsage", () => {
   });
 
   it("does not know the use when DeepL does not answer", async () => {
-    const { getTranslationUsage } = await import("#shared/i18n/deepl");
+    const { getTranslationUsage } = await import("#modules/translations/deepl");
 
     client.getUsage.mockRejectedValue(new Error("Too many requests"));
 

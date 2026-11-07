@@ -13,7 +13,7 @@ import {
   deleteTranslations,
   requestTranslations,
   saveSources,
-} from "#shared/i18n/translation-store";
+} from "#shared/i18n/translation-requests";
 import { textsById } from "#shared/i18n/translations";
 import { byTitle, titleKey } from "#shared/text/titles";
 

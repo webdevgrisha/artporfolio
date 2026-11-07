@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 /** The `gallerySections` collection: documents by id. Transactions write to it at once. */
 const sections = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 
-vi.mock("#shared/i18n/translation-store", () => ({
+vi.mock("#shared/i18n/translation-requests", () => ({
   deleteTranslations: vi.fn(),
   requestTranslations: vi.fn(),
   saveSources: vi.fn(),

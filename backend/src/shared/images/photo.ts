@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { UnprocessableContentError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
-import { requestTranslations, saveSources } from "#shared/i18n/translation-store";
+import { requestTranslations, saveSources } from "#shared/i18n/translation-requests";
 import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
 import { type Image, storedImageSchema, toImage } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";

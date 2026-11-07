@@ -2,9 +2,9 @@ import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
 import { onTaskDispatched } from "firebase-functions/v2/tasks";
 
+import { runTranslation } from "#modules/translations/worker";
 import { server } from "#server";
 import type { TranslationTask } from "#shared/i18n/translation-queue";
-import { runTranslation } from "#shared/i18n/translation-store";
 
 const csrfSecret = defineSecret("CSRF_SECRET");
 const deeplApiKey = defineSecret("DEEPL_API_KEY");

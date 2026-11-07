@@ -9,7 +9,7 @@ const store = vi.hoisted(() => ({
 }));
 
 vi.mock("#modules/auth/service", () => auth);
-vi.mock("#shared/i18n/translation-store", () => store);
+vi.mock("#modules/translations/service", () => store);
 
 import { translationsRouter } from "#modules/translations/routes";
 import { UnauthorizedError } from "#shared/http/errors";

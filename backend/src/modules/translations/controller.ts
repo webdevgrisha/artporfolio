@@ -6,7 +6,6 @@ import type {
   ResourceParams,
   TranslationPatchBody,
 } from "#modules/translations/schema";
-import { NotFoundError } from "#shared/http/errors";
 import {
   editTranslations,
   getTranslationStatus,
@@ -14,7 +13,8 @@ import {
   type ResourceTranslations,
   retryTranslations,
   type TranslationStatusResponse,
-} from "#shared/i18n/translation-store";
+} from "#modules/translations/service";
+import { NotFoundError } from "#shared/http/errors";
 
 /**
  * Translations are the admin's for now: they hold the texts of hidden works too. The site will read

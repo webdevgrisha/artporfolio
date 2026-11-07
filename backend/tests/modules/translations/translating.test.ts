@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const deepl = vi.hoisted(() => ({ translateTexts: vi.fn() }));
 
-vi.mock("#shared/i18n/deepl", () => deepl);
+vi.mock("#modules/translations/deepl", () => deepl);
 
+import { translateAll } from "#modules/translations/translating";
 import { targetLanguages } from "#shared/i18n/languages";
-import { translateAll } from "#shared/i18n/translating";
 import { planTranslations } from "#shared/i18n/translations";
 
 const sources = { city: "Минск", title: "Слон" };

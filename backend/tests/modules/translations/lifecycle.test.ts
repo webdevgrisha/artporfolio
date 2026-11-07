@@ -11,7 +11,7 @@ const logger = vi.hoisted(() => ({ warn: vi.fn() }));
 /** Set to make the next transactions fail, as a lost connection to Firestore would. */
 const commit = vi.hoisted(() => ({ error: undefined as Error | undefined }));
 
-vi.mock("#shared/i18n/deepl", () => deepl);
+vi.mock("#modules/translations/deepl", () => deepl);
 vi.mock("#shared/i18n/translation-queue", () => queue);
 vi.mock("firebase-functions/logger", () => logger);
 vi.mock("#shared/firebase/firestore", () => {
@@ -70,19 +70,21 @@ vi.mock("#shared/firebase/firestore", () => {
   };
 });
 
+import {
+  editTranslations,
+  getTranslationStatus,
+  getTranslations,
+  retryTranslations,
+} from "#modules/translations/service";
+import { runTranslation } from "#modules/translations/worker";
 import { firestore } from "#shared/firebase/firestore";
 import { UnprocessableContentError } from "#shared/http/errors";
 import { targetLanguages } from "#shared/i18n/languages";
 import {
   deleteTranslations,
-  editTranslations,
-  getTranslationStatus,
-  getTranslations,
   requestTranslations,
-  retryTranslations,
-  runTranslation,
   saveSources,
-} from "#shared/i18n/translation-store";
+} from "#shared/i18n/translation-requests";
 
 const resource = "gallery-work-1";
 

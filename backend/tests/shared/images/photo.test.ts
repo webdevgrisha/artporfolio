@@ -20,7 +20,7 @@ const uploads = vi.hoisted(() => ({
   publishUpload: vi.fn(),
 }));
 
-vi.mock("#shared/i18n/translation-store", () => ({
+vi.mock("#shared/i18n/translation-requests", () => ({
   deleteTranslations: vi.fn(),
   requestTranslations: vi.fn(),
   saveSources: vi.fn(),

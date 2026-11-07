@@ -4,7 +4,7 @@ import { z } from "zod";
 import { aboutDocument } from "#modules/about/document";
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { requestTranslations, saveSources } from "#shared/i18n/translation-store";
+import { requestTranslations, saveSources } from "#shared/i18n/translation-requests";
 import { textsById } from "#shared/i18n/translations";
 import {
   type ListPhoto,

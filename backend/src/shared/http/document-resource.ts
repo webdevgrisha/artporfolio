@@ -4,7 +4,7 @@ import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
-import { requestTranslations, saveSources } from "#shared/i18n/translation-store";
+import { requestTranslations, saveSources } from "#shared/i18n/translation-requests";
 import { requireContentType } from "#shared/middleware/content-type";
 import { ifMatchHeader, requireIfMatch } from "#shared/middleware/preconditions";
 import { validateBody } from "#shared/middleware/validation";

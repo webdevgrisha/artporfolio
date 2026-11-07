@@ -27,7 +27,7 @@ import {
   deleteTranslations,
   requestTranslations,
   saveSources,
-} from "#shared/i18n/translation-store";
+} from "#shared/i18n/translation-requests";
 import { toPhoto } from "#shared/images/photo";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";

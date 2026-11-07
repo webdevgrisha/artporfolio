@@ -9,13 +9,14 @@ const deepl = vi.hoisted(() => ({
 }));
 const queue = vi.hoisted(() => ({ enqueueTranslation: vi.fn() }));
 
-vi.mock("#shared/i18n/deepl", () => deepl);
+vi.mock("#modules/translations/deepl", () => deepl);
 vi.mock("#shared/i18n/translation-queue", () => queue);
 
 import { aboutText } from "#modules/about/text/resource";
+import { editTranslations, getTranslations } from "#modules/translations/service";
+import { runTranslation } from "#modules/translations/worker";
 import { firestore } from "#shared/firebase/firestore";
 import { targetLanguages } from "#shared/i18n/languages";
-import { editTranslations, getTranslations, runTranslation } from "#shared/i18n/translation-store";
 
 const resource = "about-text";
 

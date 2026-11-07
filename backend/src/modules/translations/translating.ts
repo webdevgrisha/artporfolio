@@ -1,4 +1,4 @@
-import { translateTexts } from "#shared/i18n/deepl";
+import { translateTexts } from "#modules/translations/deepl";
 import { type TargetLanguage, targetLanguages } from "#shared/i18n/languages";
 import type { StoredTranslation, TranslationRequest } from "#shared/i18n/translations";
 

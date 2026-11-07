@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { translationContext } from "#shared/i18n/translation-context";
+import { translationContext } from "#modules/translations/translation-context";
 
 describe("translationContext", () => {
   it("names a resource of its own", () => {
