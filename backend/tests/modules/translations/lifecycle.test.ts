@@ -389,6 +389,16 @@ describe("runTranslation", () => {
     });
   });
 
+  it("takes back a failure once a later try makes what was missing", async () => {
+    await save(resource, { title: "Слон" });
+    deepl.translateTexts.mockRejectedValueOnce(new Error("Unavailable"));
+    await expect(runTranslation(resource, true)).rejects.toThrow("Unavailable");
+
+    await runTranslation(resource, false);
+
+    expect(documents.get(`translations/${resource}`)?.failed).toBe(false);
+  });
+
   it("halts translating on the end of the plan, without trying again", async () => {
     await save(resource, { title: "Слон" });
     deepl.translateTexts.mockRejectedValue(new Error("Quota"));
@@ -433,6 +443,23 @@ describe("deleteTranslations", () => {
     await deleteTranslations(resource);
 
     expect(documents.size).toBe(0);
+  });
+});
+
+describe("getTranslations", () => {
+  it("does not show translations with nothing missing as failed", async () => {
+    await save(resource, { title: "Слон" });
+    await runTranslation(resource, false);
+    // A late failure of an earlier task, after a later one made everything.
+    documents.set(`translations/${resource}`, {
+      ...documents.get(`translations/${resource}`),
+      failed: true,
+    });
+
+    await expect(getTranslations(resource)).resolves.toMatchObject({
+      failed: false,
+      isTranslating: false,
+    });
   });
 });
 

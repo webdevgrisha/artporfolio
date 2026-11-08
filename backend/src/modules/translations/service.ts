@@ -45,12 +45,13 @@ export interface TranslationStatusResponse {
 export async function getTranslations(resource: string): Promise<ResourceTranslations> {
   const [snapshot, halted] = await Promise.all([resourceDocument(resource).get(), readHalted()]);
   const saved = readResource(snapshot);
-  // While translating is halted no task runs, so what is missing is not on its way.
-  const failed = saved.failed || (halted !== null && hasMissing(saved));
+  const isMissing = hasMissing(saved);
+  // Only what is missing can fail; while translating is halted, no task is on its way.
+  const failed = isMissing && (saved.failed || halted !== null);
 
   return {
     failed,
-    isTranslating: !failed && hasMissing(saved),
+    isTranslating: isMissing && !failed,
     sources: saved.sources,
     translations: toTranslations(saved.translations, saved.sources),
   };

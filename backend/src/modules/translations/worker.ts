@@ -2,7 +2,12 @@ import { stopsTranslating } from "#modules/translations/deepl";
 import { translateAll } from "#modules/translations/translating";
 import { translationContext } from "#modules/translations/translation-context";
 import { firestore } from "#shared/firebase/firestore";
-import { markFailed, readResource, resourceDocument } from "#shared/i18n/translation-document";
+import {
+  hasMissing,
+  markFailed,
+  readResource,
+  resourceDocument,
+} from "#shared/i18n/translation-document";
 import { readHalted, setHalted } from "#shared/i18n/translation-halt";
 import {
   planTranslations,
@@ -52,7 +57,10 @@ async function translateMissing(resource: string): Promise<void> {
       }
     }
 
-    transaction.set(document, { ...current, translations });
+    const next = { ...current, translations };
+
+    // A failure of an earlier task is over once nothing is missing.
+    transaction.set(document, { ...next, failed: current.failed && hasMissing(next) });
   });
 
   if (halt !== null) {
