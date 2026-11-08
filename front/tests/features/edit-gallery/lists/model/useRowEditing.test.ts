@@ -46,4 +46,13 @@ describe("useRowEditing", () => {
 
     expect(restore).toHaveBeenCalledWith(0, "Акварель");
   });
+
+  it("never brings the start of another row into a row open for its error", () => {
+    const { restore, result } = setUp();
+
+    act(() => result.current.rowEditing("b", 1, "Масло", false).onStart());
+    act(() => result.current.rowEditing("a", 0, "", true).onCancel());
+
+    expect(restore).not.toHaveBeenCalled();
+  });
 });
