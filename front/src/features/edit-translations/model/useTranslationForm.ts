@@ -9,6 +9,7 @@ import {
   translationsQuery,
 } from "@/entities/translation";
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
+import { putSavedResource } from "@/shared/api/savedResource";
 import type { TargetLanguage } from "@/shared/config/languages";
 import { savedMessage, showSuccessToast } from "@/shared/ui/toast";
 
@@ -54,10 +55,8 @@ export function useTranslationForm({ fields, language, resource }: UseTranslatio
     form.reset(toValues(translations, fields, language), { keepDirtyValues: false });
   }
 
-  async function showSaved(saved: ResourceTranslations) {
-    // A read begun before the change would otherwise bring the old texts back when it ends.
-    await queryClient.cancelQueries({ queryKey: query.queryKey });
-    queryClient.setQueryData(query.queryKey, saved);
+  function showSaved(saved: ResourceTranslations) {
+    return putSavedResource(queryClient, query.queryKey, saved);
   }
 
   const save = useMutation({

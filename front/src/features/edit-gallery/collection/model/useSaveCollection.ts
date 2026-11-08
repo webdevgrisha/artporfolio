@@ -5,6 +5,7 @@ import {
   galleryWorksQueryKey,
   replaceGalleryCollection,
 } from "@/entities/gallery";
+import { putSavedResource } from "@/shared/api/savedResource";
 import { getSaveCollectionErrorMessage } from "../lib/saveErrorMessages";
 import type { CollectionFormValues } from "./collectionFormSchema";
 import { toCollectionBody } from "./toCollectionBody";
@@ -37,7 +38,7 @@ export function useSaveCollection(id: string) {
     mutationFn: async ({ etag, values }: SaveCollectionParams) =>
       replaceGalleryCollection({ body: await toCollectionBody(values), etag, id }),
     onSuccess: async (saved) => {
-      queryClient.setQueryData(queryKey, saved);
+      await putSavedResource(queryClient, queryKey, saved);
       // The lists load afresh when they open; a moved work changes another collection and itself.
       await Promise.all([
         queryClient.invalidateQueries({

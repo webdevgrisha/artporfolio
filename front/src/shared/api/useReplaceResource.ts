@@ -1,6 +1,7 @@
 import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { MutationFeedback } from "./queryClient";
+import { putSavedResource } from "./savedResource";
 
 interface UseReplaceResourceParams<TSaved, TVariables> {
   feedback: MutationFeedback;
@@ -24,6 +25,6 @@ export function useReplaceResource<TSaved, TVariables>({
   return useMutation({
     meta: { feedback },
     mutationFn,
-    onSuccess: (saved) => queryClient.setQueryData<TSaved>(queryKey, saved),
+    onSuccess: (saved) => putSavedResource(queryClient, queryKey, saved),
   });
 }

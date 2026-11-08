@@ -4,6 +4,7 @@ import {
   gallerySectionsQueryKey,
   replaceGallerySection,
 } from "@/entities/gallery";
+import { putSavedResource } from "@/shared/api/savedResource";
 import { getSaveSectionErrorMessage } from "../lib/saveErrorMessages";
 import type { SectionFormValues } from "./sectionFormSchema";
 import { toSectionBody } from "./toSectionBody";
@@ -32,7 +33,7 @@ export function useSaveSection(id: string) {
     mutationFn: ({ etag, values }: SaveSectionParams) =>
       replaceGallerySection({ body: toSectionBody(values), etag, id }),
     onSuccess: async (saved) => {
-      queryClient.setQueryData(queryKey, saved);
+      await putSavedResource(queryClient, queryKey, saved);
       // The list loads afresh when it opens.
       await queryClient.invalidateQueries({
         queryKey: gallerySectionsQueryKey,

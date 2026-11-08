@@ -5,6 +5,7 @@ import {
   galleryWorksQueryKey,
   replaceGalleryWork,
 } from "@/entities/gallery";
+import { putSavedResource } from "@/shared/api/savedResource";
 import { getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
 import { toWorkBody } from "./toWorkBody";
 import type { WorkFormValues } from "./workFormSchema";
@@ -33,7 +34,7 @@ export function useSaveWork(id: string) {
     mutationFn: async ({ etag, values }: SaveWorkParams) =>
       replaceGalleryWork({ body: await toWorkBody(values), etag, id }),
     onSuccess: async (saved) => {
-      queryClient.setQueryData(queryKey, saved);
+      await putSavedResource(queryClient, queryKey, saved);
       // The lists load afresh when they open; moving the work changes the works of its collections.
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey, refetchType: "none" }),
