@@ -51,7 +51,12 @@ export function WorkFields({
   return (
     <div className={clsx(styles.root, className)}>
       <WorkFieldGroup title="Работа">
-        <PhotoFields label="Фото работы" isSaving={isSaving} serverPhoto={savedPhoto} />
+        <PhotoFields
+          altPlaceholder="Например: акварель со стрекозой над водой"
+          label="Фото работы"
+          isSaving={isSaving}
+          serverPhoto={savedPhoto}
+        />
         <ClearableInput
           label="Название"
           hint={`До ${String(workMaxLengths.title)} символов`}

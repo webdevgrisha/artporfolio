@@ -10,6 +10,8 @@ import { ImagePicker } from "@/shared/ui/image-picker";
 import styles from "./PhotoFields.module.css";
 
 interface PhotoFieldsProps {
+  /** An example description, for the placeholder of the description field. */
+  altPlaceholder: string;
   className?: string;
   isSaving: boolean;
   label: string;
@@ -21,7 +23,13 @@ interface PhotoFieldsProps {
  * A photo with its description. It reads the `photo` and `photoAlt` fields from the form context:
  * the form spreads `photoFieldsShape` into its schema.
  */
-export function PhotoFields({ className, isSaving, label, serverPhoto }: PhotoFieldsProps) {
+export function PhotoFields({
+  altPlaceholder,
+  className,
+  isSaving,
+  label,
+  serverPhoto,
+}: PhotoFieldsProps) {
   const { clearErrors, control, register, setError } = useFormContext<PhotoFormValues>();
   const { dirtyFields, errors } = useFormState({ control });
   const clearField = useClearField<PhotoFormValues>();
@@ -56,7 +64,7 @@ export function PhotoFields({ className, isSaving, label, serverPhoto }: PhotoFi
         <ClearableInput
           label="Описание фото"
           hint="Коротко: что на фото. Это прочитают незрячие и поисковики"
-          placeholder="Например: Анастасия в мастерской"
+          placeholder={altPlaceholder}
           disabled={isSaving}
           error={errors.photoAlt?.message}
           isModified={Boolean(dirtyFields.photoAlt)}
