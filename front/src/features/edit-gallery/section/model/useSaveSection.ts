@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   gallerySectionQuery,
-  gallerySectionsQueryKey,
+  gallerySectionsQuery,
   replaceGallerySection,
 } from "@/entities/gallery";
 import { putSavedResource } from "@/shared/api/savedResource";
@@ -36,7 +36,7 @@ export function useSaveSection(id: string) {
       await putSavedResource(queryClient, queryKey, saved);
       // The list loads afresh when it opens.
       await queryClient.invalidateQueries({
-        queryKey: gallerySectionsQueryKey,
+        queryKey: gallerySectionsQuery.queryKey,
         refetchType: "none",
       });
     },

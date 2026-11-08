@@ -1,12 +1,13 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, type QueryKey } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
 import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { Project } from "@/entities/project";
+import { type Project, projectQuery, projectsIntroQuery, projectsQuery } from "@/entities/project";
 import { emptyProjectFormValues } from "@/features/edit-projects/model/projectFormSchema";
 import { useCreateProject } from "@/features/edit-projects/model/useCreateProject";
+import { useSaveProject } from "@/features/edit-projects/model/useSaveProject";
 
 import { csrfHandler, problem } from "../../../support/handlers";
 import { recordRequests, server } from "../../../support/server";
@@ -79,5 +80,36 @@ describe("useCreateProject", () => {
 
     await expect(createProject.mutateAsync({ id, values })).rejects.toMatchObject({ status: 412 });
     expect(requests.filter((request) => request.endsWith(path))).toEqual([`PUT ${path}`]);
+  });
+});
+
+describe("useSaveProject", () => {
+  it("keeps the saved project and the intro fresh, and marks the list outdated", async () => {
+    server.use(
+      mswHttp.put(path, () =>
+        HttpResponse.json(apiProject("Слон"), { headers: { ETag: savedEtag } }),
+      ),
+    );
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const projectKey = projectQuery(id).queryKey;
+    const cachedKeys: QueryKey[] = [
+      projectKey,
+      projectsQuery.queryKey,
+      projectsIntroQuery.queryKey,
+    ];
+    for (const queryKey of cachedKeys) {
+      queryClient.setQueryData(queryKey, "cached");
+    }
+    const saveProject = renderHook(() => useSaveProject(id), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      ),
+    }).result.current;
+
+    await saveProject.mutateAsync({ etag: '"read"', values });
+
+    expect(queryClient.getQueryState(projectKey)?.isInvalidated).toBe(false);
+    expect(queryClient.getQueryState(projectsIntroQuery.queryKey)?.isInvalidated).toBe(false);
+    expect(queryClient.getQueryState(projectsQuery.queryKey)?.isInvalidated).toBe(true);
   });
 });

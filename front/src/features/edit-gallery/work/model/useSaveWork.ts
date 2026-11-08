@@ -34,8 +34,8 @@ export function useSaveWork(id: string) {
     mutationFn: async ({ etag, values }: SaveWorkParams) =>
       replaceGalleryWork({ body: await toWorkBody(values), etag, id }),
     onSuccess: async (saved) => {
-      await putSavedResource(queryClient, queryKey, saved);
       // The lists load afresh when they open; moving the work changes the works of its collections.
+      // They are marked outdated before the saved work goes in, which leaves the work itself fresh.
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey, refetchType: "none" }),
         queryClient.invalidateQueries({
@@ -43,6 +43,7 @@ export function useSaveWork(id: string) {
           refetchType: "none",
         }),
       ]);
+      await putSavedResource(queryClient, queryKey, saved);
     },
   });
 }

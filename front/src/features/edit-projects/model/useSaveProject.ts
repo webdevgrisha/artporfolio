@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectQuery, projectsQueryKey, replaceProject } from "@/entities/project";
+import { projectQuery, projectsQuery, replaceProject } from "@/entities/project";
 import { putSavedResource } from "@/shared/api/savedResource";
 import { getSaveProjectErrorMessage } from "../lib/saveErrorMessages";
 import type { ProjectFormValues } from "./projectFormSchema";
@@ -31,7 +31,10 @@ export function useSaveProject(id: string) {
     onSuccess: async (saved) => {
       await putSavedResource(queryClient, queryKey, saved);
       // The list shows the title and the photos; the table loads it afresh when it opens.
-      await queryClient.invalidateQueries({ queryKey: projectsQueryKey, refetchType: "none" });
+      await queryClient.invalidateQueries({
+        queryKey: projectsQuery.queryKey,
+        refetchType: "none",
+      });
     },
   });
 }

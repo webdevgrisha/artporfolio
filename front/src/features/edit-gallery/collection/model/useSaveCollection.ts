@@ -38,8 +38,8 @@ export function useSaveCollection(id: string) {
     mutationFn: async ({ etag, values }: SaveCollectionParams) =>
       replaceGalleryCollection({ body: await toCollectionBody(values), etag, id }),
     onSuccess: async (saved) => {
-      await putSavedResource(queryClient, queryKey, saved);
       // The lists load afresh when they open; a moved work changes another collection and itself.
+      // They are marked outdated before the saved collection goes in, which leaves it fresh.
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: galleryCollectionsQueryKey,
@@ -47,6 +47,7 @@ export function useSaveCollection(id: string) {
         }),
         queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey, refetchType: "none" }),
       ]);
+      await putSavedResource(queryClient, queryKey, saved);
     },
   });
 }
