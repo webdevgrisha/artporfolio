@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { type ProjectsIntro, projectsIntroQuery } from "@/entities/project";
+import type { ProjectsIntro } from "@/entities/project";
 import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
@@ -40,7 +40,6 @@ export function EditProjectsIntroForm({
   const { editForm } = useSavedForm({
     form,
     initial: intro,
-    query: projectsIntroQuery,
     save: (values, etag) => saveIntro.mutateAsync({ etag, intro: values }),
     toValues: (data) => data,
     toastId: saveProjectsIntroFeedback.toastId,

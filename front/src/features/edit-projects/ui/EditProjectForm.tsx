@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { type Project, projectQuery } from "@/entities/project";
+import type { Project } from "@/entities/project";
 import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
@@ -40,7 +40,6 @@ export function EditProjectForm({
   const { editForm, saved } = useSavedForm({
     form,
     initial: project,
-    query: projectQuery(project.data.id),
     // The server replaces the whole project, its photos included, at once.
     save: (values, etag) => saveProject.mutateAsync({ etag, values }),
     toValues: toProjectFormValues,

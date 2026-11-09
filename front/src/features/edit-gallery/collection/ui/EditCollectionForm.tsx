@@ -1,13 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import {
-  type GalleryCollection,
-  type GalleryWorkSummary,
-  galleryCollectionQuery,
-  galleryCollectionsQuery,
-  galleryWorksQuery,
-} from "@/entities/gallery";
+import type { GalleryCollection, GalleryWorkSummary } from "@/entities/gallery";
 import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
@@ -51,9 +45,7 @@ export function EditCollectionForm({
   const { editForm, saved } = useSavedForm({
     form,
     initial: collection,
-    query: galleryCollectionQuery(collection.data.id),
     // A work added in another tab must show among the works of the latest version.
-    related: [galleryWorksQuery.queryKey, galleryCollectionsQuery.queryKey],
     // The server replaces the whole collection, its cover and its works included, at once.
     save: (values, etag) => saveCollection.mutateAsync({ etag, values }),
     toValues: toCollectionFormValues,

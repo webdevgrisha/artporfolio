@@ -1,30 +1,15 @@
 import clsx from "clsx";
 import type { FormEventHandler, ReactNode } from "react";
 
-import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { FormActions } from "@/shared/ui/form-actions";
 import { useReportUnsavedChanges } from "@/shared/ui/unsaved-changes";
 
 import styles from "./EditForm.module.css";
 
-/** A save refused with 412: the data changed since the form read it, e.g. in another tab. */
-export interface EditFormConflict {
-  isOpen: boolean;
-  /**
-   * Closes the question and keeps the changes in the form, so they can be copied before the latest
-   * version is taken; saving them would be refused again.
-   */
-  onKeep: () => void;
-  /** Drops the changes and shows the data as it is now. */
-  onTakeLatest: () => void;
-}
-
 export interface EditFormProps {
   /** The fields. */
   children: ReactNode;
   className?: string;
-  /** The question after a save refused with 412, from `useSavedForm`. */
-  conflict?: EditFormConflict;
   hasUnsavedChanges: boolean;
   isSaving: boolean;
   /** Brings back the saved values. */
@@ -41,7 +26,6 @@ export interface EditFormProps {
 export function EditForm({
   children,
   className,
-  conflict,
   hasUnsavedChanges,
   isSaving,
   onRevert,
@@ -58,17 +42,6 @@ export function EditForm({
         isSaving={isSaving}
         onRevert={onRevert}
       />
-      {conflict && (
-        <ConfirmDialog
-          isOpen={conflict.isOpen}
-          title="Данные изменили в другой вкладке"
-          description="Ваши изменения сохранить нельзя: их нужно внести заново в актуальную версию. Чтобы не набирать текст снова, скопируйте его, затем ещё раз нажмите «Сохранить» и «Загрузить»."
-          cancelLabel="Не сейчас"
-          confirmLabel="Загрузить"
-          onCancel={conflict.onKeep}
-          onConfirm={conflict.onTakeLatest}
-        />
-      )}
     </form>
   );
 }

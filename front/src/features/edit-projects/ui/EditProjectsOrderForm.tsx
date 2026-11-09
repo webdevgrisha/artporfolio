@@ -2,7 +2,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import React from "react";
 import { useForm, useWatch } from "react-hook-form";
 
-import { type Project, projectsOrderQuery, projectsQuery } from "@/entities/project";
+import type { Project } from "@/entities/project";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import {
@@ -46,9 +46,7 @@ export function EditProjectsOrderForm({ className, order, projects }: EditProjec
   const { editForm, saved } = useSavedForm({
     form,
     initial: order,
-    query: projectsOrderQuery,
     // The latest order may bring a project created in another tab, which needs its row.
-    related: [projectsQuery.queryKey],
     save: (values, etag) => saveOrder.mutateAsync({ etag, ids: values.ids }),
     toValues: toFormValues,
     toastId: saveProjectsOrderFeedback.toastId,

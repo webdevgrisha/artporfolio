@@ -4,7 +4,7 @@ import { requestErrorOf } from "@/shared/api/upload";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
 /** For a failed upload or update of a photo. */
-export function getSavePhotoErrorMessage(error: unknown): string | null {
+export function getSavePhotoErrorMessage(error: unknown): string {
   return getSaveErrorMessage(requestErrorOf(error), {
     byStatus: {
       400: "Сервер не принял фото. Попробуйте другой файл",

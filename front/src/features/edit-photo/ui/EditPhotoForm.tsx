@@ -44,7 +44,6 @@ export function EditPhotoForm({
   const { editForm, saved } = useSavedForm({
     form,
     initial: photo,
-    query: slot.query,
     save: (values, etag) => savePhoto.mutateAsync({ etag, values }),
     toValues: toPhotoFormValues,
     toastId: getSavePhotoToastId(slot),

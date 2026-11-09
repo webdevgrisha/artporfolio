@@ -4,7 +4,7 @@ import { requestErrorOf } from "@/shared/api/upload";
 import { formatFileSize } from "@/shared/lib/formatFileSize";
 
 /** For the hero of one page, named by `pageLabel`. */
-export function getSaveHeroErrorMessage(error: unknown, pageLabel: string): string | null {
+export function getSaveHeroErrorMessage(error: unknown, pageLabel: string): string {
   return getSaveErrorMessage(requestErrorOf(error), {
     byStatus: {
       400: `Сервер не принял фото страницы «${pageLabel}». Попробуйте другой файл`,

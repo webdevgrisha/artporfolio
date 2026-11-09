@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
-import { galleryWorkUsageQuery, type WorkUsages } from "@/entities/gallery";
+import type { WorkUsages } from "@/entities/gallery";
 import { type LanguageFormSlot, translationsQuery } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
@@ -63,8 +63,6 @@ export function EditTitleListForm({
   const { editForm, saved } = useSavedForm({
     form,
     initial: data,
-    query: list.query,
-    related: [galleryWorkUsageQuery.queryKey],
     save: (values, etag) => saveList.mutateAsync({ etag, items: values.items }),
     toValues: toTitleListFormValues,
     toastId: list.toastId,

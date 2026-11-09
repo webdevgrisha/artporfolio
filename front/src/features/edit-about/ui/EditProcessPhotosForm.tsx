@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { maxProcessPhotos, processPhotosQuery } from "@/entities/about";
+import { maxProcessPhotos } from "@/entities/about";
 import type { Tagged } from "@/shared/api/http";
 import type { ListPhoto } from "@/shared/api/photo";
 import { toPhotoListRows } from "@/shared/lib/photoListForm";
@@ -33,7 +33,6 @@ export function EditProcessPhotosForm({ className, list }: EditProcessPhotosForm
   const { editForm, saved } = useSavedForm({
     form,
     initial: list,
-    query: processPhotosQuery,
     save: (values, etag) => saveProcessPhotos.mutateAsync({ etag, rows: values.photos }),
     toValues: toFormValues,
     toastId: saveProcessPhotosFeedback.toastId,

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { type GalleryIntro, galleryIntroQuery } from "@/entities/gallery";
+import type { GalleryIntro } from "@/entities/gallery";
 import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
@@ -40,7 +40,6 @@ export function EditGalleryIntroForm({
   const { editForm } = useSavedForm({
     form,
     initial: intro,
-    query: galleryIntroQuery,
     save: (values, etag) => saveIntro.mutateAsync({ etag, intro: values }),
     toValues: (data) => data,
     toastId: saveGalleryIntroFeedback.toastId,

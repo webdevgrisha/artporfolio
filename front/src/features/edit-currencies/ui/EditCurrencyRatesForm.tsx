@@ -1,12 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormState } from "react-hook-form";
 
-import {
-  type CurrencyRates,
-  currencies,
-  currencyLabels,
-  currencyRatesQuery,
-} from "@/entities/currency";
+import { type CurrencyRates, currencies, currencyLabels } from "@/entities/currency";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { Fieldset } from "@/shared/ui/fieldset";
@@ -37,7 +32,6 @@ export function EditCurrencyRatesForm({ className, rates }: EditCurrencyRatesFor
   const { editForm } = useSavedForm({
     form,
     initial: rates,
-    query: currencyRatesQuery,
     // The server replaces all rates at once.
     save: (values, etag) => saveRates.mutateAsync({ etag, rates: toCurrencyRates(values) }),
     toValues: toCurrencyRatesFormValues,

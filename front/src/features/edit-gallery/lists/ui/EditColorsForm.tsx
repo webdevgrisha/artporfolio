@@ -2,13 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
-import {
-  type GalleryColors,
-  galleryColorsQuery,
-  galleryWorkUsageQuery,
-  maxColors,
-  type WorkUsages,
-} from "@/entities/gallery";
+import { type GalleryColors, maxColors, type WorkUsages } from "@/entities/gallery";
 import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
@@ -69,8 +63,6 @@ export function EditColorsForm({
   const { editForm, saved } = useSavedForm({
     form,
     initial: colors,
-    query: galleryColorsQuery,
-    related: [galleryWorkUsageQuery.queryKey],
     save: (values, etag) => saveColors.mutateAsync({ colors: values.colors, etag }),
     toValues: toColorsFormValues,
     toastId: saveColorsFeedback.toastId,
