@@ -32,7 +32,7 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,jsonc,css}": "biome check --write"
+    "*.{js,jsx,ts,tsx,json,jsonc,css,astro}": "biome check --write"
   },
   "pnpm": {
     "auditConfig": {
