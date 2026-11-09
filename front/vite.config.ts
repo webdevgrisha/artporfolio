@@ -4,6 +4,8 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  // The admin lives under /admin of the domain of the site (scripts/build-hosting.mjs).
+  base: "/admin/",
   build: {
     rolldownOptions: {
       output: {

@@ -3,8 +3,9 @@ import { defineConfig, envField, fontProviders } from "astro/config";
 
 export default defineConfig({
   // Pages are rendered on request, so a change in the admin shows at once; a CDN caches them.
-  // The middleware mode lets the function of Firebase serve the site through its own server.
-  adapter: node({ mode: "middleware" }),
+  // In standalone mode the handler serves the built files too, so the function of Firebase that
+  // wraps it (firebase.js) deploys the pages and their assets together, never out of step.
+  adapter: node({ mode: "standalone" }),
   env: {
     schema: {
       // Where the site is served, such as https://example.com: canonical and alternate links,

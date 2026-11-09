@@ -6,7 +6,7 @@
   "scripts": {
     "dev:front": "pnpm --filter front dev",
     "dev:site": "pnpm --filter site dev",
-    "dev:backend": "pnpm --filter artportfolio-backend build && firebase emulators:start --only auth,firestore,functions,storage,tasks",
+    "dev:backend": "pnpm --filter artportfolio-backend --filter site build && firebase emulators:start --only auth,firestore,functions,storage,tasks",
     "dev:backend:watch": "pnpm --filter artportfolio-backend build:watch",
     "emulators": "pnpm build && firebase emulators:start --only auth,firestore,functions,hosting,storage,tasks",
     "emulators:admin": "node scripts/create-emulator-admin.mjs",
@@ -18,7 +18,7 @@
     "deploy:storage-rules": "firebase deploy --only storage",
     "deploy:storage-lifecycle": "gcloud storage buckets update gs://${STORAGE_BUCKET:?Set STORAGE_BUCKET to the name of the bucket} --lifecycle-file=storage.lifecycle.json",
     "deploy:infra": "pnpm deploy:firestore-rules && pnpm deploy:storage-rules && pnpm deploy:storage-lifecycle",
-    "build": "pnpm -r build",
+    "build": "pnpm -r build && node scripts/build-hosting.mjs",
     "type-check": "pnpm -r type-check",
     "test": "pnpm -r --if-present test",
     "test:emulators": "firebase emulators:exec --only auth,firestore,storage --project demo-artportfolio \"pnpm --filter artportfolio-backend test:integration\"",
