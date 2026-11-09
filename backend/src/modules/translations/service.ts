@@ -1,3 +1,5 @@
+import { warn } from "firebase-functions/logger";
+
 import { getTranslationUsage } from "#modules/translations/deepl";
 import { firestore } from "#shared/firebase/firestore";
 import { UnprocessableContentError } from "#shared/http/errors";
@@ -90,12 +92,14 @@ export async function editTranslations(
     transaction.set(document, { ...saved, failed: saved.failed && !asksTranslator, translations });
   });
 
+  // The edit has already gone through, so, as after a save, a refusal of the queue only shows the
+  // texts as failed.
   if (asksTranslator) {
     try {
       await enqueue(resource);
     } catch (error) {
+      warn("Could not ask for translations", { error, resource });
       await markFailed(resource);
-      throw error;
     }
   }
 

@@ -132,9 +132,9 @@ describe("a failure of the queue or of the worker", () => {
     await translated();
     queue.enqueueTranslation.mockRejectedValue(new Error("no queue"));
 
-    await expect(editTranslations(resource, "en", { title: null })).rejects.toThrow("no queue");
-
-    const { failed, isTranslating, translations } = await getTranslations(resource);
+    const { failed, isTranslating, translations } = await editTranslations(resource, "en", {
+      title: null,
+    });
 
     expect({ failed, isTranslating }).toEqual({ failed: true, isTranslating: false });
     expect(translations.en?.title).toEqual({ status: "pending", text: "My Elephant" });
