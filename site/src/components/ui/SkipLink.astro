@@ -4,14 +4,16 @@
  * reader user jump past the header to the content (WCAG 2.4.1).
  */
 interface Props {
+  /** Such as «Skip to content», in the language of the page. */
+  label: string;
   /** The id of the element the content starts with. */
   target: string;
 }
 
-const { target } = Astro.props;
+const { label, target } = Astro.props;
 ---
 
-<a class="skip-link" href={`#${target}`}><slot /></a>
+<a class="skip-link" href={`#${target}`}>{label}</a>
 
 <style>
   .skip-link {

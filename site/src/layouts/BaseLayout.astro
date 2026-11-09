@@ -45,7 +45,7 @@ const { language, title } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <SkipLink target="content">{t(language, "layout.skipToContent")}</SkipLink>
+    <SkipLink label={t(language, "layout.skipToContent")} target="content" />
     <main id="content">
       <slot />
     </main>
