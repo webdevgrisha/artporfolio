@@ -27,7 +27,7 @@
     "lint:fix": "biome lint --write .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "check": "biome check . && pnpm -r type-check",
+    "check": "biome check . && pnpm -r type-check && pnpm --filter front lint:boundaries",
     "prepare": "husky"
   },
   "lint-staged": {

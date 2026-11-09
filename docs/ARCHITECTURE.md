@@ -48,13 +48,14 @@ features/login/
 
 ### Import rules
 
-Enforced by Biome (`noRestrictedImports` in `biome.json`):
+Enforced by dependency-cruiser (`front/.dependency-cruiser.mjs`, run by `pnpm check` and in CI). It checks the resolved paths, so `@/` and relative imports are held to the same rules:
 
 - A slice is imported only through its public `index.ts`: `@/features/login`, never `@/features/login/model/login`.
 - A layer imports only from lower layers: `features` may use `entities` and `shared`, never `widgets` or `pages`.
 - Nothing imports `app`.
-- Inside one slice, use relative imports (`../model/login`). Across slices and layers, use the `@/` alias.
+- Inside one slice, use relative imports (`../model/login`). Across slices and layers, use the `@/` alias. This one is a convention, not checked.
 - Slices of the same layer do not import each other. Shared needs move down a layer (`isSessionExpiredError` is used by several features, so it lives in `shared/api`).
+- Modules never import each other in a circle.
 
 `shared` has no slices. `shared/ui` exposes one public `index.ts` per component (`@/shared/ui/button`). `shared/api`, `shared/config` and `shared/lib` are imported file by file (`@/shared/api/http`) on purpose: a common index would make every chunk that needs the HTTP client also load Firebase.
 
