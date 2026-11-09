@@ -32,6 +32,9 @@
       "quoteStyle": "double"
     }
   },
+  "html": {
+    "experimentalFullSupportEnabled": true
+  },
   "markdown": {
     "formatter": {
       "enabled": false
