@@ -1,8 +1,12 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import type { GalleryCollection } from "@/entities/gallery";
 import { galleryCollectionPath } from "@/shared/config/routes";
 import { compareText } from "@/shared/lib/compareText";
-import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
+import {
+  actionsColumn,
+  type DataTableColumn,
+  positionColumn,
+  RowActions,
+} from "@/shared/ui/data-table";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
 
 import { compareCollectionYears } from "../model/collectionsTableView";
@@ -19,7 +23,7 @@ interface CollectionsColumnsParams {
 export function collectionsColumns({
   deletingIds,
   onDelete,
-}: CollectionsColumnsParams): ColumnDef<TableRow<GalleryCollection>>[] {
+}: CollectionsColumnsParams): DataTableColumn<GalleryCollection>[] {
   return [
     positionColumn({ isSortable: true }),
     {
@@ -33,14 +37,14 @@ export function collectionsColumns({
       id: "title",
       header: "Название",
       accessorFn: (row) => row.item.title,
-      sortingFn: (a, b) => compareText(a.original.item.title, b.original.item.title),
+      sortFn: (a, b) => compareText(a.original.item.title, b.original.item.title),
     },
     {
       id: "years",
       header: "Годы",
       meta: { className: styles.yearsColumn, hiddenOnPhone: true },
       accessorFn: (row) => row.item.startYear,
-      sortingFn: (a, b) => compareCollectionYears(a.original.item, b.original.item),
+      sortFn: (a, b) => compareCollectionYears(a.original.item, b.original.item),
       // The latest first, as the site shows them.
       sortDescFirst: true,
       cell: ({ row: { original } }) => formatCollectionYears(original.item),

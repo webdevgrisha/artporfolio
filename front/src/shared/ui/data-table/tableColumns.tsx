@@ -1,17 +1,16 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
+import type { DataTableColumn } from "./dataTableFeatures";
 import styles from "./tableColumns.module.css";
-import type { TableRow } from "./tableRow";
 
 /** «№»: the place of the item on the site. It sorts unless the site order is another column's. */
 export function positionColumn<TItem>({
   isSortable,
 }: {
   isSortable: boolean;
-}): ColumnDef<TableRow<TItem>> {
+}): DataTableColumn<TItem> {
   return {
     id: "position",
     header: "№",
@@ -23,9 +22,7 @@ export function positionColumn<TItem>({
 }
 
 /** The last column, without a visible name: the actions of the item, such as RowActions. */
-export function actionsColumn<TItem>(
-  render: (item: TItem) => ReactNode,
-): ColumnDef<TableRow<TItem>> {
+export function actionsColumn<TItem>(render: (item: TItem) => ReactNode): DataTableColumn<TItem> {
   return {
     id: "actions",
     header: () => <VisuallyHidden>Действия</VisuallyHidden>,

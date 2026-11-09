@@ -2,18 +2,9 @@ import { flexRender, type RowData, type SortDirection, type Table } from "@tanst
 import clsx from "clsx";
 
 import { ArrowDownIcon, ArrowUpIcon, SortIcon } from "@/shared/ui/icon";
-
+import type { DataTableFeatures } from "./dataTableFeatures";
 import styles from "./TableHead.module.css";
 import columnStyles from "./tableColumns.module.css";
-
-declare module "@tanstack/react-table" {
-  interface ColumnMeta<TData extends RowData, TValue> {
-    /** The class of the column's header and cells, such as its width. */
-    className?: string;
-    /** Hides the column on a phone, which keeps the photo, the title and the actions. */
-    hiddenOnPhone?: boolean;
-  }
-}
 
 const ariaSort = {
   asc: "ascending",
@@ -28,8 +19,8 @@ function SortState({ direction }: { direction: SortDirection | false }) {
   return <SortIcon className={styles.sortIdle} />;
 }
 
-interface TableHeadProps<TData> {
-  table: Table<TData>;
+interface TableHeadProps<TData extends RowData> {
+  table: Table<DataTableFeatures, TData>;
 }
 
 /**
@@ -37,7 +28,7 @@ interface TableHeadProps<TData> {
  * cycles it through ascending, descending and unsorted; the header says the state to screen readers
  * by `aria-sort`, and the sorted column stands out from the muted ones.
  */
-export function TableHead<TData>({ table }: TableHeadProps<TData>) {
+export function TableHead<TData extends RowData>({ table }: TableHeadProps<TData>) {
   return (
     <thead>
       {table.getHeaderGroups().map((headerGroup) => (

@@ -1,10 +1,4 @@
-import {
-  type ColumnDef,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { useTable } from "@tanstack/react-table";
 import clsx from "clsx";
 import React from "react";
 
@@ -16,11 +10,11 @@ import { SearchInput } from "@/shared/ui/search-input";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./DataTable.module.css";
+import { type DataTableColumn, dataTableFeatures } from "./dataTableFeatures";
 import { TableBody } from "./TableBody";
 import { TableFilters } from "./TableFilters";
 import { TableHead } from "./TableHead";
 import { TablePagination } from "./TablePagination";
-import type { TableRow } from "./tableRow";
 
 interface DataTableProps<TItem> {
   /** The link to the page that adds an item, beside the search. */
@@ -28,7 +22,7 @@ interface DataTableProps<TItem> {
   /** Names the table for screen readers, such as «Все работы». */
   caption: string;
   className?: string;
-  columns: ColumnDef<TableRow<TItem>>[];
+  columns: DataTableColumn<TItem>[];
   /** Shown instead of the table while there are no items, such as «Работ пока нет». */
   emptyText: string;
   /** The lists under the search that narrow the rows; a new array reads the address again. */
@@ -98,16 +92,14 @@ export function DataTable<TItem>({
   const pageCount = Math.ceil(rows.length / pageSize);
   // A search still on its way to the address already shows other rows, from their first page.
   const pageIndex = query === view.query ? Math.min(view.page, Math.max(pageCount, 1)) - 1 : 0;
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     columns,
     // The page comes from the address, which a change of the rows updates by itself.
     autoResetPageIndex: false,
     data: rows,
     enableMultiSort: false,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getRowId: (row) => getId(row.item),
-    getSortedRowModel: getSortedRowModel(),
     onSortingChange: changeSorting,
     state: { pagination: { pageIndex, pageSize }, sorting: view.sorting },
   });
