@@ -1,0 +1,32 @@
+/*
+ * Each color names its light and its dark value once, in light-dark(): `color-scheme` picks one.
+ * It follows the system of the visitor until they choose a theme with the button, which sets
+ * `data-theme` on <html>.
+ *
+ * The site is monochrome: only the works are in color, and a tint of the page would change how
+ * their colors look. The dark page is not pure black, on which light text glows.
+ */
+@layer base {
+  :root {
+    --color-text: light-dark(#000, #f2f2f2);
+    /* 5.1:1 on the light page, 7.6:1 on the dark one. */
+    --color-text-muted: light-dark(#6e6e6e, #a6a6a6);
+    --color-surface: light-dark(#fff, #141414);
+    /* Where an image will be, until it loads. */
+    --color-placeholder: light-dark(#e6e6e6, #2a2a2a);
+    /* The thin lines between sections and around buttons and cards. */
+    --color-line: light-dark(#000, #8c8c8c);
+    --color-focus: light-dark(#000, #f2f2f2);
+    /* The price of a work on sale: the red of the mockup darkened to 5:1, so small text reads. */
+    --color-sale: light-dark(#e00000, #ff6b6b);
+    color-scheme: light dark;
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+}

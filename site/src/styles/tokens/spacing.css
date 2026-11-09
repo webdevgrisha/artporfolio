@@ -1,0 +1,37 @@
+/*
+ * All spacing is a number of base units of 4px; the number in a token's name is that number.
+ *
+ * - Component spacing (`--space-N`) is fixed on every screen: the padding of a button, the gap
+ *   between an icon and its text.
+ * - Layout spacing (`--layout-space-N`) grows with the page, from N × 4px on a phone (360px) to
+ *   N × 6px at the width of the mockup (1920px): the gaps between blocks and sections.
+ */
+@layer base {
+  :root {
+    --space-unit: 0.25rem;
+
+    --space-1: calc(1 * var(--space-unit));
+    --space-2: calc(2 * var(--space-unit));
+    --space-3: calc(3 * var(--space-unit));
+    --space-4: calc(4 * var(--space-unit));
+    --space-6: calc(6 * var(--space-unit));
+    --space-8: calc(8 * var(--space-unit));
+
+    /* 16px → 24px */
+    --layout-space-4: clamp(1rem, 0.8846rem + 0.5128vw, 1.5rem);
+    /* 24px → 36px */
+    --layout-space-6: clamp(1.5rem, 1.327rem + 0.7692vw, 2.25rem);
+    /* 32px → 48px */
+    --layout-space-8: clamp(2rem, 1.769rem + 1.026vw, 3rem);
+    /* 40px → 60px */
+    --layout-space-10: clamp(2.5rem, 2.212rem + 1.282vw, 3.75rem);
+    /* 48px → 72px */
+    --layout-space-12: clamp(3rem, 2.654rem + 1.538vw, 4.5rem);
+    /* 64px → 96px */
+    --layout-space-16: clamp(4rem, 3.538rem + 2.051vw, 6rem);
+    /* 96px → 144px */
+    --layout-space-24: clamp(6rem, 5.308rem + 3.077vw, 9rem);
+    /* 128px → 192px */
+    --layout-space-32: clamp(8rem, 7.077rem + 4.103vw, 12rem);
+  }
+}

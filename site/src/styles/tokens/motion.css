@@ -1,0 +1,17 @@
+@layer base {
+  :root {
+    --motion-duration-fast: 120ms;
+    --motion-duration-standard: 180ms;
+    --motion-duration-slow: 280ms;
+    --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* Whoever asks the system for less motion gets none; what moves still ends where it should. */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --motion-duration-fast: 0ms;
+      --motion-duration-standard: 0ms;
+      --motion-duration-slow: 0ms;
+    }
+  }
+}

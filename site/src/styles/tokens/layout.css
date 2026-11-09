@@ -1,0 +1,30 @@
+/*
+ * Breakpoints (custom properties cannot be used in media queries). The sizes are fluid, so these
+ * only change the layout itself, such as the number of columns:
+ * - phone:   below 40rem
+ * - tablet:  40rem and wider
+ * - desktop: 75rem and wider
+ *
+ * A component that can sit in a narrow column or across the page asks the width of its container
+ * (`@container`), not of the screen.
+ */
+@layer base {
+  :root {
+    /* The margin between the content and the edges of the screen: 16px → 76px, as in the mockup. */
+    --page-gutter: clamp(1rem, 0.1346rem + 3.846vw, 4.75rem);
+    /* The page keeps the proportions of the mockup on a wider screen, centered. */
+    --page-max-inline-size: 120rem;
+
+    /* The grid of the pages: its text starts at a third, as in the mockup. */
+    --grid-columns: 12;
+    --grid-gap: var(--layout-space-4);
+
+    /* A line of text longer than this is hard to follow back to its start. */
+    --text-max-inline-size: 65ch;
+
+    --line-width: 1px;
+    --focus-ring: 2px solid var(--color-focus);
+    /* What a finger can hit, however small the control looks (WCAG 2.5.8 asks for 24px). */
+    --min-tap-target-size: 44px;
+  }
+}
