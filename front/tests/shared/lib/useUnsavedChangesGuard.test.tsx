@@ -7,20 +7,29 @@ import { useUnsavedChangesGuard } from "@/shared/lib/useUnsavedChangesGuard";
 
 type Guard = ReturnType<typeof useUnsavedChangesGuard>;
 
+interface GuardedPageProps {
+  hasUnsavedChanges: boolean;
+  page: { guard?: Guard; setHasUnsavedChanges?: (value: boolean) => void };
+}
+
+/** A page that uses the guard and hands the test the guard and its unsaved state. */
+function GuardedPage({ hasUnsavedChanges, page }: GuardedPageProps) {
+  const [hasChanges, setHasChanges] = React.useState(hasUnsavedChanges);
+  page.guard = useUnsavedChangesGuard(hasChanges);
+  page.setHasUnsavedChanges = setHasChanges;
+  return null;
+}
+
 /** Opens a page that uses the guard; the test changes its unsaved state and reads the guard. */
 function renderGuardedPage(hasUnsavedChanges: boolean) {
-  const page: { guard?: Guard; setHasUnsavedChanges?: (value: boolean) => void } = {};
-
-  function GuardedPage() {
-    const [hasChanges, setHasChanges] = React.useState(hasUnsavedChanges);
-    page.guard = useUnsavedChangesGuard(hasChanges);
-    page.setHasUnsavedChanges = setHasChanges;
-    return null;
-  }
+  const page: GuardedPageProps["page"] = {};
 
   const router = createMemoryRouter(
     [
-      { element: <GuardedPage />, path: "/admin/about" },
+      {
+        element: <GuardedPage hasUnsavedChanges={hasUnsavedChanges} page={page} />,
+        path: "/admin/about",
+      },
       { element: null, path: "/admin/contacts" },
       { element: null, path: "/admin/projects" },
     ],
