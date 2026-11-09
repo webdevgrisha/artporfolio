@@ -1,9 +1,11 @@
 ---
 import { Font } from "astro:assets";
 
+import SkipLink from "@/components/ui/SkipLink.astro";
 import type { Language } from "@/lib/i18n/languages";
 import { languageTag } from "@/lib/i18n/languageTag";
 import { textDirection } from "@/lib/i18n/textDirection";
+import { t } from "@/lib/i18n/translate";
 
 import "@/styles/global.css";
 
@@ -43,6 +45,9 @@ const { language, title } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <SkipLink target="content">{t(language, "layout.skipToContent")}</SkipLink>
+    <main id="content">
+      <slot />
+    </main>
   </body>
 </html>
