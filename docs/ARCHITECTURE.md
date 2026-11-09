@@ -10,9 +10,9 @@ A pnpm monorepo with three packages, deployed to Firebase:
 | --- | --- | --- |
 | `front` | React 19, React Router (data mode), TanStack Query, TanStack Table, react-hook-form, dnd-kit, Vite, CSS Modules, zod | Firebase Hosting |
 | `backend` | Express 5, Firebase Admin, zod | Cloud Functions (`api`, europe-west1) |
-| `site` | Astro 7, server rendering (node adapter) | Not deployed yet |
+| `site` | Astro 7, server rendering (node adapter) | Cloud Functions (`site`, europe-west1) |
 
-Firebase Hosting serves the frontend and rewrites `/api/**` to the `api` function, so the browser talks to one origin.
+Firebase Hosting serves everything on one domain: the admin under `/admin`, `/api/**` from the `api` function, and every other path from the `site` function, so the browser talks to one origin (DEPLOYMENT.md, «What Firebase Hosting serves»).
 
 ## Frontend: Feature-Sliced Design
 
@@ -137,7 +137,7 @@ A folder imports only from the folders below it: `pages → layouts → blocks �
 ### Languages
 
 - The site has the 26 languages of the backend (`lib/i18n/languages.ts`; a test keeps the lists equal), and every page lives under the code of its language: `/en/`, `/pl/contact`. `<html>` names the variant the texts are in (`pt-BR`, `zh-Hans`) and sets `dir="rtl"` for Arabic.
-- Pages are rendered on request (`output: "server"`, the node adapter in middleware mode), so a change in the admin shows at once.
+- Pages are rendered on request (`output: "server"`, the node adapter in standalone mode, wrapped by the `site` function in `site/firebase.js`), so a change in the admin shows within the minute the CDN keeps a page.
 - The root `/` redirects to the language the visitor chose (the `language` cookie), else to the best one of their browser (`Accept-Language`, by weight, with `de-AT` finding `de`), else to English. The redirect differs from visitor to visitor, so it is never cached.
 - The texts of the interface live in `lib/i18n/messages/<language>.json`; `en.json` is the source, and `t(language, key)` is typed by its keys. A text not translated yet shows in English. Content written in the admin is translated by the backend instead.
 - A new text: add its key to `en.json`, run `pnpm --filter site i18n:translate`, and read the diff. The script sends DeepL only new texts and texts whose English changed, so a translation edited by hand stays; `translatedFrom.json` keeps the English of each translation. A test keeps every language on the keys of English.
