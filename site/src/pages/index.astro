@@ -1,0 +1,19 @@
+---
+import { languageCookie } from "@/lib/i18n/languageCookie";
+import { visitorLanguage } from "@/lib/i18n/visitorLanguage";
+
+const language = visitorLanguage({
+  acceptLanguage: Astro.request.headers.get("Accept-Language"),
+  chosen: Astro.cookies.get(languageCookie)?.value,
+});
+
+// The answer differs from visitor to visitor, so no cache keeps it: Cloudflare ignores `Vary`.
+return new Response(null, {
+  headers: {
+    "Cache-Control": "private, no-store",
+    Location: `/${language}/`,
+    Vary: "Accept-Language, Cookie",
+  },
+  status: 302,
+});
+---
