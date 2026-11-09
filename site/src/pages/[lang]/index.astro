@@ -3,6 +3,8 @@ import Container from "@/components/ui/Container.astro";
 import Stack from "@/components/ui/Stack.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { isLanguage } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { siteName } from "@/lib/site/siteName";
 
 const { lang } = Astro.params;
 
@@ -11,10 +13,10 @@ if (!isLanguage(lang)) {
 }
 ---
 
-<BaseLayout language={lang} title="NOT.YET.KNOW.ARTIST">
+<BaseLayout description={t(lang, "home.description")} language={lang} path="/">
   <Container>
     <Stack gap="layout-space-8">
-      <h1>NOT.YET.KNOW.ARTIST</h1>
+      <h1>{siteName}</h1>
     </Stack>
   </Container>
 </BaseLayout>

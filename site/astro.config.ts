@@ -1,10 +1,17 @@
 import node from "@astrojs/node";
-import { defineConfig, fontProviders } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 
 export default defineConfig({
   // Pages are rendered on request, so a change in the admin shows at once; a CDN caches them.
   // The middleware mode lets the function of Firebase serve the site through its own server.
   adapter: node({ mode: "middleware" }),
+  env: {
+    schema: {
+      // Where the site is served, such as https://example.com: canonical and alternate links,
+      // link cards and the sitemap need absolute URLs, and the request may come through a proxy.
+      SITE_URL: envField.string({ access: "public", context: "server", url: true }),
+    },
+  },
   fonts: [
     {
       cssVariable: "--font-absans",

@@ -6,15 +6,23 @@ import type { Language } from "@/lib/i18n/languages";
 import { languageTag } from "@/lib/i18n/languageTag";
 import { textDirection } from "@/lib/i18n/textDirection";
 import { t } from "@/lib/i18n/translate";
+import { siteName } from "@/lib/site/siteName";
+
+import PageMeta from "./PageMeta.astro";
 
 import "@/styles/global.css";
 
 interface Props {
+  /** What the page shows, for search results and link cards: about 150 characters. */
+  description: string;
   language: Language;
-  title: string;
+  /** The path of the page under its language, such as `/contact`. */
+  path: string;
+  /** The name of the page; the home page has none and is named after the site. */
+  title?: string;
 }
 
-const { language, title } = Astro.props;
+const { description, language, path, title } = Astro.props;
 ---
 
 <!doctype html>
@@ -42,7 +50,13 @@ const { language, title } = Astro.props;
     </script>
     <Font cssVariable="--font-absans" preload />
     <Font cssVariable="--font-manrope" />
-    <title>{title}</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <PageMeta
+      description={description}
+      language={language}
+      path={path}
+      title={title ? `${title} — ${siteName}` : siteName}
+    />
   </head>
   <body>
     <SkipLink label={t(language, "layout.skipToContent")} target="content" />
