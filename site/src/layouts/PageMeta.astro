@@ -11,7 +11,7 @@ import { localizedPath } from "@/lib/site/localizedPath";
 import { siteName } from "@/lib/site/siteName";
 
 interface Props {
-  description: string;
+  description?: string | undefined;
   language: Language;
   /** The path of the page under its language, such as `/contact`. */
   path: string;
@@ -23,7 +23,7 @@ const url = new URL(localizedPath(language, path), SITE_URL).href;
 ---
 
 <title>{title}</title>
-<meta name="description" content={description} />
+{description && <meta name="description" content={description} />}
 <link rel="canonical" href={url} />
 {alternateLinks(path, SITE_URL).map(({ href, hreflang }) => (
   <link rel="alternate" hreflang={hreflang} href={href} />
@@ -31,5 +31,5 @@ const url = new URL(localizedPath(language, path), SITE_URL).href;
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={siteName} />
 <meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
+{description && <meta property="og:description" content={description} />}
 <meta property="og:url" content={url} />

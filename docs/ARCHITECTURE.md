@@ -144,7 +144,7 @@ A folder imports only from the folders below it: `pages → layouts → blocks �
 
 ### Search engines and link cards
 
-- `BaseLayout` takes the `description` and the `path` of a page (and its `title`, but for the home page) and writes, through `PageMeta`, the title, description, canonical address, the page in every language (`hreflang`, with English as `x-default`) and the Open Graph tags of a link card.
+- `BaseLayout` takes the `path` of a page, its `title` (but for the home page) and its `description`, which comes from the texts of the page cut to about 160 characters: the artist writes no separate one. Without a description the tag is left out, and a search engine quotes the page. Through `PageMeta` it writes, through `PageMeta`, the title, description, canonical address, the page in every language (`hreflang`, with English as `x-default`) and the Open Graph tags of a link card.
 - `robots.txt` and `sitemap.xml` are endpoints in `pages/`. The sitemap lists the paths of `lib/site/pagePaths.ts` in every language: a new page adds its path there. Crawlers are kept out of `/api/` only; the admin stays open to them, so they read its `noindex`.
 - Absolute URLs come from `SITE_URL` (Astro's env schema in `astro.config.ts`), which Astro bakes in while building, so the build fails without it. Locally it is in `site/.env` (see `site/.env.example`).
 

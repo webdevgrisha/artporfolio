@@ -13,8 +13,11 @@ import PageMeta from "./PageMeta.astro";
 import "@/styles/global.css";
 
 interface Props {
-  /** What the page shows, for search results and link cards: about 150 characters. */
-  description: string;
+  /**
+   * What the page shows, for search results and link cards: taken from the texts of the page and
+   * cut to about 160 characters. Without it, a search engine quotes the page itself.
+   */
+  description?: string;
   language: Language;
   /** The path of the page under its language, such as `/contact`. */
   path: string;
