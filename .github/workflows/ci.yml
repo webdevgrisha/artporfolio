@@ -46,6 +46,7 @@ jobs:
 
       - name: Build applications
         env:
+          SITE_URL: https://ci-placeholder.example
           VITE_FIREBASE_API_KEY: ci-placeholder
           VITE_FIREBASE_APP_ID: ci-placeholder
           VITE_FIREBASE_AUTH_DOMAIN: ci-placeholder.firebaseapp.com
