@@ -7,7 +7,7 @@ import {
   galleryWorkUsageQuery,
   type WorkUsages,
 } from "@/entities/gallery";
-import type { LanguageFormSlot } from "@/entities/translation";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
@@ -53,8 +53,7 @@ export function EditSectionForm({
 
   return (
     <LanguageForm
-      savedTag={saved.etag}
-      resource={`gallery-section-${section.data.id}`}
+      resource={translationResources.gallerySection(section.data.id)}
       fields={[
         { key: "title", label: "Название" },
         ...saved.data.subsections.map(({ id, title }) => ({ key: id, label: title })),

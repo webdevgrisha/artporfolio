@@ -24,11 +24,11 @@ const translations: ResourceTranslations = {
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
-function Page({ address, savedTag }: { address: string; savedTag: string }): ReactNode {
+function Page({ address }: { address: string }): ReactNode {
   return (
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[address]}>
-        <LanguageForm fields={fields} resource="gallery-intro" savedTag={savedTag}>
+        <LanguageForm fields={fields} resource="gallery-intro">
           <p>Форма на русском</p>
         </LanguageForm>
       </MemoryRouter>
@@ -39,30 +39,32 @@ function Page({ address, savedTag }: { address: string; savedTag: string }): Rea
 describe("LanguageForm", () => {
   it("shows the Russian form by default", () => {
     server.use(mswHttp.get(path, () => HttpResponse.json(translations)));
-    render(<Page address="/" savedTag='"1"' />);
+    render(<Page address="/" />);
 
     expect(screen.getByText("Форма на русском").parentElement?.hidden).toBe(false);
   });
 
   it("keeps the Russian form mounted behind the language of the address", async () => {
     server.use(mswHttp.get(path, () => HttpResponse.json(translations)));
-    render(<Page address="/?lang=en" savedTag='"1"' />);
+    render(<Page address="/?lang=en" />);
 
     expect(await screen.findByLabelText("Основной текст")).toBeDefined();
     expect(screen.getByText("Форма на русском").parentElement?.hidden).toBe(true);
   });
 
-  it("reads the translations again after a save of the resource", async () => {
+  it("reads the translations anew each time the form opens, as the translator changes them", async () => {
     server.use(mswHttp.get(path, () => HttpResponse.json(translations)));
 
     const requests = recordRequests();
-    const { rerender } = render(<Page address="/" savedTag='"1"' />);
+    const { unmount } = render(<Page address="/" />);
 
     await waitFor(() => expect(requests).toContain(`GET ${path}`));
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    unmount();
 
     const before = requests.length;
 
-    rerender(<Page address="/" savedTag='"2"' />);
+    render(<Page address="/" />);
 
     await waitFor(() => expect(requests.length).toBeGreaterThan(before));
   });
@@ -71,14 +73,14 @@ describe("LanguageForm", () => {
     server.use(mswHttp.get(path, () => HttpResponse.json(translations)));
 
     const requests = recordRequests();
-    const { rerender } = render(<Page address="/" savedTag='"1"' />);
+    const { rerender } = render(<Page address="/" />);
 
     await waitFor(() => expect(requests).toContain(`GET ${path}`));
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
 
     const before = requests.length;
 
-    rerender(<Page address="/" savedTag='"1"' />);
+    rerender(<Page address="/" />);
     await new Promise((resolve) => setTimeout(resolve, 20));
 
     expect(requests).toHaveLength(before);

@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { type Project, projectQuery } from "@/entities/project";
-import type { LanguageFormSlot } from "@/entities/translation";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import {
@@ -48,11 +48,7 @@ export function EditProjectForm({
   });
 
   return (
-    <LanguageForm
-      savedTag={saved.etag}
-      resource={`project-${project.data.id}`}
-      fields={languageFields}
-    >
+    <LanguageForm resource={translationResources.project(project.data.id)} fields={languageFields}>
       {/* The fields read the form from the context. */}
       <FormProvider {...form}>
         <EditForm className={className} {...editForm}>

@@ -13,10 +13,8 @@ export interface LanguageFormProps {
   /** The form of the resource in Russian. */
   children: ReactNode;
   fields: readonly TranslatedField[];
-  /** The name of the translations of the resource on the server. */
+  /** The name of the translations of the resource on the server (`translationResources`). */
   resource: string;
-  /** The ETag of the saved resource: a save may send texts to the translator. */
-  savedTag: string;
 }
 
 /**

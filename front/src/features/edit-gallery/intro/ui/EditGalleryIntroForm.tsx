@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { type GalleryIntro, galleryIntroQuery } from "@/entities/gallery";
-import type { LanguageFormSlot } from "@/entities/translation";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { Textarea } from "@/shared/ui/textarea";
@@ -37,7 +37,7 @@ export function EditGalleryIntroForm({
     resolver: zodResolver(galleryIntroFormSchema),
   });
   const saveIntro = useSaveGalleryIntro();
-  const { editForm, saved } = useSavedForm({
+  const { editForm } = useSavedForm({
     form,
     initial: intro,
     query: galleryIntroQuery,
@@ -51,7 +51,7 @@ export function EditGalleryIntroForm({
   } = form;
 
   return (
-    <LanguageForm savedTag={saved.etag} resource={"gallery-intro"} fields={languageFields}>
+    <LanguageForm resource={translationResources.galleryIntro} fields={languageFields}>
       <EditForm className={className} {...editForm}>
         <Textarea
           className={styles.text}

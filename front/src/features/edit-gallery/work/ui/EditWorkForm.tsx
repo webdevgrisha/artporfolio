@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { type GalleryWork, galleryWorkQuery } from "@/entities/gallery";
-import type { LanguageFormSlot } from "@/entities/translation";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { saveWorkToastId, useSaveWork } from "../model/useSaveWork";
@@ -52,11 +52,7 @@ export function EditWorkForm({
   });
 
   return (
-    <LanguageForm
-      savedTag={saved.etag}
-      resource={`gallery-work-${work.data.id}`}
-      fields={languageFields}
-    >
+    <LanguageForm resource={translationResources.galleryWork(work.data.id)} fields={languageFields}>
       {/* The fields read the form from the context. */}
       <FormProvider {...form}>
         <EditForm className={className} {...editForm}>

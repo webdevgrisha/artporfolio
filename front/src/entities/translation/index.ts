@@ -1,5 +1,6 @@
 export { patchTranslations } from "./api/patchTranslations";
 export { retryTranslations } from "./api/retryTranslations";
+export { translationResources } from "./api/translationResources";
 export { translationStateQuery } from "./api/translationStateQuery";
 export { allTranslationsKey, translationsQuery } from "./api/translationsQuery";
 export type {

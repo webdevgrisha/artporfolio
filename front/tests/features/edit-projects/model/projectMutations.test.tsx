@@ -5,9 +5,11 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { type Project, projectQuery, projectsIntroQuery, projectsQuery } from "@/entities/project";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import { emptyProjectFormValues } from "@/features/edit-projects/model/projectFormSchema";
 import { useCreateProject } from "@/features/edit-projects/model/useCreateProject";
 import { useSaveProject } from "@/features/edit-projects/model/useSaveProject";
+import { useSaveProjectsIntro } from "@/features/edit-projects/model/useSaveProjectsIntro";
 
 import { csrfHandler, problem } from "../../../support/handlers";
 import { recordRequests, server } from "../../../support/server";
@@ -111,5 +113,51 @@ describe("useSaveProject", () => {
     expect(queryClient.getQueryState(projectKey)?.isInvalidated).toBe(false);
     expect(queryClient.getQueryState(projectsIntroQuery.queryKey)?.isInvalidated).toBe(false);
     expect(queryClient.getQueryState(projectsQuery.queryKey)?.isInvalidated).toBe(true);
+  });
+});
+
+/** A client with each of `queryKeys` cached, and a wrapper that provides it. */
+function cachedClient(queryKeys: readonly QueryKey[]) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  for (const queryKey of queryKeys) {
+    queryClient.setQueryData(queryKey, "cached");
+  }
+
+  function wrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  }
+
+  return { queryClient, wrapper };
+}
+
+describe("translations after a save", () => {
+  it("are read again after a save of the project, as its texts may have gone to the translator", async () => {
+    server.use(
+      mswHttp.put(path, () =>
+        HttpResponse.json(apiProject("Слон"), { headers: { ETag: savedEtag } }),
+      ),
+    );
+    const translationsKey = translationsQuery(translationResources.project(id)).queryKey;
+    const { queryClient, wrapper } = cachedClient([translationsKey]);
+    const saveProject = renderHook(() => useSaveProject(id), { wrapper }).result.current;
+
+    await saveProject.mutateAsync({ etag: '"read"', values });
+
+    expect(queryClient.getQueryState(translationsKey)?.isInvalidated).toBe(true);
+  });
+
+  it("are read again after a save of the intro", async () => {
+    server.use(
+      mswHttp.put("/api/projects/intro", () =>
+        HttpResponse.json({ text: "Книги" }, { headers: { ETag: savedEtag } }),
+      ),
+    );
+    const translationsKey = translationsQuery(translationResources.projectsIntro).queryKey;
+    const { queryClient, wrapper } = cachedClient([translationsKey]);
+    const saveIntro = renderHook(() => useSaveProjectsIntro(), { wrapper }).result.current;
+
+    await saveIntro.mutateAsync({ etag: '"read"', intro: { text: "Книги" } });
+
+    expect(queryClient.getQueryState(translationsKey)?.isInvalidated).toBe(true);
   });
 });

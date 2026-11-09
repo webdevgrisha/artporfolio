@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { type ProjectsIntro, projectsIntroQuery } from "@/entities/project";
-import type { LanguageFormSlot } from "@/entities/translation";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { Textarea } from "@/shared/ui/textarea";
@@ -37,7 +37,7 @@ export function EditProjectsIntroForm({
     resolver: zodResolver(projectsIntroFormSchema),
   });
   const saveIntro = useSaveProjectsIntro();
-  const { editForm, saved } = useSavedForm({
+  const { editForm } = useSavedForm({
     form,
     initial: intro,
     query: projectsIntroQuery,
@@ -51,7 +51,7 @@ export function EditProjectsIntroForm({
   } = form;
 
   return (
-    <LanguageForm savedTag={saved.etag} resource={"projects-intro"} fields={languageFields}>
+    <LanguageForm resource={translationResources.projectsIntro} fields={languageFields}>
       <EditForm className={className} {...editForm}>
         <Textarea
           className={styles.text}

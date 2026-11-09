@@ -1,4 +1,5 @@
 import { galleryIntroQuery, replaceGalleryIntro } from "@/entities/gallery";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
@@ -17,6 +18,7 @@ export function useSaveGalleryIntro() {
   return useReplaceResource({
     feedback: saveGalleryIntroFeedback,
     mutationFn: replaceGalleryIntro,
+    outdates: [translationsQuery(translationResources.galleryIntro).queryKey],
     queryKey: galleryIntroQuery.queryKey,
   });
 }

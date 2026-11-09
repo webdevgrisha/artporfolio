@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { type AboutText, aboutTextQuery } from "@/entities/about";
-import type { LanguageFormSlot } from "@/entities/translation";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
@@ -35,7 +35,7 @@ export function EditAboutTextForm({
     resolver: zodResolver(aboutTextFormSchema),
   });
   const saveText = useSaveAboutText();
-  const { editForm, saved } = useSavedForm({
+  const { editForm } = useSavedForm({
     form,
     initial: text,
     query: aboutTextQuery,
@@ -46,7 +46,7 @@ export function EditAboutTextForm({
   });
 
   return (
-    <LanguageForm savedTag={saved.etag} resource={"about-text"} fields={languageFields}>
+    <LanguageForm resource={translationResources.aboutText} fields={languageFields}>
       {/* The fields read the form from the context. */}
       <FormProvider {...form}>
         <EditForm className={className} {...editForm}>

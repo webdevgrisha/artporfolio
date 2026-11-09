@@ -1,4 +1,5 @@
 import { projectsIntroQuery, replaceProjectsIntro } from "@/entities/project";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
@@ -17,6 +18,7 @@ export function useSaveProjectsIntro() {
   return useReplaceResource({
     feedback: saveProjectsIntroFeedback,
     mutationFn: replaceProjectsIntro,
+    outdates: [translationsQuery(translationResources.projectsIntro).queryKey],
     queryKey: projectsIntroQuery.queryKey,
   });
 }

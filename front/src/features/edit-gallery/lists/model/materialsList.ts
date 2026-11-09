@@ -1,4 +1,5 @@
 import { galleryMaterialsQuery, maxMaterials, replaceGalleryMaterials } from "@/entities/gallery";
+import { translationResources } from "@/entities/translation";
 
 import { getSaveMaterialsErrorMessage } from "../lib/saveErrorMessages";
 import type { TitleListConfig } from "./titleList";
@@ -22,6 +23,6 @@ export const materialsList: TitleListConfig = {
     tooMany: `Не больше ${String(maxMaterials)} материалов`,
   },
   toastId: "gallery-materials-save",
-  translationResource: "gallery-materials",
+  translationResource: translationResources.galleryMaterials,
   usages: (usage) => usage.materials,
 };

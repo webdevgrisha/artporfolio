@@ -7,6 +7,8 @@ interface UseReplaceResourceParams<TSaved, TVariables> {
   feedback: MutationFeedback;
   /** Sends the whole resource; resolves with it as saved, with its new ETag. */
   mutationFn: (variables: TVariables) => Promise<TSaved>;
+  /** Other queries the save changes, such as the translations of the resource: read again. */
+  outdates?: readonly QueryKey[];
   /** The query of the resource, which gets the saved version. */
   queryKey: QueryKey;
 }
@@ -18,6 +20,7 @@ interface UseReplaceResourceParams<TSaved, TVariables> {
 export function useReplaceResource<TSaved, TVariables>({
   feedback,
   mutationFn,
+  outdates = [],
   queryKey,
 }: UseReplaceResourceParams<TSaved, TVariables>) {
   const queryClient = useQueryClient();
@@ -25,6 +28,12 @@ export function useReplaceResource<TSaved, TVariables>({
   return useMutation({
     meta: { feedback },
     mutationFn,
-    onSuccess: (saved) => putSavedResource(queryClient, queryKey, saved),
+    onSuccess: async (saved) => {
+      await putSavedResource(queryClient, queryKey, saved);
+      // The save does not wait for the new reads.
+      for (const outdated of outdates) {
+        void queryClient.invalidateQueries({ queryKey: outdated });
+      }
+    },
   });
 }

@@ -3,7 +3,7 @@ import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { galleryWorkUsageQuery, type WorkUsages } from "@/entities/gallery";
-import type { LanguageFormSlot } from "@/entities/translation";
+import { type LanguageFormSlot, translationsQuery } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
@@ -57,6 +57,7 @@ export function EditTitleListForm({
   const saveList = useReplaceResource({
     feedback: { getErrorMessage: list.getSaveErrorMessage, toastId: list.toastId },
     mutationFn: list.replace,
+    outdates: [translationsQuery(list.translationResource).queryKey],
     queryKey: list.query.queryKey,
   });
   const { editForm, saved } = useSavedForm({
@@ -99,7 +100,6 @@ export function EditTitleListForm({
 
   return (
     <LanguageForm
-      savedTag={saved.etag}
       resource={list.translationResource}
       fields={saved.data.map(({ id, title }) => ({ key: id, label: title }))}
     >

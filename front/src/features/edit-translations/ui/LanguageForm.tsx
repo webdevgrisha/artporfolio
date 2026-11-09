@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import React from "react";
 
 import { type LanguageFormProps, translationsQuery } from "@/entities/translation";
@@ -13,13 +13,12 @@ import { TranslationForm } from "./TranslationForm";
 /**
  * Switches an edit page between its languages. Every form opened stays mounted while hidden, so
  * switching never loses what was typed. Each language saves on its own: a translation is a resource
- * of its own, which the translator also changes in the background.
+ * of its own, which the translator also changes in the background; the save of the resource asks
+ * for a new read of it, as a save may send texts to the translator.
  */
-export function LanguageForm({ children, fields, resource, savedTag }: LanguageFormProps) {
+export function LanguageForm({ children, fields, resource }: LanguageFormProps) {
   const [language, setLanguage] = useFormLanguage();
-  const queryClient = useQueryClient();
-  const query = translationsQuery(resource);
-  const { data } = useQuery(query);
+  const { data } = useQuery(translationsQuery(resource));
   const [opened, setOpened] = React.useState<readonly TargetLanguage[]>([]);
   const keys = fields.map(({ key }) => key);
 
@@ -38,11 +37,6 @@ export function LanguageForm({ children, fields, resource, savedTag }: LanguageF
       };
     }),
   ];
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: a new tag is what asks for a new read.
-  React.useEffect(() => {
-    void queryClient.invalidateQueries({ queryKey: translationsQuery(resource).queryKey });
-  }, [queryClient, resource, savedTag]);
 
   const summary = data && language !== "ru" ? getLanguageSummary(data, language, keys) : null;
 

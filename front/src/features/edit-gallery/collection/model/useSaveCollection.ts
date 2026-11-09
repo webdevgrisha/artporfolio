@@ -5,6 +5,7 @@ import {
   galleryWorksQueryKey,
   replaceGalleryCollection,
 } from "@/entities/gallery";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import { putSavedResource } from "@/shared/api/savedResource";
 import { getSaveCollectionErrorMessage } from "../lib/saveErrorMessages";
 import type { CollectionFormValues } from "./collectionFormSchema";
@@ -48,6 +49,10 @@ export function useSaveCollection(id: string) {
         queryClient.invalidateQueries({ queryKey: galleryWorksQueryKey, refetchType: "none" }),
       ]);
       await putSavedResource(queryClient, queryKey, saved);
+      // The texts may have gone to the translator; the save does not wait for the new read.
+      void queryClient.invalidateQueries({
+        queryKey: translationsQuery(translationResources.galleryCollection(id)).queryKey,
+      });
     },
   });
 }

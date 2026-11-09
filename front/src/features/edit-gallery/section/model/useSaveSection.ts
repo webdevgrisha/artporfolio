@@ -4,6 +4,7 @@ import {
   gallerySectionsQuery,
   replaceGallerySection,
 } from "@/entities/gallery";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import { putSavedResource } from "@/shared/api/savedResource";
 import { getSaveSectionErrorMessage } from "../lib/saveErrorMessages";
 import type { SectionFormValues } from "./sectionFormSchema";
@@ -38,6 +39,10 @@ export function useSaveSection(id: string) {
       await queryClient.invalidateQueries({
         queryKey: gallerySectionsQuery.queryKey,
         refetchType: "none",
+      });
+      // The texts may have gone to the translator; the save does not wait for the new read.
+      void queryClient.invalidateQueries({
+        queryKey: translationsQuery(translationResources.gallerySection(id)).queryKey,
       });
     },
   });

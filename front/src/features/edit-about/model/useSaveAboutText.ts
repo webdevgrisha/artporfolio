@@ -1,4 +1,5 @@
 import { aboutTextQuery, replaceAboutText } from "@/entities/about";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
@@ -17,6 +18,7 @@ export function useSaveAboutText() {
   return useReplaceResource({
     feedback: saveAboutTextFeedback,
     mutationFn: replaceAboutText,
+    outdates: [translationsQuery(translationResources.aboutText).queryKey],
     queryKey: aboutTextQuery.queryKey,
   });
 }

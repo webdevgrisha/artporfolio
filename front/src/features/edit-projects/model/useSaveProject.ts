@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectQuery, projectsQuery, replaceProject } from "@/entities/project";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import { putSavedResource } from "@/shared/api/savedResource";
 import { getSaveProjectErrorMessage } from "../lib/saveErrorMessages";
 import type { ProjectFormValues } from "./projectFormSchema";
@@ -34,6 +35,10 @@ export function useSaveProject(id: string) {
       await queryClient.invalidateQueries({
         queryKey: projectsQuery.queryKey,
         refetchType: "none",
+      });
+      // The texts may have gone to the translator; the save does not wait for the new read.
+      void queryClient.invalidateQueries({
+        queryKey: translationsQuery(translationResources.project(id)).queryKey,
       });
     },
   });

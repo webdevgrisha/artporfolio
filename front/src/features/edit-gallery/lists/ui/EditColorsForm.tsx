@@ -9,7 +9,7 @@ import {
   maxColors,
   type WorkUsages,
 } from "@/entities/gallery";
-import type { LanguageFormSlot } from "@/entities/translation";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ColorSwatchInput } from "@/shared/ui/color-swatch";
@@ -107,8 +107,7 @@ export function EditColorsForm({
 
   return (
     <LanguageForm
-      savedTag={saved.etag}
-      resource={"gallery-colors"}
+      resource={translationResources.galleryColors}
       fields={saved.data.map(({ id, title }) => ({ key: id, label: title }))}
     >
       <FormProvider {...form}>

@@ -5,6 +5,7 @@ import {
   galleryWorksQueryKey,
   replaceGalleryWork,
 } from "@/entities/gallery";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import { putSavedResource } from "@/shared/api/savedResource";
 import { getSaveWorkErrorMessage } from "../lib/saveErrorMessages";
 import { toWorkBody } from "./toWorkBody";
@@ -44,6 +45,10 @@ export function useSaveWork(id: string) {
         }),
       ]);
       await putSavedResource(queryClient, queryKey, saved);
+      // The texts may have gone to the translator; the save does not wait for the new read.
+      void queryClient.invalidateQueries({
+        queryKey: translationsQuery(translationResources.galleryWork(id)).queryKey,
+      });
     },
   });
 }
