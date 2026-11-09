@@ -142,6 +142,12 @@ A folder imports only from the folders below it: `pages → layouts → blocks �
 - The texts of the interface live in `lib/i18n/messages/<language>.json`; `en.json` is the source, and `t(language, key)` is typed by its keys. A text not translated yet shows in English. Content written in the admin is translated by the backend instead.
 - A new text: add its key to `en.json`, run `pnpm --filter site i18n:translate`, and read the diff. The script sends DeepL only new texts and texts whose English changed, so a translation edited by hand stays; `translatedFrom.json` keeps the English of each translation. A test keeps every language on the keys of English.
 
+### Search engines and link cards
+
+- `BaseLayout` takes the `description` and the `path` of a page (and its `title`, but for the home page) and writes, through `PageMeta`, the title, description, canonical address, the page in every language (`hreflang`, with English as `x-default`) and the Open Graph tags of a link card.
+- `robots.txt` and `sitemap.xml` are endpoints in `pages/`. The sitemap lists the paths of `lib/site/pagePaths.ts` in every language: a new page adds its path there. Crawlers are kept out of `/api/` only; the admin stays open to them, so they read its `noindex`.
+- Absolute URLs come from `SITE_URL` (Astro's env schema in `astro.config.ts`), which Astro bakes in while building, so the build fails without it. Locally it is in `site/.env` (see `site/.env.example`).
+
 ## Backend
 
 The backend is split by **domain modules**, as recommended by [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices#1-project-architecture-practices): everything about one domain lives in one folder. Code that knows nothing about the domain lives in `shared/`.
