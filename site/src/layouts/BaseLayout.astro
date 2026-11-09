@@ -1,0 +1,45 @@
+---
+import { Font } from "astro:assets";
+
+import "@/styles/global.css";
+
+interface Props {
+  /** The language of the page, such as `en`. */
+  lang: string;
+  title: string;
+}
+
+const { lang, title } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
+    <script is:inline>
+      // Before the first paint, so a theme the visitor chose does not flash the other one first.
+      // Without a choice the page follows the system, which the CSS reads by itself.
+      try {
+        const theme = localStorage.getItem("theme");
+
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+          for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+            meta.content = theme === "dark" ? "#141414" : "#fff";
+          }
+        }
+      } catch {
+        // Blocked storage: the page follows the system.
+      }
+    </script>
+    <Font cssVariable="--font-absans" preload />
+    <Font cssVariable="--font-manrope" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

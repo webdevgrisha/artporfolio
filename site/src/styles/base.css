@@ -1,0 +1,43 @@
+@layer base {
+  html {
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-family);
+    font-size: 100%;
+    font-synthesis: none;
+    line-height: var(--line-height-body);
+    /* The text keeps its size when a phone turns sideways. */
+    text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    min-inline-size: 320px;
+    min-block-size: 100dvh;
+    font-size: var(--font-size-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 400;
+    line-height: var(--line-height-heading);
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
