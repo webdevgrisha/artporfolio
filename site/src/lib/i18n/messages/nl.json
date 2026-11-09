@@ -1,3 +1,8 @@
 {
-  "layout.skipToContent": "Ga naar de inhoud"
+  "layout.skipToContent": "Ga naar de inhoud",
+  "error.notFound.title": "Pagina niet gevonden",
+  "error.notFound.text": "Deze pagina bestaat niet of is verplaatst.",
+  "error.server.title": "Er is iets misgegaan",
+  "error.server.text": "De pagina kon niet worden geladen. Probeer het over een minuutje nog eens.",
+  "error.toHome": "Ga naar de startpagina"
 }

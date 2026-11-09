@@ -1,0 +1,34 @@
+---
+/** What a page that could not be shown says instead: what happened, and the way back home. */
+import Container from "@/components/ui/Container.astro";
+import Stack from "@/components/ui/Stack.astro";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { localizedPath } from "@/lib/site/localizedPath";
+
+interface Props {
+  language: Language;
+  text: string;
+  title: string;
+}
+
+const { language, text, title } = Astro.props;
+---
+
+<Container>
+  <Stack class="notice" gap="layout-space-6">
+    <h1 class="title">{title}</h1>
+    <p>{text}</p>
+    <a href={localizedPath(language, "/")}>{t(language, "error.toHome")}</a>
+  </Stack>
+</Container>
+
+<style>
+  .notice {
+    padding-block: var(--layout-space-16);
+  }
+
+  .title {
+    font-size: var(--font-size-4);
+  }
+</style>

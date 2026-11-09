@@ -46,6 +46,7 @@ jobs:
 
       - name: Build applications
         env:
+          API_URL: https://ci-placeholder.example/api
           SITE_URL: https://ci-placeholder.example
           VITE_FIREBASE_API_KEY: ci-placeholder
           VITE_FIREBASE_APP_ID: ci-placeholder

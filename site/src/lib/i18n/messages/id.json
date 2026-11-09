@@ -1,3 +1,8 @@
 {
-  "layout.skipToContent": "Lompat ke konten"
+  "layout.skipToContent": "Lompat ke konten",
+  "error.notFound.title": "Halaman tidak ditemukan",
+  "error.notFound.text": "Halaman ini tidak ada atau telah dipindahkan.",
+  "error.server.title": "Terjadi kesalahan",
+  "error.server.text": "Halaman tidak dapat dimuat. Silakan coba lagi dalam satu menit.",
+  "error.toHome": "Pergi ke halaman beranda"
 }

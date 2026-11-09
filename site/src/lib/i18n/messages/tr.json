@@ -1,3 +1,8 @@
 {
-  "layout.skipToContent": "İçeriğe atla"
+  "layout.skipToContent": "İçeriğe atla",
+  "error.notFound.title": "Sayfa bulunamadı",
+  "error.notFound.text": "Bu sayfa mevcut değil veya başka bir yere taşınmıştır.",
+  "error.server.title": "Bir hata oluştu",
+  "error.server.text": "Sayfa yüklenemedi. Lütfen bir dakika sonra tekrar deneyin.",
+  "error.toHome": "Ana sayfaya git"
 }

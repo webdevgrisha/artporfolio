@@ -1,3 +1,8 @@
 {
-  "layout.skipToContent": "Přejít k obsahu"
+  "layout.skipToContent": "Přejít k obsahu",
+  "error.notFound.title": "Stránka nebyla nalezena",
+  "error.notFound.text": "Tato stránka neexistuje nebo byla přesunuta.",
+  "error.server.title": "Došlo k chybě",
+  "error.server.text": "Stránku se nepodařilo načíst. Zkuste to prosím znovu za chvíli.",
+  "error.toHome": "Přejít na úvodní stránku"
 }

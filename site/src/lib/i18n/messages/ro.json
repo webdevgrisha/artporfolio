@@ -1,3 +1,8 @@
 {
-  "layout.skipToContent": "Treci la conținut"
+  "layout.skipToContent": "Treci la conținut",
+  "error.notFound.title": "Pagină ne găsită",
+  "error.notFound.text": "Această pagină nu există sau a fost mutată.",
+  "error.server.title": "A apărut o eroare",
+  "error.server.text": "Pagina nu a putut fi încărcată. Vă rugăm să încercați din nou peste un minut.",
+  "error.toHome": "Accesați pagina principală"
 }

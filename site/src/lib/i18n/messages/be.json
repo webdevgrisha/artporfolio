@@ -1,3 +1,8 @@
 {
-  "layout.skipToContent": "Перайсці да зместу"
+  "layout.skipToContent": "Перайсці да зместу",
+  "error.notFound.title": "Старонкі не знойдзена",
+  "error.notFound.text": "Гэтая старонка не існуе або перанесена.",
+  "error.server.title": "Нешта пайшло не так",
+  "error.server.text": "Старонку не ўдалося загрузіць. Калі ласка, паспрабуйце зноў праз хвіліну.",
+  "error.toHome": "Перайсці на галоўную старонку"
 }

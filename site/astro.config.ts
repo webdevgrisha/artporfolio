@@ -10,6 +10,9 @@ export default defineConfig({
       // Where the site is served, such as https://example.com: canonical and alternate links,
       // link cards and the sitemap need absolute URLs, and the request may come through a proxy.
       SITE_URL: envField.string({ access: "public", context: "server", url: true }),
+      // The API of the backend, which the server of the site asks for the data of a page; the
+      // browser of a visitor never calls it.
+      API_URL: envField.string({ access: "public", context: "server", url: true }),
     },
   },
   fonts: [

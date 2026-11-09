@@ -1,3 +1,8 @@
 {
-  "layout.skipToContent": "Gå till innehåll"
+  "layout.skipToContent": "Gå till innehåll",
+  "error.notFound.title": "Sidan hittades inte",
+  "error.notFound.text": "Denna sida finns inte eller har flyttats.",
+  "error.server.title": "Något gick fel",
+  "error.server.text": "Sidan kunde inte laddas. Försök igen om en minut.",
+  "error.toHome": "Gå till startsidan"
 }

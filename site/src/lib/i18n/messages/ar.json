@@ -1,3 +1,8 @@
 {
-  "layout.skipToContent": "الانتقال إلى المحتوى"
+  "layout.skipToContent": "الانتقال إلى المحتوى",
+  "error.notFound.title": "الصفحة غير موجودة",
+  "error.notFound.text": "هذه الصفحة غير موجودة أو تم نقلها.",
+  "error.server.title": "حدث خطأ ما",
+  "error.server.text": "تعذر تحميل الصفحة. يرجى المحاولة مرة أخرى بعد دقيقة.",
+  "error.toHome": "انتقل إلى الصفحة الرئيسية"
 }
