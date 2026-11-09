@@ -1,19 +1,22 @@
 ---
 import { Font } from "astro:assets";
 
+import type { Language } from "@/lib/i18n/languages";
+import { languageTag } from "@/lib/i18n/languageTag";
+import { textDirection } from "@/lib/i18n/textDirection";
+
 import "@/styles/global.css";
 
 interface Props {
-  /** The language of the page, such as `en`. */
-  lang: string;
+  language: Language;
   title: string;
 }
 
-const { lang, title } = Astro.props;
+const { language, title } = Astro.props;
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={languageTag(language)} dir={textDirection(language)}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

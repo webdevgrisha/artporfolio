@@ -1,6 +1,10 @@
+import node from "@astrojs/node";
 import { defineConfig, fontProviders } from "astro/config";
 
 export default defineConfig({
+  // Pages are rendered on request, so a change in the admin shows at once; a CDN caches them.
+  // The middleware mode lets the function of Firebase serve the site through its own server.
+  adapter: node({ mode: "middleware" }),
   fonts: [
     {
       cssVariable: "--font-absans",
@@ -30,4 +34,5 @@ export default defineConfig({
       unicodeRange: ["U+0301", "U+0400-045F", "U+0490-0491", "U+04B0-04B1", "U+2116"],
     },
   ],
+  output: "server",
 });
