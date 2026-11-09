@@ -245,8 +245,8 @@ export async function deleteWork(id: string, ifMatch: string): Promise<void> {
 
     assertWorkIfMatch(ifMatch, id, current, await readKnownData(transaction));
     transaction.delete(document);
+    deleteTranslations(transaction, workTranslations(id));
   });
 
   await deleteImageFilesOrWarn(workFolder(id));
-  await deleteTranslations(workTranslations(id));
 }

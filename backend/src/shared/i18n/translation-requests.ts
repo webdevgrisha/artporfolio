@@ -56,11 +56,10 @@ export async function requestTranslations(resource: string): Promise<void> {
   }
 }
 
-/** Drops the translations of a deleted resource; what is left behind harms nothing. */
-export async function deleteTranslations(resource: string): Promise<void> {
-  try {
-    await resourceDocument(resource).delete();
-  } catch (error) {
-    warn("Could not delete translations", { error, resource });
-  }
+/**
+ * Drops the translations of a resource in the transaction that deletes it, so that a resource
+ * created again with the same id never loses translations of its own to a late cleanup.
+ */
+export function deleteTranslations(transaction: Transaction, resource: string): void {
+  transaction.delete(resourceDocument(resource));
 }

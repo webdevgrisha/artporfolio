@@ -38,6 +38,7 @@ vi.mock("#shared/firebase/firestore", () => {
   }
 
   const transaction = {
+    delete: (target: { path: string }) => documents.delete(target.path),
     get: (target: { path: string }) => snapshot(target.path),
     set: (
       target: { path: string },
@@ -91,6 +92,13 @@ const resource = "gallery-work-1";
 /** A person's text, written from the Russian text the tests start with. */
 function edit(text: string, source = "Слон") {
   return { source, text };
+}
+
+/** A delete of a resource, as the services do it. */
+async function remove(removed: string): Promise<void> {
+  await firestore().runTransaction(async (transaction) => {
+    deleteTranslations(transaction, removed);
+  });
 }
 
 /** A save of a resource with its texts, as the services do it. */
@@ -345,7 +353,7 @@ describe("runTranslation", () => {
   it("leaves nothing behind of a resource deleted while the translator worked", async () => {
     await save(resource, { title: "Слон" });
     deepl.translateTexts.mockImplementationOnce(async (texts: string[]) => {
-      await deleteTranslations(resource);
+      await remove(resource);
 
       return texts;
     });
@@ -440,7 +448,7 @@ describe("editTranslations", () => {
 describe("deleteTranslations", () => {
   it("drops the translations of a deleted resource", async () => {
     await save(resource, { title: "Слон" });
-    await deleteTranslations(resource);
+    await remove(resource);
 
     expect(documents.size).toBe(0);
   });

@@ -113,6 +113,7 @@ Enforced by dependency-cruiser (`front/.dependency-cruiser.mjs`, run by `pnpm ch
 - Props are described by an `interface ComponentNameProps`. `ref` is a regular prop (React 19).
 - Static visual values belong in CSS; React passes only runtime data, such as `--active-index`.
 - Accessible names and semantics are part of a component's contract: buttons have labels, decorative elements are hidden from assistive technology.
+- Supported browsers are [Baseline Widely available](https://web.dev/baseline), the default build target of Vite. A newer API is used only behind a check, as the View Transition of the theme is (`'startViewTransition' in document`); no polyfills.
 
 ## Backend
 

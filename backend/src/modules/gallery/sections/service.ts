@@ -141,7 +141,6 @@ export async function deleteSection(id: string, ifMatch: string): Promise<void> 
 
     assertIfMatch(ifMatch, readSection(await transaction.get(document)));
     transaction.delete(document);
+    deleteTranslations(transaction, sectionTranslations(id));
   });
-
-  await deleteTranslations(sectionTranslations(id));
 }

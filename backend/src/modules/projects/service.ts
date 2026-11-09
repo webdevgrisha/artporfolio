@@ -177,8 +177,8 @@ export async function deleteProject(id: string, ifMatch: string): Promise<void> 
 
     assertIfMatch(ifMatch, toProject(id, readProject(await transaction.get(document))));
     transaction.delete(document);
+    deleteTranslations(transaction, projectTranslations(id));
   });
 
   await deleteImageFilesOrWarn(projectFolder(id));
-  await deleteTranslations(projectTranslations(id));
 }

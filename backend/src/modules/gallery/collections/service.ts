@@ -222,9 +222,9 @@ export async function deleteCollection(id: string, ifMatch: string): Promise<voi
 
     assertIfMatch(ifMatch, toCollection(id, current, currentWorkIds));
     transaction.delete(document);
+    deleteTranslations(transaction, collectionTranslations(id));
     moveWorks(transaction, id, currentWorkIds, []);
   });
 
   await deleteImageFilesOrWarn(collectionFolder(id));
-  await deleteTranslations(collectionTranslations(id));
 }
