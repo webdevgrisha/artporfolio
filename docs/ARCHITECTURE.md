@@ -148,6 +148,12 @@ A folder imports only from the folders below it: `pages → layouts → blocks �
 - `robots.txt` and `sitemap.xml` are endpoints in `pages/`. The sitemap lists the paths of `lib/site/pagePaths.ts` in every language: a new page adds its path there. Crawlers are kept out of `/api/` only; the admin stays open to them, so they read its `noindex`.
 - Absolute URLs come from `SITE_URL` (Astro's env schema in `astro.config.ts`), which Astro bakes in while building, so the build fails without it. Locally it is in `site/.env` (see `site/.env.example`).
 
+### Data
+
+- A page reads its data on the server with `getJson(path, schema, { language })` (`lib/api/`): the resource of the API in the language of the page (`?lang=`), checked against a zod schema the page owns, as the entities of the admin do. The browser of a visitor never calls the API. The API is at `API_URL`, which Astro checks like `SITE_URL`.
+- The API answers in 5 seconds or the page gives up. A resource the API does not have (`isNotFound`) makes the page a 404: `return Astro.rewrite("/404")`. Any other failure, an answer of another shape included, is thrown and becomes the 500 page. Both error pages speak the language of the path and carry `noindex`.
+- Public reads of the backend learn `?lang=` resource by resource, with the page that first needs them.
+
 ## Backend
 
 The backend is split by **domain modules**, as recommended by [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices#1-project-architecture-practices): everything about one domain lives in one folder. Code that knows nothing about the domain lives in `shared/`.
