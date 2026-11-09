@@ -80,7 +80,7 @@ import {
 import { runTranslation } from "#modules/translations/worker";
 import { firestore } from "#shared/firebase/firestore";
 import { UnprocessableContentError } from "#shared/http/errors";
-import { targetLanguages } from "#shared/i18n/languages";
+import { type TargetLanguage, targetLanguages } from "#shared/i18n/languages";
 import {
   deleteTranslations,
   requestTranslations,
@@ -436,6 +436,23 @@ describe("editTranslations", () => {
 
     expect(translations.en?.title?.status).toBe("pending");
     expect(queue.enqueueTranslation).toHaveBeenCalledWith(resource);
+  });
+
+  it("rejects edits too long for one document", async () => {
+    const keys = Array.from({ length: 10 }, (_, index) => `text${String(index)}`);
+    // About 160 KB in each language: the sixth one goes over the limit.
+    const source = "С".repeat(4_000);
+    const edits = Object.fromEntries(keys.map((key) => [key, edit("Э".repeat(4_000), source)]));
+
+    await save(resource, Object.fromEntries(keys.map((key) => [key, source])));
+
+    for (const language of targetLanguages.slice(0, 5)) {
+      await editTranslations(resource, language, edits);
+    }
+
+    await expect(
+      editTranslations(resource, targetLanguages[5] as TargetLanguage, edits),
+    ).rejects.toBeInstanceOf(UnprocessableContentError);
   });
 
   it("rejects a text that has no source", async () => {

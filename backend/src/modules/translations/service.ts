@@ -60,9 +60,15 @@ export async function getTranslations(resource: string): Promise<ResourceTransla
 }
 
 /**
+ * How large the translations of one resource may grow by edits. Firestore holds at most 1 MiB in a
+ * document; the margin covers what it counts beyond the JSON of the data.
+ */
+const maxDocumentBytes = 900_000;
+
+/**
  * Saves what a person changed in one language: their edit, or null to ask the translator for a new
  * text. An edit keeps the source it was written from, so one of an older source shows as out of
- * date. A key with no source text is rejected with 422.
+ * date. A key with no source text, or edits too long for the document, are rejected with 422.
  */
 export async function editTranslations(
   resource: string,
@@ -89,7 +95,13 @@ export async function editTranslations(
     }
 
     // Only a new task takes back a failure: an edit leaves the other texts as they were.
-    transaction.set(document, { ...saved, failed: saved.failed && !asksTranslator, translations });
+    const next = { ...saved, failed: saved.failed && !asksTranslator, translations };
+
+    if (Buffer.byteLength(JSON.stringify(next)) > maxDocumentBytes) {
+      throw new UnprocessableContentError("The translations are too long");
+    }
+
+    transaction.set(document, next);
   });
 
   // The edit has already gone through, so, as after a save, a refusal of the queue only shows the
