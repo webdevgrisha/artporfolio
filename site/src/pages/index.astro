@@ -1,7 +1,13 @@
 ---
+import Container from "@/components/ui/Container.astro";
+import Stack from "@/components/ui/Stack.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 ---
 
 <BaseLayout lang="en" title="NOT.YET.KNOW.ARTIST">
-  <h1>NOT.YET.KNOW.ARTIST</h1>
+  <Container as="main">
+    <Stack gap="layout-space-8">
+      <h1>NOT.YET.KNOW.ARTIST</h1>
+    </Stack>
+  </Container>
 </BaseLayout>
