@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.33.4",
   "scripts": {
     "dev:front": "pnpm --filter front dev",
+    "dev:site": "pnpm --filter site dev",
     "dev:backend": "pnpm --filter artportfolio-backend build && firebase emulators:start --only auth,firestore,functions,storage,tasks",
     "dev:backend:watch": "pnpm --filter artportfolio-backend build:watch",
     "emulators": "pnpm build && firebase emulators:start --only auth,firestore,functions,hosting,storage,tasks",

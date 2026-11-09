@@ -4,12 +4,13 @@ How the project is organized and the conventions every change follows. CSS rules
 
 ## Overview
 
-A pnpm monorepo with two packages, deployed to Firebase:
+A pnpm monorepo with three packages, deployed to Firebase:
 
 | Package | Stack | Runs on |
 | --- | --- | --- |
 | `front` | React 19, React Router (data mode), TanStack Query, TanStack Table, react-hook-form, dnd-kit, Vite, CSS Modules, zod | Firebase Hosting |
 | `backend` | Express 5, Firebase Admin, zod | Cloud Functions (`api`, europe-west1) |
+| `site` | Astro 7, server rendering | Not deployed yet |
 
 Firebase Hosting serves the frontend and rewrites `/api/**` to the `api` function, so the browser talks to one origin.
 
@@ -114,6 +115,24 @@ Enforced by dependency-cruiser (`front/.dependency-cruiser.mjs`, run by `pnpm ch
 - Static visual values belong in CSS; React passes only runtime data, such as `--active-index`.
 - Accessible names and semantics are part of a component's contract: buttons have labels, decorative elements are hidden from assistive technology.
 - Supported browsers are [Baseline Widely available](https://web.dev/baseline), the default build target of Vite. A newer API is used only behind a check, as the View Transition of the theme is (`'startViewTransition' in document`); no polyfills.
+
+## Public site: Astro
+
+`site` is the public site, built with [Astro](https://astro.build) and rendered on the server, so every page reaches search engines and link cards with its full HTML. Its folders follow the conventions of the Astro docs; only `src/pages` is required by Astro itself.
+
+```text
+site/src/
+├── pages/            routes; thin, they only put blocks together
+├── layouts/          the frame of a page: <html>, <head>, header and footer
+├── components/
+│   ├── ui/           primitives of the design system
+│   ├── controls/     switches a visitor uses
+│   └── blocks/       the parts a page is built from
+├── styles/           design tokens, breakpoints, themes
+└── lib/              code with no markup: requests, languages, formatting
+```
+
+A folder imports only from the folders below it: `pages → layouts → blocks → controls → ui → lib`; `styles` may be used by any markup. dependency-cruiser cannot read `.astro` files, so Biome enforces this with `noRestrictedImports` (the `site/src/...` overrides in `biome.json`), for relative and `@/` imports alike.
 
 ## Backend
 

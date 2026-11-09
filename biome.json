@@ -77,6 +77,106 @@
           }
         }
       }
+    },
+    {
+      "includes": ["site/src/layouts/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/pages/**"],
+                    "message": "A layout frames pages, so it never imports them."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["site/src/components/blocks/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/pages/**", "**/layouts/**"],
+                    "message": "A block is a part of a page: it never imports pages or layouts."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["site/src/components/controls/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/pages/**", "**/layouts/**", "**/blocks/**"],
+                    "message": "A control lives inside blocks, so it never imports them, layouts or pages."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["site/src/components/ui/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/pages/**", "**/layouts/**", "**/blocks/**", "**/controls/**"],
+                    "message": "ui holds the primitives of the design system: they import only ui, lib and styles."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["site/src/lib/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/pages/**", "**/layouts/**", "**/components/**", "**/styles/**"],
+                    "message": "lib holds code with no markup or styles, so it never imports them."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
