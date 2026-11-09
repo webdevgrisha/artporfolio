@@ -12,7 +12,7 @@ import { validateBody } from "#shared/middleware/validation";
  */
 export function documentResourceRouter<TData extends object>(
   resource: DocumentResource<TData>,
-  bodySchema: ZodType,
+  bodySchema: ZodType<TData>,
 ): Router {
   const read: RequestHandler<object, TData> = async (_request, response) => {
     const { data, etag } = await resource.get();
