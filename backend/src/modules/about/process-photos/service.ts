@@ -4,6 +4,8 @@ import { z } from "zod";
 import { aboutDocument } from "#modules/about/document";
 import { firestore } from "#shared/firebase/firestore";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import { requestTranslations, saveSources } from "#shared/i18n/translation-requests";
+import { textsById } from "#shared/i18n/translations";
 import {
   type ListPhoto,
   type ListPhotoItem,
@@ -19,6 +21,9 @@ const field = "processPhotos";
 
 /** Every photo has its own folder here, with all its versions. */
 const folder = "about/process-photos";
+
+/** Where the translations of the alt texts go. */
+const translationResource = "about-process-photos";
 
 const storedProcessPhotosSchema = z.array(storedListPhotoSchema);
 
@@ -58,10 +63,16 @@ export function replaceProcessPhotos(
       const next = draft.build(current);
       // Merging keeps the other fields of the document; the array itself is replaced.
       transaction.set(document, { [field]: next }, { merge: true });
+      saveSources(
+        transaction,
+        translationResource,
+        textsById(next, ({ alt }) => alt),
+      );
       return [current, next];
     });
 
     draft.removeUnused(saved, photos);
+    await requestTranslations(translationResource);
 
     return toProcessPhotoList(photos);
   });

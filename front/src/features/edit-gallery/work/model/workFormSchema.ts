@@ -53,22 +53,22 @@ export const workFormSchema = z
      * `photos` field.
      */
     photos: photoListRowsSchema(maxWorkProcessPhotos),
-    /** The sections and subsections, by id, in the order they were chosen. */
+    /** The sections and subsections, by id. */
     sectionIds: z
       .array(z.string())
       .min(1, "Выберите хотя бы один раздел")
       .max(maxWorkSections, `Не больше ${String(maxWorkSections)} разделов`),
-    /** The materials, by id, in the order they were chosen. */
+    /** The materials, by id. */
     materialIds: z
       .array(z.string())
       .min(1, "Выберите хотя бы один материал")
       .max(maxWorkMaterials, `Не больше ${String(maxWorkMaterials)} материалов`),
-    /** The colors, by id, in the order they were chosen. */
+    /** The colors, by id. */
     colorIds: z
       .array(z.string())
       .min(1, "Выберите хотя бы один цвет")
       .max(maxWorkColors, `Не больше ${String(maxWorkColors)} цветов`),
-    /** The palettes, by id, in the order they were chosen. */
+    /** The palettes, by id. */
     paletteIds: z
       .array(z.string())
       .min(1, "Выберите хотя бы одну палитру")

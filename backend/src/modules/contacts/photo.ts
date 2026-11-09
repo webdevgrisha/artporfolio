@@ -6,4 +6,5 @@ export const contactPhoto = photoSlot({
   document: contactsDocument,
   field: "photo",
   folder: "contacts/photo",
+  resource: "contacts-photo",
 });

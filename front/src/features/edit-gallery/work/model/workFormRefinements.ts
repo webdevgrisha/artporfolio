@@ -2,7 +2,7 @@ import type { z } from "zod";
 
 import { maxWorkSetSize, minWorkSetSize, type WorkFormat } from "@/entities/gallery";
 
-import { discountError, priceError } from "./workPrice";
+import { discountError, priceError } from "./workPriceInput";
 
 /** Whether the month has not come yet; read when the form is checked. */
 function isFutureMonth(year: number, month: number): boolean {

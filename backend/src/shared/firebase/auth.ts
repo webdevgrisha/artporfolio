@@ -2,12 +2,17 @@ import { getAuth } from "firebase-admin/auth";
 
 import { firebaseApp } from "#shared/firebase/app";
 
-// These Admin SDK codes describe a broken backend setup, not a bad client token.
-const infrastructureAuthErrorCodes = new Set([
-  "auth/insufficient-permission",
-  "auth/internal-error",
-  "auth/invalid-credential",
-  "auth/project-not-found",
+// The Admin SDK codes of a bad client token or cookie: malformed, expired, revoked, or of a user
+// who is gone. Any other code, including one a new SDK adds, is a fault of the backend.
+const clientAuthErrorCodes = new Set([
+  "auth/argument-error",
+  "auth/id-token-expired",
+  "auth/id-token-revoked",
+  "auth/invalid-id-token",
+  "auth/session-cookie-expired",
+  "auth/session-cookie-revoked",
+  "auth/user-disabled",
+  "auth/user-not-found",
 ]);
 
 export function firebaseAuth() {
@@ -22,7 +27,5 @@ export function isClientAuthError(error: unknown): boolean {
 
   const { code } = error;
 
-  return (
-    typeof code === "string" && code.startsWith("auth/") && !infrastructureAuthErrorCodes.has(code)
-  );
+  return typeof code === "string" && clientAuthErrorCodes.has(code);
 }

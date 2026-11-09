@@ -5,9 +5,9 @@
   "packageManager": "pnpm@10.33.4",
   "scripts": {
     "dev:front": "pnpm --filter front dev",
-    "dev:backend": "pnpm --filter artportfolio-backend build && firebase emulators:start --only auth,firestore,functions,storage",
+    "dev:backend": "pnpm --filter artportfolio-backend build && firebase emulators:start --only auth,firestore,functions,storage,tasks",
     "dev:backend:watch": "pnpm --filter artportfolio-backend build:watch",
-    "emulators": "pnpm build && firebase emulators:start --only auth,firestore,functions,hosting,storage",
+    "emulators": "pnpm build && firebase emulators:start --only auth,firestore,functions,hosting,storage,tasks",
     "emulators:admin": "node scripts/create-emulator-admin.mjs",
     "emulators:seed": "node scripts/create-emulator-admin.mjs && node scripts/seed-emulators.mjs",
     "deploy": "firebase deploy --only functions,hosting",
@@ -27,7 +27,7 @@
     "lint:fix": "biome lint --write .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "check": "biome check . && pnpm -r type-check",
+    "check": "biome check . && pnpm -r type-check && pnpm --filter front lint:boundaries",
     "prepare": "husky"
   },
   "lint-staged": {

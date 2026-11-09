@@ -2,10 +2,9 @@ import clsx from "clsx";
 import type { ReactNode } from "react";
 
 import { AttachmentIcon, TrashIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { IconAction } from "@/shared/ui/icon-button";
 import { MediaFileName, MediaThumbnailButton } from "@/shared/ui/media-preview";
 import { DragHandle, MoveButtons, type MoveControl, useSortableRow } from "@/shared/ui/sortable";
-import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./SortableMediaList.module.css";
 import type { SortableMediaItem } from "./sortableMediaItem";
@@ -73,20 +72,21 @@ export function SortableMediaRow({
             onMoveUp={onMoveUp}
             onMoveDown={onMoveDown}
           />
-          <Tooltip className={styles.controlTooltip} content={replaceLabel}>
-            <IconButton label={replaceLabel} onClick={onReplace}>
-              <AttachmentIcon className={styles.replaceIcon} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip className={styles.controlTooltip} content={removeLabel}>
-            <IconButton
-              label={removeLabel}
-              data-control={"remove" satisfies RowControl}
-              onClick={onRemove}
-            >
-              <TrashIcon className={styles.removeIcon} />
-            </IconButton>
-          </Tooltip>
+          <IconAction
+            tooltipClassName={styles.controlTooltip}
+            label={replaceLabel}
+            onClick={onReplace}
+          >
+            <AttachmentIcon className={styles.replaceIcon} />
+          </IconAction>
+          <IconAction
+            tooltipClassName={styles.controlTooltip}
+            label={removeLabel}
+            data-control={"remove" satisfies RowControl}
+            onClick={onRemove}
+          >
+            <TrashIcon className={styles.removeIcon} />
+          </IconAction>
         </div>
       </div>
 

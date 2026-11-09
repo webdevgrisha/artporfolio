@@ -1,9 +1,6 @@
-import {
-  discountedAmount,
-  formatPrice,
-  parseTypedPrice,
-  workFormCurrency,
-} from "../model/workPrice";
+import { formatPrice } from "../model/formatPrice";
+import { discountedAmount } from "../model/workPriceAmount";
+import { parseTypedPrice, workFormCurrency } from "../model/workPriceInput";
 import styles from "./WorkFields.module.css";
 
 interface FinalPriceProps {

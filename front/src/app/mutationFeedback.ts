@@ -17,9 +17,7 @@ export function showMutationFeedback(queryClient: QueryClient): () => void {
     if (event.action.type === "success") {
       showSuccessToast(feedback.successMessage ?? savedMessage, { id: feedback.toastId });
     } else if (event.action.type === "error") {
-      const message = feedback.getErrorMessage(event.action.error);
-
-      if (message !== null) showErrorToast(message, { id: feedback.toastId });
+      showErrorToast(feedback.getErrorMessage(event.action.error), { id: feedback.toastId });
     }
   });
 }

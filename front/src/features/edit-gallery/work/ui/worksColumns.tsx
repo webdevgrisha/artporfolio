@@ -1,18 +1,20 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type {
-  GalleryCollection,
-  GalleryMaterial,
-  GallerySection,
-  GalleryWorkSummary,
+import {
+  formatWorkDate,
+  type GalleryCollection,
+  type GalleryMaterial,
+  type GallerySection,
+  type GalleryWorkSummary,
 } from "@/entities/gallery";
 import { galleryWorkPath } from "@/shared/config/routes";
 import { compareText } from "@/shared/lib/compareText";
 import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
-import { formatWorkDate, formatWorkSize } from "../model/workDisplay";
+import { formatWorkPlace } from "../model/workPlace";
 import { titlesOf } from "../model/workReferences";
 import { sectionLabels } from "../model/workSections";
-import { compareWorkDates, compareWorkSizes, formatWorkPlace } from "../model/worksTableView";
+import { formatWorkSize } from "../model/workSize";
+import { compareWorkDates, compareWorkSizes } from "../model/worksTableView";
 import { NoValue } from "./NoValue";
 import { WorkFormatCell } from "./WorkFormatCell";
 import { WorkPriceCell } from "./WorkPriceCell";

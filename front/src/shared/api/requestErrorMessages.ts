@@ -10,6 +10,9 @@ const unavailableErrorMessage = "Сервис временно недоступ�
 export const sessionExpiredMessage =
   "Сессия истекла. Войдите снова в новой вкладке и сохраните здесь ещё раз";
 
+// A save sends the version the form was opened with; a reload shows the one saved since.
+export const conflictMessage = "Данные уже изменили в другой вкладке. Обновите страницу";
+
 /** A change was rejected because the admin session or its CSRF token is no longer valid. */
 export function isSessionExpiredError(error: unknown): boolean {
   return error instanceof HttpError && (error.status === 401 || error.status === 403);
@@ -40,15 +43,16 @@ export interface SaveErrorMessages {
 
 /**
  * The message for a failed change, such as a save or a deletion: an expired session first, then
- * the messages of the change for its statuses, then no connection or a server error. `null` for a
- * conflict with no message of its own: the form asks about it in its dialog.
+ * the messages of the change for its statuses, then a conflict, no connection or a server error.
  */
-export function getSaveErrorMessage(error: unknown, messages: SaveErrorMessages): string | null {
+export function getSaveErrorMessage(error: unknown, messages: SaveErrorMessages): string {
   if (isSessionExpiredError(error)) return sessionExpiredMessage;
 
   const statusMessage = error instanceof HttpError ? messages.byStatus?.[error.status] : undefined;
 
   if (statusMessage) return statusMessage;
 
-  return isPreconditionFailed(error) ? null : getRequestErrorMessage(error, messages.fallback);
+  return isPreconditionFailed(error)
+    ? conflictMessage
+    : getRequestErrorMessage(error, messages.fallback);
 }

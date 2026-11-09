@@ -22,6 +22,7 @@ const service = vi.hoisted(() => ({
 
 vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/projects/service", () => service);
+vi.mock("#modules/projects/order", () => service);
 
 import { projectsRouter } from "#modules/projects/routes";
 import {

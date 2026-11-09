@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { galleryIntroQuery } from "@/entities/gallery";
 import { EditGalleryIntroForm } from "@/features/edit-gallery";
+import { LanguageForm } from "@/features/edit-translations";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton } from "@/shared/ui/skeleton";
 
@@ -24,5 +25,5 @@ export function GalleryIntroSection() {
 function GalleryIntro() {
   const { data: intro } = useSuspenseQuery(galleryIntroQuery);
 
-  return <EditGalleryIntroForm className={styles.form} intro={intro} />;
+  return <EditGalleryIntroForm className={styles.form} languageForm={LanguageForm} intro={intro} />;
 }

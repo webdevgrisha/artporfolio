@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { type UIMatch, useMatches } from "react-router";
 
 import type { BreadcrumbItem } from "@/shared/ui/breadcrumbs";
@@ -10,22 +9,18 @@ import type { BreadcrumbItem } from "@/shared/ui/breadcrumbs";
 export interface AdminPageHandle {
   /** The way to the page from the top; the last item is the page itself. */
   breadcrumbs?: (match: UIMatch) => BreadcrumbItem[];
-  /** The main action of the page, next to its title, such as adding an item. */
-  titleAction?: ReactNode;
 }
 
 function handleOf(match: UIMatch): AdminPageHandle {
   return (match.handle ?? {}) as AdminPageHandle;
 }
 
-/** The breadcrumbs and the title action of the current page, from the deepest route that has them. */
+/** The breadcrumbs of the current page, from the deepest route that has them. */
 export function useAdminPageHandle() {
   const matches = useMatches();
   const crumbsMatch = matches.findLast((match) => handleOf(match).breadcrumbs);
-  const actionMatch = matches.findLast((match) => handleOf(match).titleAction);
 
   return {
     breadcrumbs: crumbsMatch ? handleOf(crumbsMatch).breadcrumbs?.(crumbsMatch) : undefined,
-    titleAction: actionMatch ? handleOf(actionMatch).titleAction : undefined,
   };
 }

@@ -30,7 +30,8 @@ export function useRowEditing<TStart>({ restore, validate }: UseRowEditingParams
     return {
       isEditing: editing?.key === key || hasError,
       onCancel: () => {
-        if (editing) restore(index, editing.start);
+        // A row open for its error alone has no start of its own: the start kept is another row's.
+        if (editing?.key === key) restore(index, editing.start);
         stopEditing();
       },
       onFinish: () => {

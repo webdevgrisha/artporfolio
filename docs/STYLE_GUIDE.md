@@ -151,7 +151,7 @@ All spacing is a step of one base unit, `--space-unit: 0.25rem` (4px). There are
 | Scale | Tokens | Use for | Changes by device |
 | --- | --- | --- | --- |
 | Component | `--space-1` … `--space-8` | Inside components: button padding, label-to-field gap, icon-to-text gap | No |
-| Layout | `--layout-space-4` … `--layout-space-24` | Page structure: page gutters, distance between sections, sidebar spacing | Yes, × `--layout-scale` |
+| Layout | `--layout-space-4` … `--layout-space-16` | Page structure: page gutters, distance between sections, sidebar spacing | Yes, × `--layout-scale` |
 
 The number in a token name is the number of base units: `--space-4` is 4 × 4px = 16px.
 

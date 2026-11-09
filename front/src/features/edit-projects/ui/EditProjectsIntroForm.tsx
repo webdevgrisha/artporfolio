@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { type ProjectsIntro, projectsIntroQuery } from "@/entities/project";
+import type { ProjectsIntro } from "@/entities/project";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 import { Textarea } from "@/shared/ui/textarea";
@@ -14,14 +15,23 @@ import {
 import { saveProjectsIntroFeedback, useSaveProjectsIntro } from "../model/useSaveProjectsIntro";
 import styles from "./EditProjectsIntroForm.module.css";
 
+/** The text a person can edit in every language. */
+const languageFields = [{ key: "text", label: "Основной текст", multiline: true }];
+
 interface EditProjectsIntroFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The text as stored on the server when the form opens, with its ETag. */
   intro: Tagged<ProjectsIntro>;
 }
 
 /** The text above the list of projects on the site. */
-export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFormProps) {
+export function EditProjectsIntroForm({
+  className,
+  languageForm: LanguageForm,
+  intro,
+}: EditProjectsIntroFormProps) {
   const form = useForm<ProjectsIntroFormValues>({
     defaultValues: intro.data,
     resolver: zodResolver(projectsIntroFormSchema),
@@ -30,7 +40,6 @@ export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFor
   const { editForm } = useSavedForm({
     form,
     initial: intro,
-    query: projectsIntroQuery,
     save: (values, etag) => saveIntro.mutateAsync({ etag, intro: values }),
     toValues: (data) => data,
     toastId: saveProjectsIntroFeedback.toastId,
@@ -41,18 +50,20 @@ export function EditProjectsIntroForm({ className, intro }: EditProjectsIntroFor
   } = form;
 
   return (
-    <EditForm className={className} {...editForm}>
-      <Textarea
-        className={styles.text}
-        label="Основной текст"
-        hint={`До ${String(maxIntroLength)} символов. Абзацы разделяйте пустой строкой`}
-        placeholder="Например: о каких проектах эта страница"
-        rows={12}
-        disabled={editForm.isSaving}
-        error={errors.text?.message}
-        isModified={Boolean(dirtyFields.text)}
-        {...register("text")}
-      />
-    </EditForm>
+    <LanguageForm resource={translationResources.projectsIntro} fields={languageFields}>
+      <EditForm className={className} {...editForm}>
+        <Textarea
+          className={styles.text}
+          label="Основной текст"
+          hint={`До ${String(maxIntroLength)} символов. Абзацы разделяйте пустой строкой`}
+          placeholder="Например: о каких проектах эта страница"
+          rows={12}
+          disabled={editForm.isSaving}
+          error={errors.text?.message}
+          isModified={Boolean(dirtyFields.text)}
+          {...register("text")}
+        />
+      </EditForm>
+    </LanguageForm>
   );
 }

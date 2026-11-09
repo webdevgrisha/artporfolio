@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import { galleryWorkQuery } from "@/entities/gallery";
 import { EditWorkForm, useWorkReferences } from "@/features/edit-gallery";
+import { LanguageForm } from "@/features/edit-translations";
 import { AwaitPageData } from "@/shared/ui/page-data";
 
 import styles from "./GalleryPage.module.css";
@@ -30,5 +31,12 @@ function EditWork({ id }: EditWorkProps) {
   const { data: work } = useSuspenseQuery(galleryWorkQuery(id));
   const references = useWorkReferences();
 
-  return <EditWorkForm className={styles.form} work={work} references={references} />;
+  return (
+    <EditWorkForm
+      className={styles.form}
+      languageForm={LanguageForm}
+      work={work}
+      references={references}
+    />
+  );
 }

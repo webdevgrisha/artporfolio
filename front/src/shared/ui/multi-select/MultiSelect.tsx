@@ -4,6 +4,7 @@ import React from "react";
 
 import { containsText } from "@/shared/lib/containsText";
 import { useDropdownPosition } from "@/shared/lib/useDropdownPosition";
+import { DropdownList } from "@/shared/ui/dropdown-list";
 import { Field, useFieldIds } from "@/shared/ui/field";
 import { CloseIcon } from "@/shared/ui/icon";
 
@@ -184,26 +185,20 @@ export function MultiSelect({
             })}
           />
         </div>
-        <ul
-          className={clsx(styles.menu, !isOpen && styles.menuHidden)}
-          {...getMenuProps({ ref: setList, style: floatingStyles })}
-        >
-          {isOpen && items.length === 0 ? (
-            <li className={styles.noMatches}>{noMatchesText}</li>
-          ) : null}
-          {isOpen
-            ? items.map((option, index) => (
-                <li
-                  key={option.value}
-                  className={clsx(styles.option, highlightedIndex === index && styles.highlighted)}
-                  {...getItemProps({ index, item: option })}
-                >
-                  {option.icon}
-                  {option.label}
-                </li>
-              ))
-            : null}
-        </ul>
+        <DropdownList
+          getItemProps={getItemProps}
+          highlightedIndex={highlightedIndex}
+          isOpen={isOpen}
+          items={items}
+          menuProps={getMenuProps({ ref: setList, style: floatingStyles })}
+          noMatchesText={noMatchesText}
+          renderItem={(option) => (
+            <>
+              {option.icon}
+              {option.label}
+            </>
+          )}
+        />
       </div>
     </Field>
   );

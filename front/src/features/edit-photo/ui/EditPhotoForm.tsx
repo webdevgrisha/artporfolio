@@ -19,6 +19,8 @@ import { getSavePhotoToastId, useSavePhoto } from "../model/useSavePhoto";
 const photoFormSchema = z.object(photoFieldsShape).superRefine(refinePhoto);
 
 interface EditPhotoFormProps {
+  /** An example description, for the placeholder of the description field. */
+  altPlaceholder: string;
   className?: string;
   label: string;
   /** The photo as stored on the server when the form opens, with its ETag. */
@@ -27,7 +29,13 @@ interface EditPhotoFormProps {
 }
 
 /** Edits a single photo with its description, such as «Моё фото» or the contacts photo. */
-export function EditPhotoForm({ className, label, photo, slot }: EditPhotoFormProps) {
+export function EditPhotoForm({
+  altPlaceholder,
+  className,
+  label,
+  photo,
+  slot,
+}: EditPhotoFormProps) {
   const savePhoto = useSavePhoto(slot);
   const form = useForm<PhotoFormValues>({
     defaultValues: toPhotoFormValues(photo.data),
@@ -36,7 +44,6 @@ export function EditPhotoForm({ className, label, photo, slot }: EditPhotoFormPr
   const { editForm, saved } = useSavedForm({
     form,
     initial: photo,
-    query: slot.query,
     save: (values, etag) => savePhoto.mutateAsync({ etag, values }),
     toValues: toPhotoFormValues,
     toastId: getSavePhotoToastId(slot),
@@ -46,7 +53,12 @@ export function EditPhotoForm({ className, label, photo, slot }: EditPhotoFormPr
     // PhotoFields reads the form from the context.
     <FormProvider {...form}>
       <EditForm className={className} {...editForm}>
-        <PhotoFields label={label} isSaving={editForm.isSaving} serverPhoto={saved.data} />
+        <PhotoFields
+          altPlaceholder={altPlaceholder}
+          label={label}
+          isSaving={editForm.isSaving}
+          serverPhoto={saved.data}
+        />
       </EditForm>
     </FormProvider>
   );

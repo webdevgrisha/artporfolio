@@ -6,10 +6,8 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import type { GalleryCollection } from "@/entities/gallery";
 import { emptyCollectionFormValues } from "@/features/edit-gallery/collection/model/collectionFormSchema";
-import {
-  useCreateCollection,
-  useSaveCollection,
-} from "@/features/edit-gallery/collection/model/collectionMutations";
+import { useCreateCollection } from "@/features/edit-gallery/collection/model/useCreateCollection";
+import { useSaveCollection } from "@/features/edit-gallery/collection/model/useSaveCollection";
 import { savedImage } from "@/shared/lib/imageFieldValue";
 
 import { csrfHandler, problem, uploadId, uploadsHandler } from "../../../../support/handlers";

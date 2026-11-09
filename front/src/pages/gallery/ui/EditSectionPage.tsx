@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import { gallerySectionQuery, galleryWorkUsageQuery } from "@/entities/gallery";
 import { EditSectionForm } from "@/features/edit-gallery";
+import { LanguageForm } from "@/features/edit-translations";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton } from "@/shared/ui/skeleton";
 
@@ -39,5 +40,12 @@ function EditSection({ id }: EditSectionProps) {
   const { data: section } = useSuspenseQuery(gallerySectionQuery(id));
   const { data: usage } = useSuspenseQuery(galleryWorkUsageQuery);
 
-  return <EditSectionForm className={styles.form} section={section} usages={usage.sections} />;
+  return (
+    <EditSectionForm
+      className={styles.form}
+      languageForm={LanguageForm}
+      section={section}
+      usages={usage.sections}
+    />
+  );
 }

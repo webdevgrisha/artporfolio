@@ -1,8 +1,7 @@
 import type { Ref } from "react";
 
 import { MenuIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { IconAction } from "@/shared/ui/icon-button";
 
 import styles from "./MobileMenuButton.module.css";
 
@@ -17,16 +16,15 @@ interface MobileMenuButtonProps {
 
 export function MobileMenuButton({ controls, isExpanded, onClick, ref }: MobileMenuButtonProps) {
   return (
-    <Tooltip className={styles.root} content={label}>
-      <IconButton
-        ref={ref}
-        label={label}
-        aria-controls={controls}
-        aria-expanded={isExpanded}
-        onClick={onClick}
-      >
-        <MenuIcon />
-      </IconButton>
-    </Tooltip>
+    <IconAction
+      tooltipClassName={styles.root}
+      ref={ref}
+      label={label}
+      aria-controls={controls}
+      aria-expanded={isExpanded}
+      onClick={onClick}
+    >
+      <MenuIcon />
+    </IconAction>
   );
 }

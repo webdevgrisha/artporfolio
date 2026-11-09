@@ -114,6 +114,13 @@ describe("auth service", () => {
     await expect(createSession("id-token")).rejects.toBe(permissionError);
   });
 
+  it("propagates an auth code it does not know while creating a session", async () => {
+    const unknownError = authError("auth/some-new-code");
+    firebase.verifyIdToken.mockRejectedValue(unknownError);
+
+    await expect(createSession("id-token")).rejects.toBe(unknownError);
+  });
+
   it("propagates provider outages while creating a session", async () => {
     const providerError = new Error("Firebase is unavailable");
     firebase.verifyIdToken.mockRejectedValue(providerError);

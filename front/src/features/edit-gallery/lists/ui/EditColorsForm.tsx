@@ -2,13 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 
-import {
-  type GalleryColors,
-  galleryColorsQuery,
-  galleryWorkUsageQuery,
-  maxColors,
-  type WorkUsages,
-} from "@/entities/gallery";
+import { type GalleryColors, maxColors, type WorkUsages } from "@/entities/gallery";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { ColorSwatchInput } from "@/shared/ui/color-swatch";
@@ -33,6 +28,8 @@ import { TitleListRow } from "./TitleListRow";
 
 interface EditColorsFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The colors as stored on the server when the form opens, with their ETag. */
   colors: Tagged<GalleryColors>;
   /** How many works have each color, by its id. */
@@ -52,7 +49,12 @@ interface ColorStart {
  * the list once it is saved; the colors added since stay at its end until then. A color tells how
  * many works have it, and its removal asks first if any do.
  */
-export function EditColorsForm({ className, colors, usages }: EditColorsFormProps) {
+export function EditColorsForm({
+  className,
+  languageForm: LanguageForm,
+  colors,
+  usages,
+}: EditColorsFormProps) {
   const form = useForm<ColorsFormValues>({
     defaultValues: toColorsFormValues(colors.data),
     resolver: zodResolver(colorsFormSchema),
@@ -61,8 +63,6 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
   const { editForm, saved } = useSavedForm({
     form,
     initial: colors,
-    query: galleryColorsQuery,
-    related: [galleryWorkUsageQuery.queryKey],
     save: (values, etag) => saveColors.mutateAsync({ colors: values.colors, etag }),
     toValues: toColorsFormValues,
     toastId: saveColorsFeedback.toastId,
@@ -98,103 +98,109 @@ export function EditColorsForm({ className, colors, usages }: EditColorsFormProp
   const removedTitle = removal.pending ? rows[removal.pending.index]?.title : undefined;
 
   return (
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <div className={styles.root}>
-          <AddTitleField
-            ref={addFieldRef}
-            disabled={editForm.isSaving}
-            existingTitles={rows.map((row) => row.title)}
-            labels={{
-              add: "Добавить цвет",
-              duplicate: "Такой цвет уже есть",
-              field: "Новый цвет",
-              full: `Цветов уже ${String(maxColors)}, больше добавить нельзя`,
-              placeholder: "Например: Синий",
-            }}
-            max={maxColors}
-            startAdornment={
-              <Tooltip content="Образец нового цвета">
-                <ColorSwatchInput
-                  label="Образец нового цвета"
-                  value={newHex}
-                  disabled={editForm.isSaving || rows.length >= maxColors}
-                  onChange={(event) => setNewHex(event.target.value)}
-                />
-              </Tooltip>
+    <LanguageForm
+      resource={translationResources.galleryColors}
+      fields={saved.data.map(({ id, title }) => ({ key: id, label: title }))}
+    >
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
+          <div className={styles.root}>
+            <AddTitleField
+              ref={addFieldRef}
+              disabled={editForm.isSaving}
+              existingTitles={rows.map((row) => row.title)}
+              labels={{
+                add: "Добавить цвет",
+                duplicate: "Такой цвет уже есть",
+                field: "Новый цвет",
+                full: `Цветов уже ${String(maxColors)}, больше добавить нельзя`,
+                placeholder: "Например: Синий",
+              }}
+              max={maxColors}
+              startAdornment={
+                <Tooltip content="Образец нового цвета">
+                  <ColorSwatchInput
+                    label="Образец нового цвета"
+                    value={newHex}
+                    disabled={editForm.isSaving || rows.length >= maxColors}
+                    onChange={(event) => setNewHex(event.target.value)}
+                  />
+                </Tooltip>
+              }
+              onAdd={(title) => {
+                append({ hex: newHex, id: crypto.randomUUID(), title }, { shouldFocus: false });
+                setNewHex(defaultColorHex);
+              }}
+            />
+
+            <TitleList
+              heading="Цвета"
+              hint={`${String(fields.length)} из ${String(maxColors)}. На сайте идут по алфавиту`}
+              empty="Цветов пока нет"
+              error={errors.colors?.message ?? errors.colors?.root?.message}
+              isEmpty={fields.length === 0}
+            >
+              {fields.map((field, index) => {
+                const row = rows[index] ?? field;
+                const savedColor = savedColors.get(row.id);
+                const isTitleModified = savedColor?.title !== row.title;
+                const titleError = errors.colors?.[index]?.title?.message;
+                const editing = rowEditing(
+                  field.id,
+                  index,
+                  { hex: row.hex, title: row.title },
+                  Boolean(titleError),
+                );
+
+                return (
+                  <TitleListRow
+                    key={field.id}
+                    row={{
+                      isNew: savedColor === undefined,
+                      title: row.title,
+                      workCount:
+                        savedColor === undefined ? undefined : usageOf(usages, row.id).count,
+                    }}
+                    titleField={register(`colors.${index}.title`)}
+                    start={
+                      <ColorRowSwatch
+                        disabled={editForm.isSaving}
+                        hex={row.hex}
+                        index={index}
+                        isEditing={editing.isEditing}
+                        label={`Образец цвета ${row.title}`}
+                      />
+                    }
+                    labels={{
+                      field: `Название цвета ${savedColor?.title ?? row.title}`,
+                      remove: `Удалить ${row.title || "цвет"}`,
+                      edit: `Изменить ${row.title}`,
+                    }}
+                    editing={editing}
+                    error={titleError}
+                    isModified={isTitleModified || savedColor?.hex !== row.hex}
+                    isTitleModified={isTitleModified}
+                    isSaving={editForm.isSaving}
+                    onRemove={() => removal.request(index, usageOf(usages, row.id))}
+                  />
+                );
+              })}
+            </TitleList>
+          </div>
+
+          <ConfirmDeleteDialog
+            isOpen={removal.pending !== undefined}
+            title={`Удалить цвет «${removedTitle ?? ""}»?`}
+            description={
+              removal.pending
+                ? describeWorkUsage(removal.pending.usage, { item: "цвет", others: "цветов" })
+                : ""
             }
-            onAdd={(title) => {
-              append({ hex: newHex, id: crypto.randomUUID(), title }, { shouldFocus: false });
-              setNewHex(defaultColorHex);
-            }}
+            onCancel={removal.cancel}
+            onConfirm={removal.confirm}
           />
-
-          <TitleList
-            heading="Цвета"
-            hint={`${String(fields.length)} из ${String(maxColors)}. На сайте идут по алфавиту`}
-            empty="Цветов пока нет"
-            error={errors.colors?.message ?? errors.colors?.root?.message}
-            isEmpty={fields.length === 0}
-          >
-            {fields.map((field, index) => {
-              const row = rows[index] ?? field;
-              const savedColor = savedColors.get(row.id);
-              const isTitleModified = savedColor?.title !== row.title;
-              const titleError = errors.colors?.[index]?.title?.message;
-              const editing = rowEditing(
-                field.id,
-                index,
-                { hex: row.hex, title: row.title },
-                Boolean(titleError),
-              );
-
-              return (
-                <TitleListRow
-                  key={field.id}
-                  row={{
-                    isNew: savedColor === undefined,
-                    title: row.title,
-                    workCount: savedColor === undefined ? undefined : usageOf(usages, row.id).count,
-                  }}
-                  titleField={register(`colors.${index}.title`)}
-                  start={
-                    <ColorRowSwatch
-                      disabled={editForm.isSaving}
-                      hex={row.hex}
-                      index={index}
-                      isEditing={editing.isEditing}
-                      label={`Образец цвета ${row.title}`}
-                    />
-                  }
-                  labels={{
-                    field: `Название цвета ${savedColor?.title ?? row.title}`,
-                    remove: `Удалить ${row.title || "цвет"}`,
-                    edit: `Изменить ${row.title}`,
-                  }}
-                  editing={editing}
-                  error={titleError}
-                  isModified={isTitleModified || savedColor?.hex !== row.hex}
-                  isTitleModified={isTitleModified}
-                  isSaving={editForm.isSaving}
-                  onRemove={() => removal.request(index, usageOf(usages, row.id))}
-                />
-              );
-            })}
-          </TitleList>
-        </div>
-
-        <ConfirmDeleteDialog
-          isOpen={removal.pending !== undefined}
-          title={`Удалить цвет «${removedTitle ?? ""}»?`}
-          description={
-            removal.pending
-              ? describeWorkUsage(removal.pending.usage, { item: "цвет", others: "цветов" })
-              : ""
-          }
-          onCancel={removal.cancel}
-          onConfirm={removal.confirm}
-        />
-      </EditForm>
-    </FormProvider>
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }

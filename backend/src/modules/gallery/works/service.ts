@@ -1,26 +1,23 @@
-import { type DocumentSnapshot, Timestamp } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 
 import type { Reader } from "#modules/auth/schema";
-import { colorIdsIn, galleryColors } from "#modules/gallery/colors/resource";
-import { galleryMaterials, materialIdsIn } from "#modules/gallery/materials/resource";
-import { galleryPalettes, paletteIdsIn } from "#modules/gallery/palettes/resource";
-import { sectionGroupsIn, sectionsCollection } from "#modules/gallery/sections/service";
-import { workDocument, worksCollection } from "#modules/gallery/works/document";
+import { readWork, workDocument, worksCollection } from "#modules/gallery/works/document";
+import { worksInOrder } from "#modules/gallery/works/order";
 import {
   assertReferencesExist,
   type KnownData,
   readKnownData,
 } from "#modules/gallery/works/references";
 import { toWork, toWorkSummary } from "#modules/gallery/works/representation";
-import {
-  type StoredWork,
-  storedWorkSchema,
-  type Work,
-  type WorkBody,
-  type WorkSummary,
-  type WorkUsage,
+import type {
+  StoredWork,
+  Work,
+  WorkBody,
+  WorkSummary,
+  WorkUsage,
 } from "#modules/gallery/works/schema";
 import { ownGroups, usageByItem } from "#modules/gallery/works/usage";
+import { isVisibleTo } from "#modules/gallery/works/visibility";
 import { firestore } from "#shared/firebase/firestore";
 import {
   NotFoundError,
@@ -28,6 +25,12 @@ import {
   UnprocessableContentError,
 } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import {
+  deleteTranslations,
+  requestTranslations,
+  saveSources,
+} from "#shared/i18n/translation-requests";
+import { textsById } from "#shared/i18n/translations";
 import { preparePhotoList } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
 import { deleteImageFilesOrWarn } from "#shared/images/stored-image";
@@ -51,12 +54,23 @@ function processPhotosFolder(id: string): string {
   return `${workFolder(id)}/process`;
 }
 
-function readWork(snapshot: DocumentSnapshot): StoredWork {
-  if (!snapshot.exists) {
-    throw new NotFoundError("There is no work");
-  }
+/** Where the translations of the work go. */
+function workTranslations(id: string): string {
+  return `gallery-work-${id}`;
+}
 
-  return storedWorkSchema.parse(snapshot.data());
+/**
+ * The texts of a work the site shows in every language: the alt text of a process photo goes by the
+ * id of the photo. No form shows those: they are translated and stay as made.
+ */
+function workTexts({ city, description, photo, processPhotos, title }: StoredWork) {
+  return {
+    alt: photo.alt,
+    city,
+    description,
+    title,
+    ...textsById(processPhotos, ({ alt }) => alt),
+  };
 }
 
 /**
@@ -78,23 +92,6 @@ function assertWorkIfMatch(ifMatch: string, id: string, work: StoredWork, known:
   assertIfMatch(ifMatch, toWork(id, work, known));
 }
 
-/** The latest month first; works of one month, the latest created first. */
-function compareWorks(a: StoredWork, b: StoredWork): number {
-  return b.year - a.year || b.month - a.month || b.createdAt.toMillis() - a.createdAt.toMillis();
-}
-
-/** Whether `reader` sees the work: a hidden work is the admin's alone. */
-export function isVisibleTo(work: StoredWork, reader: Reader): boolean {
-  return work.published || reader === "admin";
-}
-
-/** The saved works in the order the site shows them. */
-export function worksInOrder(docs: DocumentSnapshot[]): { id: string; work: StoredWork }[] {
-  return docs
-    .map((snapshot) => ({ id: snapshot.id, work: readWork(snapshot) }))
-    .sort((a, b) => compareWorks(a.work, b.work));
-}
-
 /**
  * Every work `reader` sees in the order the site shows them, each by its summary, tagged by what is
  * returned.
@@ -114,30 +111,24 @@ export async function listWorks(reader: Reader): Promise<Tagged<WorkSummary[]>> 
  * returned. Counted afresh from every work on each request, so it never drifts from the works.
  */
 export async function getWorkUsage(): Promise<Tagged<WorkUsage>> {
-  const [{ docs }, sections, materials, colors, palettes] = await Promise.all([
-    worksCollection().get(),
-    sectionsCollection().get(),
-    galleryMaterials.document().get(),
-    galleryColors.document().get(),
-    galleryPalettes.document().get(),
-  ]);
+  const [{ docs }, known] = await Promise.all([worksCollection().get(), readKnownData()]);
   const works = docs.map(readWork);
   const data: WorkUsage = {
     sections: usageByItem(
       works.map((work) => work.sectionIds),
-      sectionGroupsIn(sections),
+      known.sections,
     ),
     materials: usageByItem(
       works.map((work) => work.materialIds),
-      ownGroups(materialIdsIn(materials)),
+      ownGroups(known.materials),
     ),
     colors: usageByItem(
       works.map((work) => work.colorIds),
-      ownGroups(colorIdsIn(colors)),
+      ownGroups(known.colors),
     ),
     palettes: usageByItem(
       works.map((work) => work.paletteIds),
-      ownGroups(paletteIdsIn(palettes)),
+      ownGroups(known.palettes),
     ),
   };
 
@@ -191,8 +182,11 @@ export async function createWork(id: string, body: WorkBody): Promise<Tagged<Wor
       };
 
       transaction.create(workDocument(id), created);
+      saveSources(transaction, workTranslations(id), workTexts(created));
       return [created, references] as const;
     });
+
+    await requestTranslations(workTranslations(id));
 
     return toSavedWork(id, work, known);
   });
@@ -228,6 +222,7 @@ export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promis
       };
 
       transaction.set(document, next);
+      saveSources(transaction, workTranslations(id), workTexts(next));
       return [current, next, references] as const;
     });
 
@@ -236,6 +231,7 @@ export function replaceWork(id: string, body: WorkBody, ifMatch: string): Promis
     }
 
     draft.removeUnused(previous.processPhotos, work.processPhotos);
+    await requestTranslations(workTranslations(id));
 
     return toSavedWork(id, work, known);
   });
@@ -249,6 +245,7 @@ export async function deleteWork(id: string, ifMatch: string): Promise<void> {
 
     assertWorkIfMatch(ifMatch, id, current, await readKnownData(transaction));
     transaction.delete(document);
+    deleteTranslations(transaction, workTranslations(id));
   });
 
   await deleteImageFilesOrWarn(workFolder(id));

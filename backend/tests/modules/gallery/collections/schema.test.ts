@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import {
   collectionBodySchema,
@@ -8,7 +8,7 @@ import {
   minCollectionYear,
 } from "#modules/gallery/collections/schema";
 
-const thisYear = new Date().getFullYear();
+const thisYear = 2026;
 
 const collection = {
   title: "Звери",
@@ -24,6 +24,23 @@ function isValid(body: unknown): boolean {
 }
 
 describe("collection body", () => {
+  beforeAll(() => {
+    vi.useFakeTimers({ now: new Date(`${String(thisYear)}-06-15T12:00:00Z`), toFake: ["Date"] });
+  });
+
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
+  it("takes a year that has come east of the server, which runs in UTC", () => {
+    // Already 1 January in Minsk, UTC+3.
+    vi.setSystemTime(new Date(`${String(thisYear)}-12-31T22:00:00Z`));
+
+    expect(isValid({ ...collection, startYear: thisYear + 1, endYear: null })).toBe(true);
+
+    vi.setSystemTime(new Date(`${String(thisYear)}-06-15T12:00:00Z`));
+  });
+
   it("trims the texts", () => {
     expect(
       collectionBodySchema.parse({ ...collection, title: "  Звери  ", description: " Серия. " }),

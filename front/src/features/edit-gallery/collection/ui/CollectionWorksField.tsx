@@ -1,16 +1,14 @@
 import React from "react";
 
-import type { GalleryWorkSummary } from "@/entities/gallery";
+import { formatWorkDate, type GalleryWorkSummary } from "@/entities/gallery";
 import { useFocusAfterUpdate } from "@/shared/lib/useFocusAfterUpdate";
 import { Button } from "@/shared/ui/button";
 import { Fieldset } from "@/shared/ui/fieldset";
 import { Frame, FrameEmpty, FrameList, FrameListItem, FrameRow } from "@/shared/ui/frame-list";
 import { TrashIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { IconAction } from "@/shared/ui/icon-button";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
-import { Tooltip } from "@/shared/ui/tooltip";
 
-import { formatWorkDate } from "../../work/model/workDisplay";
 import { addableWorks } from "../model/addableWorks";
 import { AddWorksDialog } from "./AddWorksDialog";
 import styles from "./CollectionWorksField.module.css";
@@ -74,8 +72,8 @@ export function CollectionWorksField({
         <Frame
           className={styles.frame}
           isModified={isModified}
-          isInvalid={Boolean(error)}
-          isDisabled={disabled}
+          invalid={Boolean(error)}
+          disabled={disabled}
         >
           {chosen.length === 0 ? (
             <FrameEmpty>В коллекции пока нет работ</FrameEmpty>
@@ -90,19 +88,17 @@ export function CollectionWorksField({
                       <PhotoThumbnail image={work.photo} />
                       <span className={styles.title}>{work.title}</span>
                       <span className={styles.date}>{formatWorkDate(work)}</span>
-                      <Tooltip content={removeLabel}>
-                        <IconButton
-                          ref={(button) => {
-                            if (button) removeButtons.current.set(work.id, button);
-                            else removeButtons.current.delete(work.id);
-                          }}
-                          label={removeLabel}
-                          disabled={disabled}
-                          onClick={() => remove(work.id)}
-                        >
-                          <TrashIcon className={styles.removeIcon} />
-                        </IconButton>
-                      </Tooltip>
+                      <IconAction
+                        ref={(button) => {
+                          if (button) removeButtons.current.set(work.id, button);
+                          else removeButtons.current.delete(work.id);
+                        }}
+                        label={removeLabel}
+                        disabled={disabled}
+                        onClick={() => remove(work.id)}
+                      >
+                        <TrashIcon className={styles.removeIcon} />
+                      </IconAction>
                     </FrameRow>
                   </FrameListItem>
                 );

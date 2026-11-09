@@ -11,7 +11,7 @@ import { galleryPalettes } from "#modules/gallery/palettes/resource";
 import { galleryPalettesBodySchema } from "#modules/gallery/palettes/schema";
 import { gallerySectionsRouter } from "#modules/gallery/sections/routes";
 import { galleryWorksRouter } from "#modules/gallery/works/routes";
-import { documentResourceRouter } from "#shared/http/document-resource";
+import { documentResourceRouter } from "#shared/http/document-resource-router";
 
 export const galleryRouter = Router();
 

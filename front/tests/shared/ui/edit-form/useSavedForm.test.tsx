@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider, queryOptions, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import type { FormEvent, ReactNode } from "react";
 import { useForm } from "react-hook-form";
@@ -20,22 +20,6 @@ interface Values {
 }
 
 const initial: Tagged<Values> = { data: { name: "Холст" }, etag: '"read"' };
-const latest: Tagged<Values> = { data: { name: "Бумага" }, etag: '"latest"' };
-
-const readLatest = vi.fn(() => Promise.resolve(latest));
-
-const valuesQuery = queryOptions({
-  queryFn: () => readLatest(),
-  queryKey: ["values"],
-});
-
-/** A list the form shows beside the resource, such as the options it chooses from. */
-const readOptions = vi.fn(() => Promise.resolve(["Холст", "Бумага"]));
-
-const optionsQuery = queryOptions({
-  queryFn: () => readOptions(),
-  queryKey: ["options"],
-});
 
 type Save = (values: Values, etag: string) => Promise<Tagged<Values>>;
 
@@ -52,13 +36,10 @@ function setUp(save: Save) {
 
   const { result } = renderHook(
     () => {
-      useQuery(optionsQuery);
       const form = useForm<Values>({ defaultValues: initial.data });
       const savedForm = useSavedForm({
         form,
         initial,
-        query: valuesQuery,
-        related: [optionsQuery.queryKey],
         save,
         toValues: (data) => data,
         toastId: "values-save",
@@ -109,67 +90,16 @@ describe("useSavedForm", () => {
     expect(save).not.toHaveBeenCalled();
   });
 
-  it("keeps the changes and the base after a failed save", async () => {
-    const result = setUp(() => Promise.reject(new HttpError(500)));
+  it.each([500, 412])(
+    "keeps the changes and the base after a save failed with %i",
+    async (status) => {
+      const result = setUp(() => Promise.reject(new HttpError(status)));
 
-    await edit(result, "Масло");
-    await submit(result);
+      await edit(result, "Масло");
+      await submit(result);
 
-    expect(result.current.form.getValues()).toEqual({ name: "Масло" });
-    expect(result.current.saved).toBe(initial);
-    expect(result.current.editForm.conflict.isOpen).toBe(false);
-  });
-
-  it("offers the latest version after a conflict and starts from it once taken", async () => {
-    const result = setUp(() => Promise.reject(new HttpError(412)));
-
-    await edit(result, "Масло");
-    await submit(result);
-
-    expect(result.current.editForm.conflict.isOpen).toBe(true);
-
-    await act(async () => result.current.editForm.conflict.onTakeLatest());
-
-    expect(result.current.editForm.conflict.isOpen).toBe(false);
-    expect(result.current.saved).toEqual(latest);
-    expect(result.current.form.getValues()).toEqual(latest.data);
-    expect(result.current.editForm.hasUnsavedChanges).toBe(false);
-  });
-
-  it("reads the related data afresh with the latest version", async () => {
-    const result = setUp(() => Promise.reject(new HttpError(412)));
-
-    await vi.waitFor(() => expect(readOptions).toHaveBeenCalledTimes(1));
-    await edit(result, "Масло");
-    await submit(result);
-
-    expect(readOptions).toHaveBeenCalledTimes(2);
-    expect(result.current.editForm.conflict.isOpen).toBe(true);
-  });
-
-  it("says that the latest version could not be read, and keeps the changes", async () => {
-    readLatest.mockRejectedValueOnce(new HttpError(404));
-    const result = setUp(() => Promise.reject(new HttpError(412)));
-
-    await edit(result, "Масло");
-    await submit(result);
-
-    expect(toast.showErrorToast).toHaveBeenCalledWith("Это уже удалили в другой вкладке", {
-      id: "values-save",
-    });
-    expect(result.current.editForm.conflict.isOpen).toBe(false);
-    expect(result.current.form.getValues()).toEqual({ name: "Масло" });
-  });
-
-  it("keeps the changes and the base when the latest version is declined", async () => {
-    const result = setUp(() => Promise.reject(new HttpError(412)));
-
-    await edit(result, "Масло");
-    await submit(result);
-    await act(async () => result.current.editForm.conflict.onKeep());
-
-    expect(result.current.editForm.conflict.isOpen).toBe(false);
-    expect(result.current.saved).toBe(initial);
-    expect(result.current.form.getValues()).toEqual({ name: "Масло" });
-  });
+      expect(result.current.form.getValues()).toEqual({ name: "Масло" });
+      expect(result.current.saved).toBe(initial);
+    },
+  );
 });

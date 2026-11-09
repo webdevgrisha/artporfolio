@@ -23,6 +23,7 @@ export const projectsRoute = { Component: ProjectsPage };
 export const projectsIntroRoute = {
   Component: ProjectsIntroSection,
   loader: () => loadFresh(projectsIntroQuery),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 export const projectsTableRoute = {
@@ -42,4 +43,5 @@ export const editProjectRoute = {
   Component: EditProjectPage,
   handle: editProjectHandle,
   loader: ({ params }: LoaderFunctionArgs) => loadFresh(projectQuery(params.id ?? "")),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };

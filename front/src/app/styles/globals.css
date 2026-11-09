@@ -6,6 +6,16 @@
   font-display: swap;
 }
 
+/* Absans has no Cyrillic. Manrope is the closest to it in shape and weight, for those letters only. */
+@font-face {
+  font-family: "Manrope";
+  src: url("../../shared/assets/fonts/Manrope-Cyrillic-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
 /*
  * Breakpoints (custom properties cannot be used in media queries):
  * - phone:   below 40rem
@@ -68,7 +78,6 @@
     --layout-space-10: calc(10 * var(--space-unit) * var(--layout-scale));
     --layout-space-12: calc(12 * var(--space-unit) * var(--layout-scale));
     --layout-space-16: calc(16 * var(--space-unit) * var(--layout-scale));
-    --layout-space-24: calc(24 * var(--space-unit) * var(--layout-scale));
 
     --font-size-sm: 0.8125rem;
     --font-size-md: 1rem;
@@ -79,6 +88,8 @@
     --font-size-4xl: 2.25rem;
 
     --control-size: 3.5rem;
+    /* A column of fields, which keeps a readable line and one right edge on every form. */
+    --form-max-inline-size: 48rem;
     /* Fills the frame on a laptop, so the rows end with the save button; a monitor stops them. */
     --list-max-inline-size: 57rem;
     --focus-ring: 2px solid var(--color-focus);
@@ -94,7 +105,7 @@
     --motion-duration-standard: 180ms;
     --motion-duration-slow: 280ms;
     --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
-    font-family: "Absans", Arial, sans-serif;
+    font-family: "Absans", "Manrope", Arial, sans-serif;
     font-synthesis: none;
     color: var(--color-text);
 

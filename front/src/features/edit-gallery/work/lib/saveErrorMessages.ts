@@ -3,7 +3,7 @@ import { isPreconditionFailed } from "@/shared/api/httpError";
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
-export function getSaveWorkErrorMessage(error: unknown): string | null {
+export function getSaveWorkErrorMessage(error: unknown): string {
   if (error instanceof UploadError) return getUploadErrorMessage(error);
 
   return getSaveErrorMessage(error, {
@@ -23,11 +23,11 @@ export function getSaveWorkErrorMessage(error: unknown): string | null {
  * A new work: 412 says an earlier try already saved it although its response was lost
  * and the form opens it.
  */
-export function getCreateWorkErrorMessage(error: unknown): string | null {
+export function getCreateWorkErrorMessage(error: unknown): string {
   return isPreconditionFailed(error) ? "Работа уже сохранена" : getSaveWorkErrorMessage(error);
 }
 
-export function getDeleteWorkErrorMessage(error: unknown): string | null {
+export function getDeleteWorkErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
     byStatus: {
       404: "Работа уже удалена",

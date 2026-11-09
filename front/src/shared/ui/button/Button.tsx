@@ -4,7 +4,7 @@ import type { ComponentPropsWithRef } from "react";
 import styles from "./Button.module.css";
 
 interface ButtonProps extends ComponentPropsWithRef<"button"> {
-  /** `text` drops the border and the minimum width, for actions inside a dialog. */
+  /** `text` drops the border and the minimum width, for a secondary action. */
   variant?: "outlined" | "text";
   /** `danger` marks an action that discards or destroys data. */
   tone?: "default" | "danger";

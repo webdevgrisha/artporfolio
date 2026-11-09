@@ -1,6 +1,5 @@
 import { ArrowDownIcon, ArrowUpIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { IconAction } from "@/shared/ui/icon-button";
 
 import styles from "./Sortable.module.css";
 
@@ -31,26 +30,24 @@ export function MoveButtons({
 
   return (
     <>
-      <Tooltip className={styles.control} content={upLabel}>
-        <IconButton
-          label={upLabel}
-          disabled={disabled || isFirst}
-          data-control={"moveUp" satisfies MoveControl}
-          onClick={onMoveUp}
-        >
-          <ArrowUpIcon className={styles.arrowIcon} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip className={styles.control} content={downLabel}>
-        <IconButton
-          label={downLabel}
-          disabled={disabled || isLast}
-          data-control={"moveDown" satisfies MoveControl}
-          onClick={onMoveDown}
-        >
-          <ArrowDownIcon className={styles.arrowIcon} />
-        </IconButton>
-      </Tooltip>
+      <IconAction
+        tooltipClassName={styles.control}
+        label={upLabel}
+        disabled={disabled || isFirst}
+        data-control={"moveUp" satisfies MoveControl}
+        onClick={onMoveUp}
+      >
+        <ArrowUpIcon className={styles.arrowIcon} />
+      </IconAction>
+      <IconAction
+        tooltipClassName={styles.control}
+        label={downLabel}
+        disabled={disabled || isLast}
+        data-control={"moveDown" satisfies MoveControl}
+        onClick={onMoveDown}
+      >
+        <ArrowDownIcon className={styles.arrowIcon} />
+      </IconAction>
     </>
   );
 }

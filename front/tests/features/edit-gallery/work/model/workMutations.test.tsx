@@ -1,12 +1,18 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, type QueryKey } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
 import { HttpResponse, http as mswHttp } from "msw/http";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { GalleryWork } from "@/entities/gallery";
+import {
+  type GalleryWork,
+  galleryCollectionsQuery,
+  galleryWorkQuery,
+  galleryWorksQuery,
+} from "@/entities/gallery";
+import { useCreateWork } from "@/features/edit-gallery/work/model/useCreateWork";
+import { useSaveWork } from "@/features/edit-gallery/work/model/useSaveWork";
 import { emptyWorkFormValues } from "@/features/edit-gallery/work/model/workFormValues";
-import { useCreateWork, useSaveWork } from "@/features/edit-gallery/work/model/workMutations";
 import { savedImage } from "@/shared/lib/imageFieldValue";
 
 import { csrfHandler, problem, uploadId, uploadsHandler } from "../../../../support/handlers";
@@ -228,6 +234,31 @@ describe("useSaveWork", () => {
         }),
       }),
     ]);
+  });
+
+  it("keeps the saved work fresh and marks the lists it changes outdated", async () => {
+    handlePuts(() => HttpResponse.json(apiWork("Стрекоза"), { headers: { ETag: savedEtag } }));
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const workKey = galleryWorkQuery(id).queryKey;
+    const cachedKeys: QueryKey[] = [
+      workKey,
+      galleryWorksQuery.queryKey,
+      galleryCollectionsQuery.queryKey,
+    ];
+    for (const queryKey of cachedKeys) {
+      queryClient.setQueryData(queryKey, "cached");
+    }
+    const saveWork = renderHook(() => useSaveWork(id), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      ),
+    }).result.current;
+
+    await saveWork.mutateAsync({ etag: '"read"', values: values() });
+
+    expect(queryClient.getQueryState(workKey)?.isInvalidated).toBe(false);
+    expect(queryClient.getQueryState(galleryWorksQuery.queryKey)?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(galleryCollectionsQuery.queryKey)?.isInvalidated).toBe(true);
   });
 
   it("keeps the saved photo file and sends its description alone", async () => {

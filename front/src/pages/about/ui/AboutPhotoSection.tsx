@@ -24,5 +24,13 @@ export function AboutPhotoSection() {
 function AboutPhoto() {
   const { data: photo } = useSuspenseQuery(aboutPhoto.query);
 
-  return <EditPhotoForm className={styles.form} label="Моё фото" photo={photo} slot={aboutPhoto} />;
+  return (
+    <EditPhotoForm
+      altPlaceholder="Например: Анастасия в мастерской"
+      className={styles.form}
+      label="Моё фото"
+      photo={photo}
+      slot={aboutPhoto}
+    />
+  );
 }

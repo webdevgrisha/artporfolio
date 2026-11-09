@@ -1,0 +1,61 @@
+/** The languages of the site other than Russian; mirrors backend/src/shared/i18n/languages.ts. */
+export const targetLanguages = [
+  "en",
+  "pl",
+  "uk",
+  "be",
+  "de",
+  "fr",
+  "es",
+  "it",
+  "pt",
+  "zh",
+  "ja",
+  "ko",
+  "ar",
+  "tr",
+  "nl",
+  "sv",
+  "cs",
+  "sk",
+  "lt",
+  "hu",
+  "ro",
+  "el",
+  "id",
+  "hi",
+  "vi",
+] as const;
+
+export type TargetLanguage = (typeof targetLanguages)[number];
+
+/** The languages written from right to left. */
+export const rightToLeftLanguages: readonly TargetLanguage[] = ["ar"];
+
+export const languageNames: Record<TargetLanguage, string> = {
+  ar: "Арабский",
+  be: "Белорусский",
+  cs: "Чешский",
+  de: "Немецкий",
+  el: "Греческий",
+  en: "Английский",
+  es: "Испанский",
+  fr: "Французский",
+  hi: "Хинди",
+  hu: "Венгерский",
+  id: "Индонезийский",
+  it: "Итальянский",
+  ja: "Японский",
+  ko: "Корейский",
+  lt: "Литовский",
+  nl: "Нидерландский",
+  pl: "Польский",
+  pt: "Португальский (Бразилия)",
+  ro: "Румынский",
+  sk: "Словацкий",
+  sv: "Шведский",
+  tr: "Турецкий",
+  uk: "Украинский",
+  vi: "Вьетнамский",
+  zh: "Китайский (упрощённый)",
+};

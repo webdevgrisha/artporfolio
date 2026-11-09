@@ -1,4 +1,5 @@
 import { galleryColorsQuery, replaceGalleryColors } from "@/entities/gallery";
+import { translationResources, translationsQuery } from "@/entities/translation";
 import type { MutationFeedback } from "@/shared/api/queryClient";
 import { useReplaceResource } from "@/shared/api/useReplaceResource";
 
@@ -17,6 +18,7 @@ export function useSaveColors() {
   return useReplaceResource({
     feedback: saveColorsFeedback,
     mutationFn: replaceGalleryColors,
+    outdates: [translationsQuery(translationResources.galleryColors).queryKey],
     queryKey: galleryColorsQuery.queryKey,
   });
 }

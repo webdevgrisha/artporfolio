@@ -25,7 +25,7 @@ export interface WorkReferences {
   sections: readonly GallerySection[];
 }
 
-/** The queries of the lists a work form chooses from: its page loads them, a conflict reloads them. */
+/** The queries of the lists a work form chooses from, which its page loads. */
 export const workReferenceQueries = [
   gallerySectionsQuery,
   galleryMaterialsQuery,

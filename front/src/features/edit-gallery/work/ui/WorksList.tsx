@@ -1,17 +1,19 @@
 import React from "react";
 
-import type {
-  GalleryCollection,
-  GalleryMaterial,
-  GallerySection,
-  GalleryWorkSummary,
+import {
+  type GalleryCollection,
+  type GalleryMaterial,
+  type GallerySection,
+  type GalleryWorkSummary,
+  matchesWorkQuery,
 } from "@/entities/gallery";
 import { routes } from "@/shared/config/routes";
 import { useConfirmation } from "@/shared/lib/useConfirmation";
 import { ConfirmDeleteDialog } from "@/shared/ui/confirm-dialog";
 import { DataTable } from "@/shared/ui/data-table";
 import { useDeleteWork, useDeletingWorkIds } from "../model/useDeleteWork";
-import { createWorkFilters, matchesWorkQuery, worksSortableColumns } from "../model/worksTableView";
+import { createWorkFilters } from "../model/workFilters";
+import { worksSortableColumns } from "../model/worksTableView";
 import styles from "./WorksList.module.css";
 import { worksColumns } from "./worksColumns";
 

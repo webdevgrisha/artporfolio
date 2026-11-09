@@ -20,6 +20,11 @@ const uploads = vi.hoisted(() => ({
   publishUpload: vi.fn(),
 }));
 
+vi.mock("#shared/i18n/translation-requests", () => ({
+  deleteTranslations: vi.fn(),
+  requestTranslations: vi.fn(),
+  saveSources: vi.fn(),
+}));
 vi.mock("#shared/firebase/firestore", () => ({
   firestore: () => ({
     runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
@@ -35,19 +40,14 @@ vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
 import { PreconditionFailedError, UnprocessableContentError } from "#shared/http/errors";
 import { entityTag } from "#shared/http/etag";
-import {
-  getPhoto,
-  photoBodySchema,
-  photoSlot,
-  readPhoto,
-  savePhoto,
-  toPhoto,
-} from "#shared/images/photo";
+import { getPhoto, photoBodySchema, photoSlot, savePhoto, toPhoto } from "#shared/images/photo";
+import { readSlot } from "#shared/images/slot";
 
 const slot = photoSlot({
   document: () => document as unknown as DocumentReference,
   field: "photo",
   folder: "contacts/photo",
+  resource: "contacts-photo",
 });
 
 const uploadId = "11111111-1111-4111-8111-111111111111";
@@ -109,7 +109,7 @@ function storedAs(photo: unknown) {
 
 /** The photo of the document as the API returns it. */
 function returned(photo: unknown) {
-  const stored = readPhoto(slot, snapshotWith(photo));
+  const stored = readSlot(slot, snapshotWith(photo));
 
   return stored && toPhoto(stored);
 }

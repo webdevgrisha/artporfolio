@@ -1,6 +1,6 @@
 import type { WorkPrice } from "@/entities/gallery";
 
-import { formatPrice } from "../model/workPrice";
+import { formatPrice } from "../model/formatPrice";
 import { NoValue } from "./NoValue";
 import styles from "./WorksList.module.css";
 

@@ -24,5 +24,13 @@ export function ContactPhotoSection() {
 function ContactPhoto() {
   const { data: photo } = useSuspenseQuery(contactPhoto.query);
 
-  return <EditPhotoForm className={styles.form} label="Фото" photo={photo} slot={contactPhoto} />;
+  return (
+    <EditPhotoForm
+      altPlaceholder="Например: Анастасия в мастерской"
+      className={styles.form}
+      label="Фото"
+      photo={photo}
+      slot={contactPhoto}
+    />
+  );
 }

@@ -3,7 +3,7 @@ import { z } from "zod";
 /** The most colors the gallery may have (backend/src/modules/gallery/colors/schema.ts). */
 export const maxColors = 100;
 
-export const galleryColorSchema = z.object({
+const galleryColorSchema = z.object({
   id: z.string(),
   title: z.string(),
   /** The swatch, as #rrggbb in lower case. */

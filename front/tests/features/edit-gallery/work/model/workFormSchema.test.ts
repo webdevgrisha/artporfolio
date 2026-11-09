@@ -1,12 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import type { GalleryWork } from "@/entities/gallery";
-import {
-  formatWorkDate,
-  formatWorkFormat,
-  formatWorkSize,
-  monthOptions,
-} from "@/features/edit-gallery/work/model/workDisplay";
+import { formatWorkDate, type GalleryWork, monthOptions } from "@/entities/gallery";
+import { formatPrice } from "@/features/edit-gallery/work/model/formatPrice";
+import { formatWorkFormat } from "@/features/edit-gallery/work/model/workFormat";
 import { workFormSchema } from "@/features/edit-gallery/work/model/workFormSchema";
 import {
   emptyWorkFormValues,
@@ -17,9 +13,9 @@ import {
 import {
   discountedAmount,
   discountedPriceIn,
-  formatPrice,
-  toWorkPrice,
-} from "@/features/edit-gallery/work/model/workPrice";
+} from "@/features/edit-gallery/work/model/workPriceAmount";
+import { toWorkPrice } from "@/features/edit-gallery/work/model/workPriceInput";
+import { formatWorkSize } from "@/features/edit-gallery/work/model/workSize";
 
 import { fieldErrors } from "../../../../support/schema";
 

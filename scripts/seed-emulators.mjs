@@ -798,10 +798,28 @@ async function clearFirestore() {
   }
 }
 
+/**
+ * Pauses translating, so seeding does not spend the plan of DeepL on test data. The banner of the
+ * admin offers to go on.
+ */
+async function pauseTranslating() {
+  const url = `${firestoreDocumentsUrl.replace("/emulator/v1", "/v1")}/site/translation`;
+  const response = await fetch(url, {
+    body: JSON.stringify({ fields: { halted: { stringValue: "paused" } } }),
+    headers: { Authorization: "Bearer owner", "Content-Type": "application/json" },
+    method: "PATCH",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Cannot pause translating: ${String(response.status)}`);
+  }
+}
+
 const startedAt = Date.now();
 const api = new Api();
 
 await clearFirestore();
+await pauseTranslating();
 
 await api.signIn();
 console.log(`Seeding ${apiUrl} as ${email}`);

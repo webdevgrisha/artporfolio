@@ -4,8 +4,7 @@ import type { Ref } from "react";
 import { LogoutButton } from "@/features/logout";
 import avatarUrl from "@/shared/assets/images/portraitMark.png";
 import { CloseIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { IconAction } from "@/shared/ui/icon-button";
 
 import { AdminNavigation } from "./AdminNavigation";
 import { AdminProfile } from "./AdminProfile";
@@ -31,11 +30,9 @@ export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
       />
 
       <div ref={ref} id={id} className={clsx(styles.sidebar, isOpen && styles.open)}>
-        <Tooltip className={styles.close} content={closeLabel}>
-          <IconButton label={closeLabel} onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
-        </Tooltip>
+        <IconAction tooltipClassName={styles.close} label={closeLabel} onClick={onClose}>
+          <CloseIcon />
+        </IconAction>
 
         <AdminProfile className={styles.profile} imageUrl={avatarUrl} name="ANASTASIA TURKEVICH" />
 

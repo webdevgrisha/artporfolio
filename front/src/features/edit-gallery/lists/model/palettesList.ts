@@ -1,4 +1,5 @@
 import { galleryPalettesQuery, maxPalettes, replaceGalleryPalettes } from "@/entities/gallery";
+import { translationResources } from "@/entities/translation";
 
 import { getSavePalettesErrorMessage } from "../lib/saveErrorMessages";
 import type { TitleListConfig } from "./titleList";
@@ -23,5 +24,6 @@ export const palettesList: TitleListConfig = {
     tooMany: `Не больше ${String(maxPalettes)} палитр`,
   },
   toastId: "gallery-palettes-save",
+  translationResource: translationResources.galleryPalettes,
   usages: (usage) => usage.palettes,
 };

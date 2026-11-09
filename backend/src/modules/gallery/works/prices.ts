@@ -1,13 +1,9 @@
+import { discountedAmount } from "#modules/currencies/discounted-amount";
 import { currencies } from "#modules/currencies/schema";
 import { suggestedPrice } from "#modules/currencies/suggested-price";
 import type { StoredWork, WorkPrice } from "#modules/gallery/works/schema";
 
 type StoredPrice = NonNullable<StoredWork["price"]>;
-
-/** The amount after the discount, rounded to a whole unit of the currency. */
-export function discountedAmount(amount: number, discountPercent: number | null): number {
-  return discountPercent === null ? amount : Math.round((amount * (100 - discountPercent)) / 100);
-}
 
 /**
  * The price of a work in every currency with a rate. The same percent is taken off each, and what

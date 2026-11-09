@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { type ContactLinks, contactLinksQuery } from "@/entities/contacts";
+import type { ContactLinks } from "@/entities/contacts";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
@@ -27,7 +27,6 @@ export function EditContactLinksForm({ className, links }: EditContactLinksFormP
   const { editForm } = useSavedForm({
     form,
     initial: links,
-    query: contactLinksQuery,
     // The server replaces all links at once.
     save: (values, etag) => saveLinks.mutateAsync({ etag, links: values }),
     toValues: (data) => data,

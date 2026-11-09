@@ -1,13 +1,13 @@
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
-export function getSaveTextErrorMessage(error: unknown): string | null {
+export function getSaveTextErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
     fallback: "Не удалось сохранить тексты. Попробуйте ещё раз",
   });
 }
 
-export function getSaveProcessPhotosErrorMessage(error: unknown): string | null {
+export function getSaveProcessPhotosErrorMessage(error: unknown): string {
   if (error instanceof UploadError) return getUploadErrorMessage(error);
 
   return getSaveErrorMessage(error, {

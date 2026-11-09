@@ -46,6 +46,7 @@ export const galleryRoute = { Component: GalleryPage };
 export const galleryIntroRoute = {
   Component: GalleryIntroSection,
   loader: () => loadFresh(galleryIntroQuery),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 export const galleryWorksRoute = {
@@ -79,16 +80,19 @@ export const gallerySectionsRoute = {
 export const galleryMaterialsRoute = {
   Component: GalleryMaterialsSection,
   loader: () => loadFresh(galleryMaterialsQuery, galleryWorkUsageQuery),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 export const galleryColorsRoute = {
   Component: GalleryColorsSection,
   loader: () => loadFresh(galleryColorsQuery, galleryWorkUsageQuery),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 export const galleryPalettesRoute = {
   Component: GalleryPalettesSection,
   loader: () => loadFresh(galleryPalettesQuery, galleryWorkUsageQuery),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 export const newWorkRoute = {
@@ -102,6 +106,7 @@ export const editWorkRoute = {
   handle: editWorkHandle,
   loader: ({ params }: LoaderFunctionArgs) =>
     loadFresh(galleryWorkQuery(params.id ?? ""), ...workReferenceQueries),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 // A collection shows its works and adds free ones, so its pages load every work.
@@ -117,6 +122,7 @@ export const editCollectionRoute = {
   handle: editCollectionHandle,
   loader: ({ params }: LoaderFunctionArgs) =>
     loadFresh(galleryCollectionQuery(params.id ?? ""), galleryWorksQuery),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };
 
 export const newSectionRoute = { Component: NewSectionPage, handle: newSectionHandle };
@@ -126,4 +132,5 @@ export const editSectionRoute = {
   handle: editSectionHandle,
   loader: ({ params }: LoaderFunctionArgs) =>
     loadFresh(gallerySectionQuery(params.id ?? ""), galleryWorkUsageQuery),
+  shouldRevalidate: revalidateUnlessOnlySearch,
 };

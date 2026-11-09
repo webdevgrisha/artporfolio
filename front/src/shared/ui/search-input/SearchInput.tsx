@@ -2,8 +2,7 @@ import clsx from "clsx";
 import React, { type ComponentPropsWithoutRef } from "react";
 
 import { CloseIcon, SearchIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { IconAction } from "@/shared/ui/icon-button";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
 import styles from "./SearchInput.module.css";
@@ -70,11 +69,9 @@ export function SearchInput({
         {summary}
       </span>
       {value ? (
-        <Tooltip content={clearLabel}>
-          <IconButton label={clearLabel} onClick={clear}>
-            <CloseIcon className={styles.clearIcon} />
-          </IconButton>
-        </Tooltip>
+        <IconAction label={clearLabel} onClick={clear}>
+          <CloseIcon className={styles.clearIcon} />
+        </IconAction>
       ) : null}
     </div>
   );

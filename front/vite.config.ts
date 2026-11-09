@@ -4,6 +4,20 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          // Apart from the code of the app, so a deploy keeps them in the cache of the browser.
+          groups: [
+            { name: "floating-ui", test: /node_modules\/.*(@floating-ui|tabbable)/ },
+            { name: "react-router", test: /node_modules\/.*react-router/ },
+            { name: "zod", test: /node_modules\/.*zod/ },
+          ],
+        },
+      },
+    },
+  },
   plugins: [react()],
   resolve: {
     alias: {

@@ -48,7 +48,12 @@ export function CollectionFields({
 
   return (
     <div className={clsx(styles.root, className)}>
-      <PhotoFields label="Обложка" isSaving={isSaving} serverPhoto={savedCover} />
+      <PhotoFields
+        altPlaceholder="Например: несколько работ серии на одном столе"
+        label="Обложка"
+        isSaving={isSaving}
+        serverPhoto={savedCover}
+      />
 
       <div className={styles.texts}>
         <ClearableInput

@@ -2,7 +2,7 @@ import { isPreconditionFailed } from "@/shared/api/httpError";
 import { getSaveErrorMessage } from "@/shared/api/requestErrorMessages";
 import { getUploadErrorMessage, UploadError } from "@/shared/api/upload";
 
-export function getDeleteCollectionErrorMessage(error: unknown): string | null {
+export function getDeleteCollectionErrorMessage(error: unknown): string {
   return getSaveErrorMessage(error, {
     byStatus: {
       404: "Коллекция уже удалена",
@@ -11,7 +11,7 @@ export function getDeleteCollectionErrorMessage(error: unknown): string | null {
   });
 }
 
-export function getSaveCollectionErrorMessage(error: unknown): string | null {
+export function getSaveCollectionErrorMessage(error: unknown): string {
   if (error instanceof UploadError) return getUploadErrorMessage(error);
 
   return getSaveErrorMessage(error, {
@@ -31,7 +31,7 @@ export function getSaveCollectionErrorMessage(error: unknown): string | null {
  * A new collection: 412 says an earlier try already saved it although its response was lost
  * and the form opens it.
  */
-export function getCreateCollectionErrorMessage(error: unknown): string | null {
+export function getCreateCollectionErrorMessage(error: unknown): string {
   return isPreconditionFailed(error)
     ? "Коллекция уже сохранена"
     : getSaveCollectionErrorMessage(error);

@@ -17,6 +17,7 @@ describe("readTableView", () => {
   it("reads the search and the sorting from the address", () => {
     expect(readTableView(new URLSearchParams("q=слон&sort=link.desc"), columns)).toEqual({
       filters: {},
+      page: 1,
       query: "слон",
       sorting: [{ desc: true, id: "link" }],
     });
@@ -45,15 +46,27 @@ describe("readTableView", () => {
   });
 });
 
+describe("the page of the view", () => {
+  it("reads a page from the address and takes the first for anything else", () => {
+    expect(readTableView(new URLSearchParams("page=3"), columns).page).toBe(3);
+
+    for (const page of ["0", "-1", "1.5", "abc"]) {
+      expect(readTableView(new URLSearchParams({ page }), columns).page).toBe(1);
+    }
+  });
+});
+
 describe("writeTableView", () => {
   it("writes the view and keeps the other parameters", () => {
     const params = writeTableView(new URLSearchParams("tab=1&q=old"), {
       filters: { section: "painting" },
+      page: 2,
       query: "тигр",
       sorting: [{ desc: false, id: "title" }],
     });
 
     expect(Object.fromEntries(params)).toEqual({
+      page: "2",
       q: "тигр",
       section: "painting",
       sort: "title.asc",
@@ -64,6 +77,7 @@ describe("writeTableView", () => {
   it("drops an empty search, no sorting and an empty filter from the address", () => {
     const params = writeTableView(new URLSearchParams("q=слон&sort=title.asc&section=painting"), {
       filters: { section: "" },
+      page: 1,
       query: "",
       sorting: [],
     });

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { pageHeroQuery, replacePageHero, type SitePageId } from "@/entities/site-page";
+import { putSavedResource } from "@/shared/api/savedResource";
 import { uploadImage } from "@/shared/api/upload";
 
 import { getSaveHeroErrorMessage } from "../lib/saveErrorMessages";
@@ -37,6 +38,6 @@ export function useUploadPageHero({ label, page }: HeroField) {
     mutationFn: async ({ etag, file }: UploadPageHeroParams) =>
       replacePageHero({ etag, page, uploadId: await uploadImage(file) }),
     onError: () => queryClient.invalidateQueries({ queryKey }),
-    onSuccess: (saved) => queryClient.setQueryData(queryKey, saved),
+    onSuccess: (saved) => putSavedResource(queryClient, queryKey, saved),
   });
 }

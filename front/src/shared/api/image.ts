@@ -6,7 +6,7 @@ const imageSourceSchema = z.object({
   width: z.number(),
 });
 
-/** An uploaded photo as the API returns it, resized to several widths (backend/src/shared/images/storage.ts → imageSchema). */
+/** An uploaded photo as the API returns it, resized to several widths (backend/src/shared/images/stored-image.ts). */
 export const imageSchema = z.object({
   /** Name of the uploaded file. */
   fileName: z.string(),

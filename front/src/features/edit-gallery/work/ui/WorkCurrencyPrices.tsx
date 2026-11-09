@@ -1,6 +1,8 @@
 import { type CurrencyRates, currencies, currencyLabels } from "@/entities/currency";
 
-import { discountedPriceIn, formatPrice, parseTypedPrice } from "../model/workPrice";
+import { formatPrice } from "../model/formatPrice";
+import { discountedPriceIn } from "../model/workPriceAmount";
+import { parseTypedPrice } from "../model/workPriceInput";
 import styles from "./WorkCurrencyPrices.module.css";
 
 interface WorkCurrencyPricesProps {

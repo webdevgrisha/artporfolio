@@ -3,6 +3,7 @@ import { useSelect } from "downshift";
 import type React from "react";
 
 import { useDropdownPosition } from "@/shared/lib/useDropdownPosition";
+import { DropdownList } from "@/shared/ui/dropdown-list";
 import { Field, getFieldControlClassName, useFieldIds } from "@/shared/ui/field";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 
@@ -110,22 +111,14 @@ export function Select({
           </span>
           <ChevronRightIcon className={clsx(styles.chevron, isOpen && styles.chevronOpen)} />
         </div>
-        <ul
-          className={clsx(styles.menu, !isOpen && styles.menuHidden)}
-          {...getMenuProps({ ref: setList, style: floatingStyles })}
-        >
-          {isOpen
-            ? options.map((option, index) => (
-                <li
-                  key={option.value}
-                  className={clsx(styles.option, highlightedIndex === index && styles.highlighted)}
-                  {...getItemProps({ index, item: option })}
-                >
-                  {option.label}
-                </li>
-              ))
-            : null}
-        </ul>
+        <DropdownList
+          getItemProps={getItemProps}
+          highlightedIndex={highlightedIndex}
+          isOpen={isOpen}
+          items={options}
+          menuProps={getMenuProps({ ref: setList, style: floatingStyles })}
+          renderItem={(option) => option.label}
+        />
       </div>
     </Field>
   );

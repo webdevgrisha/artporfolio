@@ -4,7 +4,7 @@ import { formatFileSize } from "@/shared/lib/formatFileSize";
 import { type FileRules, getFileRejection } from "@/shared/lib/getFileRejection";
 import { useFileDrop } from "@/shared/lib/useFileDrop";
 import { AttachmentIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
+import { IconAction } from "@/shared/ui/icon-button";
 import { FileInput, MediaFieldset } from "@/shared/ui/media-field";
 import {
   MediaFileName,
@@ -13,7 +13,6 @@ import {
   MediaThumbnailButton,
 } from "@/shared/ui/media-preview";
 import { Spinner } from "@/shared/ui/spinner";
-import { Tooltip } from "@/shared/ui/tooltip";
 
 import styles from "./MediaPicker.module.css";
 
@@ -107,11 +106,13 @@ export function MediaPicker({
         )}
 
         {/* The only control that picks a file: a click elsewhere in the frame does nothing. */}
-        <Tooltip className={styles.selectTooltip} content={selectLabel}>
-          <IconButton label={selectLabel} onClick={() => inputRef.current?.click()}>
-            <AttachmentIcon className={styles.selectIcon} />
-          </IconButton>
-        </Tooltip>
+        <IconAction
+          tooltipClassName={styles.selectTooltip}
+          label={selectLabel}
+          onClick={() => inputRef.current?.click()}
+        >
+          <AttachmentIcon className={styles.selectIcon} />
+        </IconAction>
         <FileInput ref={inputRef} accept={rules.accept} onPick={pickFile} />
       </MediaFieldset>
 

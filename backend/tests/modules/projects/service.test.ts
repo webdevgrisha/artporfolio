@@ -13,6 +13,11 @@ const uploads = vi.hoisted(() => ({
   publishUpload: vi.fn(),
 }));
 
+vi.mock("#shared/i18n/translation-requests", () => ({
+  deleteTranslations: vi.fn(),
+  requestTranslations: vi.fn(),
+  saveSources: vi.fn(),
+}));
 vi.mock("#shared/firebase/firestore", () => {
   function snapshot(id: string) {
     const data = projects.get(id);
@@ -61,15 +66,13 @@ vi.mock("#shared/images/uploads", async (importOriginal) => ({
 vi.mock("firebase-functions/logger", () => ({ warn: vi.fn() }));
 
 import { Timestamp } from "firebase-admin/firestore";
-
+import { getProjectsOrder, replaceProjectsOrder } from "#modules/projects/order";
 import {
   createProject,
   deleteProject,
   getProject,
-  getProjectsOrder,
   listProjects,
   replaceProject,
-  replaceProjectsOrder,
 } from "#modules/projects/service";
 import {
   ConflictError,

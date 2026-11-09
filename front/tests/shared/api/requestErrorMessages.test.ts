@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { HttpError } from "@/shared/api/httpError";
 import { NetworkError } from "@/shared/api/networkError";
 import {
+  conflictMessage,
   getRequestErrorMessage,
   getSaveErrorMessage,
   isSessionExpiredError,
@@ -63,8 +64,8 @@ describe("getSaveErrorMessage", () => {
     expect(getSaveErrorMessage(new HttpError(404), messages)).toBe("fallback");
   });
 
-  it("leaves a conflict without a message to the dialog of the form", () => {
-    expect(getSaveErrorMessage(new HttpError(412), messages)).toBeNull();
+  it("asks to reload the page after a conflict without a message of its own", () => {
+    expect(getSaveErrorMessage(new HttpError(412), messages)).toBe(conflictMessage);
   });
 
   it("covers no connection and server errors as getRequestErrorMessage does", () => {

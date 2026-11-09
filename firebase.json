@@ -13,7 +13,8 @@
         "coverage",
         "tests",
         ".env",
-        ".env.*"
+        ".env.*",
+        ".secret.local"
       ],
       "predeploy": ["pnpm --dir \"$PROJECT_DIR\" --filter artportfolio-backend build"]
     }
@@ -78,6 +79,9 @@
     },
     "storage": {
       "port": 5503
+    },
+    "tasks": {
+      "port": 5504
     },
     "ui": {
       "enabled": false

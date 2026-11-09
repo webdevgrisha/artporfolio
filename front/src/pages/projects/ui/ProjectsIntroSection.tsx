@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { projectsIntroQuery } from "@/entities/project";
 import { EditProjectsIntroForm } from "@/features/edit-projects";
+import { LanguageForm } from "@/features/edit-translations";
 import { AwaitPageData } from "@/shared/ui/page-data";
 import { FieldSkeleton, FormSkeleton } from "@/shared/ui/skeleton";
 
@@ -24,5 +25,7 @@ export function ProjectsIntroSection() {
 function ProjectsIntro() {
   const { data: intro } = useSuspenseQuery(projectsIntroQuery);
 
-  return <EditProjectsIntroForm className={styles.form} intro={intro} />;
+  return (
+    <EditProjectsIntroForm className={styles.form} languageForm={LanguageForm} intro={intro} />
+  );
 }

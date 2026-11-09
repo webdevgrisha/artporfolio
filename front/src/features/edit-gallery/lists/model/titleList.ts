@@ -18,7 +18,7 @@ export interface TitleItem {
  * it is read and saved, its limit and the words the form names it with.
  */
 export interface TitleListConfig {
-  getSaveErrorMessage: (error: unknown) => string | null;
+  getSaveErrorMessage: (error: unknown) => string;
   /** The most rows the list may hold. */
   max: number;
   /** Reads the list with its ETag; a save puts the saved list here. */
@@ -50,6 +50,8 @@ export interface TitleListConfig {
     tooMany: string;
   };
   toastId: string;
+  /** The name of the translations of the list on the server. */
+  translationResource: string;
   /** How many works name each row, from the counts of every list. */
   usages: (usage: GalleryWorkUsage) => WorkUsages;
 }

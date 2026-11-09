@@ -1,4 +1,4 @@
-import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
+import type { DocumentReference, DocumentSnapshot, Transaction } from "firebase-admin/firestore";
 import type { ZodType } from "zod";
 
 import { firestore } from "#shared/firebase/firestore";
@@ -20,6 +20,8 @@ export interface SlotField<TStored extends StoredImage> {
 export interface ImageSlot<TStored extends StoredImage> extends SlotField<TStored> {
   document: () => DocumentReference;
   folder: string;
+  /** What else is written with the slot, in the same transaction. */
+  saveAlong?: (transaction: Transaction, stored: TStored) => void;
 }
 
 /** What the slot stores after a change, with its tag, and what it stored before. */
@@ -32,7 +34,7 @@ export interface FilledSlot<TStored extends StoredImage> extends Tagged<TStored>
   created: boolean;
 }
 
-function versionFolder(slot: ImageSlot<StoredImage>, version: string): string {
+function versionFolder(slot: { folder: string }, version: string): string {
   return `${slot.folder}/${version}`;
 }
 
@@ -74,6 +76,7 @@ export function changeSlot<TStored extends StoredImage>(
 
     // Merging keeps the other fields of the document.
     transaction.set(document, { [slot.field]: stored }, { merge: true });
+    slot.saveAlong?.(transaction, stored);
 
     return { data: stored, etag: entityTag(stored), previous };
   });

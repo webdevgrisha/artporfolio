@@ -3,9 +3,9 @@ import { toPhotoFormValues } from "@/shared/lib/photoForm";
 import { toPhotoListRows } from "@/shared/lib/photoListForm";
 
 import { toIdSet } from "../../model/idSet";
-import { formatSide } from "./workDisplay";
 import type { WorkFormValues } from "./workFormSchema";
 import { parseSide } from "./workSide";
+import { formatSide } from "./workSize";
 
 /** The values of a new work: every field empty. */
 export const emptyWorkFormValues: WorkFormValues = {

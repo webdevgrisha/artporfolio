@@ -1,7 +1,8 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
-import { discountedAmount } from "#modules/gallery/works/prices";
+import { discountedAmount } from "#modules/currencies/discounted-amount";
+import { latestToday } from "#shared/dates/latest-today";
 import { countryCodes } from "#shared/geo/countries";
 import { type Photo, photoBodySchema, storedPhotoSchema } from "#shared/images/photo";
 import {
@@ -102,11 +103,11 @@ function referenceIdsSchema(max: number) {
     .refine((ids) => new Set(ids).size === ids.length, "Each id must appear once");
 }
 
-/** Whether the month of the year has not come yet, by the server clock. */
+/** Whether the month of the year has not come yet in any time zone. */
 function isFutureMonth(year: number, month: number): boolean {
-  const now = new Date();
+  const today = latestToday();
 
-  return year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth() + 1);
+  return year > today.year || (year === today.year && month > today.month);
 }
 
 /** A work as the client sends it, to create one or to replace a saved one. Every field is sent. */

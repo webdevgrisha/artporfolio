@@ -1,9 +1,10 @@
-import type { DocumentReference, DocumentSnapshot } from "firebase-admin/firestore";
+import type { DocumentReference } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { UnprocessableContentError } from "#shared/http/errors";
 import type { Tagged } from "#shared/http/etag";
-import { changeSlot, fillSlot, getSlot, type ImageSlot, readSlot } from "#shared/images/slot";
+import { requestTranslations, saveSources } from "#shared/i18n/translation-requests";
+import { changeSlot, fillSlot, getSlot, type ImageSlot } from "#shared/images/slot";
 import { type Image, storedImageSchema, toImage } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
 
@@ -39,7 +40,10 @@ export type PhotoBody = z.infer<typeof photoBodySchema>;
 export type StoredPhoto = z.infer<typeof storedPhotoSchema>;
 
 /** A single photo with its alt text, such as «My photo» or the contact photo. */
-export type PhotoSlot = ImageSlot<StoredPhoto>;
+export interface PhotoSlot extends ImageSlot<StoredPhoto> {
+  /** Where the translations of the alt text go. */
+  resource: string;
+}
 
 /** The saved photo with its tag, and whether it is the first one rather than a replacement. */
 export interface SavedPhoto extends Tagged<Photo> {
@@ -51,12 +55,13 @@ export function photoSlot(place: {
   document: () => DocumentReference;
   field: string;
   folder: string;
+  resource: string;
 }): PhotoSlot {
-  return { ...place, schema: storedPhotoSchema };
-}
-
-export function readPhoto(slot: PhotoSlot, snapshot: DocumentSnapshot): StoredPhoto | null {
-  return readSlot(slot, snapshot);
+  return {
+    ...place,
+    saveAlong: (transaction, { alt }) => saveSources(transaction, place.resource, { alt }),
+    schema: storedPhotoSchema,
+  };
 }
 
 /** The stored photo as the API returns it, with download URLs. */
@@ -89,6 +94,8 @@ export async function savePhoto(
       return { ...photo, alt };
     });
 
+    await requestTranslations(slot.resource);
+
     return { created: false, data: toPhoto(data), etag };
   }
 
@@ -96,6 +103,8 @@ export async function savePhoto(
     ...image,
     alt,
   }));
+
+  await requestTranslations(slot.resource);
 
   return { created, data: toPhoto(data), etag };
 }

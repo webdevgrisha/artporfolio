@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { projectsOrderQuery, projectsQuery, replaceProjectsOrder } from "@/entities/project";
 import type { MutationFeedback } from "@/shared/api/queryClient";
+import { putSavedResource } from "@/shared/api/savedResource";
 
 import { getSaveOrderErrorMessage } from "../lib/saveErrorMessages";
 
@@ -22,7 +23,7 @@ export function useSaveProjectsOrder() {
     meta: { feedback: saveProjectsOrderFeedback },
     mutationFn: replaceProjectsOrder,
     onSuccess: async (order) => {
-      queryClient.setQueryData(projectsOrderQuery.queryKey, order);
+      await putSavedResource(queryClient, projectsOrderQuery.queryKey, order);
       await queryClient.invalidateQueries({ queryKey: projectsQuery.queryKey });
     },
   });

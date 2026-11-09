@@ -13,6 +13,10 @@ const auth = vi.hoisted(() => ({
 }));
 
 vi.mock("#modules/auth/service", () => auth);
+vi.mock("#shared/i18n/translation-requests", () => ({
+  requestTranslations: vi.fn(),
+  saveSources: vi.fn(),
+}));
 vi.mock("#shared/firebase/firestore", () => {
   function snapshot(path: string) {
     const data = store.get(path);

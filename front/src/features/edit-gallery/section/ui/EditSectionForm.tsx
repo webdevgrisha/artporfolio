@@ -1,12 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import {
-  type GallerySection,
-  gallerySectionQuery,
-  galleryWorkUsageQuery,
-  type WorkUsages,
-} from "@/entities/gallery";
+import type { GallerySection, WorkUsages } from "@/entities/gallery";
+import { type LanguageFormSlot, translationResources } from "@/entities/translation";
 import type { Tagged } from "@/shared/api/http";
 import { EditForm, useSavedForm } from "@/shared/ui/edit-form";
 
@@ -15,18 +11,25 @@ import {
   sectionFormSchema,
   toSectionFormValues,
 } from "../model/sectionFormSchema";
-import { saveSectionToastId, useSaveSection } from "../model/sectionMutations";
+import { saveSectionToastId, useSaveSection } from "../model/useSaveSection";
 import { SectionFields } from "./SectionFields";
 
 interface EditSectionFormProps {
   className?: string;
+  /** Puts the form beside its translations. */
+  languageForm: LanguageFormSlot;
   /** The section as stored on the server when the form opens, with its ETag. */
   section: Tagged<GallerySection>;
   /** How many works each section and subsection has, by its id. */
   usages: WorkUsages;
 }
 
-export function EditSectionForm({ className, section, usages }: EditSectionFormProps) {
+export function EditSectionForm({
+  className,
+  languageForm: LanguageForm,
+  section,
+  usages,
+}: EditSectionFormProps) {
   const form = useForm<SectionFormValues>({
     defaultValues: toSectionFormValues(section.data),
     resolver: zodResolver(sectionFormSchema),
@@ -35,8 +38,6 @@ export function EditSectionForm({ className, section, usages }: EditSectionFormP
   const { editForm, saved } = useSavedForm({
     form,
     initial: section,
-    query: gallerySectionQuery(section.data.id),
-    related: [galleryWorkUsageQuery.queryKey],
     // The server replaces the section with all its subsections at once.
     save: (values, etag) => saveSection.mutateAsync({ etag, values }),
     toValues: toSectionFormValues,
@@ -44,15 +45,23 @@ export function EditSectionForm({ className, section, usages }: EditSectionFormP
   });
 
   return (
-    // The fields read the form from the context.
-    <FormProvider {...form}>
-      <EditForm className={className} {...editForm}>
-        <SectionFields
-          isSaving={editForm.isSaving}
-          savedSubsections={saved.data.subsections}
-          usages={usages}
-        />
-      </EditForm>
-    </FormProvider>
+    <LanguageForm
+      resource={translationResources.gallerySection(section.data.id)}
+      fields={[
+        { key: "title", label: "Название" },
+        ...saved.data.subsections.map(({ id, title }) => ({ key: id, label: title })),
+      ]}
+    >
+      {/* The fields read the form from the context. */}
+      <FormProvider {...form}>
+        <EditForm className={className} {...editForm}>
+          <SectionFields
+            isSaving={editForm.isSaving}
+            savedSubsections={saved.data.subsections}
+            usages={usages}
+          />
+        </EditForm>
+      </FormProvider>
+    </LanguageForm>
   );
 }

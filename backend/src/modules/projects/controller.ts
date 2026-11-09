@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-
+import { getProjectsOrder, replaceProjectsOrder } from "#modules/projects/order";
 import type {
   Project,
   ProjectBody,
@@ -11,10 +11,8 @@ import {
   createProject,
   deleteProject,
   getProject,
-  getProjectsOrder,
   listProjects,
   replaceProject,
-  replaceProjectsOrder,
 } from "#modules/projects/service";
 import { ifMatchHeader, isCreateOnly } from "#shared/middleware/preconditions";
 

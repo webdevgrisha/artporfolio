@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import * as aboutPhotos from "#modules/about/process-photos/schema";
+import { discountedAmount } from "#modules/currencies/discounted-amount";
 import * as currencyRates from "#modules/currencies/schema";
 import { suggestedPrice } from "#modules/currencies/suggested-price";
 import * as collections from "#modules/gallery/collections/schema";
@@ -8,10 +9,10 @@ import * as colors from "#modules/gallery/colors/schema";
 import * as materials from "#modules/gallery/materials/schema";
 import * as palettes from "#modules/gallery/palettes/schema";
 import * as sections from "#modules/gallery/sections/schema";
-import { discountedAmount } from "#modules/gallery/works/prices";
 import * as works from "#modules/gallery/works/schema";
 import * as pages from "#modules/pages/schema";
 import * as projects from "#modules/projects/schema";
+import * as languages from "#shared/i18n/languages";
 import { maxSourceFileSize } from "#shared/images/processing";
 
 type Module = Record<string, unknown>;
@@ -26,6 +27,7 @@ function front(path: string): Promise<Module> {
 
 const sameNames: [string, Module, string[]][] = [
   ["entities/about/model/processPhoto", aboutPhotos, ["maxProcessPhotos"]],
+  ["shared/config/languages", languages, ["targetLanguages"]],
   ["entities/currency/model/currencyRates", currencyRates, ["currencies", "maxCurrencyRate"]],
   ["entities/gallery/model/galleryCollection", collections, ["maxCollectionWorks"]],
   ["entities/gallery/model/galleryColors", colors, ["maxColors"]],
@@ -90,7 +92,7 @@ describe("the rules the front repeats", () => {
   });
 
   it("takes off a discount as the API does", async () => {
-    const repeated = await front("features/edit-gallery/work/model/workPrice");
+    const repeated = await front("features/edit-gallery/work/model/workPriceAmount");
     const frontAmount = repeated.discountedAmount as typeof discountedAmount;
 
     for (const amount of [1, 3, 99, 500, 1_555]) {

@@ -1,6 +1,5 @@
 import { MoonIcon, SunIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { IconAction } from "@/shared/ui/icon-button";
 
 import { useTheme } from "../model/useTheme";
 
@@ -10,10 +9,8 @@ export function ThemeToggle() {
   const label = theme === "dark" ? "Включить светлую тему" : "Включить тёмную тему";
 
   return (
-    <Tooltip content={label}>
-      <IconButton label={label} onClick={toggleTheme}>
-        {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-      </IconButton>
-    </Tooltip>
+    <IconAction label={label} onClick={toggleTheme}>
+      {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+    </IconAction>
   );
 }

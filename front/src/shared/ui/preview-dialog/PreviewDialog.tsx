@@ -2,8 +2,7 @@ import React, { type MouseEvent, type ReactNode } from "react";
 
 import { useModalDialog } from "@/shared/lib/useModalDialog";
 import { CloseIcon } from "@/shared/ui/icon";
-import { IconButton } from "@/shared/ui/icon-button";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { IconAction } from "@/shared/ui/icon-button";
 
 import styles from "./PreviewDialog.module.css";
 
@@ -68,11 +67,9 @@ export function PreviewDialog({
               ) : null}
               {actions ? <div className={styles.actions}>{actions}</div> : null}
             </div>
-            <Tooltip className={styles.close} content={closeLabel}>
-              <IconButton label={closeLabel} onClick={onClose}>
-                <CloseIcon className={styles.closeIcon} />
-              </IconButton>
-            </Tooltip>
+            <IconAction tooltipClassName={styles.close} label={closeLabel} onClick={onClose}>
+              <CloseIcon className={styles.closeIcon} />
+            </IconAction>
           </div>
           {children}
         </div>

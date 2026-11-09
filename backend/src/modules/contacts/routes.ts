@@ -4,8 +4,8 @@ import { readContacts } from "#modules/contacts/controller";
 import { contactLinks } from "#modules/contacts/links/resource";
 import { contactLinksBodySchema } from "#modules/contacts/links/schema";
 import { contactPhoto } from "#modules/contacts/photo";
-import { photoSlotRouter } from "#modules/photo-slot/routes";
-import { documentResourceRouter } from "#shared/http/document-resource";
+import { documentResourceRouter } from "#shared/http/document-resource-router";
+import { photoSlotRouter } from "#shared/http/photo-slot-router";
 
 export const contactsRouter = Router();
 

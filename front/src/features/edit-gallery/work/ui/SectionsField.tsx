@@ -74,7 +74,7 @@ export function SectionsField({
     return {
       checked: value.includes(id),
       disabled,
-      hasError: Boolean(error),
+      invalid: Boolean(error),
       id: `${controlId}-${id}`,
       inputRef: id === firstId ? inputRef : undefined,
       isModified: value.includes(id) !== savedIds.includes(id),
@@ -91,7 +91,7 @@ export function SectionsField({
       hint="Работа в подразделе видна и в его разделе"
       error={error}
     >
-      <Frame className={styles.frame} isInvalid={Boolean(error)} isDisabled={disabled}>
+      <Frame className={styles.frame} invalid={Boolean(error)} disabled={disabled}>
         {sections.length === 0 ? (
           <FrameEmpty>Разделов пока нет. Добавьте их на вкладке «Разделы»</FrameEmpty>
         ) : (

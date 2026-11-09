@@ -11,7 +11,7 @@ interface SaveSlotPhotoParams {
 
 /**
  * A single photo with its description at `path` of the API, such as «Моё фото» at `/about/photo`
- * (backend/src/modules/photo-slot), and the query that reads it, `null` until one is uploaded,
+ * (backend/src/shared/http/photo-slot-router.ts), and the query that reads it, `null` until one is uploaded,
  * with its ETag. A save puts the saved photo into that query.
  */
 export function photoSlot(path: string, queryKey: string[]) {
