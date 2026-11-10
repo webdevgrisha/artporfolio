@@ -28,11 +28,14 @@ const turned = splitTurnedInitial(heading);
 
 // In the order of the mockup. The email is shown as the address, which a visitor can copy when
 // no mail app opens; a network by its name. A link the artist left empty is not shown.
+//
+// The name of a network is English in every language of the page: set as such, it keeps its letters
+// in capitals (in Turkish, «LinkedIn» would get the dotted İ) and a screen reader says it right.
 const contacts = [
-  { href: links.instagram, Icon: InstagramIcon, label: "Instagram" },
-  { href: links.linkedin, Icon: LinkedInIcon, label: "LinkedIn" },
+  { href: links.instagram, Icon: InstagramIcon, label: "Instagram", lang: "en" },
+  { href: links.linkedin, Icon: LinkedInIcon, label: "LinkedIn", lang: "en" },
   { href: links.email && `mailto:${links.email}`, Icon: MailIcon, label: links.email },
-  { href: links.youtube, Icon: YouTubeIcon, label: "YouTube" },
+  { href: links.youtube, Icon: YouTubeIcon, label: "YouTube", lang: "en" },
 ].filter(({ href }) => href !== "");
 ---
 
@@ -54,12 +57,13 @@ const contacts = [
       </h2>
       <ul class="links">
         {
-          contacts.map(({ href, Icon, label }) => (
+          contacts.map(({ href, Icon, label, lang }) => (
             <li>
               <IconLink
                 class:list={["link", { email: href.startsWith("mailto:") }]}
                 href={href}
                 label={label}
+                lang={lang}
               >
                 <Icon slot="icon" />
               </IconLink>
