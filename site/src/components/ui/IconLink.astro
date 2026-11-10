@@ -32,11 +32,24 @@ const { class: className, href, label, ...attributes } = Astro.props;
   .text {
     text-box: trim-both cap alphabetic;
     overflow-wrap: anywhere;
+    /*
+     * The underline is always there, only unseen: under the pointer it shows and rises to the
+     * text, so it comes in softly instead of at once. A screen without motion shows it at once.
+     */
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--line-width);
+    text-decoration-color: transparent;
+    text-underline-offset: 0.45em;
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-slow);
+    transition-property: text-decoration-color, text-underline-offset;
   }
 
-  .icon-link:hover .text {
-    text-decoration: underline;
-    text-decoration-thickness: var(--line-width);
-    text-underline-offset: 0.15em;
+  /* Only under a pointer: a tap on a phone would leave the link underlined. */
+  @media (hover: hover) {
+    .icon-link:hover .text {
+      text-decoration-color: currentColor;
+      text-underline-offset: 0.2em;
+    }
   }
 </style>
