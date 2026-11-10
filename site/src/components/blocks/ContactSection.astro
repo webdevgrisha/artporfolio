@@ -79,7 +79,7 @@ const contacts = [
           class="photo"
           image={photo}
           priority
-          sizes="(min-width: 75rem) 40vw, (min-width: 40rem) 50vw, 100vw"
+          sizes="(min-width: 75rem) 40vw, 100vw"
         />
       )
     }
@@ -135,11 +135,13 @@ const contacts = [
   }
 
   /*
-   * Beside each other from a tablet on, in the proportions of the mockup: the photo, then the
-   * text as high as the photo, with the heading at its top and the links at its bottom. A text
-   * higher than the photo, on a narrow tablet or in a long language, only makes the row higher.
+   * Beside each other on a laptop and wider, in the proportions of the mockup: the photo, then the
+   * text as high as the photo, with the heading at its top and the links at its bottom. Narrower,
+   * the photo shrinks while a link keeps the size a finger and an eye need, so the links would run
+   * below the photo: a tablet has the text above the photo, as a phone. The links fit from 1190px
+   * on, at the default size of the browser; the width is in rem, as those sizes are.
    */
-  @media (width >= 40rem) {
+  @media (width >= 75rem) {
     .layout.has-photo {
       grid-template-columns: minmax(0, 764fr) minmax(0, 904fr);
     }
