@@ -141,6 +141,7 @@ A folder imports only from the folders below it: `pages → layouts → blocks �
 - The root `/` redirects to the best language of the browser (`Accept-Language`, by weight, with `de-AT` finding `de`), else to English. The redirect differs from visitor to visitor, so it is never cached. A language chosen with the switch is not remembered for the next visit: Firebase Hosting passes a function no cookie but `__session`, which holds the admin's session (docs/TODO.md, «Запоминание выбранного языка»).
 - The texts of the interface live in `lib/i18n/messages/<language>.json`; `en.json` is the source, and `t(language, key)` is typed by its keys. A text not translated yet shows in English. Content written in the admin is translated by the backend instead.
 - A new text: add its key to `en.json`, run `pnpm --filter site i18n:translate`, and read the diff. The script sends DeepL only new texts and texts whose English changed, so a translation edited by hand stays; `translatedFrom.json` keeps the English of each translation. A test keeps every language on the keys of English.
+- Read the diff before committing: DeepL is told the site is one person's (`context` in the script), yet it still turns «Get in touch» into «Contact us» in some languages, and it gives «the artist» a gender. Fix such a text by hand in the language file, and keep the English free of words that need a gender.
 
 ### Search engines and link cards
 
@@ -152,7 +153,13 @@ A folder imports only from the folders below it: `pages → layouts → blocks �
 
 - A page reads its data on the server with `getJson(path, schema, { language })` (`lib/api/`): the resource of the API in the language of the page (`?lang=`), checked against a zod schema the page owns, as the entities of the admin do. The browser of a visitor never calls the API. The API is at `API_URL`, which Astro checks like `SITE_URL`.
 - The API answers in 5 seconds or the page gives up. A resource the API does not have (`isNotFound`) makes the page a 404: `return Astro.rewrite("/404")`. Any other failure, an answer of another shape included, is thrown and becomes the 500 page. Both error pages speak the language of the path and carry `noindex`.
-- Public reads of the backend learn `?lang=` resource by resource, with the page that first needs them.
+- Public reads of the backend learn `?lang=` resource by resource, with the page that first needs them; the contacts have it.
+- An image of the API is shown by `Picture` (`components/ui`): AVIF, else WebP, from the files of every width (`srcset`), with the `sizes` the page knows. Only the largest image of the first screen gets `priority`, so it loads before the others.
+
+### Pages
+
+- Until pages get their hero, a page names itself with an `<h1>` hidden from the eye (`VisuallyHidden`), and its own heading is an `<h2>`; the hero will take the `<h1>`.
+- Icons are line drawings from [Lucide](https://lucide.dev) (ISC license), one file each in `components/ui/icons`, on the frame of `Icon.astro`, which hides them from screen readers: the text beside them names the link.
 
 ## Backend
 
