@@ -91,38 +91,17 @@ const contacts = [
     padding-block: var(--layout-space-16);
   }
 
-  /* Beside each other from a tablet on: the photo on the left, the text from the middle. */
-  @media (width >= 40rem) {
-    .layout.has-photo {
-      grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
-      align-items: start;
-    }
-
-    .has-photo .body {
-      grid-row: 1;
-      grid-column: 7 / -1;
-    }
-
-    .has-photo .photo {
-      grid-row: 1;
-      grid-column: 1 / 7;
-    }
-  }
-
-  @media (width >= 75rem) {
-    .has-photo .photo {
-      grid-column: 1 / 6;
-    }
+  /* The heading is sized by the width of its column, so it fits in one line where it can. */
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-space-12);
+    container-type: inline-size;
   }
 
   .photo {
     /* The frame of the mockup, which the admin previews the photo in too. */
     aspect-ratio: 764 / 534;
-  }
-
-  /* The heading is sized by the width of its column, so it fits in one line where it can. */
-  .body {
-    container-type: inline-size;
   }
 
   .heading {
@@ -136,6 +115,42 @@ const contacts = [
     hyphens: auto;
     /* Only a long word: balancing the lines must not break a word that fits. */
     hyphenate-limit-chars: 14 6 6;
+    /* The box ends at the top of the capitals, so they line up with the top of the photo. */
+    text-box: trim-both cap alphabetic;
+  }
+
+  /*
+   * Beside each other from a tablet on: the photo on the left, the text from the middle, as high
+   * as the photo, with the heading at its top and the links at its bottom. A text higher than the
+   * photo, in a long language, only makes the row higher.
+   */
+  @media (width >= 40rem) {
+    .layout.has-photo {
+      grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+    }
+
+    .has-photo .body {
+      grid-row: 1;
+      grid-column: 7 / -1;
+      justify-content: space-between;
+    }
+
+    .has-photo .photo {
+      grid-row: 1;
+      grid-column: 1 / 7;
+      align-self: start;
+    }
+
+    /* The heading spans its whole column, as in the mockup. */
+    .heading {
+      font-size: min(var(--font-size-display), 12.5cqi);
+    }
+  }
+
+  @media (width >= 75rem) {
+    .has-photo .photo {
+      grid-column: 1 / 6;
+    }
   }
 
   /* The G upside down, as in the mockup. */
@@ -147,11 +162,21 @@ const contacts = [
   .links {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--layout-space-4);
     padding: 0;
-    margin-block: var(--layout-space-12) 0;
+    margin: 0;
+    /*
+     * A link is as high as a finger needs, with its text in the middle: the list goes down by the
+     * room under the last line, so its baseline is the bottom of the photo, as in the mockup.
+     */
+    margin-block-end: calc((max(var(--min-tap-target-size), 1.25em) - 1cap) / -2);
     font-size: var(--font-size-2);
     list-style: none;
+  }
+
+  /* The link alone, without the line of text an inline box sits on and its room for descenders. */
+  .links > li {
+    display: flex;
   }
 
   .link {

@@ -19,14 +19,18 @@ const { class: className, href, label, ...attributes } = Astro.props;
 <style>
   .icon-link {
     display: inline-flex;
-    gap: 0.6em;
+    gap: 0.75em;
     align-items: center;
     min-block-size: var(--min-tap-target-size);
     text-decoration: none;
   }
 
-  /* A long address breaks rather than widen the page on a phone. */
+  /*
+   * A long address breaks rather than widen the page on a phone. The box of the text ends at the
+   * top of its capitals and at its baseline, so the link lines up with what is beside it.
+   */
   .text {
+    text-box: trim-both cap alphabetic;
     overflow-wrap: anywhere;
   }
 

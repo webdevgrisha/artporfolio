@@ -1,7 +1,7 @@
 ---
 /**
- * The frame of an icon: a line drawing on a 24-unit grid in the color of the text, at the size of
- * the text. It only decorates the text next to it, so screen readers skip it.
+ * The frame of an icon: a line drawing on a 24-unit grid in the color of the text, a little larger
+ * than the text, as an icon draws within its grid. It only decorates the text next to it, so screen readers skip it.
  */
 interface Props {
   class?: string;
@@ -28,7 +28,7 @@ const { class: className } = Astro.props;
 <style>
   .icon {
     flex-shrink: 0;
-    inline-size: 1em;
-    block-size: 1em;
+    inline-size: 1.25em;
+    block-size: 1.25em;
   }
 </style>
