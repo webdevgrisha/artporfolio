@@ -4,5 +4,8 @@
   "error.notFound.text": "Ez az oldal nem létezik, vagy áthelyezték.",
   "error.server.title": "Valami hiba történt",
   "error.server.text": "Az oldal betöltése nem sikerült. Kérjük, próbálja meg újra egy perc múlva.",
-  "error.toHome": "Ugrás a kezdőlapra"
+  "error.toHome": "Ugrás a kezdőlapra",
+  "contact.title": "Kapcsolat",
+  "contact.heading": "Kapcsolatfelvétel",
+  "contact.description": "Kapcsolatfelvétel e-mailen és a közösségi oldalakon keresztül."
 }

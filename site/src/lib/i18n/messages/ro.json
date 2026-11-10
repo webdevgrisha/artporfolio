@@ -4,5 +4,8 @@
   "error.notFound.text": "Această pagină nu există sau a fost mutată.",
   "error.server.title": "A apărut o eroare",
   "error.server.text": "Pagina nu a putut fi încărcată. Vă rugăm să încercați din nou peste un minut.",
-  "error.toHome": "Accesați pagina principală"
+  "error.toHome": "Accesați pagina principală",
+  "contact.title": "Contact",
+  "contact.heading": "Ia legătura",
+  "contact.description": "Adresă de e-mail și rețele sociale pentru a lua legătura."
 }

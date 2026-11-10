@@ -5,7 +5,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "pl": {
     "layout.skipToContent": "Skip to content",
@@ -13,7 +16,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "uk": {
     "layout.skipToContent": "Skip to content",
@@ -21,7 +27,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "be": {
     "layout.skipToContent": "Skip to content",
@@ -29,7 +38,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "de": {
     "layout.skipToContent": "Skip to content",
@@ -37,7 +49,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "fr": {
     "layout.skipToContent": "Skip to content",
@@ -45,7 +60,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "es": {
     "layout.skipToContent": "Skip to content",
@@ -53,7 +71,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "it": {
     "layout.skipToContent": "Skip to content",
@@ -61,7 +82,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "pt": {
     "layout.skipToContent": "Skip to content",
@@ -69,7 +93,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "zh": {
     "layout.skipToContent": "Skip to content",
@@ -77,7 +104,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "ja": {
     "layout.skipToContent": "Skip to content",
@@ -85,7 +115,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "ko": {
     "layout.skipToContent": "Skip to content",
@@ -93,7 +126,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "ar": {
     "layout.skipToContent": "Skip to content",
@@ -101,7 +137,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "tr": {
     "layout.skipToContent": "Skip to content",
@@ -109,7 +148,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "nl": {
     "layout.skipToContent": "Skip to content",
@@ -117,7 +159,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "sv": {
     "layout.skipToContent": "Skip to content",
@@ -125,7 +170,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "cs": {
     "layout.skipToContent": "Skip to content",
@@ -133,7 +181,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "sk": {
     "layout.skipToContent": "Skip to content",
@@ -141,7 +192,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "lt": {
     "layout.skipToContent": "Skip to content",
@@ -149,7 +203,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "hu": {
     "layout.skipToContent": "Skip to content",
@@ -157,7 +214,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "ro": {
     "layout.skipToContent": "Skip to content",
@@ -165,7 +225,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "el": {
     "layout.skipToContent": "Skip to content",
@@ -173,7 +236,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "id": {
     "layout.skipToContent": "Skip to content",
@@ -181,7 +247,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "hi": {
     "layout.skipToContent": "Skip to content",
@@ -189,7 +258,10 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   },
   "vi": {
     "layout.skipToContent": "Skip to content",
@@ -197,6 +269,9 @@
     "error.notFound.text": "This page does not exist or has moved.",
     "error.server.title": "Something went wrong",
     "error.server.text": "The page could not be loaded. Please try again in a minute.",
-    "error.toHome": "Go to the home page"
+    "error.toHome": "Go to the home page",
+    "contact.title": "Contact",
+    "contact.heading": "Get in touch",
+    "contact.description": "Email and social networks to get in touch."
   }
 }

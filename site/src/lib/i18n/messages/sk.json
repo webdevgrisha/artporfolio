@@ -4,5 +4,8 @@
   "error.notFound.text": "Táto stránka neexistuje alebo bola presunutá.",
   "error.server.title": "Niečo sa pokazilo",
   "error.server.text": "Stránku sa nepodarilo načítať. Skúste to prosím o chvíľu znova.",
-  "error.toHome": "Prejsť na hlavnú stránku"
+  "error.toHome": "Prejsť na hlavnú stránku",
+  "contact.title": "Kontakt",
+  "contact.heading": "Ozvite sa",
+  "contact.description": "E-mail a sociálne siete na kontaktovanie."
 }

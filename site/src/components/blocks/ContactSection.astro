@@ -1,0 +1,167 @@
+---
+/**
+ * The Contacts page: the title of the page for screen readers, the heading «Get in touch» with the
+ * ways to reach the artist, and the contact photo beside them, or under them on a phone.
+ */
+import Container from "@/components/ui/Container.astro";
+import IconLink from "@/components/ui/IconLink.astro";
+import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
+import LinkedInIcon from "@/components/ui/icons/LinkedInIcon.astro";
+import MailIcon from "@/components/ui/icons/MailIcon.astro";
+import YouTubeIcon from "@/components/ui/icons/YouTubeIcon.astro";
+import Picture from "@/components/ui/Picture.astro";
+import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
+import type { ContactLinks } from "@/lib/api/contacts";
+import type { Photo } from "@/lib/api/image";
+import { splitTurnedInitial } from "@/lib/text/turnedInitial";
+
+interface Props {
+  heading: string;
+  links: ContactLinks;
+  photo: Photo | null;
+  /** The title of the page; the hero will show it once pages have one. */
+  title: string;
+}
+
+const { heading, links, photo, title } = Astro.props;
+const turned = splitTurnedInitial(heading);
+
+// In the order of the mockup. The email is shown as the address, which a visitor can copy when
+// no mail app opens; a network by its name. A link the artist left empty is not shown.
+const contacts = [
+  { href: links.instagram, Icon: InstagramIcon, label: "Instagram" },
+  { href: links.linkedin, Icon: LinkedInIcon, label: "LinkedIn" },
+  { href: links.email && `mailto:${links.email}`, Icon: MailIcon, label: links.email },
+  { href: links.youtube, Icon: YouTubeIcon, label: "YouTube" },
+].filter(({ href }) => href !== "");
+---
+
+<Container as="section" aria-labelledby="contact-heading">
+  <VisuallyHidden as="h1">{title}</VisuallyHidden>
+  <div class:list={["layout", { "has-photo": photo }]}>
+    <div class="body">
+      <h2 class="heading" id="contact-heading">
+        {
+          turned ? (
+            <>
+              <span class="turned">{turned.initial}</span>
+              {turned.rest}
+            </>
+          ) : (
+            heading
+          )
+        }
+      </h2>
+      <ul class="links">
+        {
+          contacts.map(({ href, Icon, label }) => (
+            <li>
+              <IconLink
+                class:list={["link", { email: href.startsWith("mailto:") }]}
+                href={href}
+                label={label}
+              >
+                <Icon slot="icon" />
+              </IconLink>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    {
+      photo && (
+        <Picture
+          alt={photo.alt}
+          class="photo"
+          image={photo}
+          priority
+          sizes="(min-width: 75rem) 40vw, (min-width: 40rem) 50vw, 100vw"
+        />
+      )
+    }
+  </div>
+</Container>
+
+<style>
+  .layout {
+    display: grid;
+    /* One column on a phone, which never grows past the screen to fit a long word or the photo. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--layout-space-12) var(--grid-gap);
+    padding-block: var(--layout-space-16);
+  }
+
+  /* Beside each other from a tablet on: the photo on the left, the text from the middle. */
+  @media (width >= 40rem) {
+    .layout.has-photo {
+      grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .has-photo .body {
+      grid-row: 1;
+      grid-column: 7 / -1;
+    }
+
+    .has-photo .photo {
+      grid-row: 1;
+      grid-column: 1 / 7;
+    }
+  }
+
+  @media (width >= 75rem) {
+    .has-photo .photo {
+      grid-column: 1 / 6;
+    }
+  }
+
+  .photo {
+    /* The frame of the mockup, which the admin previews the photo in too. */
+    aspect-ratio: 764 / 534;
+  }
+
+  /* The heading is sized by the width of its column, so it fits in one line where it can. */
+  .body {
+    container-type: inline-size;
+  }
+
+  .heading {
+    font-size: min(var(--font-size-6), 12cqi);
+    line-height: var(--line-height-display);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    text-wrap: balance;
+    /* A word too long for the column breaks by its syllables rather than run off the screen. */
+    overflow-wrap: break-word;
+    hyphens: auto;
+    /* Only a long word: balancing the lines must not break a word that fits. */
+    hyphenate-limit-chars: 14 6 6;
+  }
+
+  /* The G upside down, as in the mockup. */
+  .turned {
+    display: inline-block;
+    rotate: 180deg;
+  }
+
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: 0;
+    margin-block: var(--layout-space-12) 0;
+    font-size: var(--font-size-2);
+    list-style: none;
+  }
+
+  .link {
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+  }
+
+  /* An address keeps its letters, so it reads and copies as it is written. */
+  .link.email {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+</style>

@@ -4,5 +4,8 @@
   "error.notFound.text": "Questa pagina non esiste o è stata spostata.",
   "error.server.title": "Si è verificato un errore",
   "error.server.text": "Impossibile caricare la pagina. Riprovare tra un minuto.",
-  "error.toHome": "Vai alla home page"
+  "error.toHome": "Vai alla home page",
+  "contact.title": "Contatti",
+  "contact.heading": "Mettiti in contatto",
+  "contact.description": "Indirizzo e-mail e social network per mettersi in contatto."
 }

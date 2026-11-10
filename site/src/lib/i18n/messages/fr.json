@@ -4,5 +4,8 @@
   "error.notFound.text": "Cette page n'existe pas ou a été déplacée.",
   "error.server.title": "Une erreur s'est produite",
   "error.server.text": "La page n'a pas pu être chargée. Veuillez réessayer dans une minute.",
-  "error.toHome": "Aller à la page d'accueil"
+  "error.toHome": "Aller à la page d'accueil",
+  "contact.title": "Contact",
+  "contact.heading": "Prendre contact",
+  "contact.description": "Adresse e-mail et réseaux sociaux pour prendre contact."
 }

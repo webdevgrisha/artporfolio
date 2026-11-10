@@ -4,5 +4,8 @@
   "error.notFound.text": "هذه الصفحة غير موجودة أو تم نقلها.",
   "error.server.title": "حدث خطأ ما",
   "error.server.text": "تعذر تحميل الصفحة. يرجى المحاولة مرة أخرى بعد دقيقة.",
-  "error.toHome": "انتقل إلى الصفحة الرئيسية"
+  "error.toHome": "انتقل إلى الصفحة الرئيسية",
+  "contact.title": "الاتصال",
+  "contact.heading": "تواصل",
+  "contact.description": "البريد الإلكتروني وشبكات التواصل الاجتماعي للتواصل."
 }

@@ -20,9 +20,13 @@ const sourcesFile = new URL("translatedFrom.json", i18nDirectory);
 /** DeepL asks for a regional variant of Portuguese and a script of Chinese. */
 const deeplLanguages: Partial<Record<Language, string>> = { pt: "PT-BR", zh: "ZH-HANS" };
 
-/** What DeepL is told the texts are, so a word such as «Gallery» is read as on a website. */
+/**
+ * What DeepL is told the texts are, so a word such as «Gallery» is read as on a website. The site
+ * is one person's, so «Get in touch» must not become «Contact us».
+ */
 const context =
-  "Short texts of the interface of the website of a painter: links of the menu, buttons, labels.";
+  "Short texts of the interface of the personal website of one painter: links of the menu, " +
+  "buttons, labels, headings. The site belongs to one person, not a company: never say «we» or «us».";
 
 /** DeepL takes at most 50 texts in one request. */
 const batchSize = 50;

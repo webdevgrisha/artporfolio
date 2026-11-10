@@ -4,5 +4,8 @@
   "error.notFound.text": "Šio puslapio nėra arba jis buvo perkeltas.",
   "error.server.title": "Įvyko klaida",
   "error.server.text": "Puslapio nepavyko įkelti. Prašome pabandyti dar kartą po minutės.",
-  "error.toHome": "Eiti į pagrindinį puslapį"
+  "error.toHome": "Eiti į pagrindinį puslapį",
+  "contact.title": "Kontaktai",
+  "contact.heading": "Susisiekite",
+  "contact.description": "El. paštas ir socialiniai tinklai, kuriais galima susisiekti."
 }

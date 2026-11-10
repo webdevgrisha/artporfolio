@@ -4,5 +4,8 @@
   "error.notFound.text": "Diese Seite existiert nicht oder wurde verschoben.",
   "error.server.title": "Es ist ein Fehler aufgetreten",
   "error.server.text": "Die Seite konnte nicht geladen werden. Bitte versuchen Sie es in einer Minute erneut.",
-  "error.toHome": "Zur Startseite"
+  "error.toHome": "Zur Startseite",
+  "contact.title": "Kontakt",
+  "contact.heading": "Kontakt aufnehmen",
+  "contact.description": "E-Mail und soziale Netzwerke zur Kontaktaufnahme."
 }

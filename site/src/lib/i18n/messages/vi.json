@@ -4,5 +4,8 @@
   "error.notFound.text": "Trang này không tồn tại hoặc đã được chuyển sang địa chỉ khác.",
   "error.server.title": "Đã xảy ra sự cố",
   "error.server.text": "Không thể tải trang. Vui lòng thử lại sau một phút.",
-  "error.toHome": "Trở về trang chủ"
+  "error.toHome": "Trở về trang chủ",
+  "contact.title": "Liên hệ",
+  "contact.heading": "Liên hệ",
+  "contact.description": "Email và các mạng xã hội để liên hệ."
 }

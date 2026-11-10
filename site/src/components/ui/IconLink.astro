@@ -1,0 +1,38 @@
+---
+/** A link whose text follows an icon (the `icon` slot), with room enough for a finger. */
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"a"> {
+  href: string;
+  /** The text of the link, which also names it for screen readers: the icon only decorates it. */
+  label: string;
+}
+
+const { class: className, href, label, ...attributes } = Astro.props;
+---
+
+<a class:list={["icon-link", className]} href={href} {...attributes}>
+  <slot name="icon" />
+  <span class="text">{label}</span>
+</a>
+
+<style>
+  .icon-link {
+    display: inline-flex;
+    gap: 0.6em;
+    align-items: center;
+    min-block-size: var(--min-tap-target-size);
+    text-decoration: none;
+  }
+
+  /* A long address breaks rather than widen the page on a phone. */
+  .text {
+    overflow-wrap: anywhere;
+  }
+
+  .icon-link:hover .text {
+    text-decoration: underline;
+    text-decoration-thickness: var(--line-width);
+    text-underline-offset: 0.15em;
+  }
+</style>
