@@ -1,0 +1,54 @@
+---
+/**
+ * An image of the API in the best format the browser reads, AVIF else WebP, at the width it
+ * shows the image at. It fills its box, cropped to it if the box has another shape.
+ */
+import type { HTMLAttributes } from "astro/types";
+
+import type { Image } from "@/lib/api/image";
+import { srcset } from "@/lib/images/srcset";
+
+interface Props extends HTMLAttributes<"picture"> {
+  alt: string;
+  image: Image;
+  /**
+   * Whether the visitor sees the image first: it then loads at once, before other images,
+   * instead of when it nears the screen. Only the largest image of the first screen needs it.
+   */
+  priority?: boolean;
+  /** How wide the image is shown at each width of the page, as `sizes` of <img>. */
+  sizes: string;
+}
+
+const { alt, class: className, image, priority = false, sizes, ...attributes } = Astro.props;
+const { avif, webp } = image.sources;
+---
+
+<picture class:list={["picture", className]} {...attributes}>
+  <source type="image/avif" srcset={srcset(avif)} sizes={sizes} />
+  <img
+    alt={alt}
+    decoding="async"
+    fetchpriority={priority ? "high" : "auto"}
+    height={image.height}
+    loading={priority ? "eager" : "lazy"}
+    sizes={sizes}
+    src={webp.at(-1)?.url}
+    srcset={srcset(webp)}
+    width={image.width}
+  />
+</picture>
+
+<style>
+  .picture {
+    display: block;
+  }
+
+  img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    /* Holds the place of the image while it loads. */
+    background: var(--color-placeholder);
+  }
+</style>
