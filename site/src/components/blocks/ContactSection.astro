@@ -4,12 +4,12 @@
  * ways to reach the artist, and the contact photo beside them, or under them on a phone.
  */
 import Container from "@/components/ui/Container.astro";
-import IconLink from "@/components/ui/IconLink.astro";
 import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
 import LinkedInIcon from "@/components/ui/icons/LinkedInIcon.astro";
 import MailIcon from "@/components/ui/icons/MailIcon.astro";
 import YouTubeIcon from "@/components/ui/icons/YouTubeIcon.astro";
 import Picture from "@/components/ui/Picture.astro";
+import TextLink from "@/components/ui/TextLink.astro";
 import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
 import type { Photo } from "@/lib/api/image";
@@ -59,14 +59,14 @@ const contacts = [
         {
           contacts.map(({ href, Icon, label, lang }) => (
             <li>
-              <IconLink
+              <TextLink
                 class:list={["link", { email: href.startsWith("mailto:") }]}
                 href={href}
                 label={label}
                 lang={lang}
               >
                 <Icon slot="icon" />
-              </IconLink>
+              </TextLink>
             </li>
           ))
         }

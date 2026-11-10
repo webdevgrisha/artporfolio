@@ -1,10 +1,15 @@
 ---
-/** A link whose text follows an icon (the `icon` slot), with room enough for a finger. */
+/**
+ * A link that shows only its icon (the `icon` slot), such as a social network in the footer, with
+ * room enough for a finger. Its label is text kept off the screen, which screen readers say.
+ */
 import type { HTMLAttributes } from "astro/types";
+
+import VisuallyHidden from "./VisuallyHidden.astro";
 
 interface Props extends HTMLAttributes<"a"> {
   href: string;
-  /** The text of the link, which also names it for screen readers: the icon only decorates it. */
+  /** What the link leads to, such as «Instagram»: the name screen readers give it. */
   label: string;
 }
 
@@ -13,43 +18,26 @@ const { class: className, href, label, ...attributes } = Astro.props;
 
 <a class:list={["icon-link", className]} href={href} {...attributes}>
   <slot name="icon" />
-  <span class="text">{label}</span>
+  <VisuallyHidden>{label}</VisuallyHidden>
 </a>
 
 <style>
   .icon-link {
     display: inline-flex;
-    gap: 0.75em;
     align-items: center;
+    justify-content: center;
+    min-inline-size: var(--min-tap-target-size);
     min-block-size: var(--min-tap-target-size);
-    text-decoration: none;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
   }
 
   /*
-   * A long address breaks rather than widen the page on a phone. The box of the text ends at the
-   * top of its capitals and at its baseline, so the link lines up with what is beside it.
+   * An icon has no text to underline: under the pointer it fades a little instead, in the same
+   * time as the underline of a text link comes in. Only under a pointer, as a tap would leave it so.
    */
-  .text {
-    text-box: trim-both cap alphabetic;
-    overflow-wrap: anywhere;
-    /*
-     * The underline is always there, only unseen: under the pointer it shows and rises to the
-     * text, so it comes in softly instead of at once. A screen without motion shows it at once.
-     */
-    text-decoration-line: underline;
-    text-decoration-thickness: var(--line-width);
-    text-decoration-color: transparent;
-    text-underline-offset: 0.45em;
-    transition-timing-function: var(--motion-easing-standard);
-    transition-duration: var(--motion-duration-slow);
-    transition-property: text-decoration-color, text-underline-offset;
-  }
-
-  /* Only under a pointer: a tap on a phone would leave the link underlined. */
   @media (hover: hover) {
-    .icon-link:hover .text {
-      text-decoration-color: currentColor;
-      text-underline-offset: 0.2em;
+    .icon-link:hover {
+      opacity: 0.6;
     }
   }
 </style>
