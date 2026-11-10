@@ -14,16 +14,35 @@ Configure the following variables in **Settings → Environments → production 
 variables**:
 
 - `ADMIN_UID` — Firebase Authentication UID allowed to access the admin area.
+- `API_URL` — the API as the server of the public site calls it, without going through Hosting:
+  `https://europe-west1-artportfolio-b2ef4.cloudfunctions.net/api/api`.
 - `CORS_ORIGINS` — comma-separated production origins, for example
   `https://artportfolio-b2ef4.web.app,https://artportfolio-b2ef4.firebaseapp.com`.
 - `VITE_FIREBASE_API_KEY` — Firebase Web API key.
 - `VITE_FIREBASE_APP_ID` — Firebase Web App ID.
 - `VITE_FIREBASE_AUTH_DOMAIN` — Firebase Authentication domain.
 - `VITE_FIREBASE_PROJECT_ID` — Firebase project ID.
+- `SITE_URL` — where the public site is served, for its canonical links and sitemap, for example
+  `https://artportfolio-b2ef4.web.app` until a domain of its own.
 
 The deployment workflow validates these values before deploying. It injects the `VITE_*` values
-into the Hosting build and creates the project-specific Functions dotenv file used by the Firebase
-CLI.
+into the build of the admin, `SITE_URL` and `API_URL` into the build of the site, and creates the
+project-specific Functions dotenv file used by the Firebase CLI.
+
+## What Firebase Hosting serves
+
+One Hosting site serves everything on one domain (`firebase.json`):
+
+- `/api/**` — the `api` function (codebase `default`, `backend/`);
+- `/admin/**` — the admin, a single-page app, with `noindex` and `no-cache`; `/admin` redirects to
+  `/admin/`;
+- every other path — the `site` function (codebase `site`, `site/`), which renders the public
+  pages and caches them on the CDN for a minute (`site/src/middleware.ts`).
+
+Hosting serves its files first: `scripts/build-hosting.mjs` puts the build of the admin under
+`admin/` and the files of the site (hashed assets, the icon, `robots.txt`) at the root of
+`dist/hosting`. `robots.txt` must be a file there: the functions runtime answers 404 to that path
+itself.
 
 ## Firebase secret
 
@@ -128,15 +147,18 @@ cleared.
 
 ## Local development
 
-Copy the frontend and backend `.env.example` files to `.env.local` and provide local values. Start
-the Auth, Firestore, Functions and Storage emulators, then run Vite in another terminal:
+Copy the frontend and backend `.env.example` files to `.env.local`, and `site/.env.example` to
+`site/.env`, and provide local values. Start the Auth, Firestore, Functions and Storage emulators,
+then run Vite for the admin (`http://localhost:5173/admin/`) and Astro for the site
+(`http://localhost:4321`) in other terminals:
 
 ```sh
 pnpm dev:backend
 pnpm dev:front
+pnpm dev:site
 ```
 
-`dev:backend` builds the backend once: the Functions Emulator runs the compiled `backend/dist`. To
+`dev:backend` builds the backend and the site once, as the Functions Emulator loads both codebases: the Functions Emulator runs the compiled `backend/dist`. To
 work on the backend, also run its build in watch mode in a third terminal; the emulator reloads the
 function whenever `dist` changes:
 

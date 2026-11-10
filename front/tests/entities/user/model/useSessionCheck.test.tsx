@@ -19,20 +19,20 @@ const user = { email: "admin@example.com", uid: "admin-uid" };
 
 let navigate: NavigateFunction;
 
+/** A page of the admin, whose layout checks the session. */
+function AdminPage() {
+  useSessionCheck();
+  navigate = useNavigate();
+
+  return <p>{useLocation().pathname}</p>;
+}
+
+/** The login page, outside the layout. */
+function LoginPage() {
+  return <p>Вход{useLocation().search}</p>;
+}
+
 function renderAdmin() {
-  /** A page of the admin, whose layout checks the session. */
-  function AdminPage() {
-    useSessionCheck();
-    navigate = useNavigate();
-
-    return <p>{useLocation().pathname}</p>;
-  }
-
-  /** The login page, outside the layout. */
-  function LoginPage() {
-    return <p>Вход{useLocation().search}</p>;
-  }
-
   render(
     <MemoryRouter initialEntries={["/admin/about"]}>
       <Routes>

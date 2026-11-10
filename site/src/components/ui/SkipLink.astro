@@ -1,0 +1,40 @@
+---
+/**
+ * The first link of a page, hidden until the keyboard reaches it: it lets a keyboard or screen
+ * reader user jump past the header to the content (WCAG 2.4.1).
+ */
+interface Props {
+  /** Such as «Skip to content», in the language of the page. */
+  label: string;
+  /** The id of the element the content starts with. */
+  target: string;
+}
+
+const { label, target } = Astro.props;
+---
+
+<a class="skip-link" href={`#${target}`}>{label}</a>
+
+<style>
+  .skip-link {
+    position: absolute;
+    inset-block-start: var(--space-2);
+    inset-inline-start: var(--space-2);
+    z-index: 1;
+    padding: var(--space-2) var(--space-4);
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: var(--line-width) solid var(--color-line);
+  }
+
+  .skip-link:not(:focus) {
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+    clip-path: inset(50%);
+  }
+</style>

@@ -1,0 +1,202 @@
+{
+  "ru": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "pl": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "uk": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "be": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "de": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "fr": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "es": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "it": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "pt": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "zh": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "ja": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "ko": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "ar": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "tr": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "nl": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "sv": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "cs": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "sk": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "lt": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "hu": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "ro": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "el": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "id": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "hi": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  },
+  "vi": {
+    "layout.skipToContent": "Skip to content",
+    "error.notFound.title": "Page not found",
+    "error.notFound.text": "This page does not exist or has moved.",
+    "error.server.title": "Something went wrong",
+    "error.server.text": "The page could not be loaded. Please try again in a minute.",
+    "error.toHome": "Go to the home page"
+  }
+}

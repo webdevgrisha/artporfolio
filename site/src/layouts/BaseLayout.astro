@@ -1,0 +1,83 @@
+---
+import { Font } from "astro:assets";
+
+import SkipLink from "@/components/ui/SkipLink.astro";
+import type { Language } from "@/lib/i18n/languages";
+import { languageTag } from "@/lib/i18n/languageTag";
+import { textDirection } from "@/lib/i18n/textDirection";
+import { t } from "@/lib/i18n/translate";
+import { siteName } from "@/lib/site/siteName";
+
+import PageMeta from "./PageMeta.astro";
+
+import "@/styles/global.css";
+
+interface Props {
+  /**
+   * What the page shows, for search results and link cards: taken from the texts of the page and
+   * cut to about 160 characters. Without it, a search engine quotes the page itself.
+   */
+  description?: string;
+  language: Language;
+  /**
+   * The path of the page under its language, such as `/contact`. A page without one is not a page
+   * of the site, such as an error: it has no address of its own, and search engines skip it.
+   */
+  path?: string;
+  /** The name of the page; the home page has none and is named after the site. */
+  title?: string;
+}
+
+const { description, language, path, title } = Astro.props;
+const fullTitle = title ? `${title} — ${siteName}` : siteName;
+---
+
+<!doctype html>
+<html lang={languageTag(language)} dir={textDirection(language)}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
+    <script is:inline>
+      // Before the first paint, so a theme the visitor chose does not flash the other one first.
+      // Without a choice the page follows the system, which the CSS reads by itself.
+      try {
+        const theme = localStorage.getItem("theme");
+
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+          for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+            meta.content = theme === "dark" ? "#141414" : "#fff";
+          }
+        }
+      } catch {
+        // Blocked storage: the page follows the system.
+      }
+    </script>
+    <Font cssVariable="--font-absans" preload />
+    <Font cssVariable="--font-manrope" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    {
+      path === undefined ? (
+        <>
+          <title>{fullTitle}</title>
+          <meta name="robots" content="noindex" />
+        </>
+      ) : (
+        <PageMeta
+          description={description}
+          language={language}
+          path={path}
+          title={fullTitle}
+        />
+      )
+    }
+  </head>
+  <body>
+    <SkipLink label={t(language, "layout.skipToContent")} target="content" />
+    <main id="content">
+      <slot />
+    </main>
+  </body>
+</html>

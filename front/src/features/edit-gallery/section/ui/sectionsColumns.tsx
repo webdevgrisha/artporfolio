@@ -1,7 +1,11 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import type { GallerySection, WorkUsages } from "@/entities/gallery";
 import { gallerySectionPath } from "@/shared/config/routes";
-import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
+import {
+  actionsColumn,
+  type DataTableColumn,
+  positionColumn,
+  RowActions,
+} from "@/shared/ui/data-table";
 import { usageOf } from "../../model/workUsage";
 import styles from "./SectionsList.module.css";
 
@@ -18,7 +22,7 @@ export function sectionsColumns({
   deletingIds,
   onDelete,
   usages,
-}: SectionsColumnsParams): ColumnDef<TableRow<GallerySection>>[] {
+}: SectionsColumnsParams): DataTableColumn<GallerySection>[] {
   return [
     positionColumn({ isSortable: false }),
     {

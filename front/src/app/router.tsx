@@ -21,10 +21,6 @@ export const router = createBrowserRouter([
     ErrorBoundary: ErrorPage,
     children: [
       {
-        path: "/",
-        element: <Navigate to={routes.login} replace />,
-      },
-      {
         path: "/admin",
         // Shown on the first load of the login page while the session is being checked; an admin
         // page shows the skeleton of its layout instead.

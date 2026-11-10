@@ -10,3 +10,4 @@ gha-creds-*.json
 .env.*
 !.env.example
 .secret.local
+/dist/

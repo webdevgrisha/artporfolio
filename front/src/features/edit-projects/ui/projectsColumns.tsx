@@ -1,8 +1,12 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import type { Project } from "@/entities/project";
 import { projectPath } from "@/shared/config/routes";
 import { compareText } from "@/shared/lib/compareText";
-import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
+import {
+  actionsColumn,
+  type DataTableColumn,
+  positionColumn,
+  RowActions,
+} from "@/shared/ui/data-table";
 import { ExternalLinkIcon } from "@/shared/ui/icon";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { Tooltip } from "@/shared/ui/tooltip";
@@ -21,7 +25,7 @@ interface ProjectsColumnsParams {
 export function projectsColumns({
   deletingIds,
   onDelete,
-}: ProjectsColumnsParams): ColumnDef<TableRow<Project>>[] {
+}: ProjectsColumnsParams): DataTableColumn<Project>[] {
   return [
     positionColumn({ isSortable: true }),
     {
@@ -36,15 +40,14 @@ export function projectsColumns({
       id: "title",
       header: "Название",
       accessorFn: (row) => row.item.title,
-      sortingFn: (a, b) => compareText(a.original.item.title, b.original.item.title),
+      sortFn: (a, b) => compareText(a.original.item.title, b.original.item.title),
     },
     {
       id: "link",
       header: "Ссылка",
       meta: { className: styles.linkColumn, hiddenOnPhone: true },
       accessorFn: (row) => linkHost(row.item.link),
-      sortingFn: (a, b) =>
-        compareText(linkHost(a.original.item.link), linkHost(b.original.item.link)),
+      sortFn: (a, b) => compareText(linkHost(a.original.item.link), linkHost(b.original.item.link)),
       cell: ({ row: { original } }) => {
         const { link } = original.item;
 

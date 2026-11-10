@@ -1,4 +1,3 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import {
   formatWorkDate,
   type GalleryCollection,
@@ -8,7 +7,12 @@ import {
 } from "@/entities/gallery";
 import { galleryWorkPath } from "@/shared/config/routes";
 import { compareText } from "@/shared/lib/compareText";
-import { actionsColumn, positionColumn, RowActions, type TableRow } from "@/shared/ui/data-table";
+import {
+  actionsColumn,
+  type DataTableColumn,
+  positionColumn,
+  RowActions,
+} from "@/shared/ui/data-table";
 import { PhotoThumbnail } from "@/shared/ui/media-preview";
 import { formatWorkPlace } from "../model/workPlace";
 import { titlesOf } from "../model/workReferences";
@@ -41,7 +45,7 @@ export function worksColumns({
   materials,
   onDelete,
   sections,
-}: WorksColumnsParams): ColumnDef<TableRow<GalleryWorkSummary>>[] {
+}: WorksColumnsParams): DataTableColumn<GalleryWorkSummary>[] {
   const collectionTitles = new Map(collections.map(({ id, title }) => [id, title]));
 
   return [
@@ -57,7 +61,7 @@ export function worksColumns({
       id: "title",
       header: "Название",
       accessorFn: (row) => row.item.title,
-      sortingFn: (a, b) => compareText(a.original.item.title, b.original.item.title),
+      sortFn: (a, b) => compareText(a.original.item.title, b.original.item.title),
       cell: ({ row: { original } }) => <WorkTitleCell work={original.item} />,
     },
     {
@@ -74,7 +78,7 @@ export function worksColumns({
       // Works on their own stay last either way.
       accessorFn: (row) =>
         row.item.collectionId === null ? undefined : collectionTitles.get(row.item.collectionId),
-      sortingFn: (a, b) =>
+      sortFn: (a, b) =>
         compareText(a.getValue<string>("collection"), b.getValue<string>("collection")),
       sortUndefined: "last",
       // Muted, as the form names it, so the works of collections stand out.
@@ -93,7 +97,7 @@ export function worksColumns({
       header: "Размер",
       meta: { className: styles.sizeColumn, hiddenOnPhone: true },
       accessorFn: (row) => row.item.size,
-      sortingFn: (a, b) => compareWorkSizes(a.original.item, b.original.item),
+      sortFn: (a, b) => compareWorkSizes(a.original.item, b.original.item),
       // The smallest first would read as a step back; the largest first is the useful start.
       sortDescFirst: true,
       cell: ({ row: { original } }) => formatWorkSize(original.item.size),
@@ -111,7 +115,7 @@ export function worksColumns({
       meta: { className: styles.priceColumn, hiddenOnPhone: true },
       // The price a visitor pays; works without a price stay last either way.
       accessorFn: (row) => row.item.price?.finalAmount,
-      sortingFn: "basic",
+      sortFn: "basic",
       sortUndefined: "last",
       cell: ({ row: { original } }) => <WorkPriceCell price={original.item.price} />,
     },
@@ -127,7 +131,7 @@ export function worksColumns({
       header: "Дата",
       meta: { className: styles.dateColumn, hiddenOnPhone: true },
       accessorFn: (row) => row.item.year,
-      sortingFn: (a, b) => compareWorkDates(a.original.item, b.original.item),
+      sortFn: (a, b) => compareWorkDates(a.original.item, b.original.item),
       // The latest first, as the site shows them.
       sortDescFirst: true,
       cell: ({ row: { original } }) => formatWorkDate(original.item),
@@ -138,7 +142,7 @@ export function worksColumns({
       meta: { className: styles.placeColumn, hiddenOnPhone: true },
       // Works without a place stay last either way.
       accessorFn: (row) => formatWorkPlace(row.item) || undefined,
-      sortingFn: (a, b) => compareText(a.getValue<string>("place"), b.getValue<string>("place")),
+      sortFn: (a, b) => compareText(a.getValue<string>("place"), b.getValue<string>("place")),
       sortUndefined: "last",
       cell: ({ getValue }) =>
         getValue<string | undefined>() ?? <NoValue label="Место не указано" />,

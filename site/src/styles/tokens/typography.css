@@ -1,0 +1,45 @@
+/*
+ * Font sizes grow with the width of the page, from a phone (360px) to the width of the mockup
+ * (1920px), with no step between devices. Each step is a clamp(): its smallest and largest sizes
+ * are in rem, so the text still follows the zoom and the font size of the browser.
+ *
+ * The scale is modular: from 16px with a ratio of 1.2 on a phone, from 18px with a ratio of 1.333
+ * on a wide screen, so headings stand out more where there is room for them.
+ */
+@layer base {
+  :root {
+    /*
+     * Absans has no Cyrillic. Manrope, the closest to it in shape and weight, covers only those
+     * letters (its unicode-range in astro.config.ts), so it comes first and Absans sets the rest.
+     * Absans ends with a fallback that Astro fits to its metrics, so the text does not move when
+     * the font arrives.
+     */
+    --font-family: var(--font-manrope), var(--font-absans);
+
+    /* Labels of sections and other small print: 13px on every screen. */
+    --font-size-small: clamp(0.8333rem, 0.8309rem + 0.0109vw, 0.844rem);
+    /* Text: 16px → 18px. */
+    --font-size-body: clamp(1rem, 0.9712rem + 0.1282vw, 1.125rem);
+    /* 19px → 24px */
+    --font-size-1: clamp(1.2rem, 1.131rem + 0.3073vw, 1.5rem);
+    /* 23px → 32px */
+    --font-size-2: clamp(1.44rem, 1.311rem + 0.5733vw, 2rem);
+    /* 28px → 43px */
+    --font-size-3: clamp(1.728rem, 1.512rem + 0.9607vw, 2.665rem);
+    /* 33px → 57px */
+    --font-size-4: clamp(2.074rem, 1.732rem + 1.516vw, 3.552rem);
+    /* 40px → 76px */
+    --font-size-5: clamp(2.488rem, 1.97rem + 2.304vw, 4.735rem);
+    /* 48px → 101px */
+    --font-size-6: clamp(2.986rem, 2.219rem + 3.411vw, 6.312rem);
+    /* The title over the hero of a page: 48px → 160px. */
+    --font-size-display: clamp(3rem, 1.385rem + 7.179vw, 10rem);
+
+    --line-height-body: 1.5;
+    --line-height-heading: 1.15;
+    --line-height-display: 1;
+
+    /* Capitals need more room between letters than lowercase to read evenly. */
+    --letter-spacing-caps: 0.02em;
+  }
+}

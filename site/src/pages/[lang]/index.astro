@@ -1,0 +1,21 @@
+---
+import Container from "@/components/ui/Container.astro";
+import Stack from "@/components/ui/Stack.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { isLanguage } from "@/lib/i18n/languages";
+import { siteName } from "@/lib/site/siteName";
+
+const { lang } = Astro.params;
+
+if (!isLanguage(lang)) {
+  return Astro.rewrite("/404");
+}
+---
+
+<BaseLayout language={lang} path="/">
+  <Container>
+    <Stack gap="layout-space-8">
+      <h1>{siteName}</h1>
+    </Stack>
+  </Container>
+</BaseLayout>

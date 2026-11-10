@@ -1,0 +1,8 @@
+{
+  "layout.skipToContent": "Ir para o conteúdo",
+  "error.notFound.title": "Página não encontrada",
+  "error.notFound.text": "Esta página não existe ou foi movida.",
+  "error.server.title": "Ocorreu um erro",
+  "error.server.text": "Não foi possível carregar a página. Tente novamente daqui a um minuto.",
+  "error.toHome": "Ir para a página inicial"
+}

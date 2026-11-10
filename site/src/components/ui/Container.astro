@@ -1,0 +1,21 @@
+---
+/** Keeps the content off the edges of the screen and centered on a very wide one. */
+import type { HTMLTag, Polymorphic } from "astro/types";
+
+type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }>;
+
+const { as: Tag = "div", class: className, ...attributes } = Astro.props;
+---
+
+<Tag class:list={["container", className]} {...attributes}>
+  <slot />
+</Tag>
+
+<style>
+  .container {
+    inline-size: 100%;
+    max-inline-size: var(--page-max-inline-size);
+    padding-inline: var(--page-gutter);
+    margin-inline: auto;
+  }
+</style>

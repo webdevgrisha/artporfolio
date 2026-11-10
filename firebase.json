@@ -17,6 +17,23 @@
         ".secret.local"
       ],
       "predeploy": ["pnpm --dir \"$PROJECT_DIR\" --filter artportfolio-backend build"]
+    },
+    {
+      "source": "site",
+      "codebase": "site",
+      "runtime": "nodejs22",
+      "ignore": [
+        ".astro",
+        "coverage",
+        "node_modules",
+        "scripts",
+        "src",
+        "tests",
+        ".env",
+        ".env.*",
+        "*.log"
+      ],
+      "predeploy": ["pnpm --dir \"$PROJECT_DIR\" --filter site build"]
     }
   ],
   "firestore": {
@@ -26,9 +43,20 @@
     "rules": "storage.rules"
   },
   "hosting": {
-    "public": "front/dist",
+    "public": "dist/hosting",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "predeploy": ["pnpm --dir \"$PROJECT_DIR\" --filter front build"],
+    "predeploy": [
+      "pnpm --dir \"$PROJECT_DIR\" --filter front build",
+      "pnpm --dir \"$PROJECT_DIR\" --filter site build",
+      "node \"$PROJECT_DIR/scripts/build-hosting.mjs\""
+    ],
+    "redirects": [
+      {
+        "regex": "^/admin$",
+        "destination": "/admin/",
+        "type": 301
+      }
+    ],
     "rewrites": [
       {
         "source": "/api/**",
@@ -39,22 +67,43 @@
         }
       },
       {
-        "source": "!/assets/**",
-        "destination": "/index.html"
+        "source": "/admin/**",
+        "destination": "/admin/index.html"
+      },
+      {
+        "source": "**",
+        "function": {
+          "functionId": "site",
+          "region": "europe-west1",
+          "pinTag": true
+        }
       }
     ],
     "headers": [
       {
-        "source": "**",
+        "source": "/admin/**",
         "headers": [
           {
             "key": "Cache-Control",
             "value": "no-cache"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex"
           }
         ]
       },
       {
-        "source": "/assets/**",
+        "source": "/admin/assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/_astro/**",
         "headers": [
           {
             "key": "Cache-Control",

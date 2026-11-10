@@ -26,6 +26,13 @@ function setUp(state: TranslationState) {
   return render(<TranslationBanner />, { wrapper: Providers });
 }
 
+/** An open form of the gallery intro, which reads its translations. */
+function GalleryIntroForm() {
+  useQuery(translationsQuery("gallery-intro"));
+
+  return null;
+}
+
 describe("TranslationBanner", () => {
   it("says nothing while all is well", async () => {
     const requests = recordRequests();
@@ -72,16 +79,10 @@ describe("TranslationBanner", () => {
       ),
     );
 
-    function Form() {
-      useQuery(translationsQuery("gallery-intro"));
-
-      return null;
-    }
-
     render(
       <QueryClientProvider client={queryClient}>
         <TranslationBanner />
-        <Form />
+        <GalleryIntroForm />
       </QueryClientProvider>,
     );
 

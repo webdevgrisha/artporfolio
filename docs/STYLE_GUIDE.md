@@ -8,6 +8,8 @@ The custom-property model is based on [CSS Variables for React Devs](https://www
 
 The color model is informed by [Color Formats in CSS](https://www.joshwcomeau.com/css/color-formats/): choose formats for readability and manipulation, and separate semantic color meaning from the literal color value.
 
+The admin (`front`) and the public site (`site`) follow the same rules. Where the site differs, [Public site](#public-site) says how.
+
 ## Priorities
 
 When trade-offs are necessary, use this order:
@@ -396,6 +398,34 @@ Before approving a UI change, verify:
 - Numeric values are readable and explainable.
 - No existing asset or component was recreated without a reason.
 - `pnpm check` and the frontend build pass.
+
+## Public site
+
+The site (`site/`, Astro) keeps every rule above, with these differences.
+
+### Files
+
+- An `.astro` component keeps its styles in its own `<style>`, which Astro scopes to it as CSS Modules do; Biome checks them (`html.experimentalFullSupportEnabled`). A React island keeps a `Component.module.css` beside it, as the admin does.
+- Global styles live in `site/src/styles/`: `reset.css` (a copy of the admin's), one file per kind of token in `tokens/`, `base.css` with the document defaults, and `global.css`, which the layout imports once. The reset and the base are layered as in the admin, so components always win.
+- The site does not import the admin's styles: the two may change apart.
+
+### Fluid scale
+
+- Font sizes (`--font-size-*`) and layout spacing (`--layout-space-*`) grow with the page from a phone (360px) to the width of the mockup (1920px) with `clamp()`, with no step between devices. Their ends are in rem, so they follow the zoom and the font size of the browser.
+- Component spacing (`--space-*`) stays fixed, as in the admin.
+- Breakpoints (40rem, 75rem) change only the layout, such as the number of columns. A component that can sit in a column or across the page asks its container (`@container`).
+- `Container` keeps the content within `--page-gutter` of the edges; `Stack` spaces its children with a spacing token. Both take the tag they render as.
+
+### Themes and colors
+
+- Each color token gives its light and dark value once, in `light-dark()`. The page follows the system (`color-scheme: light dark`) until the visitor chooses a theme; the choice is kept in `localStorage` and set as `data-theme` on `<html>` by an inline script before the first paint.
+- The site is monochrome: only the works are in color.
+
+### Text
+
+- Fonts come from Astro's Fonts API (`astro.config.ts`): Absans, and Manrope for the Cyrillic letters only. It preloads Absans and fits its fallback to it, so the text does not move when the font arrives.
+- Capitals are a style: write texts and translations in their normal case and set `text-transform: uppercase` with `--letter-spacing-caps`. Some languages have no capitals, and others change letters in them (German ß, Turkish i). Keep capitals for short text: long paragraphs in capitals read slowly.
+- The site is translated into right-to-left languages, so use logical properties only (`margin-inline-start`, `inset-inline-end`, `text-align: start`).
 
 ## Evolving this guide
 

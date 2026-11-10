@@ -1,0 +1,8 @@
+{
+  "layout.skipToContent": "सामग्री पर जाएँ",
+  "error.notFound.title": "पृष्ठ नहीं मिला",
+  "error.notFound.text": "यह पृष्ठ मौजूद नहीं है या स्थानांतरित हो गया है।",
+  "error.server.title": "कुछ गलत हो गया",
+  "error.server.text": "पृष्ठ लोड नहीं हो सका। कृपया एक मिनट में फिर से प्रयास करें।",
+  "error.toHome": "होम पेज पर जाएँ"
+}
