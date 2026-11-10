@@ -142,6 +142,7 @@ A folder imports only from the folders below it: `pages → layouts → blocks �
 - The texts of the interface live in `lib/i18n/messages/<language>.json`; `en.json` is the source, and `t(language, key)` is typed by its keys. A text not translated yet shows in English. Content written in the admin is translated by the backend instead.
 - A new text: add its key to `en.json`, run `pnpm --filter site i18n:translate`, and read the diff. The script sends DeepL only new texts and texts whose English changed, so a translation edited by hand stays; `translatedFrom.json` keeps the English of each translation. A test keeps every language on the keys of English.
 - Read the diff before committing: DeepL is told the site is one person's (`context` in the script), yet it still turns «Get in touch» into «Contact us» in some languages, and it gives «the artist» a gender. Fix such a text by hand in the language file, and keep the English free of words that need a gender.
+- A heading spans its column on one line in every language: translate it with one or two words (Kontakt, Contacto), the way sites of that language name the section. A longer one goes on two lines and breaks the proportions of its block. Check the page in every language after such a change.
 
 ### Search engines and link cards
 
