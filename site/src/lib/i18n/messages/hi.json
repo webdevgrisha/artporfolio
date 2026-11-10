@@ -7,5 +7,12 @@
   "error.toHome": "होम पेज पर जाएँ",
   "contact.title": "संपर्क",
   "contact.heading": "संपर्क करें",
-  "contact.description": "संपर्क के लिए ईमेल और सोशल नेटवर्क।"
+  "contact.description": "संपर्क के लिए ईमेल और सोशल नेटवर्क।",
+  "menu.gallery": "गैलरी",
+  "menu.process": "प्रक्रिया",
+  "menu.projects": "परियोजनाएँ",
+  "menu.about": "मेरे बारे में",
+  "menu.contact": "संपर्क",
+  "footer.menu": "पृष्ठ",
+  "footer.networks": "सामाजिक नेटवर्क"
 }

@@ -7,5 +7,12 @@
   "error.toHome": "Trở về trang chủ",
   "contact.title": "Liên hệ",
   "contact.heading": "Liên hệ",
-  "contact.description": "Email và các mạng xã hội để liên hệ."
+  "contact.description": "Email và các mạng xã hội để liên hệ.",
+  "menu.gallery": "Thư viện ảnh",
+  "menu.process": "Quy trình",
+  "menu.projects": "Dự án",
+  "menu.about": "Giới thiệu",
+  "menu.contact": "Liên hệ",
+  "footer.menu": "Các trang",
+  "footer.networks": "Mạng xã hội"
 }

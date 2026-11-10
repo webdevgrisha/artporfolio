@@ -7,5 +7,12 @@
   "error.toHome": "Eiti į pagrindinį puslapį",
   "contact.title": "Kontaktai",
   "contact.heading": "Susisiekite",
-  "contact.description": "El. paštas ir socialiniai tinklai, kuriais galima susisiekti."
+  "contact.description": "El. paštas ir socialiniai tinklai, kuriais galima susisiekti.",
+  "menu.gallery": "Galerija",
+  "menu.process": "Procesas",
+  "menu.projects": "Projektai",
+  "menu.about": "Apie mane",
+  "menu.contact": "Kontaktai",
+  "footer.menu": "Puslapiai",
+  "footer.networks": "Socialiniai tinklai"
 }

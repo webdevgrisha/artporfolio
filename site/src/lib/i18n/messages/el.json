@@ -7,5 +7,12 @@
   "error.toHome": "Μετάβαση στην αρχική σελίδα",
   "contact.title": "Επικοινωνία",
   "contact.heading": "Επικοινωνία",
-  "contact.description": "Διεύθυνση ηλεκτρονικού ταχυδρομείου και κοινωνικά δίκτυα για επικοινωνία."
+  "contact.description": "Διεύθυνση ηλεκτρονικού ταχυδρομείου και κοινωνικά δίκτυα για επικοινωνία.",
+  "menu.gallery": "Γκαλερί",
+  "menu.process": "Διαδικασία",
+  "menu.projects": "Έργα",
+  "menu.about": "Σχετικά με μένα",
+  "menu.contact": "Επικοινωνία",
+  "footer.menu": "Σελίδες",
+  "footer.networks": "Κοινωνικά δίκτυα"
 }

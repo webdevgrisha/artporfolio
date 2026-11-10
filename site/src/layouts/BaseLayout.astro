@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 
+import SiteFooter from "@/components/blocks/SiteFooter.astro";
 import SkipLink from "@/components/ui/SkipLink.astro";
 import type { Language } from "@/lib/i18n/languages";
 import { languageTag } from "@/lib/i18n/languageTag";
@@ -79,5 +80,18 @@ const fullTitle = title ? `${title} — ${siteName}` : siteName;
     <main id="content">
       <slot />
     </main>
+    <SiteFooter language={language} path={path} />
   </body>
 </html>
+
+<style>
+  /* A short page, such as an error, still has its footer at the bottom of the screen. */
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex-grow: 1;
+  }
+</style>

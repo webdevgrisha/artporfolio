@@ -7,5 +7,12 @@
   "error.toHome": "Aller à la page d'accueil",
   "contact.title": "Contact",
   "contact.heading": "Contact",
-  "contact.description": "Adresse e-mail et réseaux sociaux pour prendre contact."
+  "contact.description": "Adresse e-mail et réseaux sociaux pour prendre contact.",
+  "menu.gallery": "Galerie",
+  "menu.process": "Processus",
+  "menu.projects": "Projets",
+  "menu.about": "À propos",
+  "menu.contact": "Contact",
+  "footer.menu": "Pages",
+  "footer.networks": "Réseaux sociaux"
 }

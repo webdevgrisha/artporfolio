@@ -7,5 +7,12 @@
   "error.toHome": "Gå till startsidan",
   "contact.title": "Kontakt",
   "contact.heading": "Hör av dig",
-  "contact.description": "E-post och sociala nätverk för att komma i kontakt."
+  "contact.description": "E-post och sociala nätverk för att komma i kontakt.",
+  "menu.gallery": "Galleri",
+  "menu.process": "Process",
+  "menu.projects": "Projekt",
+  "menu.about": "Om mig",
+  "menu.contact": "Kontakt",
+  "footer.menu": "Sidor",
+  "footer.networks": "Sociala nätverk"
 }

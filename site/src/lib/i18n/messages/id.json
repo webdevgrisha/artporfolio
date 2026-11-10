@@ -7,5 +7,12 @@
   "error.toHome": "Pergi ke halaman beranda",
   "contact.title": "Kontak",
   "contact.heading": "Hubungi",
-  "contact.description": "Alamat email dan media sosial untuk menghubungi."
+  "contact.description": "Alamat email dan media sosial untuk menghubungi.",
+  "menu.gallery": "Galeri",
+  "menu.process": "Proses",
+  "menu.projects": "Proyek",
+  "menu.about": "Tentang saya",
+  "menu.contact": "Kontak",
+  "footer.menu": "Halaman",
+  "footer.networks": "Media sosial"
 }

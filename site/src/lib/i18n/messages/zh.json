@@ -7,5 +7,12 @@
   "error.toHome": "前往首页",
   "contact.title": "联系我们",
   "contact.heading": "联系方式",
-  "contact.description": "用于联系的电子邮件和社交媒体账号。"
+  "contact.description": "用于联系的电子邮件和社交媒体账号。",
+  "menu.gallery": "画廊",
+  "menu.process": "创作过程",
+  "menu.projects": "项目",
+  "menu.about": "关于我",
+  "menu.contact": "联系",
+  "footer.menu": "页面",
+  "footer.networks": "社交网络"
 }

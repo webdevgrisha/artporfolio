@@ -7,5 +7,12 @@
   "error.toHome": "Ir para a página inicial",
   "contact.title": "Contato",
   "contact.heading": "Contato",
-  "contact.description": "E-mail e redes sociais para entrar em contato."
+  "contact.description": "E-mail e redes sociais para entrar em contato.",
+  "menu.gallery": "Galeria",
+  "menu.process": "Processo",
+  "menu.projects": "Projetos",
+  "menu.about": "Sobre mim",
+  "menu.contact": "Contato",
+  "footer.menu": "Páginas",
+  "footer.networks": "Redes sociais"
 }

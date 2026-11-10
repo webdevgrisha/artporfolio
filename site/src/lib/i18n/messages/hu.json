@@ -7,5 +7,12 @@
   "error.toHome": "Ugrás a kezdőlapra",
   "contact.title": "Kapcsolat",
   "contact.heading": "Kapcsolat",
-  "contact.description": "Kapcsolatfelvétel e-mailen és a közösségi oldalakon keresztül."
+  "contact.description": "Kapcsolatfelvétel e-mailen és a közösségi oldalakon keresztül.",
+  "menu.gallery": "Galéria",
+  "menu.process": "Folyamat",
+  "menu.projects": "Projektek",
+  "menu.about": "Rólam",
+  "menu.contact": "Kapcsolat",
+  "footer.menu": "Oldalak",
+  "footer.networks": "Közösségi hálózatok"
 }

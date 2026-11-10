@@ -7,5 +7,12 @@
   "error.toHome": "Accesați pagina principală",
   "contact.title": "Contact",
   "contact.heading": "Ia legătura",
-  "contact.description": "Adresă de e-mail și rețele sociale pentru a lua legătura."
+  "contact.description": "Adresă de e-mail și rețele sociale pentru a lua legătura.",
+  "menu.gallery": "Galerie",
+  "menu.process": "Proces",
+  "menu.projects": "Proiecte",
+  "menu.about": "Despre mine",
+  "menu.contact": "Contact",
+  "footer.menu": "Pagini",
+  "footer.networks": "Rețelele sociale"
 }

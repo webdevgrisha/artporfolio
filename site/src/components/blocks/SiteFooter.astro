@@ -1,0 +1,168 @@
+---
+/**
+ * The footer of every page: the networks of the artist and the menu of the site, then the name of
+ * the artist and the year across the page.
+ */
+import Container from "@/components/ui/Container.astro";
+import IconLink from "@/components/ui/IconLink.astro";
+import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
+import LinkedInIcon from "@/components/ui/icons/LinkedInIcon.astro";
+import YouTubeIcon from "@/components/ui/icons/YouTubeIcon.astro";
+import TextLink from "@/components/ui/TextLink.astro";
+import { type ContactLinks, contactsSchema } from "@/lib/api/contacts";
+import { getJson } from "@/lib/api/getJson";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { artistName } from "@/lib/site/artistName";
+import { localizedPath } from "@/lib/site/localizedPath";
+import { menu } from "@/lib/site/menu";
+
+interface Props {
+  language: Language;
+  /** The path of the page being shown under its language, such as `/contact`; none on an error. */
+  path?: string | undefined;
+}
+
+const { language, path } = Astro.props;
+
+// The networks only lead elsewhere: a page whose API cannot answer, as an error page may be, still
+// shows its footer, without them.
+let links: ContactLinks | undefined;
+
+try {
+  ({ links } = await getJson("contacts", contactsSchema, { language }));
+} catch (error) {
+  console.error("The footer is shown without the networks:", error);
+}
+
+// In the order of the mockup; a network the artist left empty is not shown. Its name is English in
+// every language, as on the Contacts page.
+const networks = links
+  ? [
+      { href: links.youtube, Icon: YouTubeIcon, label: "YouTube" },
+      { href: links.instagram, Icon: InstagramIcon, label: "Instagram" },
+      { href: links.linkedin, Icon: LinkedInIcon, label: "LinkedIn" },
+    ].filter(({ href }) => href !== "")
+  : [];
+
+// The year of the page as it is served, never one left in the code.
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <Container class="footer">
+    <div class="links">
+      {
+        networks.length > 0 && (
+          <ul aria-label={t(language, "footer.networks")} class="networks">
+            {networks.map(({ href, Icon, label }) => (
+              <li>
+                <IconLink href={href} label={label} lang="en">
+                  <Icon slot="icon" />
+                </IconLink>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      <nav aria-label={t(language, "footer.menu")}>
+        <ul class="menu">
+          {
+            menu.map((page) => (
+              <li>
+                <TextLink
+                  aria-current={page.path === path ? "page" : undefined}
+                  href={localizedPath(language, page.path)}
+                  label={t(language, page.label)}
+                />
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+    <div class="signature">
+      <p lang="en">{artistName}</p>
+      {/* The sign before the year in every language: a page written right to left would move it after. */}
+      <p dir="ltr">©{year}</p>
+    </div>
+  </Container>
+</footer>
+
+<style>
+  /* The sizes of the name and the year follow the width of the page within its margins. */
+  .footer {
+    container-type: inline-size;
+  }
+
+  .links,
+  .signature {
+    padding-block-start: var(--layout-space-8);
+  }
+
+  /* The line across the page that ends what is above, as in the mockup. */
+  .links {
+    display: flex;
+    gap: var(--layout-space-8);
+    align-items: start;
+    justify-content: space-between;
+    border-block-start: var(--line-width) solid currentColor;
+  }
+
+  /* Wider than a phone, the networks and the menu stand together at the end, as in the mockup. */
+  @container (width >= 40rem) {
+    .links {
+      justify-content: end;
+    }
+  }
+
+  .networks,
+  .menu {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .networks {
+    display: flex;
+    gap: var(--space-2);
+    font-size: var(--font-size-2);
+  }
+
+  /* One link under another, each as high as a finger needs. */
+  .menu > li {
+    display: flex;
+  }
+
+  /*
+   * The name and the year span the page on one line: «Anastasia Turkevich» in Absans is 12.34
+   * times as wide as its size, «©2026» 3.49 times, and about three times the size apart, as in the
+   * mockup. On a phone that would be too small: the year goes under the name, which then fills the
+   * page by itself (8 × 12.34 = 98.7% of it).
+   */
+  .signature {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding-block-end: var(--layout-space-8);
+    font-size: 8cqi;
+    line-height: var(--line-height-display);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    white-space: nowrap;
+  }
+
+  @container (width >= 40rem) {
+    .signature {
+      flex-direction: row;
+      justify-content: space-between;
+      font-size: 5.25cqi;
+    }
+  }
+
+  /* The boxes end at the top of the capitals and at the baseline, so the spacing is as it looks. */
+  .signature > p {
+    margin: 0;
+    text-box: trim-both cap alphabetic;
+  }
+</style>

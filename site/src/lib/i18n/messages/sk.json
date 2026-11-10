@@ -7,5 +7,12 @@
   "error.toHome": "Prejsť na hlavnú stránku",
   "contact.title": "Kontakt",
   "contact.heading": "Ozvite sa",
-  "contact.description": "E-mail a sociálne siete na kontaktovanie."
+  "contact.description": "E-mail a sociálne siete na kontaktovanie.",
+  "menu.gallery": "Galéria",
+  "menu.process": "Proces",
+  "menu.projects": "Projekty",
+  "menu.about": "O mne",
+  "menu.contact": "Kontakt",
+  "footer.menu": "Stránky",
+  "footer.networks": "Sociálne siete"
 }

@@ -7,5 +7,12 @@
   "error.toHome": "Ana sayfaya git",
   "contact.title": "İletişim",
   "contact.heading": "İletişim",
-  "contact.description": "İletişim için e-posta ve sosyal ağlar."
+  "contact.description": "İletişim için e-posta ve sosyal ağlar.",
+  "menu.gallery": "Galeri",
+  "menu.process": "Süreç",
+  "menu.projects": "Projeler",
+  "menu.about": "Hakkımda",
+  "menu.contact": "İletişim",
+  "footer.menu": "Sayfalar",
+  "footer.networks": "Sosyal ağlar"
 }

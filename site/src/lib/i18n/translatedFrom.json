@@ -8,7 +8,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "pl": {
     "layout.skipToContent": "Skip to content",
@@ -19,7 +26,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "uk": {
     "layout.skipToContent": "Skip to content",
@@ -30,7 +44,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "be": {
     "layout.skipToContent": "Skip to content",
@@ -41,7 +62,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "de": {
     "layout.skipToContent": "Skip to content",
@@ -52,7 +80,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "fr": {
     "layout.skipToContent": "Skip to content",
@@ -63,7 +98,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "es": {
     "layout.skipToContent": "Skip to content",
@@ -74,7 +116,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "it": {
     "layout.skipToContent": "Skip to content",
@@ -85,7 +134,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "pt": {
     "layout.skipToContent": "Skip to content",
@@ -96,7 +152,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "zh": {
     "layout.skipToContent": "Skip to content",
@@ -107,7 +170,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "ja": {
     "layout.skipToContent": "Skip to content",
@@ -118,7 +188,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "ko": {
     "layout.skipToContent": "Skip to content",
@@ -129,7 +206,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "ar": {
     "layout.skipToContent": "Skip to content",
@@ -140,7 +224,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "tr": {
     "layout.skipToContent": "Skip to content",
@@ -151,7 +242,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "nl": {
     "layout.skipToContent": "Skip to content",
@@ -162,7 +260,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "sv": {
     "layout.skipToContent": "Skip to content",
@@ -173,7 +278,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "cs": {
     "layout.skipToContent": "Skip to content",
@@ -184,7 +296,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "sk": {
     "layout.skipToContent": "Skip to content",
@@ -195,7 +314,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "lt": {
     "layout.skipToContent": "Skip to content",
@@ -206,7 +332,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "hu": {
     "layout.skipToContent": "Skip to content",
@@ -217,7 +350,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "ro": {
     "layout.skipToContent": "Skip to content",
@@ -228,7 +368,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "el": {
     "layout.skipToContent": "Skip to content",
@@ -239,7 +386,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "id": {
     "layout.skipToContent": "Skip to content",
@@ -250,7 +404,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "hi": {
     "layout.skipToContent": "Skip to content",
@@ -261,7 +422,14 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   },
   "vi": {
     "layout.skipToContent": "Skip to content",
@@ -272,6 +440,13 @@
     "error.toHome": "Go to the home page",
     "contact.title": "Contact",
     "contact.heading": "Get in touch",
-    "contact.description": "Email and social networks to get in touch."
+    "contact.description": "Email and social networks to get in touch.",
+    "menu.gallery": "Gallery",
+    "menu.process": "Process",
+    "menu.projects": "Projects",
+    "menu.about": "About",
+    "menu.contact": "Contact",
+    "footer.menu": "Pages",
+    "footer.networks": "Social networks"
   }
 }

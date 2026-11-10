@@ -7,5 +7,12 @@
   "error.toHome": "Przejdź do strony głównej",
   "contact.title": "Kontakt",
   "contact.heading": "Kontakt",
-  "contact.description": "Adres e-mail i profile w mediach społecznościowych umożliwiające kontakt."
+  "contact.description": "Adres e-mail i profile w mediach społecznościowych umożliwiające kontakt.",
+  "menu.gallery": "Galeria",
+  "menu.process": "Proces",
+  "menu.projects": "Projekty",
+  "menu.about": "O mnie",
+  "menu.contact": "Kontakt",
+  "footer.menu": "Strony",
+  "footer.networks": "Sieci społecznościowe"
 }

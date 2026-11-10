@@ -7,5 +7,12 @@
   "error.toHome": "Go to the home page",
   "contact.title": "Contact",
   "contact.heading": "Get in touch",
-  "contact.description": "Email and social networks to get in touch."
+  "contact.description": "Email and social networks to get in touch.",
+  "menu.gallery": "Gallery",
+  "menu.process": "Process",
+  "menu.projects": "Projects",
+  "menu.about": "About",
+  "menu.contact": "Contact",
+  "footer.menu": "Pages",
+  "footer.networks": "Social networks"
 }

@@ -7,5 +7,12 @@
   "error.toHome": "Перейти на главную страницу",
   "contact.title": "Контакты",
   "contact.heading": "Связаться",
-  "contact.description": "Электронная почта и социальные сети для связи."
+  "contact.description": "Электронная почта и социальные сети для связи.",
+  "menu.gallery": "Галерея",
+  "menu.process": "Процесс",
+  "menu.projects": "Проекты",
+  "menu.about": "Обо мне",
+  "menu.contact": "Контакты",
+  "footer.menu": "Страницы",
+  "footer.networks": "Социальные сети"
 }

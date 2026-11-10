@@ -7,5 +7,12 @@
   "error.toHome": "홈페이지로 이동",
   "contact.title": "연락처",
   "contact.heading": "연락하기",
-  "contact.description": "연락을 위한 이메일 및 소셜 미디어 계정."
+  "contact.description": "연락을 위한 이메일 및 소셜 미디어 계정.",
+  "menu.gallery": "갤러리",
+  "menu.process": "프로세스",
+  "menu.projects": "프로젝트",
+  "menu.about": "소개",
+  "menu.contact": "연락처",
+  "footer.menu": "페이지",
+  "footer.networks": "소셜 네트워크"
 }

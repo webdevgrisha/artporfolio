@@ -7,5 +7,12 @@
   "error.toHome": "Перайсці на галоўную старонку",
   "contact.title": "Кантакты",
   "contact.heading": "Звязацца",
-  "contact.description": "Электронная пошта і сацыяльныя сеткі для сувязі."
+  "contact.description": "Электронная пошта і сацыяльныя сеткі для сувязі.",
+  "menu.gallery": "Галерэя",
+  "menu.process": "Працэс",
+  "menu.projects": "Праекты",
+  "menu.about": "Пра мяне",
+  "menu.contact": "Кантакты",
+  "footer.menu": "Старонкі",
+  "footer.networks": "Сацыяльныя сеткі"
 }

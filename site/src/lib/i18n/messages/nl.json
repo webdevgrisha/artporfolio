@@ -7,5 +7,12 @@
   "error.toHome": "Ga naar de startpagina",
   "contact.title": "Contact",
   "contact.heading": "Contact",
-  "contact.description": "E-mail en sociale media om contact op te nemen."
+  "contact.description": "E-mail en sociale media om contact op te nemen.",
+  "menu.gallery": "Galerij",
+  "menu.process": "Werkwijze",
+  "menu.projects": "Projecten",
+  "menu.about": "Over mij",
+  "menu.contact": "Contact",
+  "footer.menu": "Pagina's",
+  "footer.networks": "Sociale netwerken"
 }

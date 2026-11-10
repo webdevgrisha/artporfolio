@@ -7,5 +7,12 @@
   "error.toHome": "Zur Startseite",
   "contact.title": "Kontakt",
   "contact.heading": "Kontakt",
-  "contact.description": "E-Mail und soziale Netzwerke zur Kontaktaufnahme."
+  "contact.description": "E-Mail und soziale Netzwerke zur Kontaktaufnahme.",
+  "menu.gallery": "Galerie",
+  "menu.process": "Prozess",
+  "menu.projects": "Projekte",
+  "menu.about": "Über mich",
+  "menu.contact": "Kontakt",
+  "footer.menu": "Seiten",
+  "footer.networks": "Soziale Netzwerke"
 }
