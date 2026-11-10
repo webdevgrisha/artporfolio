@@ -105,12 +105,18 @@ const contacts = [
   }
 
   /*
-   * As wide as its column: «Get in touch» in Absans is about 7.5 times as wide as its size, so it
+   * As wide as its column: «Get in touch» in Absans is about 7.4 times as wide as its size, so it
    * fills the column from edge to edge at every width. A longer heading of another language goes
    * on two lines.
+   *
+   * A letter has some empty room at its sides, and the last one is followed by the spacing between
+   * letters: at this size the last letter itself ends on the margin of the page, as far from the
+   * edge as the photo is, while its box goes past the column by that room (0.085em after the H of
+   * Absans) and a little more, so a browser that measures the text a hair wider never wraps it.
    */
   .heading {
-    font-size: min(var(--font-size-display), 13.4cqi);
+    margin-inline-end: calc(-0.085em - var(--letter-spacing-caps) - 0.05em);
+    font-size: min(var(--font-size-display), 13.63cqi);
     line-height: var(--line-height-display);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
