@@ -87,11 +87,11 @@ const contacts = [
     display: grid;
     /* One column on a phone, which never grows past the screen to fit a long word or the photo. */
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--layout-space-12) var(--grid-gap);
+    gap: var(--layout-space-12) var(--layout-space-16);
     padding-block: var(--layout-space-16);
   }
 
-  /* The heading is sized by the width of its column, so it fits in one line where it can. */
+  /* The sizes of the text follow the width of its column, as the heading spans it whole. */
   .body {
     display: flex;
     flex-direction: column;
@@ -104,8 +104,13 @@ const contacts = [
     aspect-ratio: 764 / 534;
   }
 
+  /*
+   * As wide as its column: «Get in touch» in Absans is about 7.5 times as wide as its size, so it
+   * fills the column from edge to edge at every width. A longer heading of another language goes
+   * on two lines.
+   */
   .heading {
-    font-size: min(var(--font-size-6), 12cqi);
+    font-size: min(var(--font-size-display), 13.4cqi);
     line-height: var(--line-height-display);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
@@ -120,36 +125,25 @@ const contacts = [
   }
 
   /*
-   * Beside each other from a tablet on: the photo on the left, the text from the middle, as high
-   * as the photo, with the heading at its top and the links at its bottom. A text higher than the
-   * photo, in a long language, only makes the row higher.
+   * Beside each other from a tablet on, in the proportions of the mockup: the photo, then the
+   * text as high as the photo, with the heading at its top and the links at its bottom. A text
+   * higher than the photo, on a narrow tablet or in a long language, only makes the row higher.
    */
   @media (width >= 40rem) {
     .layout.has-photo {
-      grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+      grid-template-columns: minmax(0, 764fr) minmax(0, 904fr);
     }
 
     .has-photo .body {
       grid-row: 1;
-      grid-column: 7 / -1;
+      grid-column: 2;
       justify-content: space-between;
     }
 
     .has-photo .photo {
       grid-row: 1;
-      grid-column: 1 / 7;
+      grid-column: 1;
       align-self: start;
-    }
-
-    /* The heading spans its whole column, as in the mockup. */
-    .heading {
-      font-size: min(var(--font-size-display), 12.5cqi);
-    }
-  }
-
-  @media (width >= 75rem) {
-    .has-photo .photo {
-      grid-column: 1 / 6;
     }
   }
 
@@ -162,7 +156,7 @@ const contacts = [
   .links {
     display: flex;
     flex-direction: column;
-    gap: var(--layout-space-4);
+    gap: 0.75em;
     padding: 0;
     margin: 0;
     /*
@@ -170,7 +164,11 @@ const contacts = [
      * room under the last line, so its baseline is the bottom of the photo, as in the mockup.
      */
     margin-block-end: calc((max(var(--min-tap-target-size), 1.25em) - 1cap) / -2);
-    font-size: var(--font-size-2);
+    /*
+     * Smaller than the heading in step with it, but not so small on a laptop that the list looks
+     * weak, nor so large on a wide screen that it competes with the heading.
+     */
+    font-size: clamp(var(--font-size-1), 3cqi, var(--font-size-3));
     list-style: none;
   }
 
