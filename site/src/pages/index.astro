@@ -1,18 +1,17 @@
 ---
-import { languageCookie } from "@/lib/i18n/languageCookie";
-import { visitorLanguage } from "@/lib/i18n/visitorLanguage";
+import { defaultLanguage } from "@/lib/i18n/languages";
+import { negotiateLanguage } from "@/lib/i18n/negotiateLanguage";
 
-const language = visitorLanguage({
-  acceptLanguage: Astro.request.headers.get("Accept-Language"),
-  chosen: Astro.cookies.get(languageCookie)?.value,
-});
+// The language of the browser, else English. A choice made with the switch is not remembered:
+// Firebase Hosting passes a function no cookie but __session, which the admin's session holds.
+const language = negotiateLanguage(Astro.request.headers.get("Accept-Language")) ?? defaultLanguage;
 
 // The answer differs from visitor to visitor, so no cache keeps it: Cloudflare ignores `Vary`.
 return new Response(null, {
   headers: {
     "Cache-Control": "private, no-store",
     Location: `/${language}/`,
-    Vary: "Accept-Language, Cookie",
+    Vary: "Accept-Language",
   },
   status: 302,
 });
