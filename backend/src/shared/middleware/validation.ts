@@ -53,3 +53,27 @@ export function validateParams(schema: ZodType<Record<string, string>>): Request
     next();
   };
 }
+
+/**
+ * Query parameters are checked like a body, each invalid one reported by name. A parameter the
+ * schema does not know is left out rather than refused, as caches and trackers add their own.
+ */
+export function validateQuery(schema: ZodType<Record<string, unknown>>): RequestHandler {
+  return (request, _response, next) => {
+    const result = schema.safeParse(request.query);
+
+    if (!result.success) {
+      const errors = result.error.issues.map((issue) => ({
+        detail: issue.message,
+        parameter: String(issue.path[0]),
+      }));
+
+      next(new BadRequestError("Invalid query", errors));
+      return;
+    }
+
+    // Express 5 parses `request.query` anew on every read, so the checked values replace the getter.
+    Object.defineProperty(request, "query", { value: result.data });
+    next();
+  };
+}
