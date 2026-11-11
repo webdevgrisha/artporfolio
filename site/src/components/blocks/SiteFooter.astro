@@ -122,7 +122,11 @@ const year = new Date().getFullYear();
 
     display: flex;
     flex-wrap: wrap;
-    gap: var(--layout-space-8);
+    /*
+     * Under the newsletter, the menu stands apart from it as a part of its own, closer than the
+     * name below.
+     */
+    gap: var(--layout-space-12) var(--layout-space-8);
     align-items: start;
     justify-content: space-between;
     padding-block-start: var(--layout-space-8);
@@ -135,15 +139,32 @@ const year = new Date().getFullYear();
    * the baseline of the last. On a touch screen, or where the menu takes a row of its own, the two
    * no longer line up, and the newsletter keeps that size rather than follow a taller menu.
    *
-   * As wide as its heading on one line: where the menu does not fit beside it, the menu takes the
-   * next row rather than the heading a second line.
+   * On a phone and a tablet the newsletter takes the width of the page, and the menu and the
+   * networks a row under it, as in the mockup of a phone. From the width of a large tablet, 59rem,
+   * the three stand on one row at the size of the mockup: the newsletter as wide as its heading on
+   * one line, or, in a language of a longer heading, on two lines until the page is wide enough.
    */
   .signup {
     --portrait-size: calc(
       (var(--menu-links) - 1) * var(--menu-row-close) + 0.7 * var(--menu-font-size)
     );
 
-    flex: 0 1 auto;
+    flex: 1 1 100%;
+  }
+
+  @container (width >= 59rem) {
+    .top {
+      flex-wrap: nowrap;
+    }
+
+    .signup {
+      flex: 0 1 auto;
+    }
+
+    /* The networks and the menu keep their row: the heading takes the lines. */
+    .links {
+      flex-shrink: 0;
+    }
   }
 
   .links {
@@ -156,6 +177,12 @@ const year = new Date().getFullYear();
 
     display: flex;
     flex-grow: 1;
+    /*
+     * A name of a page never breaks inside a word, as a link may break an address: the menu keeps
+     * the width of its names, and on a narrow phone in a language of long names the networks go
+     * under it.
+     */
+    flex-wrap: wrap;
     gap: var(--layout-space-8);
     align-items: start;
     justify-content: space-between;
@@ -173,26 +200,15 @@ const year = new Date().getFullYear();
   }
 
   /*
-   * On a phone the menu comes first, at the start, and the networks at the end, as in the mockup.
-   * Wider, the networks and the menu stand together at the end, the menu last.
+   * Under the newsletter the menu comes first, at the start, and the networks at the end, as in the
+   * mockup of a phone. Beside it, the networks and the menu stand together at the end, the menu last.
    */
   .menu-nav {
+    flex-shrink: 0;
     order: -1;
   }
 
-  /*
-   * A name of a page never breaks inside a word, as a link may break an address: the menu keeps the
-   * width of its names, and on a narrow phone in a language of long names the networks go under it.
-   */
-  .links {
-    flex-wrap: wrap;
-  }
-
-  .menu-nav {
-    flex-shrink: 0;
-  }
-
-  @container (width >= 40rem) {
+  @container (width >= 59rem) {
     .links {
       justify-content: end;
     }
@@ -227,11 +243,11 @@ const year = new Date().getFullYear();
   }
 
   /*
-   * On a phone the networks stand at an edge of the page, at the end beside the menu or at the start
-   * under it: the frames of the outer icons, not the room a finger needs around them, line up with
-   * it, as the arrow of the newsletter does.
+   * Under the newsletter the networks stand at an edge of the page, at the end beside the menu or at
+   * the start under it: the frames of the outer icons, not the room a finger needs around them,
+   * line up with it, as the arrow of the newsletter does.
    */
-  @container (width < 40rem) {
+  @container (width < 59rem) {
     .networks {
       margin-inline: calc(
         (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -
