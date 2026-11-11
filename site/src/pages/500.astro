@@ -8,6 +8,12 @@ const language = languageOfPath(Astro.url.pathname);
 const title = t(language, "error.server.title");
 ---
 
-<BaseLayout language={language} title={title}>
-  <ErrorNotice language={language} text={t(language, "error.server.text")} title={title} />
+{/* As a missing page: alone on the screen, without the footer, whose networks need the API. */}
+<BaseLayout footer={false} language={language} title={title}>
+  <ErrorNotice
+    code={["5", "0"]}
+    language={language}
+    text={t(language, "error.server.text")}
+    title={title}
+  />
 </BaseLayout>

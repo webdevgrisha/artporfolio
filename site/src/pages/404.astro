@@ -1,12 +1,13 @@
 ---
-import NotFoundNotice from "@/components/blocks/NotFoundNotice.astro";
+import ErrorNotice from "@/components/blocks/ErrorNotice.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { languageOfPath } from "@/lib/i18n/languageOfPath";
 import { t } from "@/lib/i18n/translate";
 
 const language = languageOfPath(Astro.url.pathname);
+const title = t(language, "error.notFound.title");
 ---
 
-<BaseLayout footer={false} language={language} title={t(language, "error.notFound.title")}>
-  <NotFoundNotice language={language} />
+<BaseLayout footer={false} language={language} title={title}>
+  <ErrorNotice code={["4", "4"]} language={language} title={title} />
 </BaseLayout>
