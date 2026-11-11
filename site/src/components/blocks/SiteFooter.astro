@@ -91,8 +91,11 @@ const year = new Date().getFullYear();
     </div>
     <div class="signature">
       <p lang="en">{artistName}</p>
-      {/* The sign before the year in every language: a page written right to left would move it after. */}
-      <p dir="ltr">©{year}</p>
+      {/*
+        The sign before the year in every language, as a page written right to left would move it
+        after; the line itself stays at the start of the page, as the name does.
+      */}
+      <p><span dir="ltr">©{year}</span></p>
     </div>
   </Container>
 </footer>
@@ -175,6 +178,18 @@ const year = new Date().getFullYear();
     order: -1;
   }
 
+  /*
+   * A name of a page never breaks inside a word, as a link may break an address: the menu keeps the
+   * width of its names, and on a narrow phone in a language of long names the networks go under it.
+   */
+  .links {
+    flex-wrap: wrap;
+  }
+
+  .menu-nav {
+    flex-shrink: 0;
+  }
+
   @container (width >= 40rem) {
     .links {
       justify-content: end;
@@ -207,6 +222,20 @@ const year = new Date().getFullYear();
       var(--icon-size) / 12
     );
     font-size: var(--icon-font-size);
+  }
+
+  /*
+   * On a phone the networks stand at an edge of the page, at the end beside the menu or at the start
+   * under it: the frames of the outer icons, not the room a finger needs around them, line up with
+   * it, as the arrow of the newsletter does.
+   */
+  @container (width < 40rem) {
+    .networks {
+      margin-inline: calc(
+        (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -
+        var(--icon-size) / 12
+      );
+    }
   }
 
   .menu {
