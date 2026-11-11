@@ -107,9 +107,16 @@ const year = new Date().getFullYear();
   }
 
   /*
-   * The line across the page that ends what is above, as in the mockup. The newsletter stands at
-   * the start, the networks and the menu at the end; where the three do not fit on one row, the
-   * newsletter takes a row of its own above them.
+   * The line across the page that ends what is above, as in the mockup. Three layouts, one a step
+   * from the other:
+   *
+   * - On a phone the newsletter takes the width of the page, and the menu and the networks a row
+   *   under it, the menu at the start and the networks at the end, as in the mockup of a phone.
+   * - From 40rem, a tablet, the three stand on one row, as in the mockup of a tablet: the portrait
+   *   and the newsletter at the start, and at the end a column of the networks above the menu,
+   *   narrow enough to leave the heading two lines at the least, one from about 850px.
+   * - From 60rem, a laptop, the networks stand beside the menu, as in the mockup of a laptop: the
+   *   heading has room for one line there, and the longest of the other languages for two.
    */
   .top {
     /*
@@ -133,17 +140,17 @@ const year = new Date().getFullYear();
     border-block-start: var(--line-width) solid currentColor;
   }
 
+  @media (pointer: fine) {
+    .top {
+      --menu-row: var(--menu-row-close);
+    }
+  }
+
   /*
    * The portrait is as high as the menu with its rows as close as in the mockup: under a mouse the
    * newsletter beside the menu is as high as it, from the top of the capitals of the first link to
-   * the baseline of the last. On a touch screen, or where the menu takes a row of its own, the two
-   * no longer line up, and the newsletter keeps that size rather than follow a taller menu.
-   *
-   * Three layouts, each a step from the one before. On a phone the newsletter takes the width of
-   * the page, and the menu and the networks a row under it, as in the mockup of a phone. From 36rem
-   * the portrait stands beside the heading; narrower, it would take the room of the heading. From
-   * 60rem, a laptop, the three stand on one row: there the heading of the mockup fits on one line,
-   * and the longest of the other languages on two.
+   * the baseline of the last. Elsewhere the two do not line up, and the newsletter keeps that size
+   * rather than follow the menu. On a phone the heading needs the room of the portrait.
    */
   .signup {
     --portrait-display: none;
@@ -154,34 +161,13 @@ const year = new Date().getFullYear();
     flex: 1 1 100%;
   }
 
-  @container (width >= 36rem) {
-    .signup {
-      --portrait-display: block;
-    }
-  }
-
   /*
-   * On a row of its own the field reaches the end of the page, as the row of the networks under it
-   * does: the two rows share their edges.
+   * On a row of its own the field reaches the end of the page, as the row under it does; beside
+   * the menu it is as wide as an address needs.
    */
-  @container (width < 60rem) {
+  @container (width < 40rem) {
     .signup {
       --form-max-size: none;
-    }
-  }
-
-  @container (width >= 60rem) {
-    .top {
-      flex-wrap: nowrap;
-    }
-
-    .signup {
-      flex: 0 1 auto;
-    }
-
-    /* The networks and the menu keep their row: the heading takes the lines. */
-    .links {
-      flex-shrink: 0;
     }
   }
 
@@ -211,28 +197,36 @@ const year = new Date().getFullYear();
     margin-block: calc((var(--menu-row) - 0.7 * var(--menu-font-size)) / -2);
   }
 
-  @media (pointer: fine) {
-    .top {
-      --menu-row: var(--menu-row-close);
-    }
-  }
-
-  /*
-   * Under the newsletter the menu comes first, at the start, and the networks at the end, as in the
-   * mockup of a phone. Beside it, the networks and the menu stand together at the end, the menu last.
-   */
   .menu-nav {
     flex-shrink: 0;
     order: -1;
   }
 
-  @container (width >= 60rem) {
+  /* The networks and the menu keep their width: the heading takes the lines. */
+  @container (width >= 40rem) {
+    .top {
+      flex-wrap: nowrap;
+    }
+
+    .signup {
+      --portrait-display: block;
+
+      flex: 0 1 auto;
+    }
+
     .links {
-      justify-content: end;
+      flex: none;
+      flex-direction: column;
     }
 
     .menu-nav {
       order: 0;
+    }
+  }
+
+  @container (width >= 60rem) {
+    .links {
+      flex-direction: row;
     }
   }
 
@@ -245,7 +239,7 @@ const year = new Date().getFullYear();
 
   /*
    * The top of the frames of the icons stands at the top of the capitals of the first link of the
-   * menu, as in the mockup. The capitals of Absans are 0.7 of its size, centered in their row; an
+   * menu beside them, or of the heading where they stand above the menu, as in the mockup. The capitals of Absans are 0.7 of its size, centered in their row; an
    * icon is centered in a box a finger can hit, and its frame starts 2 units of 24 below its top.
    */
   .networks {
@@ -261,9 +255,9 @@ const year = new Date().getFullYear();
   }
 
   /*
-   * Under the newsletter the networks stand at an edge of the page, at the end beside the menu or at
-   * the start under it: the frames of the outer icons, not the room a finger needs around them,
-   * line up with it, as the arrow of the newsletter does.
+   * Where the networks stand at the end of a row under the newsletter, or at the start of a column
+   * above the menu, the frames of the outer icons, not the room a finger needs around them, line
+   * up with the edge of the page or with the menu, as the arrow of the newsletter does.
    */
   @container (width < 60rem) {
     .networks {
