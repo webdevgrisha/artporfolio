@@ -129,10 +129,11 @@ site/src/
 │   ├── controls/     switches a visitor uses
 │   └── blocks/       the parts a page is built from
 ├── styles/           design tokens, breakpoints, themes
+├── actions/          what a visitor sends, such as the newsletter form, run on the server
 └── lib/              code with no markup: requests, languages, formatting
 ```
 
-A folder imports only from the folders below it: `pages → layouts → blocks → controls → ui → lib`; `styles` may be used by any markup. dependency-cruiser cannot read `.astro` files, so Biome enforces this with `noRestrictedImports` (the `site/src/...` overrides in `biome.json`), for relative and `@/` imports alike.
+A folder imports only from the folders below it: `pages → layouts → blocks → controls → ui → lib`; `styles` may be used by any markup. `actions` import only `lib`: the browser of a visitor never calls the API, so a form posts to its action (Astro Actions), which works without JavaScript too and checks its input with zod before it calls the API. dependency-cruiser cannot read `.astro` files, so Biome enforces this with `noRestrictedImports` (the `site/src/...` overrides in `biome.json`), for relative and `@/` imports alike.
 
 ### Languages
 
@@ -141,7 +142,7 @@ A folder imports only from the folders below it: `pages → layouts → blocks �
 - The root `/` redirects to the best language of the browser (`Accept-Language`, by weight, with `de-AT` finding `de`), else to English. The redirect differs from visitor to visitor, so it is never cached. A language chosen with the switch is not remembered for the next visit: Firebase Hosting passes a function no cookie but `__session`, which holds the admin's session (docs/TODO.md, «Запоминание выбранного языка»).
 - The texts of the interface live in `lib/i18n/messages/<language>.json`; `en.json` is the source, and `t(language, key)` is typed by its keys. A text not translated yet shows in English. Content written in the admin is translated by the backend instead.
 - A new text: add its key to `en.json`, run `pnpm --filter site i18n:translate`, and read the diff. The script sends DeepL only new texts and texts whose English changed, so a translation edited by hand stays; `translatedFrom.json` keeps the English of each translation. A test keeps every language on the keys of English.
-- Read the diff before committing: DeepL is told the site is one person's (`context` in the script), yet it still turns «Get in touch» into «Contact us» in some languages, and it gives «the artist» a gender. Alone, «About» of the menu becomes a bare preposition («Über», «O») or «About us», and «Process» a procedure («Ablauf», «Procedura»): on this site they are «About me» and the process of painting. «Take me home» becomes a way to one's house («Portami a casa», «带我回家»): it is the home page. Fix such a text by hand in the language file, and keep the English free of words that need a gender.
+- Read the diff before committing: DeepL is told the site is one person's (`context` in the script), yet it still turns «Get in touch» into «Contact us» in some languages, and it gives «the artist» a gender. Alone, «About» of the menu becomes a bare preposition («Über», «O») or «About us», and «Process» a procedure («Ablauf», «Procedura»): on this site they are «About me» and the process of painting. «Take me home» becomes a way to one's house («Portami a casa», «带我回家»): it is the home page. A polite request comes out as «we ask» («Kérjük», «Prašome», «Vă rugăm»), and «Thank you» or «I will write» take the speaker's gender in Portuguese and Hindi: say it without them. Fix such a text by hand in the language file, and keep the English free of words that need a gender.
 - A heading spans its column on one line in every language: translate it with one or two words (Kontakt, Contacto), the way sites of that language name the section. A longer one goes on two lines and breaks the proportions of its block. Check the page in every language after such a change.
 
 ### Search engines and link cards
@@ -189,6 +190,7 @@ backend/src/
 │   │   ├── sections/   the sections, each a Firestore document with its subsections
 │   │   └── works/      the works, each a Firestore document; representation.ts is what the API returns (sizes in cm and inches), prices.ts the prices computed from the rates, references.ts what a work refers to, order.ts and visibility.ts how the works are listed
 │   ├── health/
+│   ├── newsletter/     POST /api/newsletter/subscribers: a visitor subscribes; the same answer for a new and a known address
 │   ├── originals/      GET /api/originals, the uploaded files, for the admin alone
 │   ├── pages/          the pages of the public site and their main photos (heroes)
 │   ├── projects/       the projects, each a Firestore document of its own, and their order
@@ -218,7 +220,7 @@ backend/src/
 - A collection whose elements are edited one at a time, such as the projects, keeps each element in its own Firestore document at `/:id`. The client picks the id of a new element (a UUID) and creates it with `PUT` and `If-None-Match: *` (201); the server answers 412 once the id is taken, so a create repeated after a lost response never makes a second element. `PUT` with `If-Match` and `DELETE` change it. Its order is a resource of its own (`/api/projects/order`, the ids in order) stored as a `position` in each document; the `ETag` of an element leaves the position out, so reordering does not outdate an open edit form. The server dates each element: `createdAt` once, `updatedAt` on every save of the element, not on a move.
 - A work keeps its collection itself (`collectionId`). A `PUT` of a collection lets go of its own works and takes free ones, and refuses a work of another collection with 422: the `If-Match` of this collection says nothing about that one. A work moves to another collection only in its own form.
 - A hidden work (`published: false`) is the admin's alone. The public `GET`s of works and collections pass `identifyReader` (`modules/auth/middleware.ts`): without a session the reader is a visitor, who gets only published works (a hidden one is 404, and the `workIds` of a collection leave it out); with a valid session the reader is the admin, who gets them all in an answer marked `Cache-Control: private, no-cache`; an ended session is 401. The answer depends on the cookie, so it carries `Vary: Cookie`.
-- Every change goes through `protectChanges` (`modules/auth/middleware.ts`), which `server.ts` mounts in front of the routes: a method other than `GET`, `HEAD` and `OPTIONS` needs the admin's session and its CSRF token, so a new route is protected without asking for it. Only `/api/health` and `/api/auth` are mounted before it.
+- Every change goes through `protectChanges` (`modules/auth/middleware.ts`), which `server.ts` mounts in front of the routes: a method other than `GET`, `HEAD` and `OPTIONS` needs the admin's session and its CSRF token, so a new route is protected without asking for it. Only `/api/health`, `/api/auth` and `/api/newsletter` are mounted before it; a route of the admin added to them protects itself.
 - The session is the `__session` cookie: Firebase Hosting passes the function no other cookie. The CSRF token is an HMAC of that cookie, issued by `GET /api/auth/csrf` and sent back in `X-CSRF-Token`, so every tab of a session has the same token and a new session gets a new one. Login needs no token: there is no session yet, and only the admin can sign in.
 - Global Express typing lives with its owner: `modules/auth/express.d.ts` declares `Locals.auth`, `shared/http/express.d.ts` declares `Request.file` and `rawBody`.
 - Code imports through subpath imports (`#modules/auth/service`, `#shared/http/errors`). There are no barrel files.
