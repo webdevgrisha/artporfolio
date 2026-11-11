@@ -55,47 +55,49 @@ const year = new Date().getFullYear();
 
 <footer>
   <Container class="footer">
-    <div class="top" style={`--menu-links: ${menu.length}`}>
-      <NewsletterSignup class="signup" language={language} />
-      <div class="links">
-        {
-          networks.length > 0 && (
-            <ul aria-label={t(language, "footer.networks")} class="networks">
-              {networks.map(({ href, Icon, label, lang }) => (
-                <li>
-                  <IconLink href={href} label={label} lang={lang}>
-                    <Icon slot="icon" />
-                  </IconLink>
-                </li>
-              ))}
+    <div class="layout">
+      <div class="top" style={`--menu-links: ${menu.length}`}>
+        <NewsletterSignup class="signup" language={language} />
+        <div class="links">
+          {
+            networks.length > 0 && (
+              <ul aria-label={t(language, "footer.networks")} class="networks">
+                {networks.map(({ href, Icon, label, lang }) => (
+                  <li>
+                    <IconLink href={href} label={label} lang={lang}>
+                      <Icon slot="icon" />
+                    </IconLink>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+          <nav aria-label={t(language, "footer.menu")} class="menu-nav">
+            <ul class="menu">
+              {
+                menu.map((page) => (
+                  <li>
+                    <TextLink
+                      class="menu-link"
+                      aria-current={page.path === path ? "page" : undefined}
+                      href={localizedPath(language, page.path)}
+                      label={t(language, page.label)}
+                    />
+                  </li>
+                ))
+              }
             </ul>
-          )
-        }
-        <nav aria-label={t(language, "footer.menu")} class="menu-nav">
-          <ul class="menu">
-            {
-              menu.map((page) => (
-                <li>
-                  <TextLink
-                    class="menu-link"
-                    aria-current={page.path === path ? "page" : undefined}
-                    href={localizedPath(language, page.path)}
-                    label={t(language, page.label)}
-                  />
-                </li>
-              ))
-            }
-          </ul>
-        </nav>
+          </nav>
+        </div>
       </div>
-    </div>
-    <div class="signature">
-      <p lang="en">{artistName}</p>
-      {/*
-        The sign before the year in every language, as a page written right to left would move it
-        after; the line itself stays at the start of the page, as the name does.
-      */}
-      <p><span dir="ltr">©{year}</span></p>
+      <div class="signature">
+        <p lang="en">{artistName}</p>
+        {/*
+          The sign before the year in every language, as a page written right to left would move it
+          after; the line itself stays at the start of the page, as the name does.
+        */}
+        <p><span dir="ltr">©{year}</span></p>
+      </div>
     </div>
   </Container>
 </footer>
@@ -209,18 +211,28 @@ const year = new Date().getFullYear();
     order: -1;
   }
 
-  /* The networks and the menu keep their width: the heading takes the lines. */
+  /*
+   * From the tablet on the footer has two columns, the newsletter and the name in the first, and the
+   * networks with the menu and the year in the second, as in the mockups: the year starts where the
+   * column of the networks and the menu does. The second column is as wide as the wider of the two,
+   * and the heading takes the lines.
+   */
   @container (width >= 40rem) {
-    .top {
-      flex-wrap: nowrap;
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: var(--layout-space-8);
     }
 
-    .signup {
-      flex: 0 1 auto;
+    .top {
+      display: grid;
+      grid-template-columns: subgrid;
+      grid-column: 1 / -1;
+      /* The gap between the columns is the one of the footer, so the columns line up. */
+      column-gap: normal;
     }
 
     .links {
-      flex: none;
       flex-direction: column;
     }
 
@@ -310,9 +322,18 @@ const year = new Date().getFullYear();
 
   @container (width >= 40rem) {
     .signature {
-      flex-direction: row;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: subgrid;
+      grid-column: 1 / -1;
+      column-gap: normal;
       font-size: 5.25cqi;
+    }
+  }
+
+  /* Beside the menu the year ends where the page does, as the menu does. */
+  @container (width >= 60rem) {
+    .signature > :last-child {
+      text-align: end;
     }
   }
 
