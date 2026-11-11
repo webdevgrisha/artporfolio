@@ -7,6 +7,7 @@ import Container from "@/components/ui/Container.astro";
 import IconLink from "@/components/ui/IconLink.astro";
 import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
 import LinkedInIcon from "@/components/ui/icons/LinkedInIcon.astro";
+import MailIcon from "@/components/ui/icons/MailIcon.astro";
 import YouTubeIcon from "@/components/ui/icons/YouTubeIcon.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import { type ContactLinks, contactsSchema } from "@/lib/api/contacts";
@@ -35,13 +36,15 @@ try {
   console.error("The footer is shown without the networks:", error);
 }
 
-// In the order of the mockup; a network the artist left empty is not shown. Its name is English in
-// every language, as on the Contacts page.
+// Every way to reach the artist, as on the Contacts page: the networks in the order of the mockup,
+// then the email, named by its address. A link the artist left empty is not shown. The name of a
+// network is English in every language, as on the Contacts page.
 const networks = links
   ? [
-      { href: links.youtube, Icon: YouTubeIcon, label: "YouTube" },
-      { href: links.instagram, Icon: InstagramIcon, label: "Instagram" },
-      { href: links.linkedin, Icon: LinkedInIcon, label: "LinkedIn" },
+      { href: links.youtube, Icon: YouTubeIcon, label: "YouTube", lang: "en" },
+      { href: links.instagram, Icon: InstagramIcon, label: "Instagram", lang: "en" },
+      { href: links.linkedin, Icon: LinkedInIcon, label: "LinkedIn", lang: "en" },
+      { href: links.email && `mailto:${links.email}`, Icon: MailIcon, label: links.email },
     ].filter(({ href }) => href !== "")
   : [];
 
@@ -55,9 +58,9 @@ const year = new Date().getFullYear();
       {
         networks.length > 0 && (
           <ul aria-label={t(language, "footer.networks")} class="networks">
-            {networks.map(({ href, Icon, label }) => (
+            {networks.map(({ href, Icon, label, lang }) => (
               <li>
-                <IconLink href={href} label={label} lang="en">
+                <IconLink href={href} label={label} lang={lang}>
                   <Icon slot="icon" />
                 </IconLink>
               </li>
