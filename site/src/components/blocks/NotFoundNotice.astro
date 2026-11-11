@@ -1,7 +1,7 @@
 ---
 /**
  * What an address with no page shows, as the admin does: «4», the portrait, «4», then what happened
- * and the way back home.
+ * and the way back home, alone on the screen.
  */
 import portrait from "@/assets/images/portraitMark.png";
 import ButtonLink from "@/components/ui/ButtonLink.astro";
@@ -28,11 +28,14 @@ const { language } = Astro.props;
 </Container>
 
 <style>
+  /* Alone on the screen, in its middle, as in the admin. */
   .notice {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-block: var(--layout-space-16);
+    justify-content: center;
+    min-block-size: 100dvh;
+    padding-block: var(--layout-space-8);
     text-align: center;
   }
 

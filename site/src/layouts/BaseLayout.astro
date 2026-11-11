@@ -19,6 +19,8 @@ interface Props {
    * cut to about 160 characters. Without it, a search engine quotes the page itself.
    */
   description?: string;
+  /** Whether the footer closes the page; a page not found stands alone, with its way home only. */
+  footer?: boolean;
   language: Language;
   /**
    * The path of the page under its language, such as `/contact`. A page without one is not a page
@@ -29,7 +31,7 @@ interface Props {
   title?: string;
 }
 
-const { description, language, path, title } = Astro.props;
+const { description, footer = true, language, path, title } = Astro.props;
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
 ---
 
@@ -80,7 +82,7 @@ const fullTitle = title ? `${title} — ${siteName}` : siteName;
     <main id="content">
       <slot />
     </main>
-    <SiteFooter language={language} path={path} />
+    {footer && <SiteFooter language={language} path={path} />}
   </body>
 </html>
 
