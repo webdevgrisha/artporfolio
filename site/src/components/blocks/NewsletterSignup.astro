@@ -180,11 +180,12 @@ const outcome = !result
     color: var(--color-text-muted);
   }
 
+  /* The arrow ends where the line ends, as in the mockup; its button keeps the room of a finger. */
   .submit {
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
-    justify-content: center;
+    justify-content: end;
     min-inline-size: var(--min-tap-target-size);
     min-block-size: var(--min-tap-target-size);
     padding: 0;
