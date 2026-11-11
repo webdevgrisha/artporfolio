@@ -127,16 +127,15 @@ const contacts = [
   }
 
   /*
-   * On a phone and a tablet the heading goes word by word under the photo: the longest word fills
-   * its line, at most at the size of the mockup of a tablet. A letter of Absans in capitals is
-   * about 0.74 times as wide as its size; 0.8 leaves room for a wider one, and a word wider still
-   * breaks by its syllables rather than run off the screen. A word shorter than «touch» counts as
-   * five letters, so a heading of short words, such as the Swedish «Hör av dig», is no larger
-   * than «Get in touch». A phone sets each word on a line of its own; a tablet balances them,
-   * «Get in / touch».
+   * On a phone the heading goes word by word, each word on a line of its own, as in its mockup:
+   * the longest word fills its line. A letter of Absans in capitals is about 0.74 times as wide as
+   * its size; 0.8 leaves room for a wider one, and a word wider still breaks by its syllables
+   * rather than run off the screen. A word shorter than «touch» counts as five letters, so a
+   * heading of short words, such as the Swedish «Hör av dig», is no larger than «Get in touch».
+   * Never larger than the largest display size, which a wide phone in landscape would pass.
    */
   .heading {
-    font-size: min(8rem, 100cqi / (0.8 * max(var(--longest-word), 5)));
+    font-size: min(10rem, 100cqi / (0.8 * max(var(--longest-word), 5)));
     line-height: var(--line-height-display);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
@@ -152,6 +151,25 @@ const contacts = [
   @media (width < 40rem) {
     .heading .word {
       display: block;
+    }
+  }
+
+  /*
+   * From a tablet on, on one line as wide as its column, under the photo or beside it alike:
+   * «Get in touch» in Absans is about 7.4 times as wide as its size, so it fills the column from
+   * edge to edge at every width. The mockup of a tablet breaks it in two only as it keeps the size
+   * of a laptop; one line leaves no empty half of the screen and brings the links up. A longer
+   * heading of another language goes on two lines.
+   *
+   * A letter has some empty room at its sides, and the last one is followed by the spacing between
+   * letters: at this size the last letter itself ends on the margin of the page, as far from the
+   * edge as the photo is, while its box goes past the column by that room (0.085em after the H of
+   * Absans) and a little more, so a browser that measures the text a hair wider never wraps it.
+   */
+  @media (width >= 40rem) {
+    .heading {
+      margin-inline-end: calc(-0.085em - var(--letter-spacing-caps) - 0.05em);
+      font-size: min(10rem, 13.63cqi);
     }
   }
 
@@ -173,22 +191,6 @@ const contacts = [
 
     .has-photo .photo {
       align-self: start;
-    }
-
-    /*
-     * On one line as wide as its column: «Get in touch» in Absans is about 7.4 times as wide as its
-     * size, so it fills the column from edge to edge at every width. A longer heading of another
-     * language goes on two lines.
-     *
-     * A letter has some empty room at its sides, and the last one is followed by the spacing
-     * between letters: at this size the last letter itself ends on the margin of the page, as far
-     * from the edge as the photo is, while its box goes past the column by that room (0.085em
-     * after the H of Absans) and a little more, so a browser that measures the text a hair wider
-     * never wraps it.
-     */
-    .heading {
-      margin-inline-end: calc(-0.085em - var(--letter-spacing-caps) - 0.05em);
-      font-size: min(var(--font-size-display), 13.63cqi);
     }
   }
 
