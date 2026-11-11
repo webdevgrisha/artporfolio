@@ -46,7 +46,7 @@ const outcome = !result
         <label>
           <VisuallyHidden>{t(language, "newsletter.email")}</VisuallyHidden>
           <input
-            aria-describedby="newsletter-status newsletter-note"
+            aria-describedby="newsletter-status"
             aria-invalid={outcome === "invalid" ? "true" : undefined}
             autocomplete="email"
             class="input"
@@ -67,12 +67,13 @@ const outcome = !result
         Website
         <input autocomplete="off" name="website" tabindex="-1" type="text" />
       </label>
+      {/* One line under the field, as in the mockup: what the newsletter brings, then the outcome. */}
       <p class="status" id="newsletter-status" role="status">
+        <span class="hint" data-message="hint">{t(language, "newsletter.note")}</span>
         <span data-message="subscribed">{t(language, "newsletter.subscribed")}</span>
         <span class="error" data-message="invalid">{t(language, "newsletter.invalid")}</span>
         <span class="error" data-message="failed">{t(language, "newsletter.failed")}</span>
       </p>
-      <p class="note" id="newsletter-note">{t(language, "newsletter.note")}</p>
     </form>
   </div>
 </section>
@@ -144,13 +145,14 @@ const outcome = !result
 
   .form {
     max-inline-size: 27rem;
-    margin-block-start: var(--layout-space-6);
+    margin-block-start: var(--layout-space-8);
   }
 
   /* The field is a line, as in the mockup, with the arrow that sends it at its end. */
   .field {
     display: flex;
     align-items: center;
+    padding-block-end: var(--space-2);
     border-block-end: var(--line-width) solid var(--color-line);
   }
 
@@ -202,22 +204,22 @@ const outcome = !result
     display: none;
   }
 
-  .status,
-  .note {
+  .status {
     margin: 0;
     margin-block-start: var(--space-2);
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-body);
   }
 
-  .note {
+  .hint {
     color: var(--color-text-muted);
   }
 
-  /* Only the message of the outcome shows; screen readers read it as it changes. */
+  /* The hint until the form is sent, then only its outcome; screen readers read it as it changes. */
   .status > span {
     display: none;
   }
 
+  .form:not([data-outcome]) [data-message="hint"],
   .form[data-outcome="subscribed"] [data-message="subscribed"],
   .form[data-outcome="invalid"] [data-message="invalid"],
   .form[data-outcome="failed"] [data-message="failed"] {

@@ -17,7 +17,7 @@
   "newsletter.heading": "Suscríbete a mi boletín",
   "newsletter.email": "Dirección de correo electrónico",
   "newsletter.submit": "Suscríbete",
-  "newsletter.note": "Solo obras nuevas, colecciones y ofertas. Puedes darte de baja en cualquier momento.",
+  "newsletter.note": "Solo obras nuevas, colecciones y ofertas.",
   "newsletter.subscribed": "¡Gracias! Escribiré cuando haya novedades.",
   "newsletter.invalid": "Introduce una dirección de correo electrónico válida.",
   "newsletter.failed": "No se ha podido realizar la suscripción. Inténtalo de nuevo dentro de un minuto."
