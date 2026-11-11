@@ -139,12 +139,11 @@ const year = new Date().getFullYear();
    * the baseline of the last. On a touch screen, or where the menu takes a row of its own, the two
    * no longer line up, and the newsletter keeps that size rather than follow a taller menu.
    *
-   * On a phone and a small tablet the newsletter takes the width of the page, and the menu and the
-   * networks a row under it, as in the mockup of a phone. From 48rem the three stand on one row:
-   * the newsletter as wide as its heading on one line, or, in a language of a longer heading, on
-   * two lines until the page is wide enough. The portrait fills the room the newsletter leaves:
-   * beside it on a row of its own from 36rem, and on the row of the three from 59rem, the width of
-   * a large tablet. Narrower, it would take the room of the heading.
+   * Three layouts, each a step from the one before. On a phone the newsletter takes the width of
+   * the page, and the menu and the networks a row under it, as in the mockup of a phone. From 36rem
+   * the portrait stands beside the heading; narrower, it would take the room of the heading. From
+   * 60rem, a laptop, the three stand on one row: there the heading of the mockup fits on one line,
+   * and the longest of the other languages on two.
    */
   .signup {
     --portrait-display: none;
@@ -155,23 +154,23 @@ const year = new Date().getFullYear();
     flex: 1 1 100%;
   }
 
-  /*
-   * On a row of its own the field reaches the end of the page, as the row of the networks under it
-   * does: the two rows share their edges.
-   */
-  @container (width < 48rem) {
-    .signup {
-      --form-max-size: none;
-    }
-  }
-
-  @container (36rem <= width < 48rem) or (width >= 59rem) {
+  @container (width >= 36rem) {
     .signup {
       --portrait-display: block;
     }
   }
 
-  @container (width >= 48rem) {
+  /*
+   * On a row of its own the field reaches the end of the page, as the row of the networks under it
+   * does: the two rows share their edges.
+   */
+  @container (width < 60rem) {
+    .signup {
+      --form-max-size: none;
+    }
+  }
+
+  @container (width >= 60rem) {
     .top {
       flex-wrap: nowrap;
     }
@@ -227,7 +226,7 @@ const year = new Date().getFullYear();
     order: -1;
   }
 
-  @container (width >= 48rem) {
+  @container (width >= 60rem) {
     .links {
       justify-content: end;
     }
@@ -266,7 +265,7 @@ const year = new Date().getFullYear();
    * the start under it: the frames of the outer icons, not the room a finger needs around them,
    * line up with it, as the arrow of the newsletter does.
    */
-  @container (width < 48rem) {
+  @container (width < 60rem) {
     .networks {
       margin-inline: calc(
         (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -
