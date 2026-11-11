@@ -130,11 +130,13 @@ const contacts = [
    * On a phone and a tablet the heading goes word by word under the photo: the longest word fills
    * its line, at most at the size of the mockup of a tablet. A letter of Absans in capitals is
    * about 0.74 times as wide as its size; 0.8 leaves room for a wider one, and a word wider still
-   * breaks by its syllables rather than run off the screen. A phone sets each word on a line of
-   * its own; a tablet balances them, «Get in / touch».
+   * breaks by its syllables rather than run off the screen. A word shorter than «touch» counts as
+   * five letters, so a heading of short words, such as the Swedish «Hör av dig», is no larger
+   * than «Get in touch». A phone sets each word on a line of its own; a tablet balances them,
+   * «Get in / touch».
    */
   .heading {
-    font-size: min(8rem, 100cqi / (0.8 * var(--longest-word)));
+    font-size: min(8rem, 100cqi / (0.8 * max(var(--longest-word), 5)));
     line-height: var(--line-height-display);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
