@@ -247,7 +247,6 @@ const outcome = !result
   .arrow {
     --forward: 1;
 
-    position: relative;
     display: inline-flex;
     transition: translate var(--motion-duration-slow) var(--motion-easing-standard);
   }
@@ -256,41 +255,18 @@ const outcome = !result
     --forward: -1;
   }
 
-  .arrow::before {
-    position: absolute;
-    inset-block-start: 50%;
-    /* The tip of the chevron is 1 unit of its 12 from its end. */
-    inset-inline-end: calc(0.5em / 12);
-    inline-size: 1.25em;
-    block-size: var(--line-width);
-    content: "";
-    background: currentColor;
-    transform-origin: right;
-    scale: 0 1;
-    translate: 0 -50%;
-    transition: scale var(--motion-duration-slow) var(--motion-easing-standard);
-  }
-
-  .arrow:dir(rtl)::before {
-    transform-origin: left;
-  }
-
   @media (hover: hover) {
     .submit:hover .arrow {
-      translate: calc(var(--forward) * 0.25em) 0;
-    }
+      --chevron-stem: 1;
 
-    .submit:hover .arrow::before {
-      scale: 1 1;
+      translate: calc(var(--forward) * 0.25em) 0;
     }
   }
 
   .submit:focus-visible .arrow {
-    translate: calc(var(--forward) * 0.25em) 0;
-  }
+    --chevron-stem: 1;
 
-  .submit:focus-visible .arrow::before {
-    scale: 1 1;
+    translate: calc(var(--forward) * 0.25em) 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {

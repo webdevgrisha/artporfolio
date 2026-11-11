@@ -2,6 +2,9 @@
 /**
  * The thin arrow of the mockup that sends a field: half as wide as it is high, drawn with the line
  * of the field under it. It points forward: to the right, or to the left in Arabic.
+ *
+ * Its stem is drawn in the same SVG, on the line of the tip, and hidden: `--chevron-stem` from 0 to
+ * 1 grows it back from the tip, so the chevron becomes an arrow.
  */
 ---
 
@@ -14,6 +17,7 @@
   viewBox="0 0 12 24"
   xmlns="http://www.w3.org/2000/svg"
 >
+  <path class="stem" d="M-19 12H11" vector-effect="non-scaling-stroke" />
   <path d="M1 1 11 12 1 23" vector-effect="non-scaling-stroke" />
 </svg>
 
@@ -22,11 +26,20 @@
     flex-shrink: 0;
     inline-size: 0.5em;
     block-size: 1em;
+    /* The stem reaches out of the box of the chevron, behind it. */
+    overflow: visible;
   }
 
   /* As thin as the line of the field at every size. */
   .chevron path {
     stroke-width: var(--line-width);
+  }
+
+  .stem {
+    transform-origin: right;
+    transform-box: fill-box;
+    scale: var(--chevron-stem, 0) 1;
+    transition: scale var(--motion-duration-slow) var(--motion-easing-standard);
   }
 
   .chevron:dir(rtl) {
