@@ -1,7 +1,8 @@
 ---
 /**
- * The Contacts page: the title of the page for screen readers, the heading «Get in touch» with the
- * ways to reach the artist, and the contact photo beside them, or under them on a phone.
+ * The Contacts page: the title of the page for screen readers, the contact photo, and the heading
+ * «Get in touch» with the ways to reach the artist beside the photo, or under it on a tablet or
+ * a phone.
  */
 import Container from "@/components/ui/Container.astro";
 import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
@@ -13,6 +14,7 @@ import TextLink from "@/components/ui/TextLink.astro";
 import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
 import type { Photo } from "@/lib/api/image";
+import { longestWordLength } from "@/lib/text/longestWord";
 import { splitTurnedInitial } from "@/lib/text/turnedInitial";
 
 interface Props {
@@ -24,7 +26,9 @@ interface Props {
 }
 
 const { heading, links, photo, title } = Astro.props;
-const turned = splitTurnedInitial(heading);
+// Word by word, so a phone can set each word on a line of its own; only the first can be turned.
+const [firstWord = "", ...otherWords] = heading.split(" ");
+const turned = splitTurnedInitial(firstWord);
 
 // In the order of the mockup. The email is shown as the address, which a visitor can copy when
 // no mail app opens; a network by its name. A link the artist left empty is not shown.
@@ -42,17 +46,42 @@ const contacts = [
 <Container as="section" aria-labelledby="contact-heading">
   <VisuallyHidden as="h1">{title}</VisuallyHidden>
   <div class:list={["layout", { "has-photo": photo }]}>
+    {
+      photo && (
+        <Picture
+          alt={photo.alt}
+          class="photo"
+          image={photo}
+          priority
+          sizes="(min-width: 75rem) 40vw, 100vw"
+        />
+      )
+    }
     <div class="body">
-      <h2 class="heading" id="contact-heading">
+      <h2
+        class="heading"
+        id="contact-heading"
+        style={{ "--longest-word": longestWordLength(heading) }}
+      >
+        <span class="word">
+          {
+            turned ? (
+              <>
+                <span class="turned">{turned.initial}</span>
+                {turned.rest}
+              </>
+            ) : (
+              firstWord
+            )
+          }
+        </span>
         {
-          turned ? (
+          otherWords.map((word) => (
             <>
-              <span class="turned">{turned.initial}</span>
-              {turned.rest}
+              {" "}
+              <span class="word">{word}</span>
             </>
-          ) : (
-            heading
-          )
+          ))
         }
       </h2>
       <ul class="links">
@@ -72,17 +101,6 @@ const contacts = [
         }
       </ul>
     </div>
-    {
-      photo && (
-        <Picture
-          alt={photo.alt}
-          class="photo"
-          image={photo}
-          priority
-          sizes="(min-width: 75rem) 40vw, 100vw"
-        />
-      )
-    }
   </div>
 </Container>
 
@@ -108,24 +126,26 @@ const contacts = [
     aspect-ratio: 764 / 534;
   }
 
+  /* A phone gives the photo almost its whole width, as its mockup does; the text keeps the margin. */
+  @media (width < 40rem) {
+    .photo {
+      margin-inline: calc(var(--space-2) - var(--page-gutter));
+    }
+  }
+
   /*
-   * As wide as its column: «Get in touch» in Absans is about 7.4 times as wide as its size, so it
-   * fills the column from edge to edge at every width. A longer heading of another language goes
-   * on two lines.
-   *
-   * A letter has some empty room at its sides, and the last one is followed by the spacing between
-   * letters: at this size the last letter itself ends on the margin of the page, as far from the
-   * edge as the photo is, while its box goes past the column by that room (0.085em after the H of
-   * Absans) and a little more, so a browser that measures the text a hair wider never wraps it.
+   * On a phone and a tablet the heading goes word by word under the photo: the longest word fills
+   * its line, at most at the size of the mockup of a tablet. A letter of Absans in capitals is
+   * about 0.74 times as wide as its size; 0.8 leaves room for a wider one, and a word wider still
+   * breaks by its syllables rather than run off the screen. A phone sets each word on a line of
+   * its own; a tablet balances them, «Get in / touch».
    */
   .heading {
-    margin-inline-end: calc(-0.085em - var(--letter-spacing-caps) - 0.05em);
-    font-size: min(var(--font-size-display), 13.63cqi);
+    font-size: min(8rem, 100cqi / (0.8 * var(--longest-word)));
     line-height: var(--line-height-display);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
     text-wrap: balance;
-    /* A word too long for the column breaks by its syllables rather than run off the screen. */
     overflow-wrap: break-word;
     hyphens: auto;
     /* Only a long word: balancing the lines must not break a word that fits. */
@@ -134,11 +154,17 @@ const contacts = [
     text-box: trim-both cap alphabetic;
   }
 
+  @media (width < 40rem) {
+    .heading .word {
+      display: block;
+    }
+  }
+
   /*
    * Beside each other on a laptop and wider, in the proportions of the mockup: the photo, then the
    * text as high as the photo, with the heading at its top and the links at its bottom. Narrower,
    * the photo shrinks while a link keeps the size a finger and an eye need, so the links would run
-   * below the photo: a tablet has the text above the photo, as a phone. The links fit from 1190px
+   * below the photo: a tablet has the text under the photo, as a phone. The links fit from 1190px
    * on, at the default size of the browser; the width is in rem, as those sizes are.
    */
   @media (width >= 75rem) {
@@ -147,15 +173,27 @@ const contacts = [
     }
 
     .has-photo .body {
-      grid-row: 1;
-      grid-column: 2;
       justify-content: space-between;
     }
 
     .has-photo .photo {
-      grid-row: 1;
-      grid-column: 1;
       align-self: start;
+    }
+
+    /*
+     * On one line as wide as its column: «Get in touch» in Absans is about 7.4 times as wide as its
+     * size, so it fills the column from edge to edge at every width. A longer heading of another
+     * language goes on two lines.
+     *
+     * A letter has some empty room at its sides, and the last one is followed by the spacing
+     * between letters: at this size the last letter itself ends on the margin of the page, as far
+     * from the edge as the photo is, while its box goes past the column by that room (0.085em
+     * after the H of Absans) and a little more, so a browser that measures the text a hair wider
+     * never wraps it.
+     */
+    .heading {
+      margin-inline-end: calc(-0.085em - var(--letter-spacing-caps) - 0.05em);
+      font-size: min(var(--font-size-display), 13.63cqi);
     }
   }
 
@@ -171,19 +209,29 @@ const contacts = [
     gap: 0.75em;
     padding: 0;
     margin: 0;
-    /*
-     * A link is as high as a finger needs, with its icon in the middle: the list goes down by the
-     * room under the last icon, so the bottom of its frame is the bottom of the photo, as the top of
-     * the heading is its top. The frame of an icon (1.25em, drawn on 24 units) reaches 10.75 units
-     * below its middle, its line included.
-     */
-    margin-block-end: calc(10.75 / 24 * 1.25em - max(var(--min-tap-target-size), 1.25em) / 2);
+    /* Large on a phone and a tablet, as their mockups have them under the photo. */
+    font-size: var(--font-size-3);
+    list-style: none;
+  }
+
+  @media (width >= 75rem) {
     /*
      * Smaller than the heading in step with it, but not so small on a laptop that the list looks
      * weak, nor so large on a wide screen that it competes with the heading.
      */
-    font-size: clamp(var(--font-size-1), 3cqi, var(--font-size-3));
-    list-style: none;
+    .links {
+      font-size: clamp(var(--font-size-1), 3cqi, var(--font-size-3));
+    }
+
+    /*
+     * A link is as high as a finger needs, with its icon in the middle: the list goes down by the
+     * room under the last icon, so the bottom of its frame is the bottom of the photo, as the top
+     * of the heading is its top. The frame of an icon (1.25em, drawn on 24 units) reaches 10.75
+     * units below its middle, its line included.
+     */
+    .has-photo .links {
+      margin-block-end: calc(10.75 / 24 * 1.25em - max(var(--min-tap-target-size), 1.25em) / 2);
+    }
   }
 
   /* The link alone, without the line of text an inline box sits on and its room for descenders. */
