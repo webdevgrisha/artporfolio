@@ -167,6 +167,26 @@
       }
     },
     {
+      "includes": ["site/src/actions/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/pages/**", "**/layouts/**", "**/components/**", "**/styles/**"],
+                    "message": "An action runs on the server for a form: it imports only lib, never markup or styles."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["site/src/lib/**"],
       "linter": {
         "rules": {
