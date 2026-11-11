@@ -139,12 +139,14 @@ const year = new Date().getFullYear();
    * the baseline of the last. On a touch screen, or where the menu takes a row of its own, the two
    * no longer line up, and the newsletter keeps that size rather than follow a taller menu.
    *
-   * On a phone and a tablet the newsletter takes the width of the page, and the menu and the
-   * networks a row under it, as in the mockup of a phone. From the width of a large tablet, 59rem,
-   * the three stand on one row at the size of the mockup: the newsletter as wide as its heading on
-   * one line, or, in a language of a longer heading, on two lines until the page is wide enough.
+   * On a phone and a small tablet the newsletter takes the width of the page, and the menu and the
+   * networks a row under it, as in the mockup of a phone. From 48rem the three stand on one row:
+   * the newsletter as wide as its heading on one line, or, in a language of a longer heading, on
+   * two lines until the page is wide enough. The portrait shows from 59rem, the width of a large
+   * tablet: narrower, it would take the room of the heading.
    */
   .signup {
+    --portrait-display: none;
     --portrait-size: calc(
       (var(--menu-links) - 1) * var(--menu-row-close) + 0.7 * var(--menu-font-size)
     );
@@ -153,6 +155,12 @@ const year = new Date().getFullYear();
   }
 
   @container (width >= 59rem) {
+    .signup {
+      --portrait-display: block;
+    }
+  }
+
+  @container (width >= 48rem) {
     .top {
       flex-wrap: nowrap;
     }
@@ -208,7 +216,7 @@ const year = new Date().getFullYear();
     order: -1;
   }
 
-  @container (width >= 59rem) {
+  @container (width >= 48rem) {
     .links {
       justify-content: end;
     }
@@ -247,7 +255,7 @@ const year = new Date().getFullYear();
    * the start under it: the frames of the outer icons, not the room a finger needs around them,
    * line up with it, as the arrow of the newsletter does.
    */
-  @container (width < 59rem) {
+  @container (width < 48rem) {
     .networks {
       margin-inline: calc(
         (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -

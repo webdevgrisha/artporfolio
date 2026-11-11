@@ -124,8 +124,13 @@ const outcome = !result
     align-items: stretch;
   }
 
-  /* As high as the block where the footer says so (`--portrait-size`, the height of its menu under a mouse). */
+  /*
+   * As high as the block where the footer says so (`--portrait-size`, the height of its menu under
+   * a mouse), and shown where it says so (`--portrait-display`): on a phone and a small tablet the
+   * heading and the field need the width, as in the mockup of a phone.
+   */
   .portrait {
+    display: var(--portrait-display, block);
     flex-shrink: 0;
     align-self: start;
     inline-size: var(--portrait-size, var(--layout-space-24));
@@ -133,13 +138,6 @@ const outcome = !result
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: 50%;
-  }
-
-  /* On a phone the field needs the width: the portrait goes, as in the mockup. */
-  @media (width < 40rem) {
-    .portrait {
-      display: none;
-    }
   }
 
   .body {
