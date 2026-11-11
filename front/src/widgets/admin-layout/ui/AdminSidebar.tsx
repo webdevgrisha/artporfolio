@@ -2,7 +2,6 @@ import clsx from "clsx";
 import type { Ref } from "react";
 
 import { LogoutButton } from "@/features/logout";
-import avatarUrl from "@/shared/assets/images/portraitMark.png";
 import { CloseIcon } from "@/shared/ui/icon";
 import { IconAction } from "@/shared/ui/icon-button";
 
@@ -34,7 +33,7 @@ export function AdminSidebar({ id, isOpen, onClose, ref }: AdminSidebarProps) {
           <CloseIcon />
         </IconAction>
 
-        <AdminProfile className={styles.profile} imageUrl={avatarUrl} name="ANASTASIA TURKEVICH" />
+        <AdminProfile className={styles.profile} name="ANASTASIA TURKEVICH" />
 
         <AdminNavigation className={styles.navigation} onNavigate={onClose} />
 

@@ -1,10 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import portraitMark from "@/shared/assets/images/portraitMark.png";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { PasswordInput } from "@/shared/ui/password-input";
+import { Portrait } from "@/shared/ui/portrait";
 import { Spinner } from "@/shared/ui/spinner";
 import { VisuallyHidden } from "@/shared/ui/visually-hidden";
 
@@ -32,7 +32,7 @@ export function LoginForm({ isSubmitting, onSubmit, submitError }: LoginFormProp
 
   return (
     <form className={styles.root} noValidate onSubmit={handleSubmit(onSubmit)}>
-      <img className={styles.mark} src={portraitMark} alt="" />
+      <Portrait className={styles.mark} sizes="135px" />
       <div className={styles.fields}>
         <Input
           label="Логин"

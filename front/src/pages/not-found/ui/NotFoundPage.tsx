@@ -1,9 +1,9 @@
 import { useLocation } from "react-router";
 
-import portrait from "@/shared/assets/images/portraitMark.png";
 import { adminHomePath } from "@/shared/config/routes";
 import { documentTitle } from "@/shared/lib/documentTitle";
 import { ButtonLink } from "@/shared/ui/button";
+import { Portrait } from "@/shared/ui/portrait";
 
 import styles from "./NotFoundPage.module.css";
 
@@ -18,7 +18,8 @@ export function NotFoundPage() {
         <div className={styles.code} aria-hidden="true">
           <span>4</span>
           <span className={styles.portrait}>
-            <img src={portrait} alt="" />
+            {/* At most 0.7 of the largest digits, 10.5rem. */}
+            <Portrait sizes="10.5rem" />
           </span>
           <span>4</span>
         </div>
