@@ -58,7 +58,7 @@ const outcome = !result
           />
         </label>
         <button class="submit" type="submit">
-          <ChevronIcon />
+          <span class="arrow"><ChevronIcon /></span>
           <VisuallyHidden>{t(language, "newsletter.submit")}</VisuallyHidden>
         </button>
       </div>
@@ -88,6 +88,9 @@ const outcome = !result
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+      // The last outcome goes while the form is sent, so the new one shows and is read anew.
+      delete form.dataset.outcome;
+      form.dataset.sending = "";
       submit.disabled = true;
 
       const { error } = await actions.subscribe(new FormData(form));
@@ -101,6 +104,7 @@ const outcome = !result
       if (outcome === "invalid") email.setAttribute("aria-invalid", "true");
       else email.removeAttribute("aria-invalid");
       if (outcome === "subscribed") email.value = "";
+      delete form.dataset.sending;
       submit.disabled = false;
     });
   }
@@ -150,14 +154,43 @@ const outcome = !result
 
   /* The field is a line, as in the mockup, with the arrow that sends it at its end. */
   .field {
+    position: relative;
     display: flex;
     align-items: center;
     padding-block-end: var(--space-2);
     border-block-end: var(--line-width) solid var(--color-line);
   }
 
+  /*
+   * In the field, a line twice as thick draws over the thin one from where the text starts: the
+   * focus of a field that is only a line, in place of a frame around it.
+   */
+  .field::after {
+    position: absolute;
+    inset-block-end: calc(-1 * var(--line-width));
+    inset-inline: 0;
+    block-size: calc(2 * var(--line-width));
+    content: "";
+    background: var(--color-text);
+    transform-origin: left;
+    scale: 0 1;
+    transition: scale var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  .field:dir(rtl)::after {
+    transform-origin: right;
+  }
+
+  .field:has(.input:focus-visible)::after {
+    scale: 1 1;
+  }
+
   .form[data-outcome="invalid"] .field {
     border-color: var(--color-error);
+  }
+
+  .form[data-outcome="invalid"] .field::after {
+    background: var(--color-error);
   }
 
   .field > label {
@@ -174,6 +207,11 @@ const outcome = !result
     color: inherit;
     background: transparent;
     border: 0;
+  }
+
+  /* The line under the field shows its focus. */
+  .input:focus-visible {
+    outline: none;
   }
 
   .input::placeholder {
@@ -197,8 +235,91 @@ const outcome = !result
   }
 
   .submit:disabled {
-    color: var(--color-text-muted);
     cursor: progress;
+  }
+
+  /*
+   * The arrow is the gesture of sending. Under the pointer, or in focus, a stem as thin as the line
+   * grows back from its tip, so the chevron becomes an arrow, and it leans forward. While the
+   * address is sent it breathes; once it is in, it flies off ahead and comes back. Forward is to
+   * the left in Arabic.
+   */
+  .arrow {
+    --forward: 1;
+
+    position: relative;
+    display: inline-flex;
+    transition: translate var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  .arrow:dir(rtl) {
+    --forward: -1;
+  }
+
+  .arrow::before {
+    position: absolute;
+    inset-block-start: 50%;
+    /* The tip of the chevron is 1 unit of its 12 from its end. */
+    inset-inline-end: calc(0.5em / 12);
+    inline-size: 1.25em;
+    block-size: var(--line-width);
+    content: "";
+    background: currentColor;
+    transform-origin: right;
+    scale: 0 1;
+    translate: 0 -50%;
+    transition: scale var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  .arrow:dir(rtl)::before {
+    transform-origin: left;
+  }
+
+  @media (hover: hover) {
+    .submit:hover .arrow {
+      translate: calc(var(--forward) * 0.25em) 0;
+    }
+
+    .submit:hover .arrow::before {
+      scale: 1 1;
+    }
+  }
+
+  .submit:focus-visible .arrow {
+    translate: calc(var(--forward) * 0.25em) 0;
+  }
+
+  .submit:focus-visible .arrow::before {
+    scale: 1 1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .form[data-sending] .arrow {
+      animation: breathe calc(3 * var(--motion-duration-slow)) var(--motion-easing-standard)
+        infinite alternate;
+    }
+
+    .form[data-outcome="subscribed"] .arrow {
+      animation: send calc(3 * var(--motion-duration-slow)) var(--motion-easing-standard);
+    }
+  }
+
+  @keyframes breathe {
+    to {
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes send {
+    45% {
+      opacity: 0;
+      translate: calc(var(--forward) * 1.5em) 0;
+    }
+
+    55% {
+      opacity: 0;
+      translate: calc(var(--forward) * -0.75em) 0;
+    }
   }
 
   .trap {
