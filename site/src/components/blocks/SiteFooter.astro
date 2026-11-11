@@ -110,7 +110,7 @@ const year = new Date().getFullYear();
   .links {
     --menu-font-size: var(--font-size-1);
     --menu-row: var(--min-tap-target-size);
-    --icon-size: calc(1.25 * var(--font-size-2));
+    --icon-size: calc(1.25 * var(--menu-font-size));
 
     display: flex;
     gap: var(--layout-space-8);
@@ -153,7 +153,11 @@ const year = new Date().getFullYear();
       (max(var(--min-tap-target-size), var(--icon-size)) - var(--icon-size)) / 2 -
       var(--icon-size) / 12
     );
-    font-size: var(--font-size-2);
+    /*
+     * The size of the menu: the icons lead elsewhere, as the menu does, so they stand no taller
+     * than its text needs, and smaller than on the Contacts page, where they are the content.
+     */
+    font-size: var(--menu-font-size);
   }
 
   .menu {
