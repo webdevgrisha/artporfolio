@@ -172,10 +172,12 @@ const contacts = [
     padding: 0;
     margin: 0;
     /*
-     * A link is as high as a finger needs, with its text in the middle: the list goes down by the
-     * room under the last line, so its baseline is the bottom of the photo, as in the mockup.
+     * A link is as high as a finger needs, with its icon in the middle: the list goes down by the
+     * room under the last icon, so the bottom of its frame is the bottom of the photo, as the top of
+     * the heading is its top. The frame of an icon (1.25em, drawn on 24 units) reaches 10.75 units
+     * below its middle, its line included.
      */
-    margin-block-end: calc((max(var(--min-tap-target-size), 1.25em) - 1cap) / -2);
+    margin-block-end: calc(10.75 / 24 * 1.25em - max(var(--min-tap-target-size), 1.25em) / 2);
     /*
      * Smaller than the heading in step with it, but not so small on a laptop that the list looks
      * weak, nor so large on a wide screen that it competes with the heading.
