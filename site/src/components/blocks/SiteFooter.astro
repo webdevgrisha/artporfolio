@@ -111,35 +111,37 @@ const year = new Date().getFullYear();
    * the start, the networks and the menu at the end; where the three do not fit on one row, the
    * newsletter takes a row of its own above them.
    */
-  /*
-   * The newsletter is as high as the menu beside it, as in the mockup: its top is the top of the
-   * first link, its bottom the baseline of the last.
-   */
   .top {
     /*
-     * The menu sets the height of the row. A row of it is as high as a finger needs on a touch
-     * screen; under a mouse the rows stand as close as in the mockup, 1.4 times the text, which
-     * keeps the newsletter beside it at the size of the mockup. Its capitals are 0.7 of its size.
+     * A row of the menu is as high as a finger needs on a touch screen; under a mouse the rows
+     * stand as close as in the mockup, 1.4 times the text. Its capitals are 0.7 of its size.
      */
     --menu-font-size: var(--font-size-1);
+    --menu-row-close: calc(1.4 * var(--menu-font-size));
     --menu-row: var(--min-tap-target-size);
-    --menu-height: calc((var(--menu-links) - 1) * var(--menu-row) + 0.7 * var(--menu-font-size));
 
     display: flex;
     flex-wrap: wrap;
     gap: var(--layout-space-8);
-    align-items: stretch;
+    align-items: start;
     justify-content: space-between;
     padding-block-start: var(--layout-space-8);
     border-block-start: var(--line-width) solid currentColor;
   }
 
   /*
+   * The portrait is as high as the menu with its rows as close as in the mockup: under a mouse the
+   * newsletter beside the menu is as high as it, from the top of the capitals of the first link to
+   * the baseline of the last. On a touch screen, or where the menu takes a row of its own, the two
+   * no longer line up, and the newsletter keeps that size rather than follow a taller menu.
+   *
    * As wide as its heading on one line: where the menu does not fit beside it, the menu takes the
    * next row rather than the heading a second line.
    */
   .signup {
-    --portrait-size: var(--menu-height);
+    --portrait-size: calc(
+      (var(--menu-links) - 1) * var(--menu-row-close) + 0.7 * var(--menu-font-size)
+    );
 
     flex: 0 1 auto;
   }
@@ -166,7 +168,7 @@ const year = new Date().getFullYear();
 
   @media (pointer: fine) {
     .top {
-      --menu-row: calc(1.4 * var(--menu-font-size));
+      --menu-row: var(--menu-row-close);
     }
   }
 
