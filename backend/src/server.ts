@@ -10,6 +10,7 @@ import { contactsRouter } from "#modules/contacts/routes";
 import { currenciesRouter } from "#modules/currencies/routes";
 import { galleryRouter } from "#modules/gallery/routes";
 import { healthRouter } from "#modules/health/routes";
+import { newsletterRouter } from "#modules/newsletter/routes";
 import { originalsRouter } from "#modules/originals/routes";
 import { pagesRouter } from "#modules/pages/routes";
 import { projectsRouter } from "#modules/projects/routes";
@@ -29,6 +30,7 @@ server.use(parseJsonBody);
 
 server.use("/api/health", healthRouter);
 server.use("/api/auth", authRouter);
+server.use("/api/newsletter", newsletterRouter);
 
 server.use(protectChanges);
 
