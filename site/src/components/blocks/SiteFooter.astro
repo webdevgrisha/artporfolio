@@ -258,7 +258,8 @@ const year = new Date().getFullYear();
    * times as wide as its size, «©2026» 3.49 times, and about three times the size apart, as in the
    * mockup. On a phone that would be too small: the year goes above the name, both as large as the
    * heading of the newsletter, as in the mockup; the name fits a 320px screen at that size (12.34
-   * × 23px), and 8cqi keeps it within a narrower one.
+   * × 23px), and 8cqi keeps it within a narrower one. Toward the width where they go on one line,
+   * they grow to the size they take there (5.25cqi), so the name never jumps in size.
    */
   .signature {
     display: flex;
@@ -266,7 +267,7 @@ const year = new Date().getFullYear();
     gap: 0.5em;
     /* As far below the menu as in the mockup, which a closing block of the page needs. */
     padding-block: var(--layout-space-16) var(--layout-space-8);
-    font-size: min(var(--font-size-2), 8cqi);
+    font-size: min(8cqi, max(var(--font-size-2), 5.25cqi));
     line-height: var(--line-height-display);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
