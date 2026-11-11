@@ -125,23 +125,13 @@ const outcome = !result
     align-items: stretch;
   }
 
-  /*
-   * As high as the block where the footer says so (`--portrait-size`, the height of its menu). A
-   * circle touches a line at one point, so set exactly between the lines of the text it looks
-   * smaller and short of them: as a round letter does, it overshoots them a little, and to the eye
-   * it ends on them. It overshoots the margin of the page beside it the same way, so the text
-   * beside it stays where it was.
-   */
+  /* As high as the block where the footer says so (`--portrait-size`, the height of its menu). */
   .portrait {
-    --size: var(--portrait-size, var(--layout-space-24));
-    --overshoot: calc(0.015 * var(--size));
-
     flex-shrink: 0;
     align-self: start;
-    inline-size: calc(var(--size) + 2 * var(--overshoot));
+    inline-size: var(--portrait-size, var(--layout-space-24));
     block-size: auto;
     aspect-ratio: 1;
-    margin: calc(-1 * var(--overshoot));
     object-fit: cover;
     border-radius: 50%;
   }
