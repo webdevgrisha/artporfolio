@@ -112,6 +112,7 @@ const year = new Date().getFullYear();
    *
    * - On a phone the newsletter takes the width of the page, and the menu and the networks a row
    *   under it, the menu at the start and the networks at the end, as in the mockup of a phone.
+   *   From 36rem the portrait stands beside the heading, which still has room for one line there.
    * - From 40rem, a tablet, the three stand on one row, as in the mockup of a tablet: the portrait
    *   and the newsletter at the start, and at the end a column of the networks above the menu,
    *   narrow enough to leave the heading two lines at the least, one from about 850px.
@@ -150,7 +151,7 @@ const year = new Date().getFullYear();
    * The portrait is as high as the menu with its rows as close as in the mockup: under a mouse the
    * newsletter beside the menu is as high as it, from the top of the capitals of the first link to
    * the baseline of the last. Elsewhere the two do not line up, and the newsletter keeps that size
-   * rather than follow the menu. On a phone the heading needs the room of the portrait.
+   * rather than follow the menu. On a narrow phone the heading needs the room of the portrait.
    */
   .signup {
     --portrait-display: none;
@@ -168,6 +169,12 @@ const year = new Date().getFullYear();
   @container (width < 40rem) {
     .signup {
       --form-max-size: none;
+    }
+  }
+
+  @container (width >= 36rem) {
+    .signup {
+      --portrait-display: block;
     }
   }
 
@@ -209,8 +216,6 @@ const year = new Date().getFullYear();
     }
 
     .signup {
-      --portrait-display: block;
-
       flex: 0 1 auto;
     }
 
