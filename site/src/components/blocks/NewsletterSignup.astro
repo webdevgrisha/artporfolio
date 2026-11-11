@@ -5,7 +5,7 @@
  * it, the outcome shows in place.
  */
 import { actions, isInputError } from "astro:actions";
-import { Image } from "astro:assets";
+import { Picture } from "astro:assets";
 import type { HTMLAttributes } from "astro/types";
 
 import portrait from "@/assets/images/portraitMark.png";
@@ -36,7 +36,13 @@ const outcome = !result
   class:list={["newsletter", className]}
   {...attributes}
 >
-  <Image alt="" class="portrait" src={portrait} />
+  <Picture
+    alt=""
+    fallbackFormat="webp"
+    formats={["avif"]}
+    pictureAttributes={{ class: "portrait" }}
+    src={portrait}
+  />
   <div class="body">
     <h2 class="heading" id="newsletter-heading">{t(language, "newsletter.heading")}</h2>
     <form
@@ -135,8 +141,13 @@ const outcome = !result
     flex-shrink: 0;
     align-self: start;
     inline-size: var(--portrait-size, var(--layout-space-24));
-    block-size: auto;
     aspect-ratio: 1;
+  }
+
+  .portrait > img {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
     object-fit: cover;
     border-radius: 50%;
   }

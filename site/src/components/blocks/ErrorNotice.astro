@@ -3,6 +3,8 @@
  * What a page that could not be shown says instead, as the admin does: the code of the error with
  * the portrait for its zero, what happened, and the way back home, alone on the screen.
  */
+import { Picture } from "astro:assets";
+
 import portrait from "@/assets/images/portraitMark.png";
 import ButtonLink from "@/components/ui/ButtonLink.astro";
 import Container from "@/components/ui/Container.astro";
@@ -25,7 +27,15 @@ const { code, language, text, title } = Astro.props;
 <Container class="notice">
   <div aria-hidden="true" class="code">
     <span>{code[0]}</span>
-    <img alt="" class="portrait" height={portrait.height} src={portrait.src} width={portrait.width} />
+    {/* The zero of the code, seen at once: it loads with the page. */}
+    <Picture
+      alt=""
+      fallbackFormat="webp"
+      formats={["avif"]}
+      loading="eager"
+      pictureAttributes={{ class: "portrait" }}
+      src={portrait}
+    />
     <span>{code[1]}</span>
   </div>
   <h1 class="title">{title}</h1>
@@ -59,9 +69,15 @@ const { code, language, text, title } = Astro.props;
   }
 
   .portrait {
+    display: block;
     inline-size: max(7rem, 0.7em);
-    block-size: auto;
     aspect-ratio: 1;
+  }
+
+  .portrait > img {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
     object-fit: cover;
     border-radius: 50%;
   }
