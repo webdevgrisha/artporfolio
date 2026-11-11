@@ -131,7 +131,12 @@ const year = new Date().getFullYear();
   .links {
     --menu-font-size: var(--font-size-1);
     --menu-row: var(--min-tap-target-size);
-    --icon-size: calc(1.25 * var(--menu-font-size));
+    /*
+     * An icon draws at 1.25 times its text. A little larger than the menu, the frames are about as
+     * large as on the Contacts page (30px at the width of the mockup): one icon, one size.
+     */
+    --icon-font-size: calc(1.125 * var(--menu-font-size));
+    --icon-size: calc(1.25 * var(--icon-font-size));
 
     display: flex;
     flex-grow: 1;
@@ -178,17 +183,14 @@ const year = new Date().getFullYear();
    */
   .networks {
     display: flex;
-    gap: var(--space-2);
+    /* The room a finger needs around each icon is the gap: about half an icon between frames. */
+    gap: 0;
     margin-block-start: calc(
       (var(--menu-row) - 0.7 * var(--menu-font-size)) / 2 -
       (max(var(--min-tap-target-size), var(--icon-size)) - var(--icon-size)) / 2 -
       var(--icon-size) / 12
     );
-    /*
-     * The size of the menu: the icons lead elsewhere, as the menu does, so they stand no taller
-     * than its text needs, and smaller than on the Contacts page, where they are the content.
-     */
-    font-size: var(--menu-font-size);
+    font-size: var(--icon-font-size);
   }
 
   .menu {
