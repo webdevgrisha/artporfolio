@@ -261,7 +261,6 @@ const outcome = !result
     --forward: 1;
 
     display: inline-flex;
-    transition: translate var(--motion-duration-slow) var(--motion-easing-standard);
   }
 
   .arrow:dir(rtl) {
@@ -271,15 +270,13 @@ const outcome = !result
   @media (hover: hover) {
     .submit:hover .arrow {
       --chevron-stem: 1;
-
-      translate: calc(var(--forward) * 0.25em) 0;
+      --chevron-lean: 1;
     }
   }
 
   .submit:focus-visible .arrow {
     --chevron-stem: 1;
-
-    translate: calc(var(--forward) * 0.25em) 0;
+    --chevron-lean: 1;
   }
 
   @media (prefers-reduced-motion: no-preference) {

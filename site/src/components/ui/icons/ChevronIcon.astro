@@ -4,7 +4,10 @@
  * of the field under it. It points forward: to the right, or to the left in Arabic.
  *
  * Its stem is drawn in the same SVG, on the line of the tip, and hidden: `--chevron-stem` from 0 to
- * 1 grows it back from the tip, so the chevron becomes an arrow.
+ * 1 grows it back from the tip, so the chevron becomes an arrow, and `--chevron-lean` from 0 to 1
+ * moves the whole of it forward by a quarter of its height. Both move inside the SVG, drawn
+ * together in every browser: a stem in the SVG and a move of the box around it would be drawn
+ * apart in Safari, one after the other.
  */
 ---
 
@@ -17,8 +20,10 @@
   viewBox="0 0 12 24"
   xmlns="http://www.w3.org/2000/svg"
 >
-  <path class="stem" d="M-19 12H11" vector-effect="non-scaling-stroke" />
-  <path d="M1 1 11 12 1 23" vector-effect="non-scaling-stroke" />
+  <g class="drawing">
+    <path class="stem" d="M-19 12H11" vector-effect="non-scaling-stroke" />
+    <path d="M1 1 11 12 1 23" vector-effect="non-scaling-stroke" />
+  </g>
 </svg>
 
 <style>
@@ -33,6 +38,12 @@
   /* As thin as the line of the field at every size. */
   .chevron path {
     stroke-width: var(--line-width);
+  }
+
+  /* In the units of the drawing, 24 to its height: a quarter of it is 6. */
+  .drawing {
+    translate: calc(var(--chevron-lean, 0) * 6px) 0;
+    transition: translate var(--motion-duration-slow) var(--motion-easing-standard);
   }
 
   .stem {
