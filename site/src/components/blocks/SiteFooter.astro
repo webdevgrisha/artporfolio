@@ -115,8 +115,8 @@ const year = new Date().getFullYear();
   .top {
     /*
      * The menu sets the height of the row. A row of it is as high as a finger needs on a touch
-     * screen; under a mouse the rows stand closer, yet a little apart from the mockup's 1.4, so each
-     * link reads apart from the next. Its capitals are 0.7 of its size.
+     * screen; under a mouse the rows stand as close as in the mockup, 1.4 times the text, which
+     * keeps the newsletter beside it at the size of the mockup. Its capitals are 0.7 of its size.
      */
     --menu-font-size: var(--font-size-1);
     --menu-row: var(--min-tap-target-size);
@@ -141,11 +141,6 @@ const year = new Date().getFullYear();
     flex: 0 1 auto;
   }
 
-  /*
-   * A row of the menu is as high as a finger needs on a touch screen. Under a mouse the rows stand
-   * closer, yet a little apart from the mockup's 1.4, so each link reads apart from the next. The
-   * size of an icon is the one Icon draws it at, 1.25 times its text.
-   */
   .links {
     /*
      * An icon draws at 1.25 times its text. A little larger than the menu, the frames are about as
@@ -168,7 +163,7 @@ const year = new Date().getFullYear();
 
   @media (pointer: fine) {
     .top {
-      --menu-row: calc(1.6 * var(--menu-font-size));
+      --menu-row: calc(1.4 * var(--menu-font-size));
     }
   }
 
