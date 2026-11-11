@@ -126,13 +126,6 @@ const contacts = [
     aspect-ratio: 764 / 534;
   }
 
-  /* A phone gives the photo almost its whole width, as its mockup does; the text keeps the margin. */
-  @media (width < 40rem) {
-    .photo {
-      margin-inline: calc(var(--space-2) - var(--page-gutter));
-    }
-  }
-
   /*
    * On a phone and a tablet the heading goes word by word under the photo: the longest word fills
    * its line, at most at the size of the mockup of a tablet. A letter of Absans in capitals is
