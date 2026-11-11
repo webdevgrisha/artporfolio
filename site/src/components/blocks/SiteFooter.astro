@@ -142,8 +142,9 @@ const year = new Date().getFullYear();
    * On a phone and a small tablet the newsletter takes the width of the page, and the menu and the
    * networks a row under it, as in the mockup of a phone. From 48rem the three stand on one row:
    * the newsletter as wide as its heading on one line, or, in a language of a longer heading, on
-   * two lines until the page is wide enough. The portrait shows from 59rem, the width of a large
-   * tablet: narrower, it would take the room of the heading.
+   * two lines until the page is wide enough. The portrait fills the room the newsletter leaves:
+   * beside it on a row of its own from 36rem, and on the row of the three from 59rem, the width of
+   * a large tablet. Narrower, it would take the room of the heading.
    */
   .signup {
     --portrait-display: none;
@@ -154,7 +155,7 @@ const year = new Date().getFullYear();
     flex: 1 1 100%;
   }
 
-  @container (width >= 59rem) {
+  @container (36rem <= width < 48rem) or (width >= 59rem) {
     .signup {
       --portrait-display: block;
     }
