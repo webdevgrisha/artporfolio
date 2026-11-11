@@ -58,35 +58,35 @@ const year = new Date().getFullYear();
     <div class="top" style={`--menu-links: ${menu.length}`}>
       <NewsletterSignup class="signup" language={language} />
       <div class="links">
-      {
-        networks.length > 0 && (
-          <ul aria-label={t(language, "footer.networks")} class="networks">
-            {networks.map(({ href, Icon, label, lang }) => (
-              <li>
-                <IconLink href={href} label={label} lang={lang}>
-                  <Icon slot="icon" />
-                </IconLink>
-              </li>
-            ))}
+        {
+          networks.length > 0 && (
+            <ul aria-label={t(language, "footer.networks")} class="networks">
+              {networks.map(({ href, Icon, label, lang }) => (
+                <li>
+                  <IconLink href={href} label={label} lang={lang}>
+                    <Icon slot="icon" />
+                  </IconLink>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        <nav aria-label={t(language, "footer.menu")} class="menu-nav">
+          <ul class="menu">
+            {
+              menu.map((page) => (
+                <li>
+                  <TextLink
+                    class="menu-link"
+                    aria-current={page.path === path ? "page" : undefined}
+                    href={localizedPath(language, page.path)}
+                    label={t(language, page.label)}
+                  />
+                </li>
+              ))
+            }
           </ul>
-        )
-      }
-      <nav aria-label={t(language, "footer.menu")} class="menu-nav">
-        <ul class="menu">
-          {
-            menu.map((page) => (
-              <li>
-                <TextLink
-                  class="menu-link"
-                  aria-current={page.path === path ? "page" : undefined}
-                  href={localizedPath(language, page.path)}
-                  label={t(language, page.label)}
-                />
-              </li>
-            ))
-          }
-        </ul>
-      </nav>
+        </nav>
       </div>
     </div>
     <div class="signature">
@@ -244,8 +244,9 @@ const year = new Date().getFullYear();
 
   /*
    * The top of the frames of the icons stands at the top of the capitals of the first link of the
-   * menu beside them, or of the heading where they stand above the menu, as in the mockup. The capitals of Absans are 0.7 of its size, centered in their row; an
-   * icon is centered in a box a finger can hit, and its frame starts 2 units of 24 below its top.
+   * menu beside them, or of the heading where they stand above the menu, as in the mockups. The
+   * capitals of Absans are 0.7 of its size, centered in their row; an icon is centered in a box a
+   * finger can hit, and its frame starts 2 units of 24 below its top.
    */
   .networks {
     display: flex;
