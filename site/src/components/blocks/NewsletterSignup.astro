@@ -5,6 +5,7 @@
  * it, the outcome shows in place.
  */
 import { actions, isInputError } from "astro:actions";
+import type { HTMLAttributes } from "astro/types";
 
 import portrait from "@/assets/images/portraitMark.png";
 import ChevronIcon from "@/components/ui/icons/ChevronIcon.astro";
@@ -12,12 +13,11 @@ import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
 
-interface Props {
-  class?: string;
+interface Props extends HTMLAttributes<"section"> {
   language: Language;
 }
 
-const { class: className, language } = Astro.props;
+const { class: className, language, ...attributes } = Astro.props;
 
 // The outcome of a form posted without JavaScript; the script below tells the same apart.
 const result = Astro.getActionResult(actions.subscribe);
@@ -30,7 +30,11 @@ const outcome = !result
       : "failed";
 ---
 
-<section aria-labelledby="newsletter-heading" class:list={["newsletter", className]}>
+<section
+  aria-labelledby="newsletter-heading"
+  class:list={["newsletter", className]}
+  {...attributes}
+>
   <img alt="" class="portrait" height={portrait.height} src={portrait.src} width={portrait.width} />
   <div class="body">
     <h2 class="heading" id="newsletter-heading">{t(language, "newsletter.heading")}</h2>
@@ -111,15 +115,21 @@ const outcome = !result
 </script>
 
 <style>
+  /*
+   * As high as what stands beside it, the menu of the footer: the heading at the top, the field at
+   * the bottom, and the portrait as high as the two.
+   */
   .newsletter {
     display: flex;
     gap: var(--layout-space-4);
-    align-items: start;
+    align-items: stretch;
   }
 
+  /* As high as the block where the footer says so (`--portrait-size`, the height of its menu). */
   .portrait {
     flex-shrink: 0;
-    inline-size: var(--layout-space-24);
+    align-self: start;
+    inline-size: var(--portrait-size, var(--layout-space-24));
     block-size: auto;
     aspect-ratio: 1;
     object-fit: cover;
@@ -134,7 +144,11 @@ const outcome = !result
   }
 
   .body {
+    display: flex;
     flex-grow: 1;
+    flex-direction: column;
+    gap: var(--layout-space-8);
+    justify-content: space-between;
     min-inline-size: 0;
   }
 
@@ -149,7 +163,6 @@ const outcome = !result
 
   .form {
     max-inline-size: 27rem;
-    margin-block-start: var(--layout-space-8);
   }
 
   /* The field is a line, as in the mockup, with the arrow that sends it at its end. */
@@ -302,10 +315,12 @@ const outcome = !result
     display: none;
   }
 
+  /* The box ends at the baseline, the bottom of the block, as the last link of the menu does. */
   .status {
     margin: 0;
-    margin-block-start: var(--space-2);
+    margin-block-start: var(--space-3);
     font-size: var(--font-size-body);
+    text-box: trim-both cap alphabetic;
   }
 
   .hint {

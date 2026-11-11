@@ -55,7 +55,7 @@ const year = new Date().getFullYear();
 
 <footer>
   <Container class="footer">
-    <div class="top">
+    <div class="top" style={`--menu-links: ${menu.length}`}>
       <NewsletterSignup class="signup" language={language} />
       <div class="links">
       {
@@ -108,19 +108,37 @@ const year = new Date().getFullYear();
    * the start, the networks and the menu at the end; where the three do not fit on one row, the
    * newsletter takes a row of its own above them.
    */
+  /*
+   * The newsletter is as high as the menu beside it, as in the mockup: its top is the top of the
+   * first link, its bottom the baseline of the last.
+   */
   .top {
+    /*
+     * The menu sets the height of the row. A row of it is as high as a finger needs on a touch
+     * screen; under a mouse the rows stand closer, yet a little apart from the mockup's 1.4, so each
+     * link reads apart from the next. Its capitals are 0.7 of its size.
+     */
+    --menu-font-size: var(--font-size-1);
+    --menu-row: var(--min-tap-target-size);
+    --menu-height: calc((var(--menu-links) - 1) * var(--menu-row) + 0.7 * var(--menu-font-size));
+
     display: flex;
     flex-wrap: wrap;
     gap: var(--layout-space-8);
-    align-items: start;
+    align-items: stretch;
     justify-content: space-between;
     padding-block-start: var(--layout-space-8);
     border-block-start: var(--line-width) solid currentColor;
   }
 
+  /*
+   * As wide as its heading on one line: where the menu does not fit beside it, the menu takes the
+   * next row rather than the heading a second line.
+   */
   .signup {
-    flex: 1 1 36rem;
-    max-inline-size: 48rem;
+    --portrait-size: var(--menu-height);
+
+    flex: 0 1 auto;
   }
 
   /*
@@ -129,8 +147,6 @@ const year = new Date().getFullYear();
    * size of an icon is the one Icon draws it at, 1.25 times its text.
    */
   .links {
-    --menu-font-size: var(--font-size-1);
-    --menu-row: var(--min-tap-target-size);
     /*
      * An icon draws at 1.25 times its text. A little larger than the menu, the frames are about as
      * large as on the Contacts page (30px at the width of the mockup): one icon, one size.
@@ -143,10 +159,15 @@ const year = new Date().getFullYear();
     gap: var(--layout-space-8);
     align-items: start;
     justify-content: space-between;
+    /*
+     * A link has its text in the middle of its row: the box of the links ends at the top of the
+     * capitals of the first and at the baseline of the last, as the text of the newsletter does.
+     */
+    margin-block: calc((var(--menu-row) - 0.7 * var(--menu-font-size)) / -2);
   }
 
   @media (pointer: fine) {
-    .links {
+    .top {
       --menu-row: calc(1.6 * var(--menu-font-size));
     }
   }
