@@ -1,0 +1,230 @@
+---
+/**
+ * The newsletter in the footer: the portrait of the artist, the heading, and the field of the
+ * address. Without JavaScript the form posts to the page, which comes back with the outcome; with
+ * it, the outcome shows in place.
+ */
+import { actions, isInputError } from "astro:actions";
+
+import portrait from "@/assets/images/portraitMark.png";
+import ChevronIcon from "@/components/ui/icons/ChevronIcon.astro";
+import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+
+interface Props {
+  class?: string;
+  language: Language;
+}
+
+const { class: className, language } = Astro.props;
+
+// The outcome of a form posted without JavaScript; the script below tells the same apart.
+const result = Astro.getActionResult(actions.subscribe);
+const outcome = !result
+  ? undefined
+  : !result.error
+    ? "subscribed"
+    : isInputError(result.error) || result.error.code === "BAD_REQUEST"
+      ? "invalid"
+      : "failed";
+---
+
+<section aria-labelledby="newsletter-heading" class:list={["newsletter", className]}>
+  <img alt="" class="portrait" height={portrait.height} src={portrait.src} width={portrait.width} />
+  <div class="body">
+    <h2 class="heading" id="newsletter-heading">{t(language, "newsletter.heading")}</h2>
+    <form
+      action={actions.subscribe}
+      class="form"
+      data-newsletter
+      data-outcome={outcome}
+      method="post"
+    >
+      <input name="language" type="hidden" value={language} />
+      <div class="field">
+        <label>
+          <VisuallyHidden>{t(language, "newsletter.email")}</VisuallyHidden>
+          <input
+            aria-describedby="newsletter-status newsletter-note"
+            aria-invalid={outcome === "invalid" ? "true" : undefined}
+            autocomplete="email"
+            class="input"
+            maxlength="254"
+            name="email"
+            placeholder={t(language, "newsletter.email")}
+            required
+            type="email"
+          />
+        </label>
+        <button class="submit" type="submit">
+          <ChevronIcon />
+          <VisuallyHidden>{t(language, "newsletter.submit")}</VisuallyHidden>
+        </button>
+      </div>
+      {/* Hidden from people, so only a bot fills it: the action then saves nothing. */}
+      <label aria-hidden="true" class="trap">
+        Website
+        <input autocomplete="off" name="website" tabindex="-1" type="text" />
+      </label>
+      <p class="status" id="newsletter-status" role="status">
+        <span data-message="subscribed">{t(language, "newsletter.subscribed")}</span>
+        <span class="error" data-message="invalid">{t(language, "newsletter.invalid")}</span>
+        <span class="error" data-message="failed">{t(language, "newsletter.failed")}</span>
+      </p>
+      <p class="note" id="newsletter-note">{t(language, "newsletter.note")}</p>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { actions, isInputError } from "astro:actions";
+
+  // Sends the form in place, so the page keeps its scroll and shows the outcome under the field.
+  for (const form of document.querySelectorAll<HTMLFormElement>("[data-newsletter]")) {
+    const email = form.elements.namedItem("email") as HTMLInputElement;
+    const submit = form.querySelector("button") as HTMLButtonElement;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      submit.disabled = true;
+
+      const { error } = await actions.subscribe(new FormData(form));
+      const outcome = !error
+        ? "subscribed"
+        : isInputError(error) || error.code === "BAD_REQUEST"
+          ? "invalid"
+          : "failed";
+
+      form.dataset.outcome = outcome;
+      if (outcome === "invalid") email.setAttribute("aria-invalid", "true");
+      else email.removeAttribute("aria-invalid");
+      if (outcome === "subscribed") email.value = "";
+      submit.disabled = false;
+    });
+  }
+</script>
+
+<style>
+  .newsletter {
+    display: flex;
+    gap: var(--layout-space-4);
+    align-items: start;
+  }
+
+  .portrait {
+    flex-shrink: 0;
+    inline-size: var(--layout-space-24);
+    block-size: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  /* On a phone the field needs the width: the portrait goes, as in the mockup. */
+  @media (width < 40rem) {
+    .portrait {
+      display: none;
+    }
+  }
+
+  .body {
+    flex-grow: 1;
+    min-inline-size: 0;
+  }
+
+  .heading {
+    margin: 0;
+    font-size: var(--font-size-2);
+    /* The box ends at the top of the capitals, so they line up with the top of the portrait. */
+    text-box: trim-both cap alphabetic;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+  }
+
+  .form {
+    max-inline-size: 27rem;
+    margin-block-start: var(--layout-space-6);
+  }
+
+  /* The field is a line, as in the mockup, with the arrow that sends it at its end. */
+  .field {
+    display: flex;
+    align-items: center;
+    border-block-end: var(--line-width) solid var(--color-line);
+  }
+
+  .form[data-outcome="invalid"] .field {
+    border-color: var(--color-error);
+  }
+
+  .field > label {
+    flex-grow: 1;
+    min-inline-size: 0;
+  }
+
+  .input {
+    inline-size: 100%;
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    font: inherit;
+    font-size: var(--font-size-1);
+    color: inherit;
+    background: transparent;
+    border: 0;
+  }
+
+  .input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .submit {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--min-tap-target-size);
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    font-size: var(--font-size-1);
+    color: inherit;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+  }
+
+  .submit:disabled {
+    color: var(--color-text-muted);
+    cursor: progress;
+  }
+
+  .trap {
+    display: none;
+  }
+
+  .status,
+  .note {
+    margin: 0;
+    margin-block-start: var(--space-2);
+    font-size: var(--font-size-small);
+  }
+
+  .note {
+    color: var(--color-text-muted);
+  }
+
+  /* Only the message of the outcome shows; screen readers read it as it changes. */
+  .status > span {
+    display: none;
+  }
+
+  .form[data-outcome="subscribed"] [data-message="subscribed"],
+  .form[data-outcome="invalid"] [data-message="invalid"],
+  .form[data-outcome="failed"] [data-message="failed"] {
+    display: inline;
+  }
+
+  .error {
+    color: var(--color-error);
+  }
+</style>

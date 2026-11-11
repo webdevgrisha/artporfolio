@@ -13,5 +13,12 @@
   "menu.about": "نبذة عني",
   "menu.contact": "الاتصال",
   "footer.menu": "الصفحات",
-  "footer.networks": "شبكات التواصل الاجتماعي"
+  "footer.networks": "شبكات التواصل الاجتماعي",
+  "newsletter.heading": "اشترك في نشرتي الإخبارية",
+  "newsletter.email": "عنوان البريد الإلكتروني",
+  "newsletter.submit": "اشترك",
+  "newsletter.note": "أعمال جديدة ومجموعات وعروض فقط. يمكنك إلغاء الاشتراك في أي وقت.",
+  "newsletter.subscribed": "شكرًا لك! سأكتب إليك عندما يكون هناك جديد.",
+  "newsletter.invalid": "يرجى إدخال عنوان بريد إلكتروني صالح.",
+  "newsletter.failed": "تعذر الاشتراك. يرجى المحاولة مرة أخرى بعد دقيقة."
 }

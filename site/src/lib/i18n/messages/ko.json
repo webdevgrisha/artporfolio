@@ -13,5 +13,12 @@
   "menu.about": "소개",
   "menu.contact": "연락처",
   "footer.menu": "페이지",
-  "footer.networks": "소셜 네트워크"
+  "footer.networks": "소셜 네트워크",
+  "newsletter.heading": "뉴스레터 구독하기",
+  "newsletter.email": "이메일 주소",
+  "newsletter.submit": "구독하기",
+  "newsletter.note": "신작, 컬렉션 및 제안만 게재됩니다. 언제든지 구독을 취소할 수 있습니다.",
+  "newsletter.subscribed": "감사합니다! 새 소식이 생기면 메일로 알려 드릴게요.",
+  "newsletter.invalid": "유효한 이메일 주소를 입력해 주세요.",
+  "newsletter.failed": "구독에 실패했습니다. 1분 후에 다시 시도해 주세요."
 }

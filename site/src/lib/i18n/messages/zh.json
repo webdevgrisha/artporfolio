@@ -13,5 +13,12 @@
   "menu.about": "关于我",
   "menu.contact": "联系",
   "footer.menu": "页面",
-  "footer.networks": "社交网络"
+  "footer.networks": "社交网络",
+  "newsletter.heading": "订阅我的电子报",
+  "newsletter.email": "电子邮箱地址",
+  "newsletter.submit": "订阅",
+  "newsletter.note": "仅展示新作、作品集和优惠信息。您可以随时取消订阅。",
+  "newsletter.subscribed": "谢谢！有新作品时我会写信告诉您。",
+  "newsletter.invalid": "请输入有效的电子邮箱地址。",
+  "newsletter.failed": "无法订阅。请一分钟后再试。"
 }

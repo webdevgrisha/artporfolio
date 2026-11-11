@@ -13,5 +13,12 @@
   "menu.about": "Om mig",
   "menu.contact": "Kontakt",
   "footer.menu": "Sidor",
-  "footer.networks": "Sociala nätverk"
+  "footer.networks": "Sociala nätverk",
+  "newsletter.heading": "Prenumerera på mitt nyhetsbrev",
+  "newsletter.email": "E-postadress",
+  "newsletter.submit": "Prenumerera",
+  "newsletter.note": "Endast nya verk, samlingar och erbjudanden. Du kan avsluta prenumerationen när som helst.",
+  "newsletter.subscribed": "Tack! Jag skriver när det finns något nytt.",
+  "newsletter.invalid": "Ange en giltig e-postadress.",
+  "newsletter.failed": "Det gick inte att prenumerera. Försök igen om en minut."
 }

@@ -13,5 +13,12 @@
   "menu.about": "O mně",
   "menu.contact": "Kontakt",
   "footer.menu": "Stránky",
-  "footer.networks": "Sociální sítě"
+  "footer.networks": "Sociální sítě",
+  "newsletter.heading": "Přihlaste se k odběru mého zpravodaje",
+  "newsletter.email": "E-mailová adresa",
+  "newsletter.submit": "Přihlásit se k odběru",
+  "newsletter.note": "Pouze nová díla, sbírky a nabídky. Odběr můžete kdykoli zrušit.",
+  "newsletter.subscribed": "Děkuji! Napíšu, až bude něco nového.",
+  "newsletter.invalid": "Zadejte prosím platnou e-mailovou adresu.",
+  "newsletter.failed": "Nelze se přihlásit k odběru. Zkuste to prosím znovu za chvíli."
 }

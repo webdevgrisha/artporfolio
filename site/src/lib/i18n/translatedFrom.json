@@ -14,7 +14,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "pl": {
     "layout.skipToContent": "Skip to content",
@@ -31,7 +38,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "uk": {
     "layout.skipToContent": "Skip to content",
@@ -48,7 +62,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "be": {
     "layout.skipToContent": "Skip to content",
@@ -65,7 +86,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "de": {
     "layout.skipToContent": "Skip to content",
@@ -82,7 +110,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "fr": {
     "layout.skipToContent": "Skip to content",
@@ -99,7 +134,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "es": {
     "layout.skipToContent": "Skip to content",
@@ -116,7 +158,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "it": {
     "layout.skipToContent": "Skip to content",
@@ -133,7 +182,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "pt": {
     "layout.skipToContent": "Skip to content",
@@ -150,7 +206,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "zh": {
     "layout.skipToContent": "Skip to content",
@@ -167,7 +230,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "ja": {
     "layout.skipToContent": "Skip to content",
@@ -184,7 +254,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "ko": {
     "layout.skipToContent": "Skip to content",
@@ -201,7 +278,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "ar": {
     "layout.skipToContent": "Skip to content",
@@ -218,7 +302,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "tr": {
     "layout.skipToContent": "Skip to content",
@@ -235,7 +326,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "nl": {
     "layout.skipToContent": "Skip to content",
@@ -252,7 +350,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "sv": {
     "layout.skipToContent": "Skip to content",
@@ -269,7 +374,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "cs": {
     "layout.skipToContent": "Skip to content",
@@ -286,7 +398,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "sk": {
     "layout.skipToContent": "Skip to content",
@@ -303,7 +422,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "lt": {
     "layout.skipToContent": "Skip to content",
@@ -320,7 +446,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "hu": {
     "layout.skipToContent": "Skip to content",
@@ -337,7 +470,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "ro": {
     "layout.skipToContent": "Skip to content",
@@ -354,7 +494,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "el": {
     "layout.skipToContent": "Skip to content",
@@ -371,7 +518,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "id": {
     "layout.skipToContent": "Skip to content",
@@ -388,7 +542,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "hi": {
     "layout.skipToContent": "Skip to content",
@@ -405,7 +566,14 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   },
   "vi": {
     "layout.skipToContent": "Skip to content",
@@ -422,6 +590,13 @@
     "menu.about": "About",
     "menu.contact": "Contact",
     "footer.menu": "Pages",
-    "footer.networks": "Social networks"
+    "footer.networks": "Social networks",
+    "newsletter.heading": "Subscribe to my newsletter",
+    "newsletter.email": "E-mail address",
+    "newsletter.submit": "Subscribe",
+    "newsletter.note": "Only new works, collections and offers. You can unsubscribe at any time.",
+    "newsletter.subscribed": "Thank you! I will write when there is something new.",
+    "newsletter.invalid": "Please enter a valid e-mail address.",
+    "newsletter.failed": "Could not subscribe. Please try again in a minute."
   }
 }

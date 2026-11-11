@@ -13,5 +13,12 @@
   "menu.about": "Sobre mim",
   "menu.contact": "Contato",
   "footer.menu": "Páginas",
-  "footer.networks": "Redes sociais"
+  "footer.networks": "Redes sociais",
+  "newsletter.heading": "Inscreva-se na minha newsletter",
+  "newsletter.email": "Endereço de e-mail",
+  "newsletter.submit": "Inscreva-se",
+  "newsletter.note": "Apenas novas obras, coleções e ofertas. Você pode cancelar a inscrição a qualquer momento.",
+  "newsletter.subscribed": "Inscrição feita! Escreverei quando houver novidades.",
+  "newsletter.invalid": "Por favor, insira um endereço de e-mail válido.",
+  "newsletter.failed": "Não foi possível se inscrever. Tente novamente daqui a um minuto."
 }

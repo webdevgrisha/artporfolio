@@ -13,5 +13,12 @@
   "menu.about": "Hakkımda",
   "menu.contact": "İletişim",
   "footer.menu": "Sayfalar",
-  "footer.networks": "Sosyal ağlar"
+  "footer.networks": "Sosyal ağlar",
+  "newsletter.heading": "Haber bültenime abone olun",
+  "newsletter.email": "E-posta adresi",
+  "newsletter.submit": "Abone ol",
+  "newsletter.note": "Sadece yeni eserler, koleksiyonlar ve teklifler yer alır. İstediğiniz zaman abonelikten çıkabilirsiniz.",
+  "newsletter.subscribed": "Teşekkürler! Yeni bir gelişme olduğunda yazacağım.",
+  "newsletter.invalid": "Lütfen geçerli bir e-posta adresi girin.",
+  "newsletter.failed": "Abone olunamadı. Lütfen bir dakika sonra tekrar deneyin."
 }

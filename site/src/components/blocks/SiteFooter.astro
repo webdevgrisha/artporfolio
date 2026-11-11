@@ -1,8 +1,9 @@
 ---
 /**
- * The footer of every page: the networks of the artist and the menu of the site, then the name of
- * the artist and the year across the page.
+ * The footer of every page: the newsletter, the networks of the artist and the menu of the site,
+ * then the name of the artist and the year across the page.
  */
+import NewsletterSignup from "@/components/blocks/NewsletterSignup.astro";
 import Container from "@/components/ui/Container.astro";
 import IconLink from "@/components/ui/IconLink.astro";
 import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
@@ -54,7 +55,9 @@ const year = new Date().getFullYear();
 
 <footer>
   <Container class="footer">
-    <div class="links">
+    <div class="top">
+      <NewsletterSignup class="signup" language={language} />
+      <div class="links">
       {
         networks.length > 0 && (
           <ul aria-label={t(language, "footer.networks")} class="networks">
@@ -68,7 +71,7 @@ const year = new Date().getFullYear();
           </ul>
         )
       }
-      <nav aria-label={t(language, "footer.menu")}>
+      <nav aria-label={t(language, "footer.menu")} class="menu-nav">
         <ul class="menu">
           {
             menu.map((page) => (
@@ -84,6 +87,7 @@ const year = new Date().getFullYear();
           }
         </ul>
       </nav>
+      </div>
     </div>
     <div class="signature">
       <p lang="en">{artistName}</p>
@@ -100,12 +104,29 @@ const year = new Date().getFullYear();
   }
 
   /*
-   * The line across the page that ends what is above, as in the mockup.
-   *
+   * The line across the page that ends what is above, as in the mockup. The newsletter stands at
+   * the start, the networks and the menu at the end; where the three do not fit on one row, the
+   * newsletter takes a row of its own above them.
+   */
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--layout-space-8);
+    align-items: start;
+    justify-content: space-between;
+    padding-block-start: var(--layout-space-8);
+    border-block-start: var(--line-width) solid currentColor;
+  }
+
+  .signup {
+    flex: 1 1 36rem;
+    max-inline-size: 48rem;
+  }
+
+  /*
    * A row of the menu is as high as a finger needs on a touch screen. Under a mouse the rows stand
-   * closer, yet a little apart from the mockup's 1.4: with no newsletter beside it to line up with,
-   * each link reads apart from the next. The size of an icon is the one Icon draws it at, 1.25 times
-   * its text.
+   * closer, yet a little apart from the mockup's 1.4, so each link reads apart from the next. The
+   * size of an icon is the one Icon draws it at, 1.25 times its text.
    */
   .links {
     --menu-font-size: var(--font-size-1);
@@ -113,11 +134,10 @@ const year = new Date().getFullYear();
     --icon-size: calc(1.25 * var(--menu-font-size));
 
     display: flex;
+    flex-grow: 1;
     gap: var(--layout-space-8);
     align-items: start;
     justify-content: space-between;
-    padding-block-start: var(--layout-space-8);
-    border-block-start: var(--line-width) solid currentColor;
   }
 
   @media (pointer: fine) {
@@ -126,10 +146,21 @@ const year = new Date().getFullYear();
     }
   }
 
-  /* Wider than a phone, the networks and the menu stand together at the end, as in the mockup. */
+  /*
+   * On a phone the menu comes first, at the start, and the networks at the end, as in the mockup.
+   * Wider, the networks and the menu stand together at the end, the menu last.
+   */
+  .menu-nav {
+    order: -1;
+  }
+
   @container (width >= 40rem) {
     .links {
       justify-content: end;
+    }
+
+    .menu-nav {
+      order: 0;
     }
   }
 
@@ -176,16 +207,17 @@ const year = new Date().getFullYear();
   /*
    * The name and the year span the page on one line: «Anastasia Turkevich» in Absans is 12.34
    * times as wide as its size, «©2026» 3.49 times, and about three times the size apart, as in the
-   * mockup. On a phone that would be too small: the year goes under the name, which then fills the
-   * page by itself (8 × 12.34 = 98.7% of it).
+   * mockup. On a phone that would be too small: the year goes above the name, both as large as the
+   * heading of the newsletter, as in the mockup; the name fits a 320px screen at that size (12.34
+   * × 23px), and 8cqi keeps it within a narrower one.
    */
   .signature {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     gap: 0.5em;
     /* As far below the menu as in the mockup, which a closing block of the page needs. */
     padding-block: var(--layout-space-16) var(--layout-space-8);
-    font-size: 8cqi;
+    font-size: min(var(--font-size-2), 8cqi);
     line-height: var(--line-height-display);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);

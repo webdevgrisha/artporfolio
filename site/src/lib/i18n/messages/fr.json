@@ -13,5 +13,12 @@
   "menu.about": "À propos",
   "menu.contact": "Contact",
   "footer.menu": "Pages",
-  "footer.networks": "Réseaux sociaux"
+  "footer.networks": "Réseaux sociaux",
+  "newsletter.heading": "Abonnez-vous à ma newsletter",
+  "newsletter.email": "Adresse e-mail",
+  "newsletter.submit": "S'abonner",
+  "newsletter.note": "Uniquement des œuvres récentes, des collections et des offres. Vous pouvez vous désabonner à tout moment.",
+  "newsletter.subscribed": "Merci ! Je vous tiendrai au courant dès qu'il y aura du nouveau.",
+  "newsletter.invalid": "Veuillez saisir une adresse e-mail valide.",
+  "newsletter.failed": "Impossible de s'abonner. Veuillez réessayer dans une minute."
 }

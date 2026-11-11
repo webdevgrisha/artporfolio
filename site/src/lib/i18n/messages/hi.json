@@ -13,5 +13,12 @@
   "menu.about": "मेरे बारे में",
   "menu.contact": "संपर्क",
   "footer.menu": "पृष्ठ",
-  "footer.networks": "सामाजिक नेटवर्क"
+  "footer.networks": "सामाजिक नेटवर्क",
+  "newsletter.heading": "मेरे न्यूज़लेटर की सदस्यता लें",
+  "newsletter.email": "ई-मेल पता",
+  "newsletter.submit": "सब्सक्राइब करें",
+  "newsletter.note": "केवल नई कृतियाँ, संग्रह और ऑफ़र। आप किसी भी समय सदस्यता रद्द कर सकते हैं।",
+  "newsletter.subscribed": "धन्यवाद! कुछ नया होने पर आपको ईमेल मिलेगा।",
+  "newsletter.invalid": "कृपया एक वैध ई-मेल पता दर्ज करें।",
+  "newsletter.failed": "सब्सक्राइब नहीं हो सका। कृपया एक मिनट में फिर से प्रयास करें।"
 }
