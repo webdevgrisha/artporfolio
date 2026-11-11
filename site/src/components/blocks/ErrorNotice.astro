@@ -27,14 +27,19 @@ const { code, language, text, title } = Astro.props;
 <Container class="notice">
   <div aria-hidden="true" class="code">
     <span>{code[0]}</span>
-    {/* The zero of the code, seen at once: it loads with the page. */}
+    {/*
+      The zero of the code, seen at once: it loads with the page. At most about 170px wide; each
+      screen takes the file of its density, up to the 473px of the file.
+    */}
     <Picture
       alt=""
+      densities={[1, 2, 3]}
       fallbackFormat="webp"
       formats={["avif"]}
       loading="eager"
       pictureAttributes={{ class: "portrait" }}
       src={portrait}
+      width={170}
     />
     <span>{code[1]}</span>
   </div>

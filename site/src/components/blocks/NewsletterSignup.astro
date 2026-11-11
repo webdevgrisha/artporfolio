@@ -36,12 +36,15 @@ const outcome = !result
   class:list={["newsletter", className]}
   {...attributes}
 >
+  {/* At most about 150px wide; each screen takes the file of its density, sharp on a Retina one. */}
   <Picture
     alt=""
+    densities={[1, 2, 3]}
     fallbackFormat="webp"
     formats={["avif"]}
     pictureAttributes={{ class: "portrait" }}
     src={portrait}
+    width={150}
   />
   <div class="body">
     <h2 class="heading" id="newsletter-heading">{t(language, "newsletter.heading")}</h2>
