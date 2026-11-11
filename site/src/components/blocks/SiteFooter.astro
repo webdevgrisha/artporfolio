@@ -155,6 +155,16 @@ const year = new Date().getFullYear();
     flex: 1 1 100%;
   }
 
+  /*
+   * On a row of its own the field reaches the end of the page, as the row of the networks under it
+   * does: the two rows share their edges.
+   */
+  @container (width < 48rem) {
+    .signup {
+      --form-max-size: none;
+    }
+  }
+
   @container (36rem <= width < 48rem) or (width >= 59rem) {
     .signup {
       --portrait-display: block;

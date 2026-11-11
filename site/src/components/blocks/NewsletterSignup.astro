@@ -159,8 +159,9 @@ const outcome = !result
     letter-spacing: var(--letter-spacing-caps);
   }
 
+  /* As wide as an address needs, or as the footer says (`--form-max-size`). */
   .form {
-    max-inline-size: 27rem;
+    max-inline-size: var(--form-max-size, 27rem);
   }
 
   /* The field is a line, as in the mockup, with the arrow that sends it at its end. */
