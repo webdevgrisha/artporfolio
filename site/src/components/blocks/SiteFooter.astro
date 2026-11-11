@@ -102,8 +102,10 @@ const year = new Date().getFullYear();
   /*
    * The line across the page that ends what is above, as in the mockup.
    *
-   * A row of the menu is as high as a finger needs on a touch screen; under a mouse the rows stand
-   * close, as in the mockup. The size of an icon is the one Icon draws it at, 1.25 times its text.
+   * A row of the menu is as high as a finger needs on a touch screen. Under a mouse the rows stand
+   * closer, yet a little apart from the mockup's 1.4: with no newsletter beside it to line up with,
+   * each link reads apart from the next. The size of an icon is the one Icon draws it at, 1.25 times
+   * its text.
    */
   .links {
     --menu-font-size: var(--font-size-1);
@@ -120,7 +122,7 @@ const year = new Date().getFullYear();
 
   @media (pointer: fine) {
     .links {
-      --menu-row: calc(1.4 * var(--menu-font-size));
+      --menu-row: calc(1.6 * var(--menu-font-size));
     }
   }
 
