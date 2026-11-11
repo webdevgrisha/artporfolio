@@ -1,10 +1,9 @@
 {
   "layout.skipToContent": "Ga naar de inhoud",
   "error.notFound.title": "Pagina niet gevonden",
-  "error.notFound.text": "Deze pagina bestaat niet of is verplaatst.",
   "error.server.title": "Er is iets misgegaan",
   "error.server.text": "De pagina kon niet worden geladen. Probeer het over een minuutje nog eens.",
-  "error.toHome": "Ga naar de startpagina",
+  "error.toHome": "Naar startpagina",
   "contact.title": "Contact",
   "contact.heading": "Contact",
   "contact.description": "E-mail en sociale media om contact op te nemen.",

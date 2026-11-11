@@ -1,10 +1,9 @@
 {
   "layout.skipToContent": "Перейти до вмісту",
   "error.notFound.title": "Сторінка не знайдена",
-  "error.notFound.text": "Ця сторінка не існує або була переміщена.",
   "error.server.title": "Сталася помилка",
   "error.server.text": "Сторінку не вдалося завантажити. Спробуйте ще раз через хвилину.",
-  "error.toHome": "Перейти на головну сторінку",
+  "error.toHome": "Повернути на головну",
   "contact.title": "Контакти",
   "contact.heading": "Зв’язатися",
   "contact.description": "Електронна пошта та соціальні мережі для зв’язку.",

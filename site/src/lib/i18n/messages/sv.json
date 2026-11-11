@@ -1,10 +1,9 @@
 {
   "layout.skipToContent": "Gå till innehåll",
   "error.notFound.title": "Sidan hittades inte",
-  "error.notFound.text": "Denna sida finns inte eller har flyttats.",
   "error.server.title": "Något gick fel",
   "error.server.text": "Sidan kunde inte laddas. Försök igen om en minut.",
-  "error.toHome": "Gå till startsidan",
+  "error.toHome": "Till startsidan",
   "contact.title": "Kontakt",
   "contact.heading": "Hör av dig",
   "contact.description": "E-post och sociala nätverk för att komma i kontakt.",

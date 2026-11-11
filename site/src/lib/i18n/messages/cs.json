@@ -1,10 +1,9 @@
 {
   "layout.skipToContent": "Přejít k obsahu",
   "error.notFound.title": "Stránka nebyla nalezena",
-  "error.notFound.text": "Tato stránka neexistuje nebo byla přesunuta.",
   "error.server.title": "Došlo k chybě",
   "error.server.text": "Stránku se nepodařilo načíst. Zkuste to prosím znovu za chvíli.",
-  "error.toHome": "Přejít na úvodní stránku",
+  "error.toHome": "Domů",
   "contact.title": "Kontakt",
   "contact.heading": "Ozvěte se",
   "contact.description": "E-mail a sociální sítě pro kontakt.",

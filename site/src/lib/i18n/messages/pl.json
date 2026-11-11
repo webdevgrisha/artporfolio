@@ -1,10 +1,9 @@
 {
   "layout.skipToContent": "Przejdź do treści",
   "error.notFound.title": "Strona nie została znaleziona",
-  "error.notFound.text": "Ta strona nie istnieje lub została przeniesiona.",
   "error.server.title": "Wystąpił błąd",
   "error.server.text": "Nie udało się załadować strony. Spróbuj ponownie za minutę.",
-  "error.toHome": "Przejdź do strony głównej",
+  "error.toHome": "Strona główna",
   "contact.title": "Kontakt",
   "contact.heading": "Kontakt",
   "contact.description": "Adres e-mail i profile w mediach społecznościowych umożliwiające kontakt.",

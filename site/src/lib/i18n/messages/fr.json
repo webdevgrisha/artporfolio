@@ -1,10 +1,9 @@
 {
   "layout.skipToContent": "Aller au contenu",
   "error.notFound.title": "Page introuvable",
-  "error.notFound.text": "Cette page n'existe pas ou a été déplacée.",
   "error.server.title": "Une erreur s'est produite",
   "error.server.text": "La page n'a pas pu être chargée. Veuillez réessayer dans une minute.",
-  "error.toHome": "Aller à la page d'accueil",
+  "error.toHome": "Retour à l'accueil",
   "contact.title": "Contact",
   "contact.heading": "Contact",
   "contact.description": "Adresse e-mail et réseaux sociaux pour prendre contact.",

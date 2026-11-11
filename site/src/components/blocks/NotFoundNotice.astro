@@ -1,0 +1,71 @@
+---
+/**
+ * What an address with no page shows, as the admin does: «4», the portrait, «4», then what happened
+ * and the way back home.
+ */
+import portrait from "@/assets/images/portraitMark.png";
+import ButtonLink from "@/components/ui/ButtonLink.astro";
+import Container from "@/components/ui/Container.astro";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { localizedPath } from "@/lib/site/localizedPath";
+
+interface Props {
+  language: Language;
+}
+
+const { language } = Astro.props;
+---
+
+<Container class="notice">
+  <div aria-hidden="true" class="code">
+    <span>4</span>
+    <img alt="" class="portrait" height={portrait.height} src={portrait.src} width={portrait.width} />
+    <span>4</span>
+  </div>
+  <h1 class="title">{t(language, "error.notFound.title")}</h1>
+  <ButtonLink class="home" href={localizedPath(language, "/")} label={t(language, "error.toHome")} />
+</Container>
+
+<style>
+  .notice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-block: var(--layout-space-16);
+    text-align: center;
+  }
+
+  /*
+   * The digits grow with the screen up to a cap, as in the admin; the gap and the portrait are in
+   * em, so they follow the digits.
+   */
+  .code {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 0.08em;
+    align-items: center;
+    font-size: clamp(5rem, 23vw, 15rem);
+    line-height: 1;
+  }
+
+  .portrait {
+    inline-size: max(7rem, 0.7em);
+    block-size: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .title {
+    margin-block-start: var(--layout-space-8);
+    font-size: var(--font-size-body);
+  }
+
+  .home {
+    inline-size: min(20rem, 100%);
+    min-block-size: 3.5rem;
+    margin-block-start: var(--layout-space-8);
+    font-size: var(--font-size-2);
+  }
+</style>

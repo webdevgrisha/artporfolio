@@ -1,7 +1,6 @@
 {
   "layout.skipToContent": "Zum Inhalt springen",
   "error.notFound.title": "Seite nicht gefunden",
-  "error.notFound.text": "Diese Seite existiert nicht oder wurde verschoben.",
   "error.server.title": "Es ist ein Fehler aufgetreten",
   "error.server.text": "Die Seite konnte nicht geladen werden. Bitte versuchen Sie es in einer Minute erneut.",
   "error.toHome": "Zur Startseite",

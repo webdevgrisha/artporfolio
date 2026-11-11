@@ -1,10 +1,9 @@
 {
   "layout.skipToContent": "コンテンツへスキップ",
   "error.notFound.title": "ページが見つかりません",
-  "error.notFound.text": "このページは存在しません、または移動しました。",
   "error.server.title": "何らかのエラーが発生しました",
   "error.server.text": "ページを読み込めませんでした。1分後に再度お試しください。",
-  "error.toHome": "ホームページへ",
+  "error.toHome": "ホームへ戻る",
   "contact.title": "お問い合わせ",
   "contact.heading": "お問い合わせ",
   "contact.description": "連絡用のメールアドレスとソーシャルネットワーク。",
