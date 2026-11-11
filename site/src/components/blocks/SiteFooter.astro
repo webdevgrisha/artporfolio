@@ -74,6 +74,7 @@ const year = new Date().getFullYear();
             menu.map((page) => (
               <li>
                 <TextLink
+                  class="menu-link"
                   aria-current={page.path === path ? "page" : undefined}
                   href={localizedPath(language, page.path)}
                   label={t(language, page.label)}
@@ -98,18 +99,29 @@ const year = new Date().getFullYear();
     container-type: inline-size;
   }
 
-  .links,
-  .signature {
-    padding-block-start: var(--layout-space-8);
-  }
-
-  /* The line across the page that ends what is above, as in the mockup. */
+  /*
+   * The line across the page that ends what is above, as in the mockup.
+   *
+   * A row of the menu is as high as a finger needs on a touch screen; under a mouse the rows stand
+   * close, as in the mockup. The size of an icon is the one Icon draws it at, 1.25 times its text.
+   */
   .links {
+    --menu-font-size: var(--font-size-1);
+    --menu-row: var(--min-tap-target-size);
+    --icon-size: calc(1.25 * var(--font-size-2));
+
     display: flex;
     gap: var(--layout-space-8);
     align-items: start;
     justify-content: space-between;
+    padding-block-start: var(--layout-space-8);
     border-block-start: var(--line-width) solid currentColor;
+  }
+
+  @media (pointer: fine) {
+    .links {
+      --menu-row: calc(1.4 * var(--menu-font-size));
+    }
   }
 
   /* Wider than a phone, the networks and the menu stand together at the end, as in the mockup. */
@@ -126,15 +138,33 @@ const year = new Date().getFullYear();
     list-style: none;
   }
 
+  /*
+   * The top of the frames of the icons stands at the top of the capitals of the first link of the
+   * menu, as in the mockup. The capitals of Absans are 0.7 of its size, centered in their row; an
+   * icon is centered in a box a finger can hit, and its frame starts 2 units of 24 below its top.
+   */
   .networks {
     display: flex;
     gap: var(--space-2);
+    margin-block-start: calc(
+      (var(--menu-row) - 0.7 * var(--menu-font-size)) / 2 -
+      (max(var(--min-tap-target-size), var(--icon-size)) - var(--icon-size)) / 2 -
+      var(--icon-size) / 12
+    );
     font-size: var(--font-size-2);
   }
 
-  /* One link under another, each as high as a finger needs. */
+  .menu {
+    font-size: var(--menu-font-size);
+  }
+
+  /* One link under another. */
   .menu > li {
     display: flex;
+  }
+
+  .menu .menu-link {
+    min-block-size: var(--menu-row);
   }
 
   /*
@@ -147,7 +177,8 @@ const year = new Date().getFullYear();
     display: flex;
     flex-direction: column;
     gap: 0.5em;
-    padding-block-end: var(--layout-space-8);
+    /* As far below the menu as in the mockup, which a closing block of the page needs. */
+    padding-block: var(--layout-space-16) var(--layout-space-8);
     font-size: 8cqi;
     line-height: var(--line-height-display);
     text-transform: uppercase;
