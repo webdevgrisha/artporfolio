@@ -64,7 +64,7 @@ const style =
       <span class="hint-text">{t(language, "hero.scrollDown")}</span>
     </div>
     <VisuallyHidden as="h1" id="page-title" lang={lang}>{name}</VisuallyHidden>
-    <div class="menu"><MenuButton language={language} /></div>
+    <div class="menu"><MenuButton language={language} skipped /></div>
   </div>
 </section>
 
@@ -483,6 +483,8 @@ const style =
     inline-size: var(--width);
     block-size: calc(var(--width) / 2);
     background-color: var(--color-text);
+    /* A hairline of light along its edge, as the letters have, so it shows on a dark ground too. */
+    filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.6));
     /* Safari before 15.4 knows only the prefixed name. */
     -webkit-mask: var(--shape) center / contain no-repeat;
     mask: var(--shape) center / contain no-repeat;
