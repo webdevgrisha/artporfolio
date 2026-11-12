@@ -38,7 +38,9 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
     <ChevronDownIcon />
   </button>
   <div class="panel" data-align={align} id={id} popover style={`position-anchor: --${id}`}>
-    <slot />
+    <div class="content">
+      <slot />
+    </div>
   </div>
 </div>
 
@@ -83,42 +85,109 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
   /*
    * Under the button, from its start as in the mockup, or from its end; where there is no room
    * there, the browser moves it to the other side, so it keeps the width of its lines rather than
-   * break their words. A browser that cannot place it by the button shows it in the middle of the
-   * screen.
+   * break their words. Above or below the button, it takes the side with more room, and never
+   * reaches past the screen: a list longer than the room scrolls (see `.content`). A browser that
+   * cannot place it by the button shows it in the middle of the screen.
    */
   .panel {
     inline-size: max-content;
     max-inline-size: calc(100vi - 2 * var(--page-gutter));
-    max-block-size: calc(100dvh - 2 * var(--page-gutter));
-    padding: var(--space-3) var(--space-6);
+    /* Of the room on its side of the button, as placed by it: a margin of the page short of the edge. */
+    max-block-size: calc(100% - var(--page-gutter));
+    padding: 0;
     margin: var(--space-1) 0 0;
     position-area: block-end span-inline-end;
+    position-try-order: most-block-size;
     position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline;
-    overflow-y: auto;
     font-size: inherit;
     color: var(--color-text);
     background: var(--color-surface);
     border: var(--line-width) solid light-dark(transparent, var(--color-line));
     box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
     /*
-     * It fades in and out, as everything that pops up over the page comes and goes with motion:
-     * only fades, as the browser may place it above the button as well as below. The browser
-     * keeps it in sight until it has faded out; a screen without motion shows it at once.
+     * It unrolls down from the button and rolls back up, as the menu does: it is cut, not moved,
+     * so its list stays still; the cut leaves room for the shadow. The browser keeps it in sight
+     * until it is rolled up; a screen without motion shows it at once.
      */
-    opacity: 0;
+    clip-path: inset(0 -1rem 100% -1rem);
     transition-timing-function: var(--motion-easing-standard);
-    transition-duration: var(--motion-duration-standard);
-    transition-property: opacity, display, overlay;
+    transition-duration: var(--motion-duration-slow);
+    transition-property: clip-path, display, overlay;
     transition-behavior: allow-discrete;
   }
 
+  /* A column, so the list in it can be no higher than the panel and scroll inside it. */
   .panel:popover-open {
-    opacity: 1;
+    display: flex;
+    flex-direction: column;
+    clip-path: inset(0 -1rem -1rem -1rem);
   }
 
   @starting-style {
     .panel:popover-open {
-      opacity: 0;
+      clip-path: inset(0 -1rem 100% -1rem);
+    }
+  }
+
+  /*
+   * A list longer than the room scrolls, with a thin scrollbar, and fades out at the edge where
+   * more of it is hidden, so it shows there is more without a frame: the fade follows the scroll,
+   * gone at the top once it reaches the top, and at the bottom at the end. A browser that cannot tie
+   * it to the scroll shows the list without it.
+   */
+  .content {
+    --fade-size: var(--space-8);
+
+    min-block-size: 0;
+    padding: var(--space-3) var(--space-6);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--fade-start),
+      #000 calc(100% - var(--fade-end)),
+      transparent
+    );
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .content {
+      animation: scroll-fade linear both;
+      animation-timeline: scroll(self);
+    }
+  }
+
+  @property --fade-start {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  @property --fade-end {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  @keyframes scroll-fade {
+    from {
+      --fade-start: 0px;
+      --fade-end: var(--fade-size);
+    }
+
+    10% {
+      --fade-start: var(--fade-size);
+    }
+
+    90% {
+      --fade-end: var(--fade-size);
+    }
+
+    to {
+      --fade-start: var(--fade-size);
+      --fade-end: 0px;
     }
   }
 
