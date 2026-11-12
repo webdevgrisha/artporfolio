@@ -1,14 +1,75 @@
 ---
-// Only its hero for now: the content of the page comes with its own task.
+import AboutIntro from "@/components/blocks/AboutIntro.astro";
+import AboutSection from "@/components/blocks/AboutSection.astro";
+import ProcessGallery from "@/components/blocks/ProcessGallery.astro";
+import Container from "@/components/ui/Container.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { aboutSchema } from "@/lib/api/about";
+import { getJson } from "@/lib/api/getJson";
 import { isLanguage } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
+import { paragraphs } from "@/lib/text/paragraphs";
+import { summary } from "@/lib/text/summary";
+import { typeset } from "@/lib/text/typeset";
 
 const { lang } = Astro.params;
 
 if (!isLanguage(lang)) {
   return Astro.rewrite("/404");
 }
+
+const language = lang;
+const { photo, processPhotos, text } = await getJson("about", aboutSchema, { language });
+
+/** A text of the artist as the paragraphs of the page, set by the rules of its language. */
+function paragraphsOf(source: string): string[] {
+  return paragraphs(typeset(language, source));
+}
+
+const intro = paragraphsOf(text.about);
+const description = summary(text.about);
+// What the page leaves out when the artist left it empty.
+const sections = [
+  { heading: t(lang, "about.biography"), id: "biography", paragraphs: paragraphsOf(text.biography) },
+  { heading: t(lang, "about.creation"), id: "creation", paragraphs: paragraphsOf(text.creation) },
+].filter((section) => section.paragraphs.length > 0);
 ---
 
-<BaseLayout language={lang} path="/about" title={t(lang, "menu.about")} />
+<BaseLayout
+  {...(description && { description })}
+  language={lang}
+  path="/about"
+  title={t(lang, "menu.about")}
+>
+  <Container class="about">
+    {(photo || intro.length > 0) && <AboutIntro paragraphs={intro} photo={photo} />}
+    {sections.map((section) => <AboutSection {...section} />)}
+    {
+      processPhotos.length > 0 && (
+        <ProcessGallery
+          heading={t(lang, "about.process")}
+          id="process"
+          next={t(lang, "carousel.next")}
+          photos={processPhotos}
+          previous={t(lang, "carousel.previous")}
+          viewer={{
+            close: t(lang, "viewer.close"),
+            error: t(lang, "viewer.error"),
+            next: t(lang, "viewer.next"),
+            previous: t(lang, "viewer.previous"),
+            zoom: t(lang, "viewer.zoom"),
+          }}
+        />
+      )
+    }
+  </Container>
+</BaseLayout>
+
+<style>
+  /* Its parts one under another, as far apart as the sections of the mockup. */
+  .about {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-space-24);
+  }
+</style>
