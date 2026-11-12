@@ -8,12 +8,15 @@ import Dropdown from "@/components/ui/Dropdown.astro";
 import GlobeIcon from "@/components/ui/icons/GlobeIcon.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import { languageName } from "@/lib/i18n/languageName";
-import { type Language, languages } from "@/lib/i18n/languages";
+import type { Language } from "@/lib/i18n/languages";
+import { languagesByName } from "@/lib/i18n/languagesByName";
 import { languageTag } from "@/lib/i18n/languageTag";
 import { t } from "@/lib/i18n/translate";
 import { localizedPath } from "@/lib/site/localizedPath";
 
 interface Props {
+  /** Which edge of the button the list lines up with; see Dropdown. */
+  align?: "start" | "end";
   class?: string;
   /** The id of the list, unique on the page. */
   id: string;
@@ -22,19 +25,22 @@ interface Props {
   path: string;
 }
 
-const { class: className, id, language, path } = Astro.props;
+const { align, class: className, id, language, path } = Astro.props;
+
+const ordered = languagesByName();
 ---
 
 <Dropdown
+  align={align}
   class={className}
   id={id}
   label={language.toUpperCase()}
   name={t(language, "header.language")}
 >
   <GlobeIcon slot="icon" />
-  <ul class="languages" style={`--rows: ${Math.ceil(languages.length / 2)}`}>
+  <ul class="languages" style={`--rows: ${Math.ceil(ordered.length / 2)}`}>
     {
-      languages.map((other) => (
+      ordered.map((other) => (
         <li lang={languageTag(other)}>
           <TextLink
             class="language"
@@ -51,7 +57,7 @@ const { class: className, id, language, path } = Astro.props;
 
 <style>
   /*
-   * Two columns read from top to bottom, the main languages of the site first: the 26 fit a screen
+   * Two columns read from top to bottom, by script and by name: the 26 fit a screen
    * without a scroll. The text is the size of the body rather than of the button: a long list in
    * the large type of the mockup, made for three languages, would crowd the page.
    */

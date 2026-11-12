@@ -34,10 +34,15 @@ const menuId = "site-menu";
   <Container class="bar">
     <HomeLink current={path === "/"} language={language} />
     <div class="controls">
-      <CurrencySwitch currencies={currencies} id="header-currency" language={language} />
+      <CurrencySwitch
+        align="end"
+        currencies={currencies}
+        id="header-currency"
+        language={language}
+      />
       {
         path !== undefined && (
-          <LanguageSwitch id="header-language" language={language} path={path} />
+          <LanguageSwitch align="end" id="header-language" language={language} path={path} />
         )
       }
       <ThemeToggle language={language} />

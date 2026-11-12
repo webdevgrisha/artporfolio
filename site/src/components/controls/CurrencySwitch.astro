@@ -15,6 +15,8 @@ import { t } from "@/lib/i18n/translate";
 import { baseCurrency } from "@/lib/site/currency";
 
 interface Props {
+  /** Which edge of the button the list lines up with; see Dropdown. */
+  align?: "start" | "end";
   class?: string | undefined;
   /** The codes of the currencies in use, the one the prices are set in first. */
   currencies: string[];
@@ -23,12 +25,13 @@ interface Props {
   language: Language;
 }
 
-const { class: className, currencies, id, language } = Astro.props;
+const { align, class: className, currencies, id, language } = Astro.props;
 ---
 
 {
   currencies.length > 1 && (
     <Dropdown
+  align={align}
       class:list={["currency-switch", className]}
       data-currency-switch
       hidden

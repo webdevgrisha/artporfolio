@@ -10,6 +10,11 @@ import ChevronDownIcon from "./icons/ChevronDownIcon.astro";
 import VisuallyHidden from "./VisuallyHidden.astro";
 
 interface Props extends Omit<HTMLAttributes<"div">, "id"> {
+  /**
+   * Which edge of the button the panel lines up with: its start, or its end for a button at the
+   * end of a row, so the panel never reaches past the margin of the page.
+   */
+  align?: "start" | "end" | undefined;
   /** The id of the panel, unique on the page; the button opens the panel by it. */
   id: string;
   /** What the button shows, such as «EN». */
@@ -21,7 +26,7 @@ interface Props extends Omit<HTMLAttributes<"div">, "id"> {
   name: string;
 }
 
-const { class: className, id, label, name, ...attributes } = Astro.props;
+const { align = "start", class: className, id, label, name, ...attributes } = Astro.props;
 ---
 
 <div class:list={["dropdown", className]} {...attributes}>
@@ -32,7 +37,7 @@ const { class: className, id, label, name, ...attributes } = Astro.props;
     <span class="label" data-dropdown-label>{label}</span>
     <ChevronDownIcon />
   </button>
-  <div class="panel" id={id} popover style={`position-anchor: --${id}`}>
+  <div class="panel" data-align={align} id={id} popover style={`position-anchor: --${id}`}>
     <slot />
   </div>
 </div>
@@ -67,9 +72,10 @@ const { class: className, id, label, name, ...attributes } = Astro.props;
   }
 
   /*
-   * Under the button, from its start, as in the mockup; where there is no room there, the browser
-   * moves it to the other side, so it keeps the width of its lines rather than break their words.
-   * A browser that cannot place it by the button shows it in the middle of the screen.
+   * Under the button, from its start as in the mockup, or from its end; where there is no room
+   * there, the browser moves it to the other side, so it keeps the width of its lines rather than
+   * break their words. A browser that cannot place it by the button shows it in the middle of the
+   * screen.
    */
   .panel {
     inline-size: max-content;
@@ -85,5 +91,9 @@ const { class: className, id, label, name, ...attributes } = Astro.props;
     background: var(--color-surface);
     border: var(--line-width) solid light-dark(transparent, var(--color-line));
     box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+  }
+
+  .panel[data-align="end"] {
+    position-area: block-end span-inline-start;
   }
 </style>
