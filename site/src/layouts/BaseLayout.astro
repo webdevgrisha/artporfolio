@@ -154,19 +154,23 @@ const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.lengt
         />
       )
     }
-    {!standalone && (
-        <SiteHeader
-          currencies={currencies}
-          heroes={heroes}
-          language={language}
-          links={links}
-          path={path}
-        />
-      )}
-    <main class:list={{ framed: !standalone }} id="content">
-      <slot />
-    </main>
-    {!standalone && <SiteFooter language={language} links={links} path={path} />}
+    <div class="page">
+      {
+        !standalone && (
+          <SiteHeader
+            currencies={currencies}
+            heroes={heroes}
+            language={language}
+            links={links}
+            path={path}
+          />
+        )
+      }
+      <main class:list={{ framed: !standalone }} id="content">
+        <slot />
+      </main>
+      {!standalone && <SiteFooter language={language} links={links} path={path} />}
+    </div>
   </body>
 </html>
 
@@ -177,10 +181,15 @@ const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.lengt
 </script>
 
 <style>
-  /* A short page, such as an error, still has its footer at the bottom of the screen. */
-  body {
+  /*
+   * The page under the hero: at least a screen tall, so the hero can always leave it the whole
+   * screen, and a short page, such as an error or one without content yet, still has its footer
+   * at the bottom of the screen.
+   */
+  .page {
     display: flex;
     flex-direction: column;
+    min-block-size: 100lvh;
   }
 
   main {

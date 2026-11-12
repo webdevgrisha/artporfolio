@@ -101,9 +101,9 @@ const { currencies, heroes, language, links, path } = Astro.props;
         if (Math.abs(scroll - lastScroll) < minimumScroll) return;
 
         const inUse = header.matches(":focus-within") || header.querySelector(":popover-open");
-        // The header hides only once it has been scrolled past its own place in the page, under
-        // the hero: it stays, as the page takes the visitor from the hero to the top of the page.
-        const place = (header.previousElementSibling?.getBoundingClientRect().bottom ?? 0) + scroll;
+        // The header hides only once it has been scrolled past its own place, at the top of the
+        // page under the hero: it stays as the page takes the visitor from the hero to its top.
+        const place = (header.parentElement?.getBoundingClientRect().top ?? 0) + scroll;
         const down = scroll > lastScroll && scroll > place + header.offsetHeight;
 
         header.toggleAttribute("data-hidden", down && !inUse);
