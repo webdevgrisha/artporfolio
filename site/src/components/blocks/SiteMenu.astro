@@ -1,9 +1,8 @@
 ---
 /**
  * The menu the button of the header opens: a panel over the top of the page, as in the mockup,
- * with the name of the artist and the button that closes it where the header has its own, the
- * pages large, and the ways to reach the artist with the year at the bottom. The year stands alone,
- * as in the mockup: the sign of copyright is the footer's.
+ * with the name of the artist and the button that closes it where the header has its own. What it
+ * holds is the MenuPanel, which the home page shows as itself.
  *
  * It is a modal dialog: the browser opens it from the buttons of the header and of the hero
  * (`commandfor`) and closes it from its own, by Escape or by a click beside it (`closedby`),
@@ -12,22 +11,12 @@
  * whose name and button stay where they are: the two lines of the button turn into the cross that
  * closes it, and the pages come in one after another.
  */
-import NetworkLinks from "@/components/blocks/NetworkLinks.astro";
-import CurrencySwitch from "@/components/controls/CurrencySwitch.astro";
-import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
-import ThemeToggle from "@/components/controls/ThemeToggle.astro";
-import Container from "@/components/ui/Container.astro";
-import HomeLink from "@/components/ui/HomeLink.astro";
+import MenuPanel from "@/components/blocks/MenuPanel.astro";
 import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
-import Picture from "@/components/ui/Picture.astro";
-import TextLink from "@/components/ui/TextLink.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
 import type { Image } from "@/lib/api/image";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
-import { localizedPath } from "@/lib/site/localizedPath";
-import { menu } from "@/lib/site/menu";
-import { longestWordLength } from "@/lib/text/longestWord";
 
 interface Props {
   /** The codes of the currencies in use, for the switch of currencies. */
@@ -44,14 +33,6 @@ interface Props {
 }
 
 const { currencies, heroes, id, language, links, path } = Astro.props;
-
-// The year of the page as it is served, as in the footer.
-const year = new Date().getFullYear();
-
-// The names of the pages in this language, and the letters of the longest word among them, which
-// sets their size where the column is narrow.
-const pageNames = menu.map((page) => t(language, page.label));
-const longestWord = Math.max(...pageNames.map(longestWordLength));
 ---
 
 <dialog
@@ -61,65 +42,26 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
   data-site-menu
   id={id}
 >
-  <Container class="panel">
-    <HomeLink class="name" current={path === "/"} language={language} />
-    <button autofocus class="close" command="close" commandfor={id} type="button">
+  <MenuPanel
+    currencies={currencies}
+    heroes={heroes}
+    language={language}
+    links={links}
+    path={path}
+    place="dialog"
+  >
+    <button
+      autofocus
+      class="close"
+      command="close"
+      commandfor={id}
+      slot="close"
+      type="button"
+    >
       <MenuIcon />
       <span class="close-text">{t(language, "header.close")}</span>
     </button>
-    <nav aria-label={t(language, "header.menu")} class="pages">
-      <ul class="page-list" style={{ "--longest-word": longestWord }}>
-        {
-          menu.map((page, index) => {
-            const hero = page.page === undefined ? undefined : heroes[page.page];
-
-            return (
-              <li style={`--item: ${index}`}>
-                <TextLink
-                  class:list={["page-link", { "with-hero": hero }]}
-                  aria-current={page.path === path ? "page" : undefined}
-                  href={localizedPath(language, page.path)}
-                  label={t(language, page.label)}
-                >
-                  {hero && (
-                    <span aria-hidden="true" class="plate" slot="icon">
-                      <Picture
-                        alt=""
-                        class="hero"
-                        image={hero}
-                        sizes="(width >= 75rem) 10vw, 25vw"
-                      />
-                      <span class="plate-text">{t(language, page.label)}</span>
-                    </span>
-                  )}
-                </TextLink>
-              </li>
-            );
-          })
-        }
-      </ul>
-    </nav>
-    <div class="settings">
-      <CurrencySwitch currencies={currencies} id="menu-currency" language={language} />
-      {
-        path !== undefined && (
-          <LanguageSwitch id="menu-language" language={language} path={path} />
-        )
-      }
-      <ThemeToggle id="menu-theme" language={language} />
-    </div>
-    {
-      links && (
-        <div class="contacts">
-          <NetworkLinks class="networks" label={t(language, "footer.networks")} links={links} />
-          {links.email !== "" && (
-            <TextLink class="email" href={`mailto:${links.email}`} label={links.email} />
-          )}
-        </div>
-      )
-    }
-    <p class="year">{year}</p>
-  </Container>
+  </MenuPanel>
 </dialog>
 
 <script>
@@ -215,53 +157,6 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
   }
 
   /*
-   * The name and the button that closes the menu stand where the name and the button that opens
-   * it stand in the header, so the panel seems to open around them. Below, the pages, then the
-   * ways to reach the artist at the bottom.
-   */
-  .panel {
-    --menu-font-size: var(--font-size-body);
-    /* The room of the name in the header, so the name here is as large and stands over it. */
-    --home-link-room: calc(100cqi - var(--grid-gap) - var(--min-tap-target-size));
-    display: grid;
-    grid-template-areas:
-      "name close"
-      "pages pages"
-      "settings settings"
-      "contacts contacts"
-      "year year";
-    grid-template-rows: auto 1fr auto auto auto;
-    /* The name as wide as it is, the button that closes the menu in the rest of the row. */
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: var(--layout-space-8) var(--grid-gap);
-    min-block-size: inherit;
-    padding-block: var(--layout-space-6) var(--layout-space-8);
-
-    container-type: inline-size;
-    font-size: var(--menu-font-size);
-  }
-
-  /*
-   * On a laptop, as in the mockup: the name and the year in the first two thirds, everything else
-   * in the last third, from the button that closes the menu down to the ways to reach the artist.
-   */
-  @media (width >= 75rem) {
-    .panel {
-      grid-template-areas:
-        "name close"
-        ". pages"
-        "year contacts";
-      grid-template-rows: auto 1fr auto;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    }
-  }
-
-  .name {
-    grid-area: name;
-    justify-self: start;
-  }
-
-  /*
    * The word, then the cross at the end of the page, where the header has the button that opens.
    * Where the word does not fit beside the name, as in a narrow phone in a language of a long word
    * or with a large text size, only the cross is shown, and the word still names the button for
@@ -327,196 +222,5 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     .close:hover {
       opacity: 0.6;
     }
-  }
-
-  .pages {
-    grid-area: pages;
-    container-type: inline-size;
-  }
-
-  /*
-   * The switches of the page, which the header shows from 48rem: on a phone they are here,
-   * under the pages.
-   */
-  .settings {
-    display: flex;
-    flex-wrap: wrap;
-    grid-area: settings;
-    gap: 0 var(--layout-space-8);
-    align-items: center;
-  }
-
-  @media (width >= 48rem) {
-    .settings {
-      display: none;
-    }
-  }
-
-  .page-list {
-    padding: 0;
-    margin: 0;
-    /*
-     * A name never breaks: in a narrow column a language of long names, such as the Dutch
-     * «Tentoonstellingen», sets all of them smaller, so its longest word fits the line. A capital
-     * of Absans is about 0.8 of its size wide.
-     */
-    font-size: min(var(--font-size-3), 100cqi / (0.8 * var(--longest-word)));
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-caps);
-    list-style: none;
-  }
-
-  /*
-   * One page under another, on the line of everything else in the column; the rows stand apart
-   * nearly twice their text, as the plates of the mockup do. As the menu opens, they rise into
-   * place one after another.
-   */
-  .page-list > li {
-    display: flex;
-    transition-delay: calc(var(--item) * var(--motion-stagger));
-    transition-timing-function: var(--motion-easing-standard);
-    transition-duration: var(--motion-duration-panel);
-    transition-property: opacity, translate;
-  }
-
-  .page-list .page-link {
-    min-block-size: 1.85em;
-  }
-
-  /*
-   * Under the pointer, or the focus of the keyboard, the hero of the page fills a plate over its
-   * name, as in the mockup: as wide as the word and half a letter more on each side, so the name
-   * keeps the line of the column. The work is blurred, as the hero is at the top of its page, and
-   * darkened, and the plate holds the name again in white, hidden from screen readers. It fills
-   * from the start of the word to its end, as a stroke of a brush, and drains back the same way:
-   * the name turns white exactly as far as the stroke has gone. The blur hides the detail, so a
-   * small file is enough. Without a pointer, on a phone, there is no plate, and its photo is never
-   * loaded: a hidden image is not fetched.
-   */
-  .plate {
-    display: none;
-  }
-
-  @media (hover: hover) {
-    .with-hero {
-      position: relative;
-    }
-
-    .plate {
-      position: absolute;
-      inset: 0 -0.5em;
-      display: flex;
-      align-items: center;
-      padding-inline: 0.5em;
-      container-type: size;
-      overflow: hidden;
-      color: var(--color-on-photo);
-      clip-path: inset(0 100% 0 0);
-      transition: clip-path var(--motion-duration-panel) var(--motion-easing-standard);
-    }
-
-    .plate:dir(rtl) {
-      clip-path: inset(0 0 0 100%);
-    }
-
-    /*
-     * Blurred twice as much as the hero for its size (1.5% of its longer side): the plate shows the
-     * work much smaller, so its detail is finer and, blurred as little, would stay sharp enough to
-     * cross the name; so blurred, it keeps the colors and the rhythm of the work, a small hero.
-     * Blurred edges would let the page show through, so the photo is a little larger than its plate.
-     */
-    .hero {
-      position: absolute;
-      inset: 0;
-      max-inline-size: none;
-    }
-
-    .hero :global(img) {
-      inline-size: 100%;
-      block-size: 100%;
-      object-fit: cover;
-      filter: blur(1.5cqmax) brightness(0.6);
-      scale: 1.1;
-    }
-
-    /* The name on the plate stands exactly over the one under it. */
-    .plate-text {
-      position: relative;
-      text-box: trim-both cap alphabetic;
-      white-space: nowrap;
-    }
-
-    /*
-     * A plate is lit under the pointer or the focus, and the page being shown is lit from the
-     * moment the menu opens, so the visitor sees where they are. One plate is lit at a time: while
-     * another is pointed at, the one of the page being shown drains, and it fills again after.
-     */
-    .with-hero:is(:hover, :focus-visible, [aria-current="page"]) .plate {
-      clip-path: inset(0);
-    }
-
-    .page-list:has(.with-hero:is(:hover, :focus-visible))
-      .with-hero[aria-current="page"]:not(:hover, :focus-visible)
-      .plate {
-      clip-path: inset(0 100% 0 0);
-    }
-
-    .page-list:has(.with-hero:is(:hover, :focus-visible))
-      .with-hero[aria-current="page"]:not(:hover, :focus-visible)
-      .plate:dir(rtl) {
-      clip-path: inset(0 0 0 100%);
-    }
-
-    /* The stroke is the sign of the pointer here: the underline of a link gives way to it. */
-    .page-link.with-hero:is(:hover, :focus-visible) :global(.text) {
-      text-decoration-color: transparent;
-    }
-
-    /* As the menu unrolls, the plate of the page being shown fills with it. */
-    @starting-style {
-      .site-menu[open] .with-hero[aria-current="page"] .plate {
-        clip-path: inset(0 100% 0 0);
-      }
-
-      .site-menu[open] .with-hero[aria-current="page"] .plate:dir(rtl) {
-        clip-path: inset(0 0 0 100%);
-      }
-    }
-  }
-
-  @starting-style {
-    .site-menu[open] .page-list > li {
-      opacity: 0;
-      translate: 0 0.3em;
-    }
-  }
-
-  /*
-   * The ways to reach the artist: the icons of the networks, then the address, which on a phone
-   * goes under them rather than break.
-   */
-  .contacts {
-    display: flex;
-    flex-wrap: wrap;
-    grid-area: contacts;
-    gap: 0 var(--layout-space-4);
-    align-items: center;
-  }
-
-  /* The frame of the first icon, not the room a finger needs around it, starts at the edge. */
-  .networks {
-    --icon-size: 1.25em;
-
-    margin-inline-start: calc(
-      (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -
-      var(--icon-size) / 12
-    );
-  }
-
-  .year {
-    grid-area: year;
-    align-self: end;
-    margin: 0;
-    line-height: var(--min-tap-target-size);
   }
 </style>
