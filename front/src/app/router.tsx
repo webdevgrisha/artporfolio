@@ -172,8 +172,8 @@ export const router = createBrowserRouter([
                         lazy: () => contacts().then((page) => page.contactLinksRoute),
                       },
                       {
-                        path: routes.contactPhoto,
-                        lazy: () => contacts().then((page) => page.contactPhotoRoute),
+                        path: routes.contactSlideshow,
+                        lazy: () => contacts().then((page) => page.contactSlideshowRoute),
                       },
                     ],
                   },

@@ -1,0 +1,8 @@
+.source {
+  max-inline-size: 24rem;
+}
+
+/* The checkbox keeps the end of its row, as on the form of a work. */
+.checkbox {
+  margin-inline-start: auto;
+}

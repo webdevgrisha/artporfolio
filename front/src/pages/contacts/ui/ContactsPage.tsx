@@ -7,7 +7,7 @@ import styles from "./ContactsPage.module.css";
 
 const sections = [
   { label: "Соц. сети", to: routes.contactLinks },
-  { label: "Фото", to: routes.contactPhoto },
+  { label: "Фото", to: routes.contactSlideshow },
 ] as const;
 
 /** The links and the photo are saved independently, so each is a section with its own URL. */

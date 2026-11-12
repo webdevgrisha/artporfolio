@@ -15,6 +15,8 @@ interface PhotoListFieldProps {
   /** An example description, for the placeholder of every description field. */
   altPlaceholder: string;
   className?: string;
+  /** Keeps the photos as they are, such as while the form shows others in their place. */
+  disabled?: boolean;
   isSaving: boolean;
   label: string;
   maxPhotos: number;
@@ -42,6 +44,7 @@ function toMediaItem(key: string, row: PhotoListRow): SortableMediaItem {
 export function PhotoListField({
   altPlaceholder,
   className,
+  disabled = false,
   isSaving,
   label,
   maxPhotos,
@@ -55,6 +58,7 @@ export function PhotoListField({
   const { append, fields, move, remove } = useFieldArray({ control, name: "photos" });
   const rows = useWatch({ control, name: "photos" });
   const items = fields.map((field, index) => toMediaItem(field.id, rows[index] ?? field));
+  const isDisabled = disabled || isSaving;
 
   // Added rows are highlighted by themselves; the list shows that saved photos were removed or
   // moved.
@@ -84,7 +88,7 @@ export function PhotoListField({
         rules={imageUploadRules}
         maxItems={maxPhotos}
         items={items}
-        disabled={isSaving}
+        disabled={isDisabled}
         error={
           errors.root?.photosRejection?.message ??
           errors.photos?.message ??
@@ -107,7 +111,7 @@ export function PhotoListField({
               label="Описание"
               aria-label={`Описание ${item.name}`}
               placeholder={altPlaceholder}
-              disabled={isSaving}
+              disabled={isDisabled}
               error={errors.photos?.[index]?.alt?.message}
               isModified={row?.status === "saved" && row.alt !== row.photo.alt}
               hasValue={Boolean(row?.alt)}
