@@ -35,6 +35,7 @@ const { class: className, language } = Astro.props;
 
   const root = document.documentElement;
   const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   /** The theme the page has: the one the visitor chose, else the one of the system. */
   function currentTheme(): Theme {
@@ -57,11 +58,52 @@ const { class: className, language } = Astro.props;
     }
   }
 
+  /** The time a token of motion names, such as `420ms`, in milliseconds. */
+  function motionDuration(token: string): number {
+    return Number.parseFloat(getComputedStyle(root).getPropertyValue(token)) || 0;
+  }
+
+  /**
+   * Turns on the other theme from `button`: the new one spreads over the page in a circle from the
+   * button until it covers the screen. Without View Transitions, or for a visitor who asked for less
+   * motion, the page takes it at once.
+   */
+  function switchTheme(button: HTMLButtonElement): void {
+    const theme = currentTheme() === "dark" ? "light" : "dark";
+
+    if (!document.startViewTransition || reducedMotion.matches) {
+      applyTheme(theme);
+      return;
+    }
+
+    const { height, left, top, width } = button.getBoundingClientRect();
+    const x = left + width / 2;
+    const y = top + height / 2;
+    // To the farthest corner of the screen, so the circle covers all of it.
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+    // Tells the CSS to leave the page to this circle instead of the fade between pages.
+    root.dataset.themeTransition = "";
+    const transition = document.startViewTransition(() => applyTheme(theme));
+
+    void transition.ready.then(() => {
+      root.animate(
+        { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+        {
+          duration: motionDuration("--motion-duration-panel"),
+          easing: getComputedStyle(root).getPropertyValue("--motion-easing-standard"),
+          pseudoElement: "::view-transition-new(root)",
+        },
+      );
+    });
+    void transition.finished.finally(() => {
+      delete root.dataset.themeTransition;
+    });
+  }
+
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")) {
     button.hidden = false;
-    button.addEventListener("click", () => {
-      applyTheme(currentTheme() === "dark" ? "light" : "dark");
-    });
+    button.addEventListener("click", () => switchTheme(button));
   }
 </script>
 
@@ -78,6 +120,16 @@ const { class: className, language } = Astro.props;
     background: none;
     border: 0;
     transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  /*
+   * While the theme changes, the new page is not faded in over the old one, as between pages: the
+   * script spreads it over the old one in a circle from the button.
+   */
+  :global(:root[data-theme-transition]::view-transition-old(root)),
+  :global(:root[data-theme-transition]::view-transition-new(root)) {
+    mix-blend-mode: normal;
+    animation: none;
   }
 
   .theme-toggle[hidden] {
