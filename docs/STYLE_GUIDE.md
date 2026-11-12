@@ -365,6 +365,19 @@ const indicatorStyle = {
 - Reuse an existing asset only when its crop, resolution, and aspect ratio match the design slot.
 - Gallery and content images should eventually use responsive sources, modern formats, and lazy loading below the fold.
 
+## Platform first
+
+What the browser or the language does by itself is used as it is: HTML elements and attributes (`<dialog>`, `popover`, `inert`, forms), CSS (`position: sticky`, scroll snap, scroll-driven animations, anchor positioning, container queries, view transitions), and the standard APIs (`Intl`, `IntersectionObserver`, `ResizeObserver`). They are faster, accessible by default, and need no code to maintain.
+
+Where a major browser does not support a feature yet:
+
+1. The page still works without it (progressive enhancement): the content and the controls are there, only the effect is simpler.
+2. Where the effect matters, a small script stands in for the missing feature only, behind feature detection (`CSS.supports(...)`, `"onscrollend" in window`, `@supports`), never for the browsers that have it.
+3. Each such script says in a comment what it replaces and when it can go (the feature and the browser it waits for), so it is deleted once that browser ships it.
+4. A library is taken only when the platform has no answer and the library is the better solution than our own code.
+
+A script is the solution itself, not a stand-in, only where the platform has no feature for the job at all, such as fitting a line of text to a width.
+
 ## Motion
 
 - Animate `transform` and `opacity` where possible.
