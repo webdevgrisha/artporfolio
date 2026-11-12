@@ -60,7 +60,7 @@ const style =
       <span class="copy">{name}</span>
     </div>
     <div aria-hidden="true" class="hint">
-      <span class="chevron"></span>
+      <span class="chevron"><span class="window"></span></span>
       <span class="hint-text">{t(language, "hero.scrollDown")}</span>
     </div>
     <VisuallyHidden as="h1" id="page-title" lang={lang}>{name}</VisuallyHidden>
@@ -307,7 +307,7 @@ const style =
    */
   .photo,
   .line,
-  .chevron::before {
+  .window::before {
     --cover-width: calc(max(100cqw, 100cqh * var(--hero-ratio, 1)) * var(--hero-zoom));
     --cover-height: calc(var(--cover-width) / var(--hero-ratio, 1));
     --cover-x: calc((100cqw - var(--cover-width)) / 2);
@@ -452,28 +452,28 @@ const style =
     }
   }
 
-  @property --nod {
-    syntax: "<length>";
-    inherits: true;
-    initial-value: 0px;
-  }
-
   /*
    * 128 by 64px at 1920px, as in the mockup, with room for its edge, its tip on the middle of the
    * screen, at (--x, --y) of the stage. The shape is the stroke of the mockup drawn as a closed
-   * outline, so it can be both filled and edged. The work shows through its shape (::before), which moves the work back by as much,
-   * as the letters do; a hairline of light follows the edge of the shape (::after), as the letters
-   * have, so it shows on a dark ground too.
+   * outline, so it can be both filled and edged. The work shows through its shape (.window), moved
+   * back by as much as the letters' is; a hairline of light follows the edge of the shape (::after),
+   * as the letters have, so it shows on a dark ground too.
+   *
+   * It nods down and back: the chevron moves, and the work in its window moves the other way by as
+   * much, so the work stays where the blurred one is. Both are moves of transform, which the
+   * browser plays off the main thread, as the nod never stops while the page is open.
    */
   .chevron {
     --width: clamp(4rem, 6.667cqw, 8rem);
     --x: calc(50cqw - var(--width) / 2);
     /* The drawing is 134 units wide, its V 128 of them (--width), its tip 68 units down. */
-    --y: calc(50cqh - var(--width) * 68 / 128 + var(--nod));
+    --y: calc(50cqh - var(--width) * 68 / 128);
+    --nod: 0.75rem;
 
+    /* By top and left, as its x and y are: from the left in a text from the right too. */
     position: absolute;
-    inset-block-start: 0;
-    inset-inline-start: 0;
+    top: 0;
+    left: 0;
     inline-size: calc(var(--width) * 134 / 128);
     aspect-ratio: 134 / 72;
     translate: var(--x) var(--y);
@@ -482,29 +482,52 @@ const style =
 
   @keyframes nod {
     50% {
-      --nod: 0.75rem;
+      transform: translateY(var(--nod));
     }
   }
 
-  .chevron::before,
+  @keyframes nod-back {
+    50% {
+      transform: translateY(calc(-1 * var(--nod)));
+    }
+  }
+
+  .window,
   .chevron::after {
     position: absolute;
     inset: 0;
-    content: "";
     /* Safari before 15.4 knows only the prefixed name. */
     -webkit-mask: var(--shape) center / contain no-repeat;
     mask: var(--shape) center / contain no-repeat;
   }
 
-  .chevron::before {
+  .window {
     --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 134 72'%3E%3Cpolygon points='10.07,2.71 67.00,55.84 123.93,2.71 130.07,9.29 67.00,68.16 3.93,9.29'/%3E%3C/svg%3E");
 
     background-color: var(--color-text);
   }
 
-  .photographed .chevron::before {
+  /* The work, as large as the stage and placed as it is there, moving against the chevron. */
+  .photographed .window {
+    background-color: transparent;
+  }
+
+  /* Placed by top and left, as the work and the chevron are: by their x and y, whatever the
+     direction of the text. */
+  .photographed .window::before {
+    position: absolute;
+    top: calc(-1 * var(--y));
+    left: calc(-1 * var(--x));
+    inline-size: 100cqw;
+    block-size: 100cqh;
+    content: "";
     background-image: var(--hero-image);
-    background-position: calc(var(--cover-x) - var(--x)) calc(var(--cover-y) - var(--y));
+    background-position: var(--cover-x) var(--cover-y);
+    animation: nod-back 1.6s var(--motion-easing-screen) infinite;
+  }
+
+  .chevron::after {
+    content: "";
   }
 
   /* The edge of the same shape, all round it: its arms, their ends and the tip. */
