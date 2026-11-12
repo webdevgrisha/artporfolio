@@ -14,6 +14,7 @@ import HomeLink from "@/components/ui/HomeLink.astro";
 import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
+import type { Image } from "@/lib/api/image";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
 import { localizedPath } from "@/lib/site/localizedPath";
@@ -21,6 +22,8 @@ import { localizedPath } from "@/lib/site/localizedPath";
 interface Props {
   /** The codes of the currencies in use, for the switch of currencies. */
   currencies: string[];
+  /** The heroes of the pages by their id, which the menu shows under the pointer. */
+  heroes: Record<string, Image>;
   language: Language;
   /** The links of the artist for the menu; none when the API could not give them. */
   links: ContactLinks | undefined;
@@ -28,7 +31,7 @@ interface Props {
   path: string | undefined;
 }
 
-const { currencies, language, links, path } = Astro.props;
+const { currencies, heroes, language, links, path } = Astro.props;
 
 const menuId = "site-menu";
 ---
@@ -68,6 +71,7 @@ const menuId = "site-menu";
   </Container>
   <SiteMenu
     currencies={currencies}
+    heroes={heroes}
     id={menuId}
     language={language}
     links={links}

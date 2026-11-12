@@ -17,8 +17,10 @@ import ThemeToggle from "@/components/controls/ThemeToggle.astro";
 import Container from "@/components/ui/Container.astro";
 import HomeLink from "@/components/ui/HomeLink.astro";
 import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
+import Picture from "@/components/ui/Picture.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
+import type { Image } from "@/lib/api/image";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
 import { localizedPath } from "@/lib/site/localizedPath";
@@ -27,6 +29,8 @@ import { menu } from "@/lib/site/menu";
 interface Props {
   /** The codes of the currencies in use, for the switch of currencies. */
   currencies: string[];
+  /** The heroes of the pages by their id: each fills the plate of its page under the pointer. */
+  heroes: Record<string, Image>;
   /** The id the button of the header opens the menu by. */
   id: string;
   language: Language;
@@ -36,7 +40,7 @@ interface Props {
   path: string | undefined;
 }
 
-const { currencies, id, language, links, path } = Astro.props;
+const { currencies, heroes, id, language, links, path } = Astro.props;
 
 // The year of the page as it is served, as in the footer.
 const year = new Date().getFullYear();
@@ -52,16 +56,30 @@ const year = new Date().getFullYear();
     <nav aria-label={t(language, "header.menu")} class="pages">
       <ul class="page-list">
         {
-          menu.map((page, index) => (
-            <li style={`--item: ${index}`}>
-              <TextLink
-                class="page-link"
-                aria-current={page.path === path ? "page" : undefined}
-                href={localizedPath(language, page.path)}
-                label={t(language, page.label)}
-              />
-            </li>
-          ))
+          menu.map((page, index) => {
+            const hero = page.page === undefined ? undefined : heroes[page.page];
+
+            return (
+              <li style={`--item: ${index}`}>
+                <TextLink
+                  class:list={["page-link", { "with-hero": hero }]}
+                  aria-current={page.path === path ? "page" : undefined}
+                  href={localizedPath(language, page.path)}
+                  label={t(language, page.label)}
+                >
+                  {hero && (
+                    <Picture
+                      alt=""
+                      class="hero"
+                      image={hero}
+                      sizes="(width >= 75rem) 20vw, 50vw"
+                      slot="icon"
+                    />
+                  )}
+                </TextLink>
+              </li>
+            );
+          })
         }
       </ul>
     </nav>
@@ -278,6 +296,59 @@ const year = new Date().getFullYear();
 
   .page-list .page-link {
     min-block-size: 1.85em;
+  }
+
+  /*
+   * Under the pointer, or the focus of the keyboard, the hero of the page fills its plate behind
+   * the text, as in the mockup: the plate is as wide as the word and half a letter more on each
+   * side, so the text keeps the line of the column. The work is darkened so the white text reads on any of
+   * them, and the underline gives way to it. Without a pointer, on a phone, the plates stay plain
+   * and their photos are never loaded: a hidden image is not fetched.
+   */
+  .hero {
+    display: none;
+  }
+
+  @media (hover: hover) {
+    .with-hero {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .hero {
+      position: absolute;
+      inset: 0 -0.5em;
+      z-index: -1;
+      display: block;
+      inline-size: auto;
+      max-inline-size: none;
+      block-size: auto;
+      opacity: 0;
+      transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+    }
+
+    .hero :global(img) {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+      filter: brightness(0.6);
+    }
+
+    .with-hero {
+      transition: color var(--motion-duration-slow) var(--motion-easing-standard);
+    }
+
+    .with-hero:is(:hover, :focus-visible) .hero {
+      opacity: 1;
+    }
+
+    .with-hero:is(:hover, :focus-visible) {
+      color: var(--color-on-photo);
+    }
+
+    .page-link.with-hero:is(:hover, :focus-visible) :global(.text) {
+      text-decoration-color: transparent;
+    }
   }
 
   @starting-style {

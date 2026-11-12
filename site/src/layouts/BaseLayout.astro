@@ -6,6 +6,7 @@ import SiteHeader from "@/components/blocks/SiteHeader.astro";
 import SkipLink from "@/components/ui/SkipLink.astro";
 import { availableCurrencies } from "@/lib/api/availableCurrencies";
 import { loadContactLinks } from "@/lib/api/contactLinks";
+import { pageHeroes } from "@/lib/api/pageHeroes";
 import type { Language } from "@/lib/i18n/languages";
 import { languageTag } from "@/lib/i18n/languageTag";
 import { textDirection } from "@/lib/i18n/textDirection";
@@ -41,11 +42,15 @@ interface Props {
 const { description, language, path, standalone = false, title } = Astro.props;
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
 
-// The menu and the footer both show the links of the artist: asked for once, with the currencies
-// of the switches of the header and the menu.
-const [links, currencies] = standalone
-  ? [undefined, []]
-  : await Promise.all([loadContactLinks(language), availableCurrencies(language)]);
+// What the header, its menu and the footer show of the API, asked for together: the links of the
+// artist (menu and footer), the currencies of the switch, and the heroes the menu shows.
+const [links, currencies, heroes] = standalone
+  ? [undefined, [], {}]
+  : await Promise.all([
+      loadContactLinks(language),
+      availableCurrencies(language),
+      pageHeroes(language),
+    ]);
 ---
 
 <!doctype html>
@@ -97,7 +102,13 @@ const [links, currencies] = standalone
   <body>
     <SkipLink label={t(language, "layout.skipToContent")} target="content" />
     {!standalone && (
-        <SiteHeader currencies={currencies} language={language} links={links} path={path} />
+        <SiteHeader
+          currencies={currencies}
+          heroes={heroes}
+          language={language}
+          links={links}
+          path={path}
+        />
       )}
     <main class:list={{ framed: !standalone }} id="content">
       <slot />

@@ -6,11 +6,14 @@ import type { MessageKey } from "@/lib/i18n/translate";
  * exhibitions, past and current, which the life of the artist turns on; the projects; the artist;
  * and the way to reach her last, where every site has it. The header and the footer both list them
  * in this order, including the pages not built yet.
+ *
+ * `page` is the id of the page in the admin («Страницы»), whose hero the menu shows under the
+ * pointer; a page without one there has none.
  */
 export const menu = [
-  { label: "menu.gallery", path: "/gallery" },
-  { label: "menu.exhibitions", path: "/exhibitions" },
-  { label: "menu.projects", path: "/projects" },
-  { label: "menu.about", path: "/about" },
-  { label: "menu.contact", path: "/contact" },
-] as const satisfies readonly { label: MessageKey; path: string }[];
+  { label: "menu.gallery", page: "gallery", path: "/gallery" },
+  { label: "menu.exhibitions", page: undefined, path: "/exhibitions" },
+  { label: "menu.projects", page: "projects", path: "/projects" },
+  { label: "menu.about", page: "about", path: "/about" },
+  { label: "menu.contact", page: "contacts", path: "/contact" },
+] as const satisfies readonly { label: MessageKey; page: string | undefined; path: string }[];
