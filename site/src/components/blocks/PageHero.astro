@@ -69,168 +69,19 @@ const style =
 </section>
 
 <script>
-  import { type HeroName, heroLine } from "@/lib/site/heroLine";
+  import { finishHeroScroll } from "@/lib/site/finishHeroScroll";
+  import { fitHeroLine } from "@/lib/site/fitHeroLine";
+  import { followHeroScroll } from "@/lib/site/followHeroScroll";
 
   const hero = document.querySelector<HTMLElement>("[data-page-hero]");
   const stage = hero?.querySelector<HTMLElement>(".stage");
   const line = hero?.querySelector<HTMLElement>(".line");
 
-  /** The size of type the name is measured at, in pixels, large for the measures to be precise. */
-  const probeSize = 100;
-
   if (hero && stage && line) {
-    const name = line.dataset.name ?? "";
-    // Words joined by a no-break space stay together, as everywhere on the site.
-    const words = name.split(/[^\S\u00A0\u202F]+/u).filter(Boolean);
-    const letters = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-
-    /** The width of a text in the type of the line, in ems. */
-    const measure = (text: string): number => {
-      const probe = document.createElement("span");
-
-      probe.className = "probe";
-      probe.style.fontSize = `${probeSize}px`;
-      probe.textContent = text;
-      line.append(probe);
-
-      const width = probe.getBoundingClientRect().width / probeSize;
-
-      probe.remove();
-
-      return width;
-    };
-
-    const copy = (text: string, spacing = 0): HTMLElement => {
-      const element = document.createElement("span");
-
-      element.className = "copy";
-      element.textContent = text;
-      if (spacing) element.style.letterSpacing = `${spacing}em`;
-
-      return element;
-    };
-
-    /*
-     * Fills the width with the name, at the size and in the copies or words heroLine gives, and
-     * tells the CSS how high the line came out, to move it by.
-     */
-    const layOut = (measures: HeroName): void => {
-      const style = getComputedStyle(line);
-      const fit = heroLine(measures, {
-        height: stage.clientHeight,
-        width:
-          line.clientWidth -
-          Number.parseFloat(style.paddingInlineStart) -
-          Number.parseFloat(style.paddingInlineEnd),
-      });
-      const byWord = fit.wordSpacing.length > 0;
-
-      line.toggleAttribute("data-by-word", byWord);
-      line.replaceChildren(
-        ...(byWord
-          ? words.map((word, index) => copy(word, fit.wordSpacing[index]))
-          : Array.from({ length: fit.copies }, () => copy(name))),
-      );
-      line.style.setProperty("--line-size", `${fit.fontSize}px`);
-      line.style.setProperty("--line-height", `${line.offsetHeight}px`);
-    };
-
-    // Measured once the fonts of the name have come: the fallback is narrower or wider.
-    void document.fonts.ready.then(() => {
-      const measures: HeroName = {
-        name: measure(name),
-        words: words.map((word) => ({
-          letters: [...letters.segment(word)].length,
-          width: measure(word),
-        })),
-      };
-
-      new ResizeObserver(() => layOut(measures)).observe(hero);
-    });
-
+    fitHeroLine(hero, stage, line);
     hero.dataset.live = "";
-
-    /*
-     * The hero never stays half gone. As soon as the visitor scrolls on from the wiped line, the
-     * page takes them the rest of the way: the hero leaves upwards and the page fills the screen;
-     * as soon as they scroll back up from the top of the page, the whole hero comes back. Should
-     * the scroll come to rest in between, as when a hand stops the move, the page finishes it.
-     */
-    let lastScroll = window.scrollY;
-    let down = true;
-    /** Where the page is taking the visitor, while it is. */
-    let target: number | undefined;
-
-    const finish = (): void => {
-      // A still hero, with less motion, is no higher than the screen: there is nothing to finish.
-      if (hero.offsetHeight <= stage.offsetHeight) return;
-
-      const heroTop = hero.getBoundingClientRect().top + window.scrollY;
-      const lineEnd = heroTop + hero.offsetHeight - window.innerHeight;
-      const pageStart = heroTop + hero.offsetHeight;
-      const scroll = window.scrollY;
-
-      if (target !== undefined && Math.abs(scroll - target) < 2) target = undefined;
-      if (target !== undefined || scroll <= lineEnd + 1 || scroll >= pageStart - 1) return;
-
-      target = down ? pageStart : lineEnd;
-      window.scrollTo({ behavior: "smooth", top: target });
-    };
-
-    const rest = (): void => {
-      target = undefined;
-      finish();
-    };
-
-    window.addEventListener(
-      "scroll",
-      () => {
-        down = window.scrollY >= lastScroll;
-        lastScroll = window.scrollY;
-        finish();
-      },
-      { passive: true },
-    );
-
-    if ("onscrollend" in window) {
-      window.addEventListener("scrollend", rest);
-    } else {
-      // Stands in for scrollend in Safari before 26.2: a pause in the scroll. Remove once those
-      // are gone.
-      let pause = 0;
-
-      document.addEventListener(
-        "scroll",
-        () => {
-          window.clearTimeout(pause);
-          pause = window.setTimeout(rest, 150);
-        },
-        { passive: true },
-      );
-    }
-
-    if (!CSS.supports("animation-timeline: view()")) {
-      // Stands in for the scroll-driven animation of --along in Safari before 26: the same
-      // progress, set as the visitor scrolls. Remove once those are gone.
-      let frame = 0;
-      const follow = (): void => {
-        frame = 0;
-
-        const travel = hero.offsetHeight - window.innerHeight;
-        const along = travel > 0 ? -hero.getBoundingClientRect().top / travel : 0;
-
-        hero.style.setProperty("--along", `${Math.min(Math.max(along, 0), 1)}`);
-      };
-
-      follow();
-      window.addEventListener(
-        "scroll",
-        () => {
-          if (frame === 0) frame = requestAnimationFrame(follow);
-        },
-        { passive: true },
-      );
-    }
+    finishHeroScroll(hero, stage);
+    followHeroScroll(hero);
   }
 </script>
 
