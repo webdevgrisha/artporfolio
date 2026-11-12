@@ -2,7 +2,8 @@
 /**
  * The menu the button of the header opens: a panel over the top of the page, as in the mockup,
  * with the name of the artist and the button that closes it where the header has its own, the
- * pages large, and the ways to reach the artist with the year at the bottom.
+ * pages large, and the ways to reach the artist at the bottom. The year stays in the footer: the
+ * menu holds only what takes somewhere.
  *
  * It is a popover: the browser opens it from the button of the header and closes it from its own
  * button, by Escape or by a click beside it, without a script. It unrolls down from the header,
@@ -36,9 +37,6 @@ interface Props {
 }
 
 const { currencies, id, language, links, path } = Astro.props;
-
-// The year of the page as it is served, as in the footer.
-const year = new Date().getFullYear();
 ---
 
 <div class="site-menu" id={id} popover>
@@ -83,8 +81,6 @@ const year = new Date().getFullYear();
         </div>
       )
     }
-    {/* The sign before the year in every language, as in the footer. */}
-    <p class="year"><span dir="ltr">©{year}</span></p>
   </Container>
 </div>
 
@@ -146,7 +142,7 @@ const year = new Date().getFullYear();
   /*
    * The name and the button that closes the menu stand where the name and the button that opens
    * it stand in the header, so the panel seems to open around them. Below, the pages, then the
-   * ways to reach the artist and the year at the bottom.
+   * ways to reach the artist at the bottom.
    */
   .panel {
     --menu-font-size: var(--font-size-body);
@@ -156,9 +152,8 @@ const year = new Date().getFullYear();
       "name close"
       "pages pages"
       "settings settings"
-      "contacts contacts"
-      "year year";
-    grid-template-rows: auto 1fr auto auto auto;
+      "contacts contacts";
+    grid-template-rows: auto 1fr auto auto;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--layout-space-8) var(--grid-gap);
     min-block-size: inherit;
@@ -173,15 +168,15 @@ const year = new Date().getFullYear();
   }
 
   /*
-   * On a laptop, as in the mockup: the name and the year in the first two thirds, everything else
-   * in the last third, from the button that closes the menu down to the ways to reach the artist.
+   * On a laptop, as in the mockup: the name alone in the first two thirds, everything else in the
+   * last third, from the button that closes the menu down to the ways to reach the artist.
    */
   @media (width >= 75rem) {
     .panel {
       grid-template-areas:
         "name close"
         ". pages"
-        "year contacts";
+        ". contacts";
       grid-template-rows: auto 1fr auto;
       grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     }
@@ -269,13 +264,21 @@ const year = new Date().getFullYear();
     list-style: none;
   }
 
-  /* One page under another. As the menu opens, they rise into place one after another. */
+  /*
+   * One page under another, on the line of everything else in the column; the rows stand apart
+   * nearly twice their text, as the plates of the mockup do. As the menu opens, they rise into
+   * place one after another.
+   */
   .page-list > li {
     display: flex;
     transition-delay: calc(var(--item) * var(--motion-stagger));
     transition-timing-function: var(--motion-easing-standard);
     transition-duration: var(--motion-duration-panel);
     transition-property: opacity, translate;
+  }
+
+  .page-list .page-link {
+    min-block-size: 1.85em;
   }
 
   @starting-style {
@@ -305,12 +308,5 @@ const year = new Date().getFullYear();
       (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -
       var(--icon-size) / 12
     );
-  }
-
-  .year {
-    grid-area: year;
-    align-self: end;
-    margin: 0;
-    line-height: var(--min-tap-target-size);
   }
 </style>
