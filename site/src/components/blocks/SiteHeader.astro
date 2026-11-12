@@ -37,6 +37,13 @@ const menuId = "site-menu";
   <Container class="bar">
     <HomeLink current={path === "/"} language={language} />
     <div class="controls">
+      {/* The works, which the site is for, a click away on every page, as in the mockup. */}
+      <TextLink
+        class="gallery"
+        aria-current={path === "/gallery" ? "page" : undefined}
+        href={localizedPath(language, "/gallery")}
+        label={t(language, "menu.gallery")}
+      />
       <CurrencySwitch
         align="end"
         currencies={currencies}
@@ -48,12 +55,6 @@ const menuId = "site-menu";
           <LanguageSwitch align="end" id="header-language" language={language} path={path} />
         )
       }
-      {/* The works, which the site is for, a click away on every page, as in the mockup. */}
-      <TextLink
-        aria-current={path === "/gallery" ? "page" : undefined}
-        href={localizedPath(language, "/gallery")}
-        label={t(language, "menu.gallery")}
-      />
       <ThemeToggle language={language} />
     </div>
     <button
@@ -135,8 +136,8 @@ const menuId = "site-menu";
   }
 
   /*
-   * One row: the name at the start, the button at the end. Its text is as large as the body on a
-   * phone, where the name has to fit beside the button, and as in the mockup from a tablet on.
+   * One row: the name at the start, the button at the end. Its text is as large as the body, a
+   * size smaller than in the mockup: a line of service, it leaves the page the larger type.
    */
   .bar {
     display: flex;
@@ -147,18 +148,17 @@ const menuId = "site-menu";
     font-size: var(--font-size-body);
   }
 
-  @media (width >= 40rem) {
-    .bar {
-      font-size: var(--font-size-1);
-    }
-  }
-
   /* At the end of the row, before the button of the menu, as in the mockup. */
   .controls {
     display: none;
-    gap: var(--layout-space-8);
+    gap: var(--layout-space-6);
     align-items: center;
     margin-inline-start: auto;
+  }
+
+  /* The link stands apart from the switches after it: a way to go, then the ways to see. */
+  .gallery {
+    margin-inline-end: var(--layout-space-6);
   }
 
   @media (width >= 75rem) {
