@@ -45,6 +45,7 @@ const storedPhoto = {
   height: 640,
   id: photoId,
   originalPath: "image/original.png",
+  placeholder: "data:image/webp;base64,UklGRg==",
   sources: {
     avif: [{ path: "image/960.avif", token: "token", width: 960 }],
     webp: [{ path: "image/960.webp", token: "token", width: 960 }],

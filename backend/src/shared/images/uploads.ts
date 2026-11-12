@@ -44,6 +44,8 @@ const manifestSchema = z.object({
       width: z.number().int().positive(),
     }),
   ),
+  /** The preview a page shows while the images load, as a data URL. */
+  placeholder: z.string(),
   sourceFormat: z.enum(sourceFormats),
   width: z.number().int().positive(),
 });
@@ -85,7 +87,7 @@ async function writeAll(writes: Promise<unknown>[]): Promise<void> {
  * them. Returns the id of the upload. If storing fails halfway, the files saved so far are removed.
  */
 export async function saveUpload(file: UploadedFile): Promise<string> {
-  const { images, sourceFormat } = await processImage(file.data);
+  const { images, placeholder, sourceFormat } = await processImage(file.data);
   const largest = images.reduce((widest, current) =>
     current.width > widest.width ? current : widest,
   );
@@ -94,6 +96,7 @@ export async function saveUpload(file: UploadedFile): Promise<string> {
     fileSize: file.size,
     height: largest.height,
     images: images.map(({ format, width }) => ({ format, width })),
+    placeholder,
     sourceFormat,
     width: largest.width,
   };
@@ -181,6 +184,7 @@ export async function publishUpload(id: string, folder: string): Promise<StoredI
     fileSize: manifest.fileSize,
     height: manifest.height,
     originalPath,
+    placeholder: manifest.placeholder,
     sources: {
       avif: filesIn("avif", published),
       webp: filesIn("webp", published),

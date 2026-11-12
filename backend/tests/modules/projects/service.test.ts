@@ -98,6 +98,7 @@ function storedPhoto(projectId: string) {
     height: 320,
     id: photoId,
     originalPath: `${folder}/original.png`,
+    placeholder: "data:image/webp;base64,UklGRg==",
     sources: {
       avif: [{ path: `${folder}/640.avif`, token: "token", width: 640 }],
       webp: [{ path: `${folder}/640.webp`, token: "token", width: 640 }],
@@ -129,6 +130,7 @@ function publishedImage(folder: string) {
     fileSize: 200,
     height: 480,
     originalPath: `${folder}/new-version/original.png`,
+    placeholder: "data:image/webp;base64,UklGRg==",
     sources: {
       avif: [{ path: `${folder}/new-version/960.avif`, token: "new-token", width: 960 }],
       webp: [{ path: `${folder}/new-version/960.webp`, token: "new-token", width: 960 }],

@@ -8,10 +8,12 @@ const imageFileSchema = z.object({
 
 /**
  * An image as the API returns it: files of several widths in AVIF and WebP, each list ordered by
- * width, and the size of the largest one, which gives the shape of the image.
+ * width, the size of the largest one, which gives the shape of the image, and its preview.
  */
 export const imageSchema = z.object({
   height: z.number().int().positive(),
+  /** The image 16px wide as a `data:` URL, which a page shows stretched and blurred while it loads. */
+  placeholder: z.string().startsWith("data:image/"),
   sources: z.object({
     avif: z.array(imageFileSchema).nonempty(),
     webp: z.array(imageFileSchema).nonempty(),

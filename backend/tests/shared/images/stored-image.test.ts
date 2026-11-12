@@ -18,6 +18,7 @@ const storedImage = {
   fileSize: 8,
   height: 480,
   originalPath: "images/v1/original.png",
+  placeholder: "data:image/webp;base64,UklGRg==",
   sources: {
     avif: [{ path: "images/v1/960.avif", token: "avif-token", width: 960 }],
     webp: [{ path: "images/v1/960.webp", token: "webp-token", width: 960 }],
@@ -38,6 +39,7 @@ describe("image storage", () => {
       fileSize: 8,
       height: 480,
       original: "/api/originals/images/v1/original.png",
+      placeholder: "data:image/webp;base64,UklGRg==",
       version: "v1",
       width: 960,
       sources: {

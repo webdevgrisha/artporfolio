@@ -85,6 +85,27 @@ describe("image processing", () => {
     expect(metadata.orientation).toBeUndefined();
   });
 
+  it("makes a preview 16px wide in the colors of the image, small enough to inline", async () => {
+    const photo = await solidImage(300, 200).jpeg().withMetadata({ orientation: 6 }).toBuffer();
+    const { placeholder } = await processImage(photo);
+    const prefix = "data:image/webp;base64,";
+
+    expect(placeholder.startsWith(prefix)).toBe(true);
+
+    const preview = sharp(Buffer.from(placeholder.slice(prefix.length), "base64"));
+    const { dominant } = await preview.stats();
+
+    // Turned as the image is, 16 by 24.
+    await expect(preview.metadata()).resolves.toMatchObject({
+      format: "webp",
+      height: 24,
+      width: 16,
+    });
+    expect(placeholder.length).toBeLessThan(500);
+    // The red of the image (#a33), give or take the loss of the encoding.
+    expect(dominant.r).toBeGreaterThan(dominant.g + 80);
+  });
+
   it("rejects a file that is not an image", async () => {
     await expect(processImage(Buffer.from("not an image"))).rejects.toBeInstanceOf(BadRequestError);
   });

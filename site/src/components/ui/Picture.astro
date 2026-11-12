@@ -1,14 +1,16 @@
 ---
 /**
  * An image of the API in the best format the browser reads, AVIF else WebP, at the width it
- * shows the image at. It fills its box, cropped to it if the box has another shape.
+ * shows the image at. It fills its box, cropped to it if the box has another shape. Until it
+ * loads, its preview holds its place, blurred: the colors and the shapes of the image at once.
  */
 import type { HTMLAttributes } from "astro/types";
 
 import type { Image } from "@/lib/api/image";
 import { srcset } from "@/lib/images/srcset";
 
-interface Props extends HTMLAttributes<"picture"> {
+// The style of the picture is its own: it carries the preview.
+interface Props extends Omit<HTMLAttributes<"picture">, "style"> {
   alt: string;
   /**
    * Whether the image waits for a script of the page to load it (`loadDeferredImages`), such as a
@@ -43,7 +45,11 @@ function files(value: string) {
 }
 ---
 
-<picture class:list={["picture", className]} {...attributes}>
+<picture
+  class:list={["picture", className]}
+  style={`--placeholder: url("${image.placeholder}")`}
+  {...attributes}
+>
   <source type="image/avif" sizes={sizes} {...files(srcset(avif))} />
   <img
     alt={alt}
@@ -59,13 +65,31 @@ function files(value: string) {
 </picture>
 
 <style>
-  /* Holds the place of the image while it loads, under it, so the image fades in over it. */
-  .picture {
+  /*
+   * Holds the place of the image while it loads, under it, so the image fades in over it: the
+   * preview, stretched as the image will be and blurred so its pixels do not show, over the color
+   * of a placeholder, which shows at its edges. Without weight, so the page that places the
+   * picture, as absolute behind a link for one, always wins.
+   */
+  :where(.picture) {
+    position: relative;
     display: block;
+    overflow: hidden;
     background: var(--color-placeholder);
   }
 
+  .picture::before {
+    position: absolute;
+    inset: 0;
+    content: "";
+    background: var(--placeholder) center / cover no-repeat;
+    filter: blur(1rem);
+    /* The blur fades the edges: a little larger, the preview keeps them full. */
+    scale: 1.1;
+  }
+
   img {
+    position: relative;
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;

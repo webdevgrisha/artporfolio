@@ -63,6 +63,7 @@ function storedWork(
       fileSize: 100,
       height,
       originalPath: `${folder}/original.png`,
+      placeholder: "data:image/webp;base64,UklGRg==",
       sources: {
         avif: [{ path: `${folder}/640.avif`, token: "token", width: 640 }],
         webp: [{ path: `${folder}/640.webp`, token: "token", width: 640 }],
