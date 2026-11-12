@@ -5,8 +5,10 @@
  * pages large, and the ways to reach the artist with the year at the bottom. The year stands alone,
  * as in the mockup: the sign of copyright is the footer's.
  *
- * It is a popover: the browser opens it from the button of the header and closes it from its own
- * button, by Escape or by a click beside it, without a script. It unrolls down from the header,
+ * It is a modal dialog: the browser opens it from the buttons of the header and of the hero
+ * (`commandfor`) and closes it from its own, by Escape or by a click beside it (`closedby`),
+ * without a script; while it is open, the page under it is inert, and the focus starts on its
+ * button that closes it and goes back to the button that opened it. It unrolls down from the header,
  * whose name and button stay where they are: the two lines of the button turn into the cross that
  * closes it, and the pages come in one after another.
  */
@@ -52,16 +54,16 @@ const pageNames = menu.map((page) => t(language, page.label));
 const longestWord = Math.max(...pageNames.map(longestWordLength));
 ---
 
-<div class="site-menu" data-site-menu id={id} popover>
+<dialog
+  aria-label={t(language, "header.menu")}
+  class="site-menu"
+  closedby="any"
+  data-site-menu
+  id={id}
+>
   <Container class="panel">
     <HomeLink class="name" current={path === "/"} language={language} />
-    <button
-      class="close"
-      data-menu-close
-      popovertarget={id}
-      popovertargetaction="hide"
-      type="button"
-    >
+    <button autofocus class="close" command="close" commandfor={id} type="button">
       <span class="close-text">{t(language, "header.close")}</span>
       <MenuIcon />
     </button>
@@ -118,37 +120,36 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     }
     <p class="year">{year}</p>
   </Container>
-</div>
+</dialog>
 
 <script>
   /*
-   * While the menu is open, everything around it is inert, as behind a modal dialog: the keyboard
-   * and screen readers stay in the menu, and its button that closes it takes the focus. A click
-   * beside it still closes it. As it closes, the page comes back first, so the browser can return
-   * the focus to the button of the header.
+   * Stand in for what Safari lacks: buttons that open and close the menu by `commandfor` (before
+   * 26.2), and a click beside it that closes it (`closedby`, not in Safari yet). Remove each once
+   * Safari has it.
    */
-  const menu = document.querySelector<HTMLElement>("[data-site-menu]");
+  const menu = document.querySelector<HTMLDialogElement>("[data-site-menu]");
 
-  /** Makes inert, or gives back, every element beside the menu and beside each of its ancestors. */
-  function setPageInert(inert: boolean, element: HTMLElement): void {
-    for (let node: HTMLElement | null = element; node && node !== document.body; ) {
-      const parent: HTMLElement | null = node.parentElement;
-
-      for (const sibling of parent?.children ?? []) {
-        if (sibling !== node && sibling instanceof HTMLElement) sibling.inert = inert;
-      }
-      node = parent;
+  if (menu && !("command" in HTMLButtonElement.prototype)) {
+    for (const button of document.querySelectorAll<HTMLButtonElement>(`[commandfor="${menu.id}"]`)) {
+      button.addEventListener("click", () => {
+        if (button.getAttribute("command") === "close") menu.close();
+        else menu.showModal();
+      });
     }
   }
 
-  if (menu) {
-    menu.addEventListener("beforetoggle", (event) => {
-      setPageInert((event as ToggleEvent).newState === "open", menu);
-    });
-    menu.addEventListener("toggle", (event) => {
-      if ((event as ToggleEvent).newState === "open") {
-        menu.querySelector<HTMLElement>("[data-menu-close]")?.focus();
-      }
+  if (menu && !("closedBy" in HTMLDialogElement.prototype)) {
+    // A click on the backdrop lands on the dialog itself, outside its box.
+    menu.addEventListener("click", (event) => {
+      const box = menu.getBoundingClientRect();
+      const outside =
+        event.clientX < box.left ||
+        event.clientX > box.right ||
+        event.clientY < box.top ||
+        event.clientY > box.bottom;
+
+      if (event.target === menu && outside) menu.close();
     });
   }
 </script>
@@ -187,12 +188,17 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     transition-behavior: allow-discrete;
   }
 
-  .site-menu:popover-open {
+  .site-menu[open] {
     clip-path: inset(0 0 -1rem 0);
   }
 
+  /* The page stays in sight under it, as it was. */
+  .site-menu::backdrop {
+    background: none;
+  }
+
   @starting-style {
-    .site-menu:popover-open {
+    .site-menu[open] {
       clip-path: inset(0 0 100% 0);
     }
   }
@@ -204,7 +210,7 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
   }
 
   /* The page under the open menu does not scroll with it. */
-  :global(html:has(.site-menu:popover-open)) {
+  :global(html:has(.site-menu[open])) {
     overflow: hidden;
   }
 
@@ -271,12 +277,12 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
   }
 
   /* The lines of the button of the header become a cross as the menu opens, and back as it closes. */
-  .site-menu:popover-open .close {
+  .site-menu[open] .close {
     --menu-icon-cross: 1;
   }
 
   @starting-style {
-    .site-menu:popover-open .close {
+    .site-menu[open] .close {
       --menu-icon-cross: 0;
     }
   }
@@ -436,18 +442,18 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
 
     /* As the menu unrolls, the plate of the page being shown fills with it. */
     @starting-style {
-      .site-menu:popover-open .with-hero[aria-current="page"] .plate {
+      .site-menu[open] .with-hero[aria-current="page"] .plate {
         clip-path: inset(0 100% 0 0);
       }
 
-      .site-menu:popover-open .with-hero[aria-current="page"] .plate:dir(rtl) {
+      .site-menu[open] .with-hero[aria-current="page"] .plate:dir(rtl) {
         clip-path: inset(0 0 0 100%);
       }
     }
   }
 
   @starting-style {
-    .site-menu:popover-open .page-list > li {
+    .site-menu[open] .page-list > li {
       opacity: 0;
       translate: 0 0.3em;
     }

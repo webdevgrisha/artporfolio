@@ -20,7 +20,8 @@ const { class: className, language } = Astro.props;
 <button
   aria-label={t(language, "header.menu")}
   class:list={["menu-button", className]}
-  popovertarget={menuId}
+  command="show-modal"
+  commandfor={menuId}
   type="button"
 >
   <MenuIcon />
