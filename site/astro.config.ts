@@ -91,4 +91,13 @@ export default defineConfig({
   // A link of the site fetches its page as the pointer rests on it, or as a finger touches it, so
   // the page opens at once on the click. Astro skips it on a slow connection or with data saving.
   prefetch: { defaultStrategy: "hover", prefetchAll: true },
+  vite: {
+    build: {
+      // The CSS is minified by esbuild, which leaves the declarations as written. Lightning CSS, the
+      // default, folds animation-timeline into the animation shorthand, as a draft of the spec
+      // allows but no browser reads yet (2026): Chrome and Safari dropped the whole declaration,
+      // and every animation driven by the scroll was gone from the built site.
+      cssMinify: "esbuild",
+    },
+  },
 });
