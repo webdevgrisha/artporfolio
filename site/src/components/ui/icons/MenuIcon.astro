@@ -1,7 +1,9 @@
 ---
 /**
- * The two lines of the mockup that open the menu: wider than an icon of the grid, as drawn there,
- * in the color of the text. Drawn for the site.
+ * The two lines of the mockup that open the menu, wider than an icon of the grid, as drawn there.
+ * They turn into a cross that closes it: `--menu-icon-cross` from 0 to 1 moves each line to the
+ * middle and turns it by 45°, so a transition of it draws the one into the other. Drawn for the
+ * site.
  */
 ---
 
@@ -15,14 +17,42 @@
   viewBox="0 0 32 14"
   xmlns="http://www.w3.org/2000/svg"
 >
-  <path d="M0 1h32M0 13h32" />
+  <path class="line top" d="M0 1h32" />
+  <path class="line bottom" d="M0 13h32" />
 </svg>
 
 <style>
-  /* 31 by 14px beside a text of 24px, as in the mockup. */
+  /* A number, so a transition can move it, and inherited, so the button around sets it. */
+  @property --menu-icon-cross {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  /* 31 by 14px beside a text of 24px, as in the mockup; the cross reaches past that box. */
   .menu-icon {
     flex-shrink: 0;
     inline-size: 1.3em;
     block-size: auto;
+    overflow: visible;
+  }
+
+  /*
+   * Each line moves 6 units to the middle, then turns about it: two lines of 32 crossed at a right
+   * angle make a cross of about 23 by 23, the size of the one in the mockup.
+   */
+  .line {
+    transform-origin: 16px 7px;
+    transform-box: view-box;
+  }
+
+  .top {
+    transform: rotate(calc(var(--menu-icon-cross) * 45deg))
+      translateY(calc(var(--menu-icon-cross) * 6px));
+  }
+
+  .bottom {
+    transform: rotate(calc(var(--menu-icon-cross) * -45deg))
+      translateY(calc(var(--menu-icon-cross) * -6px));
   }
 </style>

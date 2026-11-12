@@ -5,7 +5,9 @@
  * pages large, and the ways to reach the artist with the year at the bottom.
  *
  * It is a popover: the browser opens it from the button of the header and closes it from its own
- * button, by Escape or by a click beside it, without a script.
+ * button, by Escape or by a click beside it, without a script. It unrolls down from the header,
+ * whose name and button stay where they are: the two lines of the button turn into the cross that
+ * closes it, and the pages come in one after another.
  */
 import NetworkLinks from "@/components/blocks/NetworkLinks.astro";
 import CurrencySwitch from "@/components/controls/CurrencySwitch.astro";
@@ -13,7 +15,7 @@ import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
 import ThemeToggle from "@/components/controls/ThemeToggle.astro";
 import Container from "@/components/ui/Container.astro";
 import HomeLink from "@/components/ui/HomeLink.astro";
-import CloseIcon from "@/components/ui/icons/CloseIcon.astro";
+import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
 import type { Language } from "@/lib/i18n/languages";
@@ -44,13 +46,13 @@ const year = new Date().getFullYear();
     <HomeLink class="name" current={path === "/"} language={language} />
     <button class="close" popovertarget={id} popovertargetaction="hide" type="button">
       <span class="close-text">{t(language, "header.close")}</span>
-      <CloseIcon />
+      <MenuIcon />
     </button>
     <nav aria-label={t(language, "header.menu")} class="pages">
       <ul class="page-list">
         {
-          menu.map((page) => (
-            <li>
+          menu.map((page, index) => (
+            <li style={`--item: ${index}`}>
               <TextLink
                 class="page-link"
                 aria-current={page.path === path ? "page" : undefined}
@@ -108,23 +110,25 @@ const year = new Date().getFullYear();
     border: 0;
     box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
     /*
-     * It slides down from above the screen and back up. The browser keeps it in sight until it is
-     * back up; on a screen without motion it comes and goes at once.
+     * It unrolls from the top of the screen and rolls back up: it is cut, not moved, so what it
+     * holds stays still and its name and button cover those of the header exactly. The cut leaves
+     * room for the shadow below. The browser keeps it in sight until it is rolled up; on a screen
+     * without motion it comes and goes at once.
      */
-    translate: 0 -100%;
+    clip-path: inset(0 0 100% 0);
     transition-timing-function: var(--motion-easing-standard);
-    transition-duration: var(--motion-duration-slow);
-    transition-property: translate, display, overlay;
+    transition-duration: var(--motion-duration-panel);
+    transition-property: clip-path, display, overlay;
     transition-behavior: allow-discrete;
   }
 
   .site-menu:popover-open {
-    translate: 0 0;
+    clip-path: inset(0 0 -1rem 0);
   }
 
   @starting-style {
     .site-menu:popover-open {
-      translate: 0 -100%;
+      clip-path: inset(0 0 100% 0);
     }
   }
 
@@ -202,7 +206,20 @@ const year = new Date().getFullYear();
     cursor: pointer;
     background: none;
     border: 0;
-    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+    transition:
+      opacity var(--motion-duration-slow) var(--motion-easing-standard),
+      --menu-icon-cross var(--motion-duration-panel) var(--motion-easing-standard);
+  }
+
+  /* The lines of the button of the header become a cross as the menu opens, and back as it closes. */
+  .site-menu:popover-open .close {
+    --menu-icon-cross: 1;
+  }
+
+  @starting-style {
+    .site-menu:popover-open .close {
+      --menu-icon-cross: 0;
+    }
   }
 
   @media (width >= 75rem) {
@@ -252,9 +269,20 @@ const year = new Date().getFullYear();
     list-style: none;
   }
 
-  /* One page under another. */
+  /* One page under another. As the menu opens, they rise into place one after another. */
   .page-list > li {
     display: flex;
+    transition-delay: calc(var(--item) * var(--motion-stagger));
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-panel);
+    transition-property: opacity, translate;
+  }
+
+  @starting-style {
+    .site-menu:popover-open .page-list > li {
+      opacity: 0;
+      translate: 0 0.3em;
+    }
   }
 
   /*

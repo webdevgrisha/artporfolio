@@ -3,6 +3,10 @@
     --motion-duration-fast: 120ms;
     --motion-duration-standard: 180ms;
     --motion-duration-slow: 280ms;
+    /* What crosses a large part of the screen, such as the menu opening over the page. */
+    --motion-duration-panel: 420ms;
+    /* Between items that come one after another, such as the pages of the menu. */
+    --motion-stagger: 40ms;
     --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   }
 
@@ -12,6 +16,8 @@
       --motion-duration-fast: 0ms;
       --motion-duration-standard: 0ms;
       --motion-duration-slow: 0ms;
+      --motion-duration-panel: 0ms;
+      --motion-stagger: 0ms;
     }
   }
 }
