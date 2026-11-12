@@ -39,16 +39,7 @@
   line-height: 1;
   color: var(--color-text);
   text-decoration: none;
-  transition:
-    color var(--motion-duration-standard) var(--motion-easing-standard),
-    translate var(--motion-duration-release) var(--motion-easing-release);
-}
-
-/* Pressed, the page leans toward the bar that is about to come to it. */
-.navigationLink:active {
-  translate: -4px 0;
-  transition-timing-function: var(--motion-easing-standard), var(--motion-easing-press);
-  transition-duration: var(--motion-duration-standard), var(--motion-duration-press);
+  transition: color var(--motion-duration-standard) var(--motion-easing-standard);
 }
 
 @media (hover: hover) {
