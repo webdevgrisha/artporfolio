@@ -1,17 +1,17 @@
 ---
 /**
- * The first screen of every page: a work of the artist, blurred, and the name of the page written
- * across it from edge to edge, its letters windows onto the same work, sharp. As the visitor
- * scrolls, the work stays: first the line comes in at the top and slides down to the bottom, each
- * letter showing the part of the work under it at that moment; then the work and its line leave
- * upwards, and the page comes up after them. Scrolling back up to the top brings them back, the
- * line rising as it came. Once the hero starts to leave, it never stops halfway: the page finishes
- * the move, and the content, as a sheet, takes the whole screen, or the hero comes back to it.
- * Before the visitor scrolls, a
- * chevron, also a window onto the work, says to scroll down.
+ * The first screen of every page: a work of the artist, blurred, and the name of the page across
+ * it from edge to edge, its letters windows onto the same work, sharp. Before the visitor
+ * scrolls, only a chevron, also a window onto the work, says to scroll down. As they scroll, the
+ * work stays: the line is written near its top, as by a brush, carried down over the work, each
+ * letter showing the part of it under it at that moment, and wiped out at its bottom the same way.
+ * Then the hero leaves upwards at once and the page fills the screen; scrolling back up from the
+ * top of the page brings the whole hero back, and the line goes back through it all.
  *
- * Without its script, or with less motion, the hero is a still screen with the line across its
- * middle. Without a photo, the letters are in the color of the text, on the page.
+ * The scroll drives it all in CSS (a scroll-driven animation); the script fits the line to the
+ * width and takes the visitor the rest of the way between the hero and the page. Without the
+ * script, or with less motion, the hero is a still screen with the line across its middle.
+ * Without a photo, the letters are in the color of the text, on the page.
  *
  * The name is the heading of the page for screen readers; the line on the screen is drawing.
  * The header stands under the hero, as in the mockup, so the hero has the button of the menu.
@@ -71,10 +71,6 @@ const style =
 <script>
   import { type HeroName, heroLine } from "@/lib/site/heroLine";
 
-  /*
-   * Fits the line to the hero, now and whenever the hero changes size, and moves it as the visitor
-   * scrolls. Each frame sets one number only, the place of the line (--line-y); CSS draws the rest.
-   */
   const hero = document.querySelector<HTMLElement>("[data-page-hero]");
   const stage = hero?.querySelector<HTMLElement>(".stage");
   const line = hero?.querySelector<HTMLElement>(".line");
@@ -82,25 +78,11 @@ const style =
   /** The size of type the name is measured at, in pixels, large for the measures to be precise. */
   const probeSize = 100;
 
-  /**
-   * The shares of the way through the hero the line spends being written near its top, moving
-   * down, and being wiped out at its bottom, the same way it was written.
-   */
-  const writing = 0.25;
-  const wiping = 0.25;
-
-  /** Where the line is written, as a share of the height of the hero: near its top. */
-  const top = 0.08;
-
   if (hero && stage && line) {
     const name = line.dataset.name ?? "";
     // Words joined by a no-break space stay together, as everywhere on the site.
-    const words = name.split(/[^\S  ]+/u).filter(Boolean);
+    const words = name.split(/[^\S\u00A0\u202F]+/u).filter(Boolean);
     const letters = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-    const lessMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let stageHeight = 0;
-    let lineHeight = 0;
-    let frame = 0;
 
     /** The width of a text in the type of the line, in ems. */
     const measure = (text: string): number => {
@@ -118,14 +100,6 @@ const style =
       return width;
     };
 
-    const measureName = (): HeroName => ({
-      name: measure(name),
-      words: words.map((word) => ({
-        letters: [...letters.segment(word)].length,
-        width: measure(word),
-      })),
-    });
-
     const copy = (text: string, spacing = 0): HTMLElement => {
       const element = document.createElement("span");
 
@@ -136,45 +110,18 @@ const style =
       return element;
     };
 
-    const clamp = (value: number): number => Math.min(Math.max(value, 0), 1);
-
-    const place = (): void => {
-      frame = 0;
-
-      const scrolled = Math.max(-hero.getBoundingClientRect().top, 0);
-
-      hero.toggleAttribute("data-scrolled", scrolled > 0);
-
-      if (!hero.hasAttribute("data-moving")) {
-        line.style.setProperty("--line-y", `${(stageHeight - lineHeight) / 2}px`);
-
-        return;
-      }
-
-      // The first screen of scrolling writes the line near the top of the hero, takes it down to
-      // its bottom and wipes it out there; then the hero leaves. Scrolling back undoes them all.
-      const along = clamp(scrolled / stageHeight);
-      const written = clamp(along / writing);
-      const moved = clamp((along - writing) / (1 - writing - wiping));
-      const wiped = clamp((along - 1 + wiping) / wiping);
-      const start = stageHeight * top;
-
-      line.style.setProperty("--written", `${written}`);
-      line.style.setProperty("--wiped", `${wiped}`);
-      line.style.setProperty(
-        "--line-y",
-        `${start + moved * (stageHeight - lineHeight - start)}px`,
-      );
-    };
-
+    /*
+     * Fills the width with the name, at the size and in the copies or words heroLine gives, and
+     * tells the CSS how high the line came out, to move it by.
+     */
     const layOut = (measures: HeroName): void => {
-      const padding = getComputedStyle(line);
+      const style = getComputedStyle(line);
       const fit = heroLine(measures, {
         height: stage.clientHeight,
         width:
           line.clientWidth -
-          Number.parseFloat(padding.paddingInlineStart) -
-          Number.parseFloat(padding.paddingInlineEnd),
+          Number.parseFloat(style.paddingInlineStart) -
+          Number.parseFloat(style.paddingInlineEnd),
       });
       const byWord = fit.wordSpacing.length > 0;
 
@@ -185,43 +132,41 @@ const style =
           : Array.from({ length: fit.copies }, () => copy(name))),
       );
       line.style.setProperty("--line-size", `${fit.fontSize}px`);
-      stageHeight = stage.clientHeight;
-      lineHeight = line.offsetHeight;
-      place();
+      line.style.setProperty("--line-height", `${line.offsetHeight}px`);
     };
-
-    const setMotion = (): void => {
-      hero.toggleAttribute("data-moving", !lessMotion.matches);
-    };
-
-    setMotion();
-    lessMotion.addEventListener("change", setMotion);
 
     // Measured once the fonts of the name have come: the fallback is narrower or wider.
     void document.fonts.ready.then(() => {
-      const measures = measureName();
+      const measures: HeroName = {
+        name: measure(name),
+        words: words.map((word) => ({
+          letters: [...letters.segment(word)].length,
+          width: measure(word),
+        })),
+      };
 
       new ResizeObserver(() => layOut(measures)).observe(hero);
     });
 
+    hero.dataset.live = "";
+
     /*
      * The hero never stays half gone. As soon as the visitor scrolls on from the wiped line, the
-     * page takes them the rest of the way: the hero leaves upwards and the page fills the screen.
-     * As soon as they scroll back up from the top of the page, the whole hero comes back. Should
-     * the scroll still come to rest in between, as when a hand stops the move, the page finishes
-     * it once the scroll pauses, though not while a finger is on the screen.
+     * page takes them the rest of the way: the hero leaves upwards and the page fills the screen;
+     * as soon as they scroll back up from the top of the page, the whole hero comes back. Should
+     * the scroll come to rest in between, as when a hand stops the move, the page finishes it.
      */
     let lastScroll = window.scrollY;
     let down = true;
-    let touching = false;
     /** Where the page is taking the visitor, while it is. */
     let target: number | undefined;
 
     const finish = (): void => {
-      if (!hero.hasAttribute("data-moving")) return;
+      // A still hero, with less motion, is no higher than the screen: there is nothing to finish.
+      if (hero.offsetHeight <= stage.offsetHeight) return;
 
       const heroTop = hero.getBoundingClientRect().top + window.scrollY;
-      const lineEnd = heroTop + stageHeight;
+      const lineEnd = heroTop + hero.offsetHeight - window.innerHeight;
       const pageStart = heroTop + hero.offsetHeight;
       const scroll = window.scrollY;
 
@@ -232,38 +177,60 @@ const style =
       window.scrollTo({ behavior: "smooth", top: target });
     };
 
-    // The scroll rests when it pauses: one way in every browser, as scrollend is not in all of
-    // them, nor sent for every way of scrolling.
-    let pause = 0;
-    const finishOnRest = (): void => {
-      window.clearTimeout(pause);
-      pause = window.setTimeout(() => {
-        target = undefined;
-        if (!touching) finish();
-      }, 150);
+    const rest = (): void => {
+      target = undefined;
+      finish();
     };
-
-    window.addEventListener("touchstart", () => (touching = true), { passive: true });
-    window.addEventListener(
-      "touchend",
-      () => {
-        touching = false;
-        finishOnRest();
-      },
-      { passive: true },
-    );
 
     window.addEventListener(
       "scroll",
       () => {
         down = window.scrollY >= lastScroll;
         lastScroll = window.scrollY;
-        if (frame === 0) frame = requestAnimationFrame(place);
         finish();
-        finishOnRest();
       },
       { passive: true },
     );
+
+    if ("onscrollend" in window) {
+      window.addEventListener("scrollend", rest);
+    } else {
+      // Stands in for scrollend in Safari before 26.2: a pause in the scroll. Remove once those
+      // are gone.
+      let pause = 0;
+
+      document.addEventListener(
+        "scroll",
+        () => {
+          window.clearTimeout(pause);
+          pause = window.setTimeout(rest, 150);
+        },
+        { passive: true },
+      );
+    }
+
+    if (!CSS.supports("animation-timeline: view()")) {
+      // Stands in for the scroll-driven animation of --along in Safari before 26: the same
+      // progress, set as the visitor scrolls. Remove once those are gone.
+      let frame = 0;
+      const follow = (): void => {
+        frame = 0;
+
+        const travel = hero.offsetHeight - window.innerHeight;
+        const along = travel > 0 ? -hero.getBoundingClientRect().top / travel : 0;
+
+        hero.style.setProperty("--along", `${Math.min(Math.max(along, 0), 1)}`);
+      };
+
+      follow();
+      window.addEventListener(
+        "scroll",
+        () => {
+          if (frame === 0) frame = requestAnimationFrame(follow);
+        },
+        { passive: true },
+      );
+    }
   }
 </script>
 
@@ -271,9 +238,19 @@ const style =
   /*
    * The hero is as tall as the screen with its bars hidden (lvh), so it never leaves a strip as
    * they hide; while they show, its bottom is under them. Moving, it is two screens tall: its stage
-   * stays at the top of the screen for one screen of scrolling, while the line slides down, then
-   * leaves with the hero.
+   * stays at the top of the screen for one screen of scrolling, then leaves with the hero.
+   *
+   * It moves when its script runs (data-live) and the visitor has not asked for less motion. Its
+   * progress through that screen of scrolling, --along from 0 to 1, comes from a scroll-driven
+   * animation: from the hero filling the screen at the top of the page (contain 0%) to its bottom
+   * reaching the bottom of the screen (contain 100%). Everything that moves follows --along.
    */
+  @property --along {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
   .page-hero {
     /* The blurred work is a little larger, as the blur fades its edges; the windows follow it. */
     --hero-zoom: 1.1;
@@ -284,8 +261,23 @@ const style =
     background: var(--color-surface);
   }
 
-  .page-hero[data-moving] {
-    block-size: 200lvh;
+  @media (prefers-reduced-motion: no-preference) {
+    .page-hero[data-live] {
+      block-size: 200lvh;
+      animation: along linear both;
+      animation-timeline: view();
+      animation-range: contain 0% contain 100%;
+    }
+  }
+
+  @keyframes along {
+    from {
+      --along: 0;
+    }
+
+    to {
+      --along: 1;
+    }
   }
 
   .stage {
@@ -340,11 +332,12 @@ const style =
 
   /*
    * The line, across the page as wide as its content: its copies of the name spread to its edges,
-   * or its words one under another. Its place is --line-y from the top of the stage; without the
-   * script, about the middle.
+   * or its words one under another. Still, it stands in the middle of the stage; --y is its place
+   * from the top, by which the work in its letters moves back. --line-height is its height, which
+   * the script measures once it is laid out.
    */
   .line {
-    --y: var(--line-y, 40cqh);
+    --y: calc((100cqh - var(--line-height, 1em)) / 2);
 
     position: absolute;
     inset-block-start: 0;
@@ -363,33 +356,40 @@ const style =
   }
 
   /*
-   * Moving, the line is written along its letters as the visitor starts to scroll (--written from
-   * 0 to 1): a soft edge, as of a brush, goes from its start to its end and leaves them drawn. At
-   * the bottom of the hero a second edge wipes them out the same way (--wiped from 0 to 1).
+   * Moving, the first quarter of the way writes the line near the top of the stage: a soft edge,
+   * as of a brush, goes from its start to its end and leaves the letters drawn. The next half
+   * carries it down to the bottom; the last quarter wipes it out there the same way.
    */
-  [data-moving] .line {
-    --wipe-edge: calc(var(--wiped, 0) * 125% - 25%);
-    --write-edge: calc(var(--written, 0) * 125% - 25%);
-    --writing: linear-gradient(
-      to right,
-      transparent var(--wipe-edge),
-      #000 calc(var(--wipe-edge) + 25%),
-      #000 var(--write-edge),
-      transparent calc(var(--write-edge) + 25%)
-    );
+  @media (prefers-reduced-motion: no-preference) {
+    [data-live] .line {
+      --written: clamp(0, var(--along) * 4, 1);
+      --moved: clamp(0, var(--along) * 2 - 0.5, 1);
+      --wiped: clamp(0, var(--along) * 4 - 3, 1);
+      --top: 8cqh;
+      --y: calc(var(--top) + var(--moved) * (100cqh - var(--line-height, 1em) - var(--top)));
+      --write-edge: calc(var(--written) * 125% - 25%);
+      --wipe-edge: calc(var(--wiped) * 125% - 25%);
+      --writing: linear-gradient(
+        to right,
+        transparent var(--wipe-edge),
+        #000 calc(var(--wipe-edge) + 25%),
+        #000 var(--write-edge),
+        transparent calc(var(--write-edge) + 25%)
+      );
 
-    -webkit-mask-image: var(--writing);
-    mask-image: var(--writing);
-  }
+      -webkit-mask-image: var(--writing);
+      mask-image: var(--writing);
+    }
 
-  [data-moving] .line:dir(rtl) {
-    --writing: linear-gradient(
-      to left,
-      transparent var(--wipe-edge),
-      #000 calc(var(--wipe-edge) + 25%),
-      #000 var(--write-edge),
-      transparent calc(var(--write-edge) + 25%)
-    );
+    [data-live] .line:dir(rtl) {
+      --writing: linear-gradient(
+        to left,
+        transparent var(--wipe-edge),
+        #000 calc(var(--wipe-edge) + 25%),
+        #000 var(--write-edge),
+        transparent calc(var(--write-edge) + 25%)
+      );
+    }
   }
 
   .line[data-by-word] {
@@ -418,22 +418,21 @@ const style =
 
   /*
    * In the middle of the first screen: the chevron of the mockup, a window onto the work, nodding
-   * down, and its words under it. It goes as the visitor starts to scroll. A still hero has none.
+   * down, and its words under it. It fades out over the first steps of the scroll, before the
+   * line is written. A still hero has none.
    */
   .hint {
     position: absolute;
     inset: 0;
     display: none;
     pointer-events: none;
-    transition: opacity var(--motion-duration-panel) var(--motion-easing-standard);
   }
 
-  [data-moving] .hint {
-    display: block;
-  }
-
-  [data-scrolled] .hint {
-    opacity: 0;
+  @media (prefers-reduced-motion: no-preference) {
+    [data-live] .hint {
+      display: block;
+      opacity: clamp(0, 1 - var(--along) * 20, 1);
+    }
   }
 
   @property --nod {
@@ -480,9 +479,15 @@ const style =
     text-align: center;
   }
 
+  /*
+   * White, as in the mockup, over a soft dark glow behind the words, so they read on a pale work
+   * too.
+   */
   .photographed .hint-text {
     color: var(--color-on-photo);
-    text-shadow: 0 0 0.75rem rgb(0 0 0 / 0.35);
+    text-shadow:
+      0 0 0.25em rgb(0 0 0 / 0.5),
+      0 0 1em rgb(0 0 0 / 0.4);
   }
 
   /* At the top of the screen, where the header has it. */
