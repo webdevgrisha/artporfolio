@@ -53,6 +53,13 @@
   transition: scale var(--motion-duration-standard) var(--motion-easing-standard);
 }
 
+/* Pressed, the bar of a tab not yet chosen starts to grow under it: the choice, before it is made. */
+.tab:not([aria-current="page"]):active::after {
+  scale: 0.4 1;
+  transition-timing-function: var(--motion-easing-press);
+  transition-duration: var(--motion-duration-press);
+}
+
 .tab[aria-current="page"] {
   color: var(--color-text);
 }
