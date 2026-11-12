@@ -328,6 +328,14 @@ const focusStart = place === "dialog" ? { autofocus: true, tabindex: -1 } : {};
       object-fit: cover;
       filter: blur(1.5cqmax) brightness(0.6);
       scale: 1.1;
+      transition: scale var(--motion-duration-release) var(--motion-easing-release);
+    }
+
+    /* Pressed, the work comes closer, as a step into the page it leads to. */
+    .with-hero:active .hero :global(img) {
+      scale: 1.25;
+      transition-timing-function: var(--motion-easing-press);
+      transition-duration: var(--motion-duration-press);
     }
 
     /* The name on the plate stands exactly over the one under it. */
