@@ -2,8 +2,8 @@
 /**
  * The menu the button of the header opens: a panel over the top of the page, as in the mockup,
  * with the name of the artist and the button that closes it where the header has its own, the
- * pages large, and the ways to reach the artist at the bottom. The year stays in the footer: the
- * menu holds only what takes somewhere.
+ * pages large, and the ways to reach the artist with the year at the bottom. The year stands alone,
+ * as in the mockup: the sign of copyright is the footer's.
  *
  * It is a popover: the browser opens it from the button of the header and closes it from its own
  * button, by Escape or by a click beside it, without a script. It unrolls down from the header,
@@ -37,6 +37,9 @@ interface Props {
 }
 
 const { currencies, id, language, links, path } = Astro.props;
+
+// The year of the page as it is served, as in the footer.
+const year = new Date().getFullYear();
 ---
 
 <div class="site-menu" id={id} popover>
@@ -81,6 +84,7 @@ const { currencies, id, language, links, path } = Astro.props;
         </div>
       )
     }
+    <p class="year">{year}</p>
   </Container>
 </div>
 
@@ -152,8 +156,9 @@ const { currencies, id, language, links, path } = Astro.props;
       "name close"
       "pages pages"
       "settings settings"
-      "contacts contacts";
-    grid-template-rows: auto 1fr auto auto;
+      "contacts contacts"
+      "year year";
+    grid-template-rows: auto 1fr auto auto auto;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--layout-space-8) var(--grid-gap);
     min-block-size: inherit;
@@ -168,15 +173,15 @@ const { currencies, id, language, links, path } = Astro.props;
   }
 
   /*
-   * On a laptop, as in the mockup: the name alone in the first two thirds, everything else in the
-   * last third, from the button that closes the menu down to the ways to reach the artist.
+   * On a laptop, as in the mockup: the name and the year in the first two thirds, everything else
+   * in the last third, from the button that closes the menu down to the ways to reach the artist.
    */
   @media (width >= 75rem) {
     .panel {
       grid-template-areas:
         "name close"
         ". pages"
-        ". contacts";
+        "year contacts";
       grid-template-rows: auto 1fr auto;
       grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     }
@@ -308,5 +313,12 @@ const { currencies, id, language, links, path } = Astro.props;
       (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -
       var(--icon-size) / 12
     );
+  }
+
+  .year {
+    grid-area: year;
+    align-self: end;
+    margin: 0;
+    line-height: var(--min-tap-target-size);
   }
 </style>
