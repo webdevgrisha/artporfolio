@@ -75,17 +75,20 @@
   }
 
   /*
-   * A tap on a phone does not flash the gray box of the browser around what it touches: a link or
-   * a button dims under the finger instead, as it does under a pointer.
+   * Pressed: whatever is pressed answers at once, by mouse, finger or keyboard, before what it does
+   * follows. Each kind of control answers in its own way, showing what is about to happen, as a
+   * frame that breaks into running dashes or an arrow drawn back like a bow; such a control is
+   * marked `data-press` and styles its own state. Any other dims, the same way everywhere.
+   *
+   * A tap on a phone does not flash the gray box of the browser around what it touches: the
+   * pressed state is the answer.
    */
   html {
     -webkit-tap-highlight-color: transparent;
   }
 
-  @media (hover: none) {
-    :is(a, button, summary, label):active {
-      opacity: 0.6;
-    }
+  :where(a, button, summary, label):not([data-press]):active {
+    opacity: 0.6;
   }
 }
 
