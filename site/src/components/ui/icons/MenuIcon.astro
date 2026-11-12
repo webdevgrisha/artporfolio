@@ -39,20 +39,30 @@
 
   /*
    * Each line moves 6 units to the middle, then turns about it: two lines of 32 crossed at a right
-   * angle make a cross of about 23 by 23, the size of the one in the mockup.
+   * angle make a cross of about 23 by 23 (32 × cos 45°), the size of the one in the mockup. The
+   * cross then moves the 4.7 units it is narrower on each side to the end of the line, so it ends
+   * where the page ends, as the lines did: centered, it stood short of the edge.
    */
   .line {
+    --end: 1;
+
     transform-origin: 16px 7px;
     transform-box: view-box;
   }
 
+  /* The end of the line is on the left in a text from the right. */
+  .menu-icon:dir(rtl) .line {
+    --end: -1;
+  }
+
   .top {
-    transform: rotate(calc(var(--menu-icon-cross) * 45deg))
-      translateY(calc(var(--menu-icon-cross) * 6px));
+    transform: translateX(calc(var(--menu-icon-cross) * var(--end) * 4.69px))
+      rotate(calc(var(--menu-icon-cross) * 45deg)) translateY(calc(var(--menu-icon-cross) * 6px));
   }
 
   .bottom {
-    transform: rotate(calc(var(--menu-icon-cross) * -45deg))
+    transform: translateX(calc(var(--menu-icon-cross) * var(--end) * 4.69px))
+      rotate(calc(var(--menu-icon-cross) * -45deg))
       translateY(calc(var(--menu-icon-cross) * -6px));
   }
 </style>
