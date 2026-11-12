@@ -27,7 +27,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "pl": {
     "layout.skipToContent": "Skip to content",
@@ -57,7 +58,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "uk": {
     "layout.skipToContent": "Skip to content",
@@ -87,7 +89,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "be": {
     "layout.skipToContent": "Skip to content",
@@ -117,7 +120,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "de": {
     "layout.skipToContent": "Skip to content",
@@ -147,7 +151,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "fr": {
     "layout.skipToContent": "Skip to content",
@@ -177,7 +182,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "es": {
     "layout.skipToContent": "Skip to content",
@@ -207,7 +213,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "it": {
     "layout.skipToContent": "Skip to content",
@@ -237,7 +244,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "pt": {
     "layout.skipToContent": "Skip to content",
@@ -267,7 +275,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "zh": {
     "layout.skipToContent": "Skip to content",
@@ -297,7 +306,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "ja": {
     "layout.skipToContent": "Skip to content",
@@ -327,7 +337,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "ko": {
     "layout.skipToContent": "Skip to content",
@@ -357,7 +368,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "ar": {
     "layout.skipToContent": "Skip to content",
@@ -387,7 +399,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "tr": {
     "layout.skipToContent": "Skip to content",
@@ -417,7 +430,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "nl": {
     "layout.skipToContent": "Skip to content",
@@ -447,7 +461,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "sv": {
     "layout.skipToContent": "Skip to content",
@@ -477,7 +492,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "cs": {
     "layout.skipToContent": "Skip to content",
@@ -507,7 +523,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "sk": {
     "layout.skipToContent": "Skip to content",
@@ -537,7 +554,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "lt": {
     "layout.skipToContent": "Skip to content",
@@ -567,7 +585,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "hu": {
     "layout.skipToContent": "Skip to content",
@@ -597,7 +616,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "ro": {
     "layout.skipToContent": "Skip to content",
@@ -627,7 +647,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "el": {
     "layout.skipToContent": "Skip to content",
@@ -657,7 +678,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "id": {
     "layout.skipToContent": "Skip to content",
@@ -687,7 +709,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "hi": {
     "layout.skipToContent": "Skip to content",
@@ -717,7 +740,8 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   },
   "vi": {
     "layout.skipToContent": "Skip to content",
@@ -747,6 +771,7 @@
     "newsletter.note": "Only new works, collections and offers.",
     "newsletter.subscribed": "Thank you! I will write when there is something new.",
     "newsletter.invalid": "Please enter a valid e-mail address.",
-    "newsletter.failed": "Could not subscribe. Please try again in a minute."
+    "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+    "hero.scrollDown": "Scroll down"
   }
 }

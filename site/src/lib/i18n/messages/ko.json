@@ -26,5 +26,6 @@
   "newsletter.note": "신작, 컬렉션, 혜택 소식만 보내 드립니다.",
   "newsletter.subscribed": "감사합니다! 새 소식이 생기면 메일로 알려 드릴게요.",
   "newsletter.invalid": "유효한 이메일 주소를 입력해 주세요.",
-  "newsletter.failed": "구독에 실패했습니다. 1분 후에 다시 시도해 주세요."
+  "newsletter.failed": "구독에 실패했습니다. 1분 후에 다시 시도해 주세요.",
+  "hero.scrollDown": "아래로 스크롤하세요"
 }

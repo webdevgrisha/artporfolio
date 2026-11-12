@@ -26,5 +26,6 @@
   "newsletter.note": "Solo nuove opere, collezioni e offerte.",
   "newsletter.subscribed": "Grazie! Scriverò quando ci saranno novità.",
   "newsletter.invalid": "Inserisci un indirizzo e-mail valido.",
-  "newsletter.failed": "Impossibile effettuare l'iscrizione. Riprovare tra un minuto."
+  "newsletter.failed": "Impossibile effettuare l'iscrizione. Riprovare tra un minuto.",
+  "hero.scrollDown": "Scorri verso il basso"
 }

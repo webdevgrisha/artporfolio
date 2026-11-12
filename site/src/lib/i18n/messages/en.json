@@ -26,5 +26,6 @@
   "newsletter.note": "Only new works, collections and offers.",
   "newsletter.subscribed": "Thank you! I will write when there is something new.",
   "newsletter.invalid": "Please enter a valid e-mail address.",
-  "newsletter.failed": "Could not subscribe. Please try again in a minute."
+  "newsletter.failed": "Could not subscribe. Please try again in a minute.",
+  "hero.scrollDown": "Scroll down"
 }

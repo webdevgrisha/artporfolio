@@ -26,5 +26,6 @@
   "newsletter.note": "Yalnızca yeni eserler, koleksiyonlar ve teklifler.",
   "newsletter.subscribed": "Teşekkürler! Yeni bir gelişme olduğunda yazacağım.",
   "newsletter.invalid": "Lütfen geçerli bir e-posta adresi girin.",
-  "newsletter.failed": "Abone olunamadı. Lütfen bir dakika sonra tekrar deneyin."
+  "newsletter.failed": "Abone olunamadı. Lütfen bir dakika sonra tekrar deneyin.",
+  "hero.scrollDown": "Aşağı kaydırın"
 }

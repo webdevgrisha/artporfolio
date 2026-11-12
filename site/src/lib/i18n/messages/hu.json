@@ -26,5 +26,6 @@
   "newsletter.note": "Kizárólag új művek, gyűjtemények és ajánlatok.",
   "newsletter.subscribed": "Köszönöm! Írok, ha van valami újdonság.",
   "newsletter.invalid": "Adjon meg érvényes e-mail-címet.",
-  "newsletter.failed": "Nem sikerült feliratkozni. Próbálja újra egy perc múlva."
+  "newsletter.failed": "Nem sikerült feliratkozni. Próbálja újra egy perc múlva.",
+  "hero.scrollDown": "Görgessen lejjebb"
 }

@@ -149,6 +149,7 @@ const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.lengt
         <PageHero
           image={hero}
           lang={title === undefined ? "en" : undefined}
+          language={language}
           name={title ?? artistName}
         />
       )

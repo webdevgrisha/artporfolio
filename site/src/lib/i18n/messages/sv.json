@@ -26,5 +26,6 @@
   "newsletter.note": "Endast nya verk, samlingar och erbjudanden.",
   "newsletter.subscribed": "Tack! Jag skriver när det finns något nytt.",
   "newsletter.invalid": "Ange en giltig e-postadress.",
-  "newsletter.failed": "Det gick inte att prenumerera. Försök igen om en minut."
+  "newsletter.failed": "Det gick inte att prenumerera. Försök igen om en minut.",
+  "hero.scrollDown": "Bläddra nedåt"
 }

@@ -26,5 +26,6 @@
   "newsletter.note": "Iba nové diela, zbierky a ponuky.",
   "newsletter.subscribed": "Ďakujem! Napíšem, keď bude niečo nové.",
   "newsletter.invalid": "Zadajte prosím platnú e-mailovú adresu.",
-  "newsletter.failed": "Prihlásenie sa nepodarilo. Skúste to prosím o minútu neskôr."
+  "newsletter.failed": "Prihlásenie sa nepodarilo. Skúste to prosím o minútu neskôr.",
+  "hero.scrollDown": "Prejdite nižšie"
 }

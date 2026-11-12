@@ -26,5 +26,6 @@
   "newsletter.note": "Alleen nieuwe werken, collecties en aanbiedingen.",
   "newsletter.subscribed": "Bedankt! Ik laat het weten als er iets nieuws is.",
   "newsletter.invalid": "Voer een geldig e-mailadres in.",
-  "newsletter.failed": "Het is niet gelukt om je aan te melden. Probeer het over een minuutje nog eens."
+  "newsletter.failed": "Het is niet gelukt om je aan te melden. Probeer het over een minuutje nog eens.",
+  "hero.scrollDown": "Scroll naar beneden"
 }

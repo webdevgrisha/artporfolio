@@ -26,5 +26,6 @@
   "newsletter.note": "Doar lucrări noi, colecții și oferte.",
   "newsletter.subscribed": "Mulțumesc! Vă voi scrie când va apărea ceva nou.",
   "newsletter.invalid": "Introduceți o adresă de e-mail validă.",
-  "newsletter.failed": "Abonarea nu a reușit. Încercați din nou peste un minut."
+  "newsletter.failed": "Abonarea nu a reușit. Încercați din nou peste un minut.",
+  "hero.scrollDown": "Derulați în jos"
 }

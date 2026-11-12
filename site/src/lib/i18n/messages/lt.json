@@ -26,5 +26,6 @@
   "newsletter.note": "Tik nauji kūriniai, kolekcijos ir pasiūlymai.",
   "newsletter.subscribed": "Ačiū! Parašysiu, kai bus kažkas naujo.",
   "newsletter.invalid": "Įveskite galiojantį el. pašto adresą.",
-  "newsletter.failed": "Nepavyko užsiprenumeruoti. Pabandykite dar kartą po minutės."
+  "newsletter.failed": "Nepavyko užsiprenumeruoti. Pabandykite dar kartą po minutės.",
+  "hero.scrollDown": "Slinkite žemyn"
 }

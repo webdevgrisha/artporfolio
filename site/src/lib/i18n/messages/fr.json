@@ -26,5 +26,6 @@
   "newsletter.note": "Seulement les nouvelles œuvres, collections et offres.",
   "newsletter.subscribed": "Merci ! Je vous tiendrai au courant dès qu'il y aura du nouveau.",
   "newsletter.invalid": "Veuillez saisir une adresse e-mail valide.",
-  "newsletter.failed": "Impossible de s'abonner. Veuillez réessayer dans une minute."
+  "newsletter.failed": "Impossible de s'abonner. Veuillez réessayer dans une minute.",
+  "hero.scrollDown": "Faites défiler vers le bas"
 }

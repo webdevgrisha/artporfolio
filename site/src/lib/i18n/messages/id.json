@@ -26,5 +26,6 @@
   "newsletter.note": "Hanya karya baru, koleksi, dan penawaran.",
   "newsletter.subscribed": "Terima kasih! Saya akan menulis jika ada hal baru.",
   "newsletter.invalid": "Silakan masukkan alamat email yang valid.",
-  "newsletter.failed": "Tidak dapat berlangganan. Silakan coba lagi dalam satu menit."
+  "newsletter.failed": "Tidak dapat berlangganan. Silakan coba lagi dalam satu menit.",
+  "hero.scrollDown": "Gulir ke bawah"
 }

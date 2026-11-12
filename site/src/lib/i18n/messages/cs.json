@@ -26,5 +26,6 @@
   "newsletter.note": "Pouze nová díla, sbírky a nabídky.",
   "newsletter.subscribed": "Děkuji! Napíšu, až bude něco nového.",
   "newsletter.invalid": "Zadejte prosím platnou e-mailovou adresu.",
-  "newsletter.failed": "Nelze se přihlásit k odběru. Zkuste to prosím znovu za chvíli."
+  "newsletter.failed": "Nelze se přihlásit k odběru. Zkuste to prosím znovu za chvíli.",
+  "hero.scrollDown": "Přejděte dolů"
 }

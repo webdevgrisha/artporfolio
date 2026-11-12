@@ -26,5 +26,6 @@
   "newsletter.note": "Chỉ tác phẩm mới, bộ sưu tập và ưu đãi.",
   "newsletter.subscribed": "Cảm ơn! Tôi sẽ cập nhật khi có thông tin mới.",
   "newsletter.invalid": "Vui lòng nhập địa chỉ email hợp lệ.",
-  "newsletter.failed": "Không thể đăng ký. Vui lòng thử lại sau một phút."
+  "newsletter.failed": "Không thể đăng ký. Vui lòng thử lại sau một phút.",
+  "hero.scrollDown": "Cuộn xuống"
 }
