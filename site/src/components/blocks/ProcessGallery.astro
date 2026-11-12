@@ -196,6 +196,7 @@ const firstInView = 2;
   }
 
   .open {
+    position: relative;
     display: block;
     aspect-ratio: var(--ratio);
     cursor: zoom-in;
@@ -213,9 +214,26 @@ const firstInView = 2;
     transition-duration: var(--motion-duration-press);
   }
 
-  /* The ring of the keyboard inside the photo: outside, the row would cut it off. */
+  /*
+   * The ring of the keyboard inside the photo, as outside the row would cut it off: over the photo,
+   * in two tones, the color of the ring on a band of the page, so it shows on a light work and a
+   * dark one alike (WCAG 2.4.13).
+   */
   .open:focus-visible {
-    outline-offset: calc(-1 * var(--space-1));
+    outline: none;
+  }
+
+  .open::after {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    content: "";
+  }
+
+  .open:focus-visible::after {
+    box-shadow:
+      inset 0 0 0 2px var(--color-focus),
+      inset 0 0 0 5px var(--color-surface);
   }
 
   .controls {
