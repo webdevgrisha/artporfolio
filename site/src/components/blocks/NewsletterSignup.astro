@@ -245,15 +245,20 @@ const outcome = !result
     color: var(--color-text-muted);
   }
 
-  /* The arrow ends where the line ends, as in the mockup; its button keeps the room of a finger. */
+  /*
+   * The arrow ends where the line ends, as in the mockup, in the middle of a box a finger can hit,
+   * so the ring of the focus is even around it: the box reaches past the end of the line by as much
+   * as it is wider than the chevron (0.5em, see ChevronIcon).
+   */
   .submit {
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
-    justify-content: end;
+    justify-content: center;
     min-inline-size: var(--min-tap-target-size);
     min-block-size: var(--min-tap-target-size);
     padding: 0;
+    margin-inline-end: calc((0.5em - var(--min-tap-target-size)) / 2);
     font-size: var(--font-size-1);
     color: inherit;
     cursor: pointer;
