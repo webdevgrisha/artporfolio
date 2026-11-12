@@ -56,6 +56,14 @@ const style =
 >
   <div class="stage">
     {image && <div class="photo" />}
+    {
+      image && (
+        <picture class="focus">
+          <source srcset={avif} type="image/avif" />
+          <img alt="" decoding="async" fetchpriority="high" src={webp} />
+        </picture>
+      )
+    }
     <div aria-hidden="true" class="line" data-name={name} lang={lang}>
       <span class="copy">{name}</span>
     </div>
@@ -157,6 +165,7 @@ const style =
    * on its own, as --hero-image holds two images, the work and its preview, and each takes them.
    */
   .photo,
+  .focus img,
   .line,
   .window::before {
     --cover-width: calc(max(100cqw, 100cqh * var(--hero-ratio, 1)) * var(--hero-zoom));
@@ -183,6 +192,47 @@ const style =
     background-image: var(--hero-image);
     background-position: calc(var(--cover-x) + 2 * var(--blur)) calc(var(--cover-y) + 2 * var(--blur));
     filter: blur(var(--blur)) brightness(0.6);
+  }
+
+  /*
+   * The work as it is, over the blurred one, placed as it is there: as soon as it has come, the
+   * page shows it sharp for a moment, then lets it go out of focus and dim to the blurred work, as a
+   * film pulls focus from one plane to another. The visitor sees the work first, then the screen it
+   * makes. Only opacity moves, which the browser plays off the main thread: the blur itself never
+   * changes. A still hero has none of it.
+   */
+  .focus img {
+    position: absolute;
+    top: var(--cover-y);
+    left: var(--cover-x);
+    visibility: hidden;
+    inline-size: var(--cover-width);
+    max-inline-size: none;
+    block-size: var(--cover-height);
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-live] .focus img[data-loaded] {
+      animation: focus-pull 1.6s var(--motion-easing-screen) both;
+    }
+  }
+
+  @keyframes focus-pull {
+    0% {
+      visibility: visible;
+      opacity: 0;
+    }
+
+    20%,
+    40% {
+      opacity: 1;
+    }
+
+    100% {
+      visibility: hidden;
+      opacity: 0;
+    }
   }
 
   /*
@@ -299,7 +349,35 @@ const style =
   @media (prefers-reduced-motion: no-preference) {
     [data-live] .hint {
       display: block;
-      opacity: clamp(0, 1 - var(--along) * 20, 1);
+      opacity: calc(clamp(0, 1 - var(--along) * 20, 1) * var(--shown));
+    }
+
+    /*
+     * Over a work, it waits for the work to come and to go out of focus, then comes itself. Where
+     * the browser cannot tell that (:has), it is there from the start.
+     */
+    .photographed[data-live]:has(.focus img:not([data-loaded])) .hint {
+      --shown: 0;
+    }
+
+    .photographed[data-live]:has(.focus img[data-loaded]) .hint {
+      animation: shown var(--motion-duration-screen) var(--motion-easing-standard) 1.1s both;
+    }
+  }
+
+  @property --shown {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 1;
+  }
+
+  @keyframes shown {
+    from {
+      --shown: 0;
+    }
+
+    to {
+      --shown: 1;
     }
   }
 
