@@ -15,7 +15,7 @@ interface IconButtonLinkProps
 /** A link that looks like `IconButton`, such as the pencil that opens an edit page. */
 export function IconButtonLink({ children, className, label, ...linkProps }: IconButtonLinkProps) {
   return (
-    <Link className={clsx(styles.root, className)} aria-label={label} {...linkProps}>
+    <Link className={clsx(styles.root, className)} aria-label={label} data-press {...linkProps}>
       {children}
     </Link>
   );

@@ -9,13 +9,22 @@
   cursor: pointer;
   background: transparent;
   border: 0;
-  transition: color var(--motion-duration-fast) var(--motion-easing-standard);
+  transition:
+    color var(--motion-duration-fast) var(--motion-easing-standard),
+    scale var(--motion-duration-release) var(--motion-easing-release);
 }
 
 @media (hover: hover) {
   .root:hover:not(:disabled) {
     color: var(--color-text-muted);
   }
+}
+
+/* Pressed, the icon is pushed in, as a stamp, and springs back as it is let go. */
+.root:active:not(:disabled) {
+  scale: 0.85;
+  transition-timing-function: var(--motion-easing-press);
+  transition-duration: var(--motion-duration-press);
 }
 
 .root:focus-visible {
