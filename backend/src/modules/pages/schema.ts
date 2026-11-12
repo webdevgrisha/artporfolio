@@ -4,7 +4,7 @@ import type { Image } from "#shared/images/stored-image";
 import { uploadIdSchema } from "#shared/images/uploads";
 
 /** Pages of the public site that open with a main photo, the hero. */
-export const pageIds = ["home", "gallery", "projects", "about", "contacts"] as const;
+export const pageIds = ["home", "gallery", "exhibitions", "projects", "about", "contacts"] as const;
 
 /** The path parameters of a request about one page. */
 export const pageParamsSchema = z.object({

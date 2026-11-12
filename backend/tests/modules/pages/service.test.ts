@@ -112,6 +112,7 @@ describe("page service", () => {
     expect(database.getAll.mock.calls[0]?.map((document: FakeDocument) => document.path)).toEqual([
       "pages/home",
       "pages/gallery",
+      "pages/exhibitions",
       "pages/projects",
       "pages/about",
       "pages/contacts",
@@ -147,6 +148,7 @@ describe("page service", () => {
         },
       },
       contacts: { hero: null },
+      exhibitions: { hero: null },
       gallery: { hero: null },
       home: { hero: null },
       projects: { hero: null },

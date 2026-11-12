@@ -12,7 +12,7 @@ import type { MessageKey } from "@/lib/i18n/translate";
  */
 export const menu = [
   { label: "menu.gallery", page: "gallery", path: "/gallery" },
-  { label: "menu.exhibitions", page: undefined, path: "/exhibitions" },
+  { label: "menu.exhibitions", page: "exhibitions", path: "/exhibitions" },
   { label: "menu.projects", page: "projects", path: "/projects" },
   { label: "menu.about", page: "about", path: "/about" },
   { label: "menu.contact", page: "contacts", path: "/contact" },

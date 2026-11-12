@@ -9,6 +9,7 @@ export interface HeroField {
 /** The heroes in display order, one per page. */
 export const heroFields: readonly HeroField[] = [
   { label: "Главная", page: "home" },
+  { label: "Выставки", page: "exhibitions" },
   { label: "Проекты", page: "projects" },
   { label: "Контакты", page: "contacts" },
   { label: "Галерея", page: "gallery" },

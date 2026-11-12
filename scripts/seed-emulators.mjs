@@ -173,6 +173,7 @@ const palettes = {
 const heroPages = [
   { page: "home", seed: 11 },
   { page: "gallery", seed: 23 },
+  { page: "exhibitions", seed: 29 },
   { page: "projects", seed: 37 },
   { page: "about", seed: 41 },
   { page: "contacts", seed: 53 },
