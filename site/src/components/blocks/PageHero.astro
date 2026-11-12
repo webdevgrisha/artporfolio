@@ -188,6 +188,12 @@ const style =
     background-image: var(--hero-image);
     background-position: calc(var(--cover-x) + 2 * var(--blur)) calc(var(--cover-y) + 2 * var(--blur));
     filter: blur(var(--blur)) brightness(0.6);
+    /*
+     * Blurred once, on a layer of its own, and then only moved: otherwise Safari blurs the whole
+     * work again on every frame the page scrolls by itself, as in the slide between the hero and
+     * the page, and the slide runs at about 14 frames a second (2026).
+     */
+    will-change: transform;
   }
 
   /*
