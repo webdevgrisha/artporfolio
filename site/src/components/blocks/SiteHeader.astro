@@ -1,8 +1,9 @@
 ---
 /**
- * The header of every page: the name of the artist, which leads home, the switches of the page on
- * a laptop, and the button that opens the menu of the site. On a smaller screen the switches are
- * in the menu, and the header keeps the name and the button only, as in the mockups.
+ * The header of every page: the name of the artist, which leads home, the switches of the page and
+ * the link to the gallery on a laptop, and the button that opens the menu of the site. On a
+ * smaller screen the switches are in the menu, and the header keeps the name and the button only,
+ * as in the mockups.
  */
 import SiteMenu from "@/components/blocks/SiteMenu.astro";
 import CurrencySwitch from "@/components/controls/CurrencySwitch.astro";
@@ -11,9 +12,11 @@ import ThemeToggle from "@/components/controls/ThemeToggle.astro";
 import Container from "@/components/ui/Container.astro";
 import HomeLink from "@/components/ui/HomeLink.astro";
 import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
+import TextLink from "@/components/ui/TextLink.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
+import { localizedPath } from "@/lib/site/localizedPath";
 
 interface Props {
   /** The codes of the currencies in use, for the switch of currencies. */
@@ -45,6 +48,12 @@ const menuId = "site-menu";
           <LanguageSwitch align="end" id="header-language" language={language} path={path} />
         )
       }
+      {/* The works, which the site is for, a click away on every page, as in the mockup. */}
+      <TextLink
+        aria-current={path === "/gallery" ? "page" : undefined}
+        href={localizedPath(language, "/gallery")}
+        label={t(language, "menu.gallery")}
+      />
       <ThemeToggle language={language} />
     </div>
     <button
