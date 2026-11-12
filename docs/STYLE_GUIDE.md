@@ -426,6 +426,7 @@ The site (`site/`, Astro) keeps every rule above, with these differences.
 - Fonts come from Astro's Fonts API (`astro.config.ts`): Absans, and Manrope for the Cyrillic letters only. It preloads Absans and fits its fallback to it, so the text does not move when the font arrives.
 - Capitals are a style: write texts and translations in their normal case and set `text-transform: uppercase` with `--letter-spacing-caps`. Some languages have no capitals, and others change letters in them (German ß, Turkish i). Keep capitals for short text: long paragraphs in capitals read slowly.
 - The site is translated into right-to-left languages, so use logical properties only (`margin-inline-start`, `inset-inline-end`, `text-align: start`).
+- A text the page shows goes through `typeset` (`lib/text`), as `t()` does for the texts of the interface: in the Slavic languages of the site it keeps a short word from ending a line and sets the quotes of the language. A text of the API shown on a page goes through it too. Text split into words for layout splits on plain spaces only, so words joined by a no-break space stay together.
 
 ## Evolving this guide
 

@@ -13,6 +13,11 @@ describe("longestWordLength", () => {
     expect(longestWordLength("Zv́azok")).toBe(6);
   });
 
+  it("counts words joined by a no-break space as one, as they share a line", () => {
+    expect(longestWordLength("Свяжитесь со\u00A0мной")).toBe(9);
+    expect(longestWordLength("Napisz do\u00A0mnie teraz")).toBe(7);
+  });
+
   it("is zero for a text without words", () => {
     expect(longestWordLength("")).toBe(0);
   });

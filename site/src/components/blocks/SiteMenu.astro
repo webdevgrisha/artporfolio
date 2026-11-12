@@ -52,10 +52,16 @@ const pageNames = menu.map((page) => t(language, page.label));
 const longestWord = Math.max(...pageNames.map(longestWordLength));
 ---
 
-<div class="site-menu" id={id} popover>
+<div class="site-menu" data-site-menu id={id} popover>
   <Container class="panel">
     <HomeLink class="name" current={path === "/"} language={language} />
-    <button class="close" popovertarget={id} popovertargetaction="hide" type="button">
+    <button
+      class="close"
+      data-menu-close
+      popovertarget={id}
+      popovertargetaction="hide"
+      type="button"
+    >
       <span class="close-text">{t(language, "header.close")}</span>
       <MenuIcon />
     </button>
@@ -111,6 +117,39 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     <p class="year">{year}</p>
   </Container>
 </div>
+
+<script>
+  /*
+   * While the menu is open, everything around it is inert, as behind a modal dialog: the keyboard
+   * and screen readers stay in the menu, and its button that closes it takes the focus. A click
+   * beside it still closes it. As it closes, the page comes back first, so the browser can return
+   * the focus to the button of the header.
+   */
+  const menu = document.querySelector<HTMLElement>("[data-site-menu]");
+
+  /** Makes inert, or gives back, every element beside the menu and beside each of its ancestors. */
+  function setPageInert(inert: boolean, element: HTMLElement): void {
+    for (let node: HTMLElement | null = element; node && node !== document.body; ) {
+      const parent: HTMLElement | null = node.parentElement;
+
+      for (const sibling of parent?.children ?? []) {
+        if (sibling !== node && sibling instanceof HTMLElement) sibling.inert = inert;
+      }
+      node = parent;
+    }
+  }
+
+  if (menu) {
+    menu.addEventListener("beforetoggle", (event) => {
+      setPageInert((event as ToggleEvent).newState === "open", menu);
+    });
+    menu.addEventListener("toggle", (event) => {
+      if ((event as ToggleEvent).newState === "open") {
+        menu.querySelector<HTMLElement>("[data-menu-close]")?.focus();
+      }
+    });
+  }
+</script>
 
 <style>
   /*
@@ -262,8 +301,8 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
   }
 
   /*
-   * The switches of the page, which the header shows on a laptop only: on a smaller screen they
-   * are here, under the pages.
+   * The switches of the page, which the header shows from 48rem: on a phone they are here,
+   * under the pages.
    */
   .settings {
     display: flex;
@@ -273,7 +312,7 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     align-items: center;
   }
 
-  @media (width >= 75rem) {
+  @media (width >= 48rem) {
     .settings {
       display: none;
     }

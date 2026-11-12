@@ -1,3 +1,5 @@
+import { typeset } from "@/lib/text/typeset";
+
 import type { Language } from "./languages";
 import english from "./messages/en.json";
 
@@ -15,10 +17,21 @@ const messagesByLanguage = new Map(
   ]),
 );
 
+/** The texts set already, by language and key: each is set once per server, not per page. */
+const typesetMessages = new Map<string, string>();
+
 /**
- * A text of the interface in the given language. A text not translated yet shows in English, so
- * the page never shows an empty place or a key.
+ * A text of the interface in the given language, set by its typographic rules (`typeset`). A text
+ * not translated yet shows in English, so the page never shows an empty place or a key.
  */
 export function t(language: Language, key: MessageKey): string {
-  return messagesByLanguage.get(language)?.[key] ?? english[key];
+  const id = `${language}:${key}`;
+  let text = typesetMessages.get(id);
+
+  if (text === undefined) {
+    text = typeset(language, messagesByLanguage.get(language)?.[key] ?? english[key]);
+    typesetMessages.set(id, text);
+  }
+
+  return text;
 }

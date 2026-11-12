@@ -1,9 +1,8 @@
 ---
 /**
  * The header of every page: the name of the artist, which leads home, the switches of the page and
- * the link to the gallery on a laptop, and the button that opens the menu of the site. On a
- * smaller screen the switches are in the menu, and the header keeps the name and the button only,
- * as in the mockups.
+ * the link to the gallery from a tablet on, and the button that opens the menu of the site. On a
+ * phone the switches are in the menu, and the header keeps the name and the button only.
  */
 import SiteMenu from "@/components/blocks/SiteMenu.astro";
 import CurrencySwitch from "@/components/controls/CurrencySwitch.astro";
@@ -165,7 +164,12 @@ const menuId = "site-menu";
     margin-inline-end: var(--layout-space-6);
   }
 
-  @media (width >= 75rem) {
+  /*
+   * The whole row from 48rem: below it the name, the link, the switches and the button no longer
+   * fit side by side in the longest languages (about 650px), and the switches go into the menu.
+   * The breakpoint is the width of this row, not of a device.
+   */
+  @media (width >= 48rem) {
     .controls {
       display: flex;
     }
