@@ -396,16 +396,32 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
       transition: color var(--motion-duration-slow) var(--motion-easing-standard);
     }
 
-    .with-hero:is(:hover, :focus-visible) .hero {
+    /*
+     * A plate is lit under the pointer or the focus, and the page being shown is lit from the
+     * moment the menu opens, so the visitor sees where they are. One plate is lit at a time: while
+     * another is pointed at, the one of the page being shown goes out, and it comes back after.
+     */
+    .with-hero:is(:hover, :focus-visible, [aria-current="page"]) .hero {
       opacity: 1;
     }
 
-    .with-hero:is(:hover, :focus-visible) {
+    .with-hero:is(:hover, :focus-visible, [aria-current="page"]) {
       color: var(--color-on-photo);
     }
 
-    .page-link.with-hero:is(:hover, :focus-visible) :global(.text) {
+    .page-link.with-hero:is(:hover, :focus-visible, [aria-current="page"]) :global(.text) {
       text-decoration-color: transparent;
+    }
+
+    .page-list:has(.with-hero:is(:hover, :focus-visible))
+      .with-hero[aria-current="page"]:not(:hover, :focus-visible) {
+      color: inherit;
+    }
+
+    .page-list:has(.with-hero:is(:hover, :focus-visible))
+      .with-hero[aria-current="page"]:not(:hover, :focus-visible)
+      .hero {
+      opacity: 0;
     }
   }
 
