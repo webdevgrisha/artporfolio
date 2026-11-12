@@ -382,6 +382,7 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
       display: flex;
       align-items: center;
       padding-inline: 0.5em;
+      container-type: size;
       overflow: hidden;
       color: var(--color-on-photo);
       clip-path: inset(0 100% 0 0);
@@ -392,7 +393,11 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
       clip-path: inset(0 0 0 100%);
     }
 
-    /* Blurred edges would let the page show through: the photo is a little larger than its plate. */
+    /*
+     * Blurred as much as the hero, for the size it is shown at (0.75% of its longer side), so the
+     * plate is a small hero; blurred edges would let the page show through, so the photo is a
+     * little larger than its plate.
+     */
     .hero {
       position: absolute;
       inset: 0;
@@ -403,8 +408,8 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
       inline-size: 100%;
       block-size: 100%;
       object-fit: cover;
-      filter: blur(0.2em) brightness(0.6);
-      scale: 1.15;
+      filter: blur(0.75cqmax) brightness(0.6);
+      scale: 1.05;
     }
 
     /* The name on the plate stands exactly over the one under it. */
