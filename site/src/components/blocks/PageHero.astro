@@ -265,7 +265,9 @@ const style =
     .page-hero[data-live] {
       block-size: 200lvh;
       animation: along linear both;
-      animation-timeline: view();
+      /* Of the whole screen: by default it would leave out the room the header keeps for links within
+         the page (scroll-padding), and start that much ahead. */
+      animation-timeline: view(0px);
       animation-range: contain 0% contain 100%;
     }
   }
@@ -358,7 +360,7 @@ const style =
   /*
    * Moving, the first quarter of the way writes the line near the top of the stage: a soft edge,
    * as of a brush, goes from its start to its end and leaves the letters drawn. The next half
-   * carries it down to the bottom; the last quarter wipes it out there the same way.
+   * carries it down to as near the bottom; the last quarter wipes it out there the same way.
    */
   @media (prefers-reduced-motion: no-preference) {
     [data-live] .line {
@@ -366,7 +368,7 @@ const style =
       --moved: clamp(0, var(--along) * 2 - 0.5, 1);
       --wiped: clamp(0, var(--along) * 4 - 3, 1);
       --top: 8cqh;
-      --y: calc(var(--top) + var(--moved) * (100cqh - var(--line-height, 1em) - var(--top)));
+      --y: calc(var(--top) + var(--moved) * (100cqh - var(--line-height, 1em) - 2 * var(--top)));
       --write-edge: calc(var(--written) * 125% - 25%);
       --wipe-edge: calc(var(--wiped) * 125% - 25%);
       --writing: linear-gradient(
