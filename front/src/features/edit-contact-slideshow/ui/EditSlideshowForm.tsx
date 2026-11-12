@@ -69,7 +69,7 @@ export function EditSlideshowForm({ className, slideshow }: EditSlideshowFormPro
             </FrameRow>
           </Frame>
           <FieldHint id={`${fromGalleryId}-hint`}>
-            Горизонтальные опубликованные работы вместо фото ниже, которые сохранятся
+            Только горизонтальные работы. Ваши фото не удалятся
           </FieldHint>
         </div>
         <PhotoListField
