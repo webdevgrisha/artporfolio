@@ -1,0 +1,141 @@
+---
+/**
+ * The icon of the button of the theme: the theme it turns on, a crescent on the light page and a
+ * sun on the dark one, as the admin draws them. It is one drawing that turns into the other as the
+ * theme changes, in the line of the other icons: a circle, which a shadow covers to leave a
+ * crescent; as the shadow moves away the circle shrinks into the body of the sun and its rays come
+ * out turning, and back as the sun sets. The theme is read by CSS, so it is right from the first
+ * paint.
+ *
+ * The outline of the crescent is the circle, where the shadow is not, and the edge of the shadow,
+ * where it is on the circle: two lines a mask and a clip cut. Each is cut where the other line
+ * ends on the outside, the line of the shadow by the outer edge of the circle (`.disc`), so they
+ * overlap and meet in a clean point at each horn.
+ */
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** Unique on the page: names the mask and the clip of this drawing. */
+  id: string;
+}
+
+const { id } = Astro.props;
+const shadowId = `${id}-shadow`;
+const discId = `${id}-disc`;
+---
+
+<Icon>
+  <defs>
+    <mask id={shadowId}>
+      <rect fill="white" height="24" width="24" />
+      <circle class="shadow" cx="15.5" cy="8.5" fill="black" r="8" stroke="none" />
+    </mask>
+    <clipPath id={discId}>
+      <circle class="disc" cx="12" cy="12" />
+    </clipPath>
+  </defs>
+  <circle class="body" cx="12" cy="12" mask={`url(#${shadowId})`} />
+  {/* The clip on a group that stays still: on the circle, it would move with the shadow. */}
+  <g clip-path={`url(#${discId})`}>
+    <circle class="shadow" cx="15.5" cy="8.5" r="8" />
+  </g>
+  <path
+    class="rays"
+    d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"
+  />
+</Icon>
+
+<style>
+  /*
+   * The crescent, on the light page: a full circle that a shadow covers but for its lower left, and
+   * no rays. Going there, the rays draw in first, then the circle grows and the shadow comes over it.
+   */
+  .body,
+  .disc,
+  .shadow,
+  .rays {
+    --theme-icon-duration: var(--motion-duration-panel);
+    --theme-icon-delay: calc(var(--theme-icon-duration) / 3);
+
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--theme-icon-duration);
+  }
+
+  /* The outer edge of the circle: its radius and half the line (1.5 in Icon). */
+  .disc {
+    r: 9.75px;
+    transition-delay: var(--theme-icon-delay);
+    transition-property: r;
+  }
+
+  .body {
+    r: 9px;
+    transition-delay: var(--theme-icon-delay);
+    transition-property: r;
+  }
+
+  .shadow {
+    transition-delay: var(--theme-icon-delay);
+    transition-property: translate;
+  }
+
+  .rays {
+    opacity: 0;
+    transform-origin: 12px 12px;
+    rotate: -90deg;
+    scale: 0.5;
+    transition-duration: var(--motion-duration-slow);
+    transition-property: opacity, scale, rotate;
+  }
+
+  /*
+   * The sun, on the dark page: the shadow moves away up and to the right, past the circle, which
+   * shrinks into the body of the sun; then its rays come out turning. The page is dark when the
+   * visitor chose it, or when the system is and they chose nothing.
+   */
+  :global(:root[data-theme="dark"]) .body {
+    r: 4.5px;
+    transition-delay: 0s;
+  }
+
+  :global(:root[data-theme="dark"]) .disc {
+    r: 5.25px;
+    transition-delay: 0s;
+  }
+
+  :global(:root[data-theme="dark"]) .shadow {
+    translate: 9px -9px;
+    transition-delay: 0s;
+  }
+
+  :global(:root[data-theme="dark"]) .rays {
+    opacity: 1;
+    rotate: 0deg;
+    scale: 1;
+    transition-delay: var(--theme-icon-delay);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme])) .body {
+      r: 4.5px;
+      transition-delay: 0s;
+    }
+
+    :global(:root:not([data-theme])) .disc {
+      r: 5.25px;
+      transition-delay: 0s;
+    }
+
+    :global(:root:not([data-theme])) .shadow {
+      translate: 9px -9px;
+      transition-delay: 0s;
+    }
+
+    :global(:root:not([data-theme])) .rays {
+      opacity: 1;
+      rotate: 0deg;
+      scale: 1;
+      transition-delay: var(--theme-icon-delay);
+    }
+  }
+</style>

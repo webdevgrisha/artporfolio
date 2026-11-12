@@ -1,31 +1,32 @@
 ---
 /**
  * The button that switches the theme of the site. It shows the theme it turns on, as the one of the
- * admin does: a crescent on the light page, a sun on the dark one, with its label for screen
- * readers. Which one shows is read by CSS from the theme the page has, so it is right from the
- * first paint; the script only switches. Without a script it cannot work, so it is not shown.
+ * admin does: a crescent on the light page, a sun on the dark one, which turn into each other, with
+ * its label for screen readers. Which one shows is read by CSS from the theme the page has, so it
+ * is right from the first paint; the script only switches. Without a script it cannot work, so it
+ * is not shown.
  */
-import MoonIcon from "@/components/ui/icons/MoonIcon.astro";
-import SunIcon from "@/components/ui/icons/SunIcon.astro";
+import ThemeIcon from "@/components/ui/icons/ThemeIcon.astro";
 import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
 
 interface Props {
   class?: string | undefined;
+  /** Unique on the page, such as `header-theme`: names the parts of its icon. */
+  id: string;
   language: Language;
 }
 
-const { class: className, language } = Astro.props;
+const { class: className, id, language } = Astro.props;
 ---
 
 <button class:list={["theme-toggle", className]} data-theme-toggle hidden type="button">
+  <ThemeIcon id={id} />
   <span class="to-dark">
-    <MoonIcon />
     <VisuallyHidden>{t(language, "header.toDarkTheme")}</VisuallyHidden>
   </span>
   <span class="to-light">
-    <SunIcon />
     <VisuallyHidden>{t(language, "header.toLightTheme")}</VisuallyHidden>
   </span>
 </button>
