@@ -33,6 +33,7 @@ const { class: className, href, language, skipped = false } = Astro.props;
       aria-label={t(language, "header.menu")}
       class:list={["menu-button", className]}
       command="show-modal"
+      data-press
       commandfor={menuId}
       tabindex={skipped ? -1 : undefined}
       type="button"
@@ -43,6 +44,7 @@ const { class: className, href, language, skipped = false } = Astro.props;
     <a
       aria-label={t(language, "header.menu")}
       class:list={["menu-button", className]}
+      data-press
       href={href}
       tabindex={skipped ? -1 : undefined}
     >
@@ -67,12 +69,25 @@ const { class: className, href, language, skipped = false } = Astro.props;
     cursor: pointer;
     background: none;
     border: 0;
-    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+    transition:
+      opacity var(--motion-duration-slow) var(--motion-easing-standard),
+      --menu-icon-cross var(--motion-duration-release) var(--motion-easing-release);
   }
 
   @media (hover: hover) {
     .menu-button:hover {
       opacity: 0.6;
     }
+  }
+
+  /*
+   * Pressed, the two lines start to come together and turn, the first fifth of the cross that
+   * closes the menu, and spring back apart as they are let go: the menu, before it opens.
+   */
+  .menu-button:active {
+    --menu-icon-cross: 0.2;
+
+    transition-timing-function: var(--motion-easing-standard), var(--motion-easing-press);
+    transition-duration: var(--motion-duration-slow), var(--motion-duration-press);
   }
 </style>
