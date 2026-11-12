@@ -21,13 +21,7 @@ interface Props {
 const { class: className, id, language } = Astro.props;
 ---
 
-<button
-  class:list={["theme-toggle", className]}
-  data-press
-  data-theme-toggle
-  hidden
-  type="button"
->
+<button class:list={["theme-toggle", className]} data-theme-toggle hidden type="button">
   <ThemeIcon id={id} />
   <span class="to-dark">
     <VisuallyHidden>{t(language, "header.toDarkTheme")}</VisuallyHidden>
@@ -176,20 +170,6 @@ const { class: className, id, language } = Astro.props;
     .theme-toggle:hover {
       opacity: 0.6;
     }
-  }
-
-  /*
-   * Pressed, the crescent or the sun starts to turn, as the one begins to become the other, and
-   * swings back as it is let go, unless the theme turns it.
-   */
-  .theme-toggle :global(svg) {
-    transition: rotate var(--motion-duration-release) var(--motion-easing-release);
-  }
-
-  .theme-toggle:active :global(svg) {
-    rotate: -30deg;
-    transition-timing-function: var(--motion-easing-press);
-    transition-duration: var(--motion-duration-press);
   }
 
   .to-dark,
