@@ -43,6 +43,14 @@
   overscroll-behavior: contain;
 }
 
+/*
+ * A single row, such as one checkbox, has no list to space from the border: it fills the frame,
+ * so it is as high as a text field and its highlight covers the whole field.
+ */
+.scroller:has(> .row:only-child) {
+  padding-block: 0;
+}
+
 .list {
   padding: 0;
   margin: 0;
