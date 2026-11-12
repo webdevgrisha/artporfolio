@@ -64,8 +64,8 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
   <Container class="panel">
     <HomeLink class="name" current={path === "/"} language={language} />
     <button autofocus class="close" command="close" commandfor={id} type="button">
-      <span class="close-text">{t(language, "header.close")}</span>
       <MenuIcon />
+      <span class="close-text">{t(language, "header.close")}</span>
     </button>
     <nav aria-label={t(language, "header.menu")} class="pages">
       <ul class="page-list" style={{ "--longest-word": longestWord }}>
@@ -221,7 +221,8 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
    */
   .panel {
     --menu-font-size: var(--font-size-body);
-
+    /* The room of the name in the header, so the name here is as large and stands over it. */
+    --home-link-room: calc(100cqi - var(--grid-gap) - var(--min-tap-target-size));
     display: grid;
     grid-template-areas:
       "name close"
@@ -230,10 +231,13 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
       "contacts contacts"
       "year year";
     grid-template-rows: auto 1fr auto auto auto;
-    grid-template-columns: minmax(0, 1fr) auto;
+    /* The name as wide as it is, the button that closes the menu in the rest of the row. */
+    grid-template-columns: auto minmax(0, 1fr);
     gap: var(--layout-space-8) var(--grid-gap);
     min-block-size: inherit;
     padding-block: var(--layout-space-6) var(--layout-space-8);
+
+    container-type: inline-size;
     font-size: var(--menu-font-size);
   }
 
@@ -257,16 +261,25 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     justify-self: start;
   }
 
-  /* The word, then the cross at the end of the page, where the header has the button that opens. */
+  /*
+   * The word, then the cross at the end of the page, where the header has the button that opens.
+   * Where the word does not fit beside the name, as in a narrow phone in a language of a long word
+   * or with a large text size, only the cross is shown, and the word still names the button for
+   * screen readers: laid from the end, the cross first, the word wraps to a second line, which the
+   * button cuts off.
+   */
   .close {
     display: flex;
+    flex-flow: row-reverse wrap;
     grid-area: close;
-    gap: var(--space-3);
+    /* The second line a whole button lower: no ascender of the word peeks over the edge. */
+    row-gap: 100%;
     align-items: center;
-    justify-content: space-between;
     justify-self: end;
-    min-block-size: var(--min-tap-target-size);
+    max-inline-size: 100%;
+    block-size: max(var(--min-tap-target-size), 1lh);
     padding: 0;
+    overflow: hidden;
     color: inherit;
     cursor: pointer;
     background: none;
@@ -287,9 +300,26 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     }
   }
 
+  /* As tall as the button and without width: the first line fills the button, the second is out. */
+  .close::before {
+    block-size: 100%;
+    content: "";
+  }
+
+  .close-text {
+    margin-inline-end: var(--space-3);
+    text-box: trim-both cap alphabetic;
+    white-space: nowrap;
+  }
+
+  /* At the start of the last third, the cross at its end, as in the mockup. */
   @media (width >= 75rem) {
     .close {
       justify-self: stretch;
+    }
+
+    .close-text {
+      margin-inline-end: auto;
     }
   }
 
@@ -297,10 +327,6 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     .close:hover {
       opacity: 0.6;
     }
-  }
-
-  .close-text {
-    text-box: trim-both cap alphabetic;
   }
 
   .pages {

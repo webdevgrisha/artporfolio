@@ -151,11 +151,19 @@ const { currencies, heroes, language, links, path } = Astro.props;
    * size smaller than in the mockup: a line of service, it leaves the page the larger type.
    */
   .bar {
+    /*
+     * The name may take the row but for the button of the menu and the gap before it: with a
+     * large text size of the browser it gets smaller instead of pushing the button off the screen.
+     * The menu gives it the same room, so its name stays exactly over this one.
+     */
+    --home-link-room: calc(100cqi - var(--grid-gap) - var(--min-tap-target-size));
     display: flex;
     gap: var(--grid-gap);
     align-items: center;
     justify-content: space-between;
     padding-block: var(--layout-space-6);
+
+    container-type: inline-size;
     font-size: var(--font-size-body);
   }
 

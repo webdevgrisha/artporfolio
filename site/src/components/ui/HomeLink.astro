@@ -1,7 +1,9 @@
 ---
 /**
  * The name of the artist that leads to the home page, as a logo: in Latin capitals in every
- * language, which a translator of the browser leaves as it is. Its size comes from where it stands.
+ * language, which a translator of the browser leaves as it is, and on one line. Its size comes
+ * from where it stands; where that gives `--home-link-room`, the width it may take, the name gets
+ * smaller to fit it rather than run off the screen, as with a large text size of the browser.
  */
 import type { HTMLAttributes } from "astro/types";
 
@@ -34,6 +36,11 @@ const { class: className, current = false, language, ...attributes } = Astro.pro
     display: inline-flex;
     align-items: center;
     min-block-size: var(--min-tap-target-size);
+    /*
+     * «ANASTASIA TURKEVICH» in Absans, its capitals spaced, is about 12.33 times as wide as its
+     * size; 12.5 leaves it a little air. Without a room, the room is the screen.
+     */
+    font-size: min(1em, var(--home-link-room, 100vw) / 12.5);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
     white-space: nowrap;
