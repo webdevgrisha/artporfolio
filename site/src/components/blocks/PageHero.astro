@@ -1,0 +1,321 @@
+---
+/**
+ * The first screen of every page: a work of the artist, blurred, under its name written over and
+ * over from edge to edge. The letters are windows onto the same work, sharp. The work stays as the
+ * visitor starts to scroll, and the letters slide down over it, each showing the part of the work
+ * under it at that moment; then the page goes on. Without a photo, the letters are in the color
+ * of the text, on the page.
+ *
+ * The name is the heading of the page for screen readers; its copies on the screen are drawing.
+ */
+import ChevronDownIcon from "@/components/ui/icons/ChevronDownIcon.astro";
+import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
+import type { Image } from "@/lib/api/image";
+
+interface Props {
+  image: Image | undefined;
+  /** The language of the name when it is not the language of the page, as the name of the artist. */
+  lang?: string | undefined;
+  /** The name of the page, its heading. */
+  name: string;
+}
+
+const { image, lang, name } = Astro.props;
+
+// The largest file of the work: the letters show it sharp across the whole screen, so even a phone
+// held upright, which crops the work to its height, needs it. The blurred work is the same file,
+// so it is loaded once. Its preview, under it, shows at once.
+const avif = image?.sources.avif.at(-1)?.url;
+const webp = image?.sources.webp.at(-1)?.url;
+const style =
+  image &&
+  [
+    `--hero-image: image-set(url("${avif}") type("image/avif"), url("${webp}") type("image/webp")), url("${image.placeholder}")`,
+    `--hero-ratio: ${image.width / image.height}`,
+  ].join("; ");
+
+/** The lines a page without its script shows: enough for any screen, cut off by its edge. */
+const lines = 8;
+---
+
+{image && <link as="image" fetchpriority="high" href={avif} rel="preload" type="image/avif" />}
+<section
+  aria-labelledby="page-title"
+  class:list={["page-hero", { photographed: image }]}
+  data-page-hero
+  style={style}
+>
+  <div class="stage">
+    {image && <div class="photo" />}
+    <VisuallyHidden as="h1" id="page-title" lang={lang}>{name}</VisuallyHidden>
+    <div aria-hidden="true" class="lines" data-name={name} lang={lang}>
+      <div class="rows">
+        {Array.from({ length: lines }, () => <div class="row"><span>{name}</span></div>)}
+      </div>
+      <span class="probe"></span>
+    </div>
+    <span aria-hidden="true" class="scroll-hint"><ChevronDownIcon /></span>
+  </div>
+</section>
+
+<script>
+  import { type HeroName, heroLines } from "@/lib/site/heroLines";
+
+  /*
+   * Lays the name out to fill the hero from edge to edge, now and whenever its size changes, and
+   * slides the lines down as the visitor scrolls past the hero. Without this script the hero
+   * stands still, its lines in the size of the display type, cut off by the edge.
+   */
+  const hero = document.querySelector<HTMLElement>("[data-page-hero]");
+  const stage = hero?.querySelector<HTMLElement>(".stage");
+  const lines = hero?.querySelector<HTMLElement>(".lines");
+  const rows = hero?.querySelector<HTMLElement>(".rows");
+  const probe = hero?.querySelector<HTMLElement>(".probe");
+
+  /** The size of type the name is measured at, in pixels, large for the measures to be precise. */
+  const probeSize = 100;
+
+  if (hero && stage && lines && rows && probe) {
+    const name = lines.dataset["name"] ?? "";
+    // Words joined by a no-break space stay on one line, as everywhere on the site.
+    const words = name.split(/[^\S  ]+/u).filter(Boolean);
+    const letters = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+    /** How far the lines travel down while the work stays, in pixels. */
+    let travel = 0;
+    let frame = 0;
+
+    /** The width of a text in the type of the hero, in ems. */
+    const measure = (text: string): number => {
+      probe.textContent = text;
+
+      return probe.getBoundingClientRect().width / probeSize;
+    };
+
+    const measureName = (): HeroName => ({
+        name: measure(name),
+        words: words.map((word) => ({
+          letters: [...letters.segment(word)].length,
+          width: measure(word),
+        })),
+    });
+
+    const line = (texts: string[], spacing?: number): HTMLElement => {
+      const row = document.createElement("div");
+
+      row.className = "row";
+      for (const text of texts) {
+        const copy = document.createElement("span");
+
+        copy.textContent = text;
+        if (spacing) copy.style.letterSpacing = `${spacing}em`;
+        row.append(copy);
+      }
+
+      return row;
+    };
+
+    const move = (): void => {
+      frame = 0;
+
+      const passed = Math.min(Math.max(-hero.getBoundingClientRect().top, 0), travel);
+
+      lines.style.setProperty("--shift", `${passed}px`);
+      hero.toggleAttribute("data-scrolled", window.scrollY > 0);
+    };
+
+    const layOut = (measures: HeroName): void => {
+      travel = hero.offsetHeight - stage.offsetHeight;
+
+      const fit = heroLines(measures, {
+        height: stage.clientHeight,
+        travel,
+        width: rows.clientWidth,
+      });
+      const fragment = document.createDocumentFragment();
+
+      // The lines above the hero first, to come down into it, then the lines of the hero; a line
+      // of a word each takes the words in turn, the first word on the first line of the hero.
+      for (let index = -fit.above; index < fit.lines; index++) {
+        const word = ((index % words.length) + words.length) % words.length;
+
+        fragment.append(
+          fit.wordSpacing.length > 0
+            ? line([words[word] ?? ""], fit.wordSpacing[word])
+            : line(Array.from({ length: fit.copies }, () => name)),
+        );
+      }
+
+      rows.replaceChildren(fragment);
+      lines.style.setProperty("--line-size", `${fit.fontSize}px`);
+      lines.style.setProperty("--pitch", `${fit.pitch}px`);
+      lines.style.setProperty("--above", `${fit.above * fit.pitch}px`);
+      move();
+    };
+
+    hero.dataset["moving"] = "";
+
+    // Measured once the fonts of the name have come: the fallback is narrower or wider.
+    void document.fonts.ready.then(() => {
+      const measures = measureName();
+
+      new ResizeObserver(() => layOut(measures)).observe(hero);
+    });
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (frame === 0) frame = requestAnimationFrame(move);
+      },
+      { passive: true },
+    );
+  }
+</script>
+
+<style>
+  /*
+   * The hero is as tall as the screen with its bars hidden (lvh), so it never leaves a strip as
+   * they hide; while they show, its bottom is under them. With its script it is taller by the way
+   * the lines travel, while its stage stays at the top of the screen; with less motion it does not
+   * travel.
+   */
+  .page-hero {
+    /* The blurred work is a little larger, as the blur fades its edges; the letters follow it. */
+    --hero-zoom: 1.1;
+    --hero-travel: 60lvh;
+
+    position: relative;
+    block-size: 100lvh;
+    color: var(--color-text);
+    background: var(--color-surface);
+  }
+
+  .page-hero[data-moving] {
+    block-size: calc(100lvh + var(--hero-travel));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-hero[data-moving] {
+      block-size: 100lvh;
+    }
+  }
+
+  .stage {
+    position: sticky;
+    inset-block-start: 0;
+    block-size: 100lvh;
+    container-type: size;
+    overflow: hidden;
+  }
+
+  /* The work, filling the screen, blurred into colors and shapes. */
+  .photo {
+    position: absolute;
+    inset: 0;
+    background: var(--hero-image) center / cover no-repeat;
+    filter: blur(clamp(1rem, 2.5vmax, 3rem));
+    scale: var(--hero-zoom);
+  }
+
+  /*
+   * The lines, across the page as wide as its content, and the lines waiting above the hero
+   * (--above). They slide down as far as the visitor has scrolled (--shift), while the work in
+   * their letters stays where the blurred one is: the same file, as large (cover of the stage,
+   * zoomed as the blurred one), as centered, moved back as far as the lines are moved.
+   */
+  .lines {
+    --cover-width: calc(max(100cqw, 100cqh * var(--hero-ratio, 1)) * var(--hero-zoom));
+    --cover-height: calc(var(--cover-width) / var(--hero-ratio, 1));
+
+    position: absolute;
+    inset-block-start: calc(-1 * var(--above, 0px));
+    inset-inline: 0;
+    block-size: calc(100% + var(--above, 0px));
+    padding-inline: max(
+      var(--page-gutter),
+      (100% - var(--page-max-inline-size)) / 2 + var(--page-gutter)
+    );
+    font-size: var(--font-size-display);
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    translate: 0 var(--shift, 0px);
+  }
+
+  .photographed .lines {
+    color: transparent;
+    background-image: var(--hero-image);
+    background-repeat: no-repeat;
+    background-position:
+      calc((100cqw - var(--cover-width)) / 2)
+      calc((100cqh - var(--cover-height)) / 2 + var(--above, 0px) - var(--shift, 0px));
+    /* Safari on older iPhones knows only the prefixed name. */
+    -webkit-background-clip: text;
+    background-clip: text;
+    background-size: var(--cover-width) auto;
+  }
+
+  /* Without its script the lines share the height evenly; with it each is exactly --pitch high. */
+  .rows {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    block-size: 100%;
+    font-size: var(--line-size, 1em);
+  }
+
+  /* The lines are made by the script, so outside the scope of this style. */
+  .rows :global(.row) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    block-size: var(--pitch, auto);
+  }
+
+  /* The capitals stand in the middle of their line: without the room of the lowercase. */
+  .rows :global(.row > span) {
+    text-box: trim-both cap alphabetic;
+  }
+
+  .probe {
+    position: absolute;
+    visibility: hidden;
+    font-size: 100px;
+    white-space: pre;
+  }
+
+  /*
+   * A chevron at the bottom of the first screen, above the bars of a phone (svh), nodding down
+   * until the visitor scrolls. It is a hint, not a control: scrolling is how to go on.
+   */
+  .scroll-hint {
+    position: absolute;
+    inset-block-end: calc(100lvh - 100svh + var(--layout-space-8));
+    inset-inline-start: 50%;
+    font-size: var(--font-size-3);
+    color: var(--color-on-photo);
+    translate: -50% 0;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+    animation: nod 1.6s var(--motion-easing-screen) infinite;
+  }
+
+  .page-hero:not(.photographed) .scroll-hint {
+    color: var(--color-text);
+  }
+
+  .page-hero[data-scrolled] .scroll-hint {
+    opacity: 0;
+  }
+
+  @keyframes nod {
+    50% {
+      translate: -50% 30%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-hint {
+      animation: none;
+    }
+  }
+</style>

@@ -1,8 +1,7 @@
 ---
 /**
- * The Contacts page: the title of the page for screen readers, the slideshow of photos, and the
- * heading «Get in touch» with the ways to reach the artist beside the photos, or under them on a
- * tablet or a phone.
+ * The Contacts page under its hero: the slideshow of photos, and the heading «Get in touch» with
+ * the ways to reach the artist beside the photos, or under them on a tablet or a phone.
  */
 import Container from "@/components/ui/Container.astro";
 import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
@@ -11,7 +10,6 @@ import MailIcon from "@/components/ui/icons/MailIcon.astro";
 import YouTubeIcon from "@/components/ui/icons/YouTubeIcon.astro";
 import Slideshow from "@/components/ui/Slideshow.astro";
 import TextLink from "@/components/ui/TextLink.astro";
-import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
 import type { Photo } from "@/lib/api/image";
 import { longestWordLength } from "@/lib/text/longestWord";
@@ -22,11 +20,9 @@ interface Props {
   links: ContactLinks;
   /** The photos of the slideshow; none leaves the text the whole width. */
   photos: Photo[];
-  /** The title of the page; the hero will show it once pages have one. */
-  title: string;
 }
 
-const { heading, links, photos, title } = Astro.props;
+const { heading, links, photos } = Astro.props;
 const hasPhotos = photos.length > 0;
 // Word by word, so a phone can set each word on a line of its own; only the first can be turned.
 const [firstWord = "", ...otherWords] = heading.split(" ");
@@ -46,14 +42,12 @@ const contacts = [
 ---
 
 <Container as="section" aria-labelledby="contact-heading">
-  <VisuallyHidden as="h1">{title}</VisuallyHidden>
   <div class:list={["layout", { "has-photo": hasPhotos }]}>
     {
       hasPhotos && (
         <Slideshow
           class="photo"
           photos={photos}
-          priority
           sizes="(min-width: 75rem) 40vw, 100vw"
         />
       )
