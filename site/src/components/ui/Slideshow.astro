@@ -75,11 +75,11 @@ const { class: className, photos, priority = false, sizes } = Astro.props;
 
       if (index === selected) {
         // Taken off and put back, so the zoom starts anew even on a slide that has it still.
-        delete slide.dataset["zoom"];
+        delete slide.dataset.zoom;
         void slide.offsetWidth;
-        slide.dataset["zoom"] = "";
+        slide.dataset.zoom = "";
       } else if (index !== previous) {
-        delete slide.dataset["zoom"];
+        delete slide.dataset.zoom;
       }
     }
 

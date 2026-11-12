@@ -3,13 +3,15 @@ import { describe, expect, it } from "vitest";
 import type { Image } from "@/lib/api/image";
 import { shareImage } from "@/lib/seo/shareImage";
 
-function image(widths: [number, ...number[]]): Image {
-  const files = widths.map((width) => ({ url: `https://files.test/${String(width)}.webp`, width }));
+function file(width: number) {
+  return { url: `https://files.test/${String(width)}.webp`, width };
+}
 
+function image([first, ...rest]: [number, ...number[]]): Image {
   return {
     height: 1_280,
     placeholder: "data:image/webp;base64,UklGRg==",
-    sources: { avif: [files[0]!], webp: [files[0]!, ...files.slice(1)] },
+    sources: { avif: [file(first)], webp: [file(first), ...rest.map(file)] },
     width: 1_920,
   };
 }
