@@ -23,7 +23,6 @@ const { class: className, current = false, language, ...attributes } = Astro.pro
 <a
   aria-current={current ? "page" : undefined}
   class:list={["home-link", className]}
-  data-press
   href={localizedPath(language, "/")}
   lang="en"
   translate="no"
@@ -46,16 +45,5 @@ const { class: className, current = false, language, ...attributes } = Astro.pro
     letter-spacing: var(--letter-spacing-caps);
     white-space: nowrap;
     text-decoration: none;
-    transition: letter-spacing var(--motion-duration-release) var(--motion-easing-release);
-  }
-
-  /*
-   * Pressed, the letters of the name draw together, as a breath before going home, and spring
-   * apart as it is let go. The name only gets narrower: nothing after it on its line moves.
-   */
-  .home-link:active {
-    letter-spacing: -0.03em;
-    transition-timing-function: var(--motion-easing-press);
-    transition-duration: var(--motion-duration-press);
   }
 </style>
