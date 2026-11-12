@@ -57,7 +57,6 @@ const firstInView = 2;
           <li class="slide" style={`--ratio: ${photo.width / photo.height}`}>
             <a
               class="open"
-              data-press
               data-pswp-height={photo.height}
               data-pswp-srcset={srcset(photo.sources.webp)}
               data-pswp-width={photo.width}
@@ -204,14 +203,6 @@ const firstInView = 2;
 
   .picture {
     block-size: 100%;
-    transition: scale var(--motion-duration-release) var(--motion-easing-release);
-  }
-
-  /* Pressed, the photo gives way a little, as a print pressed into the wall, and opens from there. */
-  .open:is(:active, [data-pressed]) .picture {
-    scale: 0.97;
-    transition-timing-function: var(--motion-easing-press);
-    transition-duration: var(--motion-duration-press);
   }
 
   /*

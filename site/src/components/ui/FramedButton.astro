@@ -1,12 +1,7 @@
 ---
 /**
  * A button of the site, or a link that looks like one: its text in capitals inside a frame. Under
- * the pointer its colors change places. Pressed, its frame breaks into dashes that run around it
- * for as long as it is held, as a frame coming alive, and close back into a line as it is let go.
- *
- * The frame is drawn by an SVG rectangle over the button: a dashed border of CSS can neither run
- * nor open from a line into dashes. The button keeps a border of its own, unseen, so it takes the
- * same room as a button with a border.
+ * the pointer its colors change places.
  *
  * A button gets its `type` from where it stands, as any: `button`, or `submit` in a form.
  */
@@ -18,21 +13,13 @@ type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }>;
 const { as: Tag = "button", class: className, ...attributes } = Astro.props;
 ---
 
-<Tag
-  class:list={["framed-button", className]}
-  data-press
-  {...attributes}
->
+<Tag class:list={["framed-button", className]} {...attributes}>
   <slot />
-  <svg aria-hidden="true" class="frame" focusable="false">
-    <rect height="100%" width="100%"></rect>
-  </svg>
 </Tag>
 
 <style>
   /* Without weight, so the block that places the button can size it, as the row of photos does. */
   :where(.framed-button) {
-    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -47,39 +34,10 @@ const { as: Tag = "button", class: className, ...attributes } = Astro.props;
     text-decoration: none;
     cursor: pointer;
     background: var(--color-surface);
-    border: var(--line-width) solid transparent;
+    border: var(--line-width) solid var(--color-line);
     transition-timing-function: var(--motion-easing-standard);
     transition-duration: var(--motion-duration-standard);
     transition-property: color, background-color;
-  }
-
-  /*
-   * Over the whole button, its border included. The stroke is drawn on the edge of the rectangle,
-   * half outside it, which the frame cuts off: what stays is a line as thick as a border.
-   */
-  .frame {
-    position: absolute;
-    inset-block-start: calc(-1 * var(--line-width));
-    inset-inline-start: calc(-1 * var(--line-width));
-    inline-size: calc(100% + 2 * var(--line-width));
-    /* Past the limit of the reset, which keeps any SVG within its box: this one covers the border. */
-    max-inline-size: none;
-    block-size: calc(100% + 2 * var(--line-width));
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  /*
-   * A line is dashes without gaps: pressing opens the gaps, so the line breaks apart rather than
-   * jumping to dashes, and letting go closes them. One dash and its gap are 0.7em long, which the
-   * dashes run by.
-   */
-  rect {
-    fill: none;
-    stroke: var(--color-line);
-    stroke-width: calc(2 * var(--line-width));
-    stroke-dasharray: 0.7em 0;
-    transition: stroke-dasharray var(--motion-duration-release) var(--motion-easing-standard);
   }
 
   /* The site has one color and its background: under the pointer the two change places. */
@@ -87,31 +45,6 @@ const { as: Tag = "button", class: className, ...attributes } = Astro.props;
     .framed-button:hover {
       color: var(--color-surface);
       background: var(--color-text);
-    }
-  }
-
-  /* Pressed, the button is the page again, so the frame breaking apart is all there is to see. */
-  .framed-button:is(:active, [data-pressed]) {
-    color: var(--color-text);
-    background: var(--color-surface);
-    transition-duration: var(--motion-duration-press);
-  }
-
-  .framed-button:is(:active, [data-pressed]) rect {
-    stroke-dasharray: 0.4em 0.3em;
-    transition-duration: var(--motion-duration-press);
-  }
-
-  /* The dashes run around the button while it is held; still for a visitor who asked for less motion. */
-  @media (prefers-reduced-motion: no-preference) {
-    .framed-button:is(:active, [data-pressed]) rect {
-      animation: run 0.5s linear infinite;
-    }
-  }
-
-  @keyframes run {
-    to {
-      stroke-dashoffset: -0.7em;
     }
   }
 </style>

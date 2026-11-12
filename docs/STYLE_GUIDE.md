@@ -385,31 +385,6 @@ A script is the solution itself, not a stand-in, only where the platform has no 
 - Use shared duration and easing tokens.
 - Motion must communicate a state change, not exist only as decoration.
 
-### Pressed state
-
-Every control answers a press, by mouse, finger or keyboard, before what it does follows; this is the
-`:active` state, alongside hover, focus and disabled.
-
-- A pressed control shows what is about to happen (anticipation): each kind answers in its own way, in
-  its own material. On the site: a framed button (`FramedButton`) breaks its frame into dashes that
-  run around it while held; a text link pulls its underline tight; an icon link is pushed in as a stamp; the chevron of a list dips the way the list
-  will go; a process photo gives way. In the
-  admin, a work tool pressed all day, the press is quieter and never runs: a button and a checkbox
-  or radio give way, an icon is pushed in, and the bar of a tab starts to grow under it.
-- A control with a press of its own carries `data-press`; any other dims to 60% (`base.css`), the same
-  way everywhere. A new kind of control gets its own press only when it says something and is plainly
-  seen; otherwise the dim is right. Tried and dropped: the arrow of the newsletter drawn back as a bow and the
-  lines of the menu button starting to fold into the cross (neither looked good enough), a turning
-  theme icon (it fought the change of
-  the icon that follows), the blurred work of a menu page coming closer (unseen), the letters of the
-  name drawing together (unseen, and it lays the text out again on every frame), a navigation page
-  of the admin leaning toward its bar (a jolt before the page changes).
-- It gives way at once (`--motion-duration-press`, `--motion-easing-press`) and springs back past
-  its place as it is let go (`--motion-duration-release`, `--motion-easing-release`). What runs
-  while held, such as the dashes, stops for `prefers-reduced-motion`; the change of shape stays.
-- Only `scale`, `translate`, `rotate`, opacity, and the strokes and decoration of a line move;
-  nothing that changes the room an element takes.
-
 ## Figma-to-code rules
 
 - Treat Figma as the visual specification, not as production layout code.
@@ -431,7 +406,7 @@ Before approving a UI change, verify:
 - Dynamic content can wrap without overflow.
 - Text remains usable at 200% browser zoom.
 - Layout remains usable with the browser's default font size increased to at least 32px.
-- Keyboard focus, hover, pressed, reduced motion, and hidden states work correctly.
+- Keyboard focus, hover, reduced motion, and hidden states work correctly.
 - Repeated values have one source of truth.
 - Numeric values are readable and explainable.
 - No existing asset or component was recreated without a reason.

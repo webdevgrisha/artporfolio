@@ -2,7 +2,6 @@
 /**
  * A link that shows its text, after an icon when the `icon` slot has one, with room enough for a
  * finger. Under the pointer its text is underlined; the link of the page being shown always is.
- * Pressed, the underline is pulled tight to the text, thicker, as a string about to be let go.
  */
 import type { HTMLAttributes } from "astro/types";
 
@@ -18,7 +17,7 @@ interface Props extends HTMLAttributes<"a"> {
 const { class: className, href, label, ...attributes } = Astro.props;
 ---
 
-<a class:list={["text-link", className]} data-press href={href} {...attributes}>
+<a class:list={["text-link", className]} href={href} {...attributes}>
   <slot name="icon" />
   <span class="text"><slot>{label}</slot></span>
 </a>
@@ -49,7 +48,7 @@ const { class: className, href, label, ...attributes } = Astro.props;
     text-underline-offset: 0.45em;
     transition-timing-function: var(--motion-easing-standard);
     transition-duration: var(--motion-duration-slow);
-    transition-property: text-decoration-color, text-underline-offset, text-decoration-thickness;
+    transition-property: text-decoration-color, text-underline-offset;
   }
 
   /* Where the visitor is: the link to the page being shown. */
@@ -64,13 +63,5 @@ const { class: className, href, label, ...attributes } = Astro.props;
       text-decoration-color: currentColor;
       text-underline-offset: 0.2em;
     }
-  }
-
-  .text-link:is(:active, [data-pressed]) .text {
-    text-decoration-thickness: calc(2 * var(--line-width));
-    text-decoration-color: currentColor;
-    text-underline-offset: 0.08em;
-    transition-timing-function: var(--motion-easing-press);
-    transition-duration: var(--motion-duration-press);
   }
 </style>

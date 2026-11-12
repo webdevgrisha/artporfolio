@@ -24,7 +24,6 @@ export function IconButton({
       className={clsx(styles.root, className)}
       type={type}
       aria-label={label}
-      data-press
       {...buttonProps}
     >
       {children}

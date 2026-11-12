@@ -30,13 +30,7 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
 ---
 
 <div class:list={["dropdown", className]} {...attributes}>
-  <button
-    class="trigger"
-    data-press
-    popovertarget={id}
-    style={`anchor-name: --${id}`}
-    type="button"
-  >
+  <button class="trigger" popovertarget={id} style={`anchor-name: --${id}`} type="button">
     <VisuallyHidden>{name}</VisuallyHidden>
     <slot name="icon" />
     {/* A script may change it, such as to the currency the visitor picked. */}
@@ -79,32 +73,13 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
     text-box: trim-both cap alphabetic;
   }
 
-  /*
-   * The chevron turns up while the panel is open, and back down as it closes. Pressed, it dips the
-   * way the panel is about to go: down to open it, up to close it, and springs back as it is let go.
-   * Only while pressed (`:active`), not held on after a click (`data-pressed`): by then the panel
-   * moves, and the chevron would dip the other way.
-   */
+  /* The chevron turns up while the panel is open, and back down as it closes. */
   .trigger :global(.chevron-down) {
-    transition:
-      rotate var(--motion-duration-standard) var(--motion-easing-standard),
-      translate var(--motion-duration-release) var(--motion-easing-release);
-  }
-
-  .trigger:active :global(.chevron-down) {
-    --dip: 1;
-
-    translate: 0 calc(var(--dip) * 0.2em);
-    transition-timing-function: var(--motion-easing-standard), var(--motion-easing-press);
-    transition-duration: var(--motion-duration-standard), var(--motion-duration-press);
+    transition: rotate var(--motion-duration-standard) var(--motion-easing-standard);
   }
 
   .dropdown:has(.panel:popover-open) .trigger :global(.chevron-down) {
     rotate: 180deg;
-  }
-
-  .dropdown:has(.panel:popover-open) .trigger:active :global(.chevron-down) {
-    --dip: -1;
   }
 
   /*

@@ -29,7 +29,6 @@ export function Button({
         className,
       )}
       type={type}
-      data-press
       {...buttonProps}
     >
       {children}

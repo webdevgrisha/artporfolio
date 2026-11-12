@@ -199,14 +199,9 @@ const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.lengt
 </html>
 
 <script>
-  import { holdPresses } from "@/lib/site/pressFeedback";
-
   // Safari on an iPhone shows the pressed state of a link or a button (:active, in base.css) only
   // when the page listens to touches; this listener does nothing else.
   document.addEventListener("touchstart", () => {}, { passive: true });
-
-  // A quick click shows the whole answer of a control, not a flash of it.
-  holdPresses();
 </script>
 
 <style>

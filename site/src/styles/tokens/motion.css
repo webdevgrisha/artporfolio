@@ -20,16 +20,6 @@
      * so it is there at once and settles gently, as a page that unfolds rather than moves.
      */
     --motion-duration-reveal: 900ms;
-    /*
-     * Pressing and letting go (see «Pressed» in base.css), timed as Josh Comeau times his buttons:
-     * an element gives way under the finger almost at once, faster than a person can see a delay,
-     * and comes back slowly, springing a little past its place, so the press feels physical. The
-     * difference between the two is what makes it.
-     */
-    --motion-duration-press: 40ms;
-    --motion-easing-press: cubic-bezier(0.3, 0, 0.6, 1);
-    --motion-duration-release: 600ms;
-    --motion-easing-release: cubic-bezier(0.3, 0.7, 0.4, 1.5);
     --motion-easing-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -42,8 +32,6 @@
       --motion-duration-panel: 0ms;
       --motion-duration-screen: 0ms;
       --motion-duration-reveal: 0ms;
-      --motion-duration-press: 0ms;
-      --motion-duration-release: 0ms;
       --motion-stagger: 0ms;
     }
   }
