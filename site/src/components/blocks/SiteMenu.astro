@@ -4,12 +4,13 @@
  * with the name of the artist and the button that closes it where the header has its own. What it
  * holds is the MenuPanel, which the home page shows as itself.
  *
- * It is a modal dialog: the browser opens it from the buttons of the header and of the hero
- * (`commandfor`) and closes it from its own, by Escape or by a click beside it (`closedby`),
- * without a script; while it is open, the page under it is inert, and the focus starts on its list
- * of pages (see MenuPanel) and goes back to the button that opened it. It unrolls down from the header,
- * whose name and button stay where they are: the two lines of the button turn into the cross that
- * closes it, and the pages come in one after another.
+ * It is a modal dialog the browser runs: it opens from the buttons of the header and of the hero
+ * (`commandfor`), and asks to close from its own (`request-close`), by Escape or by a click beside
+ * it (`closedby`); while it is open, the page under it is inert, and the focus starts on its list
+ * of pages (see MenuPanel) and goes back to the button that opened it. It unrolls down from the
+ * header, whose name and button stay where they are: the two lines of the button turn into the
+ * cross that closes it, and the pages come in one after another. It rolls back up the same way in
+ * every browser, by a script that waits for the style before it closes (see rollUpOnClose).
  */
 import MenuPanel from "@/components/blocks/MenuPanel.astro";
 import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
@@ -52,7 +53,7 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
   >
     <button
       class="close"
-      command="close"
+      command="request-close"
       commandfor={id}
       slot="close"
       type="button"
@@ -64,109 +65,16 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
 </dialog>
 
 <script>
-  /*
-   * Stand in for what Safari lacks: buttons that open and close the menu by `commandfor` (before
-   * 26.2), and a click beside it that closes it (`closedby`, not in Safari yet). Remove each once
-   * Safari has it.
-   */
+  import { returnFocusQuietly } from "@/lib/site/returnFocusQuietly";
+  import { rollUpOnClose } from "@/lib/site/rollUpOnClose";
+  import { standInDialogControls } from "@/lib/site/standInDialogControls";
+
   const menu = document.querySelector<HTMLDialogElement>("[data-site-menu]");
 
-  /*
-   * Stand in for what Safari and Firefox lack: keeping the menu in the top layer while it rolls up
-   * (`overlay`), without which it is gone at once as it closes. There, still open, it is marked
-   * `data-rolling-up`, and the style rolls it up and turns the cross back to the lines by the same
-   * transitions as elsewhere; only then is it closed, into a style the same as the one it rolled
-   * up to, so nothing moves again. Remove once both have `overlay`.
-   */
-  const rollsUpItself = CSS.supports("overlay", "auto");
-
-  /** The transitions of the style that roll the menu up, not the others inside it, as of a hover. */
-  const rollingUp = new Set(["clip-path", "--menu-icon-cross"]);
-
-  async function rollUp(dialog: HTMLDialogElement) {
-    if (dialog.hasAttribute("data-rolling-up")) return;
-    dialog.setAttribute("data-rolling-up", "");
-
-    try {
-      // None on a screen without motion: it closes at once.
-      const transitions = dialog
-        .getAnimations({ subtree: true })
-        .filter(
-          (animation) =>
-            animation instanceof CSSTransition && rollingUp.has(animation.transitionProperty),
-        );
-      await Promise.all(transitions.map((transition) => transition.finished));
-    } finally {
-      // Closed whatever the transitions do, so the page never stays behind an open menu.
-      dialog.close();
-      dialog.removeAttribute("data-rolling-up");
-    }
-  }
-
-  function closeMenu(dialog: HTMLDialogElement) {
-    if (rollsUpItself) dialog.close();
-    else void rollUp(dialog);
-  }
-
-  if (menu && !rollsUpItself) {
-    // The button that closes it, by `commandfor`.
-    menu.addEventListener("command", (event) => {
-      if ((event as CommandEvent).command !== "close") return;
-      event.preventDefault();
-      void rollUp(menu);
-    });
-    // Escape, and a click beside it where the browser has `closedby`.
-    menu.addEventListener("cancel", (event) => {
-      event.preventDefault();
-      void rollUp(menu);
-    });
-  }
-
-  /*
-   * Closed by the mouse or a finger, the menu gives the focus back to the button that opened it
-   * without the ring of the keyboard. Safari draws it there, carried over from the list of pages
-   * it focused as the menu opened; by the keyboard, the ring stays.
-   */
   if (menu) {
-    let byPointer = false;
-
-    menu.addEventListener("pointerdown", () => {
-      byPointer = true;
-    });
-    menu.addEventListener("keydown", () => {
-      byPointer = false;
-    });
-    menu.addEventListener("close", () => {
-      const opener = document.activeElement;
-
-      if (byPointer && opener instanceof HTMLElement && opener.matches(":focus-visible")) {
-        opener.blur();
-        opener.focus({ focusVisible: false, preventScroll: true });
-      }
-    });
-  }
-
-  if (menu && !("command" in HTMLButtonElement.prototype)) {
-    for (const button of document.querySelectorAll<HTMLButtonElement>(`[commandfor="${menu.id}"]`)) {
-      button.addEventListener("click", () => {
-        if (button.getAttribute("command") === "close") closeMenu(menu);
-        else menu.showModal();
-      });
-    }
-  }
-
-  if (menu && !("closedBy" in HTMLDialogElement.prototype)) {
-    // A click on the backdrop lands on the dialog itself, outside its box.
-    menu.addEventListener("click", (event) => {
-      const box = menu.getBoundingClientRect();
-      const outside =
-        event.clientX < box.left ||
-        event.clientX > box.right ||
-        event.clientY < box.top ||
-        event.clientY > box.bottom;
-
-      if (event.target === menu && outside) closeMenu(menu);
-    });
+    rollUpOnClose(menu);
+    returnFocusQuietly(menu);
+    standInDialogControls(menu);
   }
 </script>
 
@@ -192,20 +100,22 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
     border: 0;
     box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
     /*
-     * It unrolls from the top of the screen and rolls back up: it is cut, not moved, so what it
-     * holds stays still and its name and button cover those of the header exactly. The cut leaves
-     * room for the shadow below. The browser keeps it in sight until it is rolled up; on a screen
+     * It unrolls from the top of the screen as it opens, from where it starts (`@starting-style`),
+     * and rolls back up while still open, marked `data-closing` until it closes (see
+     * rollUpOnClose): it is cut, not moved, so what it holds stays still and its name and button
+     * cover those of the header exactly. The cut leaves room for the shadow below. On a screen
      * without motion it comes and goes at once.
      */
     clip-path: inset(0 0 100% 0);
-    transition-timing-function: var(--motion-easing-standard);
-    transition-duration: var(--motion-duration-panel);
-    transition-property: clip-path, display, overlay;
-    transition-behavior: allow-discrete;
+    transition: clip-path var(--motion-duration-panel) var(--motion-easing-standard);
   }
 
   .site-menu[open] {
     clip-path: inset(0 0 -1rem 0);
+  }
+
+  .site-menu[open][data-closing] {
+    clip-path: inset(0 0 100% 0);
   }
 
   /* The page stays in sight under it, as it was. */
@@ -263,19 +173,14 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
     --menu-icon-cross: 1;
   }
 
+  .site-menu[open][data-closing] .close {
+    --menu-icon-cross: 0;
+  }
+
   @starting-style {
     .site-menu[open] .close {
       --menu-icon-cross: 0;
     }
-  }
-
-  /* Rolled up while still open, where the browser cannot keep it in sight as it closes (see the script). */
-  .site-menu[open][data-rolling-up] {
-    clip-path: inset(0 0 100% 0);
-  }
-
-  .site-menu[open][data-rolling-up] .close {
-    --menu-icon-cross: 0;
   }
 
   /* As tall as the button and without width: the first line fills the button, the second is out. */
