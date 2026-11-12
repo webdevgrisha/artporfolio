@@ -107,12 +107,12 @@ Checked the finished parts: header, menu, footer, newsletter, contacts, error pa
 
 Missing:
 
-- [ ] a smooth transition between pages (View Transitions) — section 1;
-- [ ] fetching a page when the pointer rests on its link — section 1;
-- [ ] photos fading in, and a placeholder in the color of the work instead of gray — section 3;
-- [ ] an animation for the language and currency lists: they pop in while the menu unrolls — section 4;
-- [ ] a smooth theme change: it is instant now — section 4;
-- [ ] `::selection` and `-webkit-tap-highlight-color` — section 7;
-- [ ] `og:image`: a link to the site arrives in a messenger without a picture — section 7;
+- [x] a smooth transition between pages (View Transitions) — section 1;
+- [x] fetching a page when the pointer rests on its link — section 1;
+- [x] photos fading in, and a placeholder in the color of the work instead of gray — section 3;
+- [x] an animation for the language and currency lists: they pop in while the menu unrolls — section 4;
+- [x] a smooth theme change: it is instant now — section 4;
+- [x] `::selection` and `-webkit-tap-highlight-color` — section 7;
+- [x] `og:image`: a link to the site arrives in a messenger without a picture — section 7;
 - [ ] tab icons for a dark tab and an icon for the home screen — section 7;
-- [ ] no-break spaces after short words in the texts from the API — section 6.
+- [x] no-break spaces after short words in the texts from the API — section 6.
