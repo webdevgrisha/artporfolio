@@ -7,7 +7,10 @@ import type { HTMLAttributes } from "astro/types";
 
 interface Props extends HTMLAttributes<"a"> {
   href: string;
-  /** The text of the link, which also names it for screen readers: an icon only decorates it. */
+  /**
+   * The text of the link, which also names it for screen readers: an icon only decorates it. The
+   * default slot may set the same words otherwise, such as with places a line may break.
+   */
   label: string;
 }
 
@@ -16,7 +19,7 @@ const { class: className, href, label, ...attributes } = Astro.props;
 
 <a class:list={["text-link", className]} href={href} {...attributes}>
   <slot name="icon" />
-  <span class="text">{label}</span>
+  <span class="text"><slot>{label}</slot></span>
 </a>
 
 <style>

@@ -12,6 +12,7 @@ import Slideshow from "@/components/ui/Slideshow.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
 import type { Photo } from "@/lib/api/image";
+import { emailBreaks } from "@/lib/text/emailBreaks";
 import { longestWordLength } from "@/lib/text/longestWord";
 import { splitTurnedInitial } from "@/lib/text/turnedInitial";
 
@@ -81,18 +82,28 @@ const contacts = [
       </h2>
       <ul class="links">
         {
-          contacts.map(({ href, Icon, label, lang }) => (
-            <li>
-              <TextLink
-                class:list={["link", { email: href.startsWith("mailto:") }]}
-                href={href}
-                label={label}
-                lang={lang}
-              >
-                <Icon slot="icon" />
-              </TextLink>
-            </li>
-          ))
+          contacts.map(({ href, Icon, label, lang }) => {
+            const email = href.startsWith("mailto:");
+
+            return (
+              <li>
+                <TextLink class:list={["link", { email }]} href={href} label={label} lang={lang}>
+                  <Icon slot="icon" />
+                  {
+                    // A long address goes on the next line after its @ or before a dot.
+                    email
+                      ? emailBreaks(label).map((piece, index) => (
+                          <>
+                            {index > 0 && <wbr />}
+                            {piece}
+                          </>
+                        ))
+                      : label
+                  }
+                </TextLink>
+              </li>
+            );
+          })
         }
       </ul>
     </div>
@@ -202,9 +213,12 @@ const contacts = [
     margin: 0;
     /*
      * Large under the photo on a phone and a tablet, as their mockups have them, and smaller with
-     * the screen, so that on a phone they do not compete with the heading.
+     * the screen, so that on a phone they do not compete with the heading. Never so large that a
+     * name breaks: its icon, the gap and «INSTAGRAM», the longest of the names, are about 8.2
+     * times as wide as their size, which only a large text size of the browser would pass. An
+     * address is the artist's own and may be long: it breaks where it must.
      */
-    font-size: var(--font-size-2);
+    font-size: min(var(--font-size-2), 100cqi / 8.4);
     list-style: none;
   }
 
