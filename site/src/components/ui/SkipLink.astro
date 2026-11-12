@@ -1,7 +1,7 @@
 ---
 /**
- * The first link of a page, hidden until the keyboard reaches it: it lets a keyboard or screen
- * reader user jump past the header to the content (WCAG 2.4.1).
+ * The first link of a page, out of sight until the keyboard reaches it: it lets a keyboard or
+ * screen reader user jump past the header to the content (WCAG 2.4.1).
  */
 interface Props {
   /** Such as «Skip to content», in the language of the page. */
@@ -20,26 +20,40 @@ const { label, target } = Astro.props;
    * On the screen, not at the top of the page: the keyboard comes back to it from the end of the
    * page, past the bar of the browser, and the page stays where the visitor is instead of jumping
    * back to its top. Above the header, which sticks to the top of the screen too.
+   *
+   * It stands in the middle of the row of the header, its text where the row starts, in the size of
+   * the row, in the place of the name, which gives it way (see SiteHeader): a plate in the color of
+   * the page, with the ring of the focus every control has, close around it, and no frame of its
+   * own. Out of sight it waits above the screen, and slides down as it takes the focus; it is still
+   * there for screen readers. A page without a header takes the height its row would have.
    */
   .skip-link {
+    --padding-block: var(--space-2);
+    /* Within the margin of the page, so its ring never touches the edge of a phone. */
+    --padding-inline: min(var(--space-4), var(--page-gutter) / 2);
+    --row: var(--header-height, calc(2 * var(--layout-space-6) + 1lh));
+
     position: fixed;
-    inset-block-start: var(--space-2);
-    inset-inline-start: var(--space-2);
+    inset-block-start: calc(var(--row) / 2);
+    inset-inline-start: calc(
+      max(var(--page-gutter), (100% - var(--page-max-inline-size)) / 2 + var(--page-gutter)) -
+        var(--padding-inline)
+    );
     z-index: 2;
-    padding: var(--space-2) var(--space-4);
+    padding: var(--padding-block) var(--padding-inline);
+    font-size: var(--font-size-body);
     color: var(--color-text);
+    text-decoration: none;
     background: var(--color-surface);
-    border: var(--line-width) solid var(--color-line);
+    translate: 0 -50%;
+    transition: translate var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  .skip-link:focus-visible {
+    outline-offset: 0;
   }
 
   .skip-link:not(:focus) {
-    inline-size: 1px;
-    block-size: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    white-space: nowrap;
-    border: 0;
-    clip-path: inset(50%);
+    translate: 0 calc(-100% - var(--row) / 2);
   }
 </style>

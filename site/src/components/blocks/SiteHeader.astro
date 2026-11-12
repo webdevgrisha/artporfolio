@@ -159,6 +159,11 @@ const { currencies, heroes, language, links, path } = Astro.props;
     font-size: var(--font-size-body);
   }
 
+  /* The link that skips to the content, while it has the focus, stands in the place of the name. */
+  :global(body:has(.skip-link:focus)) .bar > :global(:first-child) {
+    visibility: hidden;
+  }
+
   /* At the end of the row, before the button of the menu, as in the mockup. */
   .controls {
     display: none;
