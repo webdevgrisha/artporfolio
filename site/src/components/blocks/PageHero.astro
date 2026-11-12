@@ -2,7 +2,7 @@
 /**
  * The first screen of every page: a work of the artist, blurred, and the name of the page across
  * it from edge to edge, its letters windows onto the same work, sharp. Before the visitor
- * scrolls, only a chevron, also a window onto the work, says to scroll down. As they scroll, the
+ * scrolls, only a chevron says to scroll down. As they scroll, the
  * work stays: the line is written near its top, as by a brush, carried down over the work, each
  * letter showing the part of it under it at that moment, and wiped out at its bottom the same way.
  * Then the hero leaves upwards at once and the page fills the screen; scrolling back up from the
@@ -306,8 +306,7 @@ const style =
    * on its own, as --hero-image holds two images, the work and its preview, and each takes them.
    */
   .photo,
-  .line,
-  .chevron {
+  .line {
     --cover-width: calc(max(100cqw, 100cqh * var(--hero-ratio, 1)) * var(--hero-zoom));
     --cover-height: calc(var(--cover-width) / var(--hero-ratio, 1));
     --cover-x: calc((100cqw - var(--cover-width)) / 2);
@@ -334,11 +333,6 @@ const style =
     filter: blur(var(--blur)) brightness(0.6);
   }
 
-  /* The windows show the work itself, sharp. */
-  .photographed :is(.line, .chevron) {
-    background-image: var(--hero-image);
-  }
-
   /*
    * The line, across the page as wide as its content: its copies of the name spread to its edges,
    * or its words one under another. Still, it stands in the middle of the stage; --y is its place
@@ -354,6 +348,12 @@ const style =
     inset-inline: 0;
     display: flex;
     justify-content: space-between;
+    /*
+     * Room above and below the capitals, which the line is cut to (see .copy): round letters, such
+     * as O, reach a little past them, as every typeface draws them so they look as tall, and the
+     * work in the letters is drawn only within the box.
+     */
+    padding-block: 0.1em;
     padding-inline: max(
       var(--page-gutter),
       (100% - var(--page-max-inline-size)) / 2 + var(--page-gutter)
@@ -406,6 +406,7 @@ const style =
     gap: 0.3em;
   }
 
+  /* The letters show the work itself, sharp. */
   .photographed .line {
     color: transparent;
     /*
@@ -413,6 +414,7 @@ const style =
      * the letter as around it, as on a black ground, it still draws the letter.
      */
     -webkit-text-stroke: max(1px, 0.01em) rgb(255 255 255 / 0.35);
+    background-image: var(--hero-image);
     background-position: var(--cover-x) calc(var(--cover-y) - var(--y));
     /* Safari on older iPhones knows only the prefixed name. */
     -webkit-background-clip: text;
@@ -431,15 +433,20 @@ const style =
   }
 
   /*
-   * In the middle of the first screen: the chevron of the mockup, a window onto the work, nodding
-   * down, and its words under it. It fades out over the first steps of the scroll, before the
-   * line is written. A still hero has none.
+   * In the middle of the first screen: the chevron of the mockup, nodding down, and its words under
+   * it. It fades out over the first steps of the scroll, before the line is written. A still hero
+   * has none. Both are white, as the button of the menu, with a soft dark glow behind, so they read
+   * on any work: a hint must always show (WCAG 1.4.11), which a window onto a dark work would not.
    */
   .hint {
     position: absolute;
     inset: 0;
     display: none;
     pointer-events: none;
+  }
+
+  .photographed .hint {
+    color: var(--color-on-photo);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -449,41 +456,27 @@ const style =
     }
   }
 
-  @property --nod {
-    syntax: "<length>";
-    inherits: false;
-    initial-value: 0px;
-  }
-
   /* 128 by 64px at 1920px, as in the mockup, its tip on the middle of the screen. */
   .chevron {
-    --width: clamp(4rem, 6.667cqw, 8rem);
-    --x: calc(50cqw - var(--width) / 2);
-    --y: calc(50cqh - var(--width) / 2 + var(--nod));
     --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 64'%3E%3Cpath d='M4 3 64 59 124 3' fill='none' stroke='%23000' stroke-width='9'/%3E%3C/svg%3E");
 
     position: absolute;
-    inset-block-start: 0;
-    inset-inline-start: 0;
-    inline-size: var(--width);
-    block-size: calc(var(--width) / 2);
-    background-color: var(--color-text);
-    /* A hairline of light along its edge, as the letters have, so it shows on a dark ground too. */
-    filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.6));
+    inset-block-end: 50%;
+    inset-inline-start: 50%;
+    inline-size: clamp(4rem, 6.667cqw, 8rem);
+    aspect-ratio: 2;
+    background-color: currentColor;
+    filter: drop-shadow(0 0 0.5rem rgb(0 0 0 / 0.45));
     /* Safari before 15.4 knows only the prefixed name. */
     -webkit-mask: var(--shape) center / contain no-repeat;
     mask: var(--shape) center / contain no-repeat;
-    translate: var(--x) var(--y);
+    translate: -50% 0;
     animation: nod 1.6s var(--motion-easing-screen) infinite;
-  }
-
-  .photographed .chevron {
-    background-position: calc(var(--cover-x) - var(--x)) calc(var(--cover-y) - var(--y));
   }
 
   @keyframes nod {
     50% {
-      --nod: 0.75rem;
+      translate: -50% 0.75rem;
     }
   }
 
@@ -495,12 +488,7 @@ const style =
     text-align: center;
   }
 
-  /*
-   * White, as in the mockup, over a soft dark glow behind the words, so they read on a pale work
-   * too.
-   */
   .photographed .hint-text {
-    color: var(--color-on-photo);
     text-shadow:
       0 0 0.25em rgb(0 0 0 / 0.5),
       0 0 1em rgb(0 0 0 / 0.4);
