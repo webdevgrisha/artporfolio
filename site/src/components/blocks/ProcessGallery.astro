@@ -19,6 +19,7 @@ import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
 import type { Photo } from "@/lib/api/image";
 import { srcset } from "@/lib/images/srcset";
 import type { ViewerLabels } from "@/lib/site/photoViewer";
+import { graphemeCount } from "@/lib/text/graphemeCount";
 
 interface Props {
   /** The id of its heading, which names the row for screen readers; the design shows none. */
@@ -33,6 +34,9 @@ interface Props {
 }
 
 const { heading, id, next, photos, previous, viewer } = Astro.props;
+
+// How many letters the two buttons hold, which sets how large they can be on a narrow screen.
+const labelsLength = graphemeCount(previous) + graphemeCount(next);
 
 /** As many as a wide screen shows at first: they load with the page, the others as they come. */
 const firstInView = 2;
@@ -73,7 +77,7 @@ const firstInView = 2;
     </ul>
   </div>
   {/* Shown by the script when the photos do not fit the page; until then there is nothing to move. */}
-  <div class="controls" data-controls hidden>
+  <div class="controls" data-controls hidden style={`--labels-length: ${labelsLength}`}>
     <FramedButton as="button" class="control" data-step="-1" type="button">{previous}</FramedButton>
     <FramedButton as="button" class="control" data-step="1" type="button">{next}</FramedButton>
   </div>
@@ -216,17 +220,30 @@ const firstInView = 2;
 
   .controls {
     display: flex;
+    gap: var(--grid-gap);
     justify-content: space-between;
+    container-type: inline-size;
   }
 
   .controls[hidden] {
     display: none;
   }
 
+  /*
+   * Large, as in the mockup, but never so large that the two leave the row: a letter of Absans in
+   * capitals is about 0.74 times as wide as its size, 0.8 with room to spare, and each button adds
+   * its padding (0.8em a side) and its border. So «Prev» and «Next» keep the large size on a phone,
+   * and the longer «Précédent» and «Suivant» shrink to fit it. A label of two words, as the
+   * Vietnamese «Tiếp theo», stays on one line, its space counted as a letter.
+   */
   .control {
-    padding-inline: var(--space-6);
-    font-size: var(--font-size-2);
+    padding-inline: 0.8em;
+    font-size: min(
+      var(--font-size-2),
+      (100cqi - var(--grid-gap)) / (0.8 * var(--labels-length) + 3.4)
+    );
     line-height: var(--line-height-heading);
+    white-space: nowrap;
   }
 
   /*
