@@ -6,7 +6,7 @@ import type { MessageKey } from "@/lib/i18n/translate";
  */
 export const menu = [
   { label: "menu.gallery", path: "/gallery" },
-  { label: "menu.process", path: "/process" },
+  { label: "menu.exhibitions", path: "/exhibitions" },
   { label: "menu.projects", path: "/projects" },
   { label: "menu.about", path: "/about" },
   { label: "menu.contact", path: "/contact" },
