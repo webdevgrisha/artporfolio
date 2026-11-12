@@ -2,6 +2,7 @@
 /**
  * A link that shows only its icon (the `icon` slot), such as a social network in the footer, with
  * room enough for a finger. Its label is text kept off the screen, which screen readers say.
+ * Pressed, the icon is pushed in, as a stamp, and springs back as it is let go.
  */
 import type { HTMLAttributes } from "astro/types";
 
@@ -16,7 +17,7 @@ interface Props extends HTMLAttributes<"a"> {
 const { class: className, href, label, ...attributes } = Astro.props;
 ---
 
-<a class:list={["icon-link", className]} href={href} {...attributes}>
+<a class:list={["icon-link", className]} data-press href={href} {...attributes}>
   <slot name="icon" />
   <VisuallyHidden>{label}</VisuallyHidden>
 </a>
@@ -28,7 +29,9 @@ const { class: className, href, label, ...attributes } = Astro.props;
     justify-content: center;
     min-inline-size: var(--min-tap-target-size);
     min-block-size: var(--min-tap-target-size);
-    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+    transition:
+      opacity var(--motion-duration-slow) var(--motion-easing-standard),
+      scale var(--motion-duration-release) var(--motion-easing-release);
   }
 
   /*
@@ -39,5 +42,11 @@ const { class: className, href, label, ...attributes } = Astro.props;
     .icon-link:hover {
       opacity: 0.6;
     }
+  }
+
+  .icon-link:active {
+    scale: 0.86;
+    transition-timing-function: var(--motion-easing-standard), var(--motion-easing-press);
+    transition-duration: var(--motion-duration-slow), var(--motion-duration-press);
   }
 </style>
