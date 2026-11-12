@@ -1,0 +1,42 @@
+---
+/**
+ * The name of the artist that leads to the home page, as a logo: in Latin capitals in every
+ * language, which a translator of the browser leaves as it is. Its size comes from where it stands.
+ */
+import type { HTMLAttributes } from "astro/types";
+
+import type { Language } from "@/lib/i18n/languages";
+import { artistName } from "@/lib/site/artistName";
+import { localizedPath } from "@/lib/site/localizedPath";
+
+interface Props extends HTMLAttributes<"a"> {
+  language: Language;
+  /** Whether the home page is the page being shown. */
+  current?: boolean;
+}
+
+const { class: className, current = false, language, ...attributes } = Astro.props;
+---
+
+<a
+  aria-current={current ? "page" : undefined}
+  class:list={["home-link", className]}
+  href={localizedPath(language, "/")}
+  lang="en"
+  translate="no"
+  {...attributes}
+>
+  {artistName}
+</a>
+
+<style>
+  .home-link {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--min-tap-target-size);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    white-space: nowrap;
+    text-decoration: none;
+  }
+</style>

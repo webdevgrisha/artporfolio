@@ -12,6 +12,8 @@
   "menu.projects": "المشاريع",
   "menu.about": "نبذة عني",
   "menu.contact": "الاتصال",
+  "header.menu": "القائمة",
+  "header.close": "إغلاق",
   "footer.menu": "الصفحات",
   "footer.networks": "شبكات التواصل الاجتماعي",
   "newsletter.heading": "اشترك في نشرتي الإخبارية",

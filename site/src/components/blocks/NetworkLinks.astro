@@ -1,0 +1,56 @@
+---
+/**
+ * The social networks of the artist by their icons, in the order of the mockup, and, when asked,
+ * the email among them by an envelope. A link the artist left empty is not shown, and with none
+ * the list is not either. The name of a network is English in every language, as on the Contacts
+ * page; the email is named by its address.
+ */
+import type { HTMLAttributes } from "astro/types";
+
+import IconLink from "@/components/ui/IconLink.astro";
+import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
+import LinkedInIcon from "@/components/ui/icons/LinkedInIcon.astro";
+import MailIcon from "@/components/ui/icons/MailIcon.astro";
+import YouTubeIcon from "@/components/ui/icons/YouTubeIcon.astro";
+import type { ContactLinks } from "@/lib/api/contacts";
+
+interface Props extends HTMLAttributes<"ul"> {
+  /** Whether the email stands among the networks, as an icon. */
+  email?: boolean;
+  /** What the list is, such as «Social networks»: the name screen readers give it. */
+  label: string;
+  links: ContactLinks;
+}
+
+const { class: className, email = false, label, links, ...attributes } = Astro.props;
+
+const items = [
+  { href: links.youtube, Icon: YouTubeIcon, label: "YouTube", lang: "en" },
+  { href: links.instagram, Icon: InstagramIcon, label: "Instagram", lang: "en" },
+  { href: links.linkedin, Icon: LinkedInIcon, label: "LinkedIn", lang: "en" },
+  ...(email && links.email !== "" ? [{ href: `mailto:${links.email}`, Icon: MailIcon, label: links.email }] : []),
+].filter(({ href }) => href !== "");
+---
+
+{
+  items.length > 0 && (
+    <ul aria-label={label} class:list={["network-links", className]} {...attributes}>
+      {items.map(({ href, Icon, label: itemLabel, lang }) => (
+        <li>
+          <IconLink href={href} label={itemLabel} lang={lang}>
+            <Icon slot="icon" />
+          </IconLink>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .network-links {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+</style>

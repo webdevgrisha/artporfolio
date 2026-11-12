@@ -12,6 +12,8 @@
   "menu.projects": "Projektek",
   "menu.about": "Rólam",
   "menu.contact": "Kapcsolat",
+  "header.menu": "Menü",
+  "header.close": "Bezárás",
   "footer.menu": "Oldalak",
   "footer.networks": "Közösségi hálózatok",
   "newsletter.heading": "Iratkozzon fel a hírlevelemre",

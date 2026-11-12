@@ -12,6 +12,8 @@
   "menu.projects": "프로젝트",
   "menu.about": "소개",
   "menu.contact": "연락처",
+  "header.menu": "메뉴",
+  "header.close": "닫기",
   "footer.menu": "페이지",
   "footer.networks": "소셜 네트워크",
   "newsletter.heading": "뉴스레터 구독하기",

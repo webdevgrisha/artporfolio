@@ -2,7 +2,9 @@
 import { Font } from "astro:assets";
 
 import SiteFooter from "@/components/blocks/SiteFooter.astro";
+import SiteHeader from "@/components/blocks/SiteHeader.astro";
 import SkipLink from "@/components/ui/SkipLink.astro";
+import { loadContactLinks } from "@/lib/api/contactLinks";
 import type { Language } from "@/lib/i18n/languages";
 import { languageTag } from "@/lib/i18n/languageTag";
 import { textDirection } from "@/lib/i18n/textDirection";
@@ -19,20 +21,26 @@ interface Props {
    * cut to about 160 characters. Without it, a search engine quotes the page itself.
    */
   description?: string;
-  /** Whether the footer closes the page; a page not found stands alone, with its way home only. */
-  footer?: boolean;
   language: Language;
   /**
    * The path of the page under its language, such as `/contact`. A page without one is not a page
    * of the site, such as an error: it has no address of its own, and search engines skip it.
    */
   path?: string;
+  /**
+   * Whether the page stands alone, without the header and the footer, as an error does: with its
+   * way home only.
+   */
+  standalone?: boolean;
   /** The name of the page; the home page has none and is named after the site. */
   title?: string;
 }
 
-const { description, footer = true, language, path, title } = Astro.props;
+const { description, language, path, standalone = false, title } = Astro.props;
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
+
+// The menu and the footer both show the links of the artist: asked for once.
+const links = standalone ? undefined : await loadContactLinks(language);
 ---
 
 <!doctype html>
@@ -79,10 +87,11 @@ const fullTitle = title ? `${title} — ${siteName}` : siteName;
   </head>
   <body>
     <SkipLink label={t(language, "layout.skipToContent")} target="content" />
+    {!standalone && <SiteHeader language={language} links={links} path={path} />}
     <main id="content">
       <slot />
     </main>
-    {footer && <SiteFooter language={language} path={path} />}
+    {!standalone && <SiteFooter language={language} links={links} path={path} />}
   </body>
 </html>
 

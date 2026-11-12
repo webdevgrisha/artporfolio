@@ -1,0 +1,255 @@
+---
+/**
+ * The menu the button of the header opens: a panel over the top of the page, as in the mockup,
+ * with the name of the artist and the button that closes it where the header has its own, the
+ * pages large, and the ways to reach the artist with the year at the bottom.
+ *
+ * It is a popover: the browser opens it from the button of the header and closes it from its own
+ * button, by Escape or by a click beside it, without a script.
+ */
+import NetworkLinks from "@/components/blocks/NetworkLinks.astro";
+import Container from "@/components/ui/Container.astro";
+import HomeLink from "@/components/ui/HomeLink.astro";
+import CloseIcon from "@/components/ui/icons/CloseIcon.astro";
+import TextLink from "@/components/ui/TextLink.astro";
+import type { ContactLinks } from "@/lib/api/contacts";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { localizedPath } from "@/lib/site/localizedPath";
+import { menu } from "@/lib/site/menu";
+
+interface Props {
+  /** The id the button of the header opens the menu by. */
+  id: string;
+  language: Language;
+  /** The links of the artist; none when the API could not give them. */
+  links: ContactLinks | undefined;
+  /** The path of the page being shown under its language, such as `/contact`. */
+  path: string | undefined;
+}
+
+const { id, language, links, path } = Astro.props;
+
+// The year of the page as it is served, as in the footer.
+const year = new Date().getFullYear();
+---
+
+<div class="site-menu" id={id} popover>
+  <Container class="panel">
+    <HomeLink class="name" current={path === "/"} language={language} />
+    <button class="close" popovertarget={id} popovertargetaction="hide" type="button">
+      <span class="close-text">{t(language, "header.close")}</span>
+      <CloseIcon />
+    </button>
+    <nav aria-label={t(language, "header.menu")} class="pages">
+      <ul class="page-list">
+        {
+          menu.map((page) => (
+            <li>
+              <TextLink
+                class="page-link"
+                aria-current={page.path === path ? "page" : undefined}
+                href={localizedPath(language, page.path)}
+                label={t(language, page.label)}
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    {
+      links && (
+        <div class="contacts">
+          <NetworkLinks class="networks" label={t(language, "footer.networks")} links={links} />
+          {links.email !== "" && (
+            <TextLink class="email" href={`mailto:${links.email}`} label={links.email} />
+          )}
+        </div>
+      )
+    }
+    {/* The sign before the year in every language, as in the footer. */}
+    <p class="year"><span dir="ltr">©{year}</span></p>
+  </Container>
+</div>
+
+<style>
+  /*
+   * A panel across the top of the screen, over the page, with the shadow of the mockup under it.
+   * On a phone it takes the whole screen; from a tablet on it leaves the bottom of the page in
+   * sight, as in the mockup. Higher than the screen, it scrolls itself, and the page under it
+   * stays where it was.
+   */
+  .site-menu {
+    inset: 0 0 auto;
+    inline-size: 100%;
+    max-inline-size: none;
+    min-block-size: 100dvh;
+    max-block-size: 100dvh;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 0;
+    box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+    /*
+     * It slides down from above the screen and back up. The browser keeps it in sight until it is
+     * back up; on a screen without motion it comes and goes at once.
+     */
+    translate: 0 -100%;
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-slow);
+    transition-property: translate, display, overlay;
+    transition-behavior: allow-discrete;
+  }
+
+  .site-menu:popover-open {
+    translate: 0 0;
+  }
+
+  @starting-style {
+    .site-menu:popover-open {
+      translate: 0 -100%;
+    }
+  }
+
+  @media (width >= 40rem) {
+    .site-menu {
+      min-block-size: 80dvh;
+    }
+  }
+
+  /* The page under the open menu does not scroll with it. */
+  :global(html:has(.site-menu:popover-open)) {
+    overflow: hidden;
+  }
+
+  /*
+   * The name and the button that closes the menu stand where the name and the button that opens
+   * it stand in the header, so the panel seems to open around them. Below, the pages, then the
+   * ways to reach the artist and the year at the bottom.
+   */
+  .panel {
+    --menu-font-size: var(--font-size-body);
+
+    display: grid;
+    grid-template-areas:
+      "name close"
+      "pages pages"
+      "contacts contacts"
+      "year year";
+    grid-template-rows: auto 1fr auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--layout-space-8) var(--grid-gap);
+    min-block-size: inherit;
+    padding-block: var(--layout-space-6) var(--layout-space-8);
+    font-size: var(--menu-font-size);
+  }
+
+  @media (width >= 40rem) {
+    .panel {
+      --menu-font-size: var(--font-size-1);
+    }
+  }
+
+  /*
+   * On a laptop, as in the mockup: the name and the year in the first two thirds, everything else
+   * in the last third, from the button that closes the menu down to the ways to reach the artist.
+   */
+  @media (width >= 75rem) {
+    .panel {
+      grid-template-areas:
+        "name close"
+        ". pages"
+        "year contacts";
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+  }
+
+  .name {
+    grid-area: name;
+    justify-self: start;
+  }
+
+  /* The word, then the cross at the end of the page, where the header has the button that opens. */
+  .close {
+    display: flex;
+    grid-area: close;
+    gap: var(--space-3);
+    align-items: center;
+    justify-content: space-between;
+    justify-self: end;
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  @media (width >= 75rem) {
+    .close {
+      justify-self: stretch;
+    }
+  }
+
+  @media (hover: hover) {
+    .close:hover {
+      opacity: 0.6;
+    }
+  }
+
+  .close-text {
+    text-box: trim-both cap alphabetic;
+  }
+
+  .pages {
+    grid-area: pages;
+  }
+
+  .page-list {
+    padding: 0;
+    margin: 0;
+    font-size: var(--font-size-3);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    list-style: none;
+  }
+
+  /* One page under another. */
+  .page-list > li {
+    display: flex;
+  }
+
+  /*
+   * The ways to reach the artist: the icons of the networks, then the address, which on a phone
+   * goes under them rather than break.
+   */
+  .contacts {
+    display: flex;
+    flex-wrap: wrap;
+    grid-area: contacts;
+    gap: 0 var(--layout-space-4);
+    align-items: center;
+  }
+
+  /* The frame of the first icon, not the room a finger needs around it, starts at the edge. */
+  .networks {
+    --icon-size: 1.25em;
+
+    margin-inline-start: calc(
+      (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -
+      var(--icon-size) / 12
+    );
+  }
+
+  .year {
+    grid-area: year;
+    align-self: end;
+    margin: 0;
+    line-height: var(--min-tap-target-size);
+  }
+</style>

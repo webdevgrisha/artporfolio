@@ -12,6 +12,8 @@
   "menu.projects": "Projects",
   "menu.about": "About",
   "menu.contact": "Contact",
+  "header.menu": "Menu",
+  "header.close": "Close",
   "footer.menu": "Pages",
   "footer.networks": "Social networks",
   "newsletter.heading": "Subscribe to my newsletter",

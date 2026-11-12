@@ -1,0 +1,86 @@
+---
+/**
+ * The header of every page: the name of the artist, which leads home, and the button that opens
+ * the menu of the site.
+ */
+import SiteMenu from "@/components/blocks/SiteMenu.astro";
+import Container from "@/components/ui/Container.astro";
+import HomeLink from "@/components/ui/HomeLink.astro";
+import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
+import type { ContactLinks } from "@/lib/api/contacts";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+
+interface Props {
+  language: Language;
+  /** The links of the artist for the menu; none when the API could not give them. */
+  links: ContactLinks | undefined;
+  /** The path of the page being shown under its language, such as `/contact`. */
+  path: string | undefined;
+}
+
+const { language, links, path } = Astro.props;
+
+const menuId = "site-menu";
+---
+
+<header>
+  <Container class="bar">
+    <HomeLink current={path === "/"} language={language} />
+    <button
+      aria-label={t(language, "header.menu")}
+      class="menu-button"
+      popovertarget={menuId}
+      type="button"
+    >
+      <MenuIcon />
+    </button>
+  </Container>
+  <SiteMenu id={menuId} language={language} links={links} path={path} />
+</header>
+
+<style>
+  /*
+   * One row: the name at the start, the button at the end. Its text is as large as the body on a
+   * phone, where the name has to fit beside the button, and as in the mockup from a tablet on.
+   */
+  .bar {
+    display: flex;
+    gap: var(--grid-gap);
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--layout-space-6);
+    font-size: var(--font-size-body);
+  }
+
+  @media (width >= 40rem) {
+    .bar {
+      font-size: var(--font-size-1);
+    }
+  }
+
+  /*
+   * A box a finger can hit, with the lines at its end: they end where the page does, as the cross
+   * that closes the menu.
+   */
+  .menu-button {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: end;
+    min-inline-size: var(--min-tap-target-size);
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  @media (hover: hover) {
+    .menu-button:hover {
+      opacity: 0.6;
+    }
+  }
+</style>

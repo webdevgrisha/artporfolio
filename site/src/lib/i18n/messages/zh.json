@@ -12,6 +12,8 @@
   "menu.projects": "项目",
   "menu.about": "关于我",
   "menu.contact": "联系",
+  "header.menu": "菜单",
+  "header.close": "关闭",
   "footer.menu": "页面",
   "footer.networks": "社交网络",
   "newsletter.heading": "订阅我的电子报",

@@ -12,6 +12,8 @@
   "menu.projects": "プロジェクト",
   "menu.about": "プロフィール",
   "menu.contact": "お問い合わせ",
+  "header.menu": "メニュー",
+  "header.close": "閉じる",
   "footer.menu": "ページ",
   "footer.networks": "ソーシャルネットワーク",
   "newsletter.heading": "ニュースレターを購読する",
