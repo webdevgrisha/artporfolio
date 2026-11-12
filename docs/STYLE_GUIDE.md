@@ -392,14 +392,15 @@ Every control answers a press, by mouse, finger or keyboard, before what it does
 
 - A pressed control shows what is about to happen (anticipation): each kind answers in its own way, in
   its own material. On the site: a framed button (`FramedButton`) breaks its frame into dashes that
-  run around it while held; the arrow of the newsletter is drawn back as a bow; a text link pulls its
-  underline tight; an icon link is pushed in as a stamp; the chevron of a list dips the way the list
-  will go; the button of the menu starts to fold into its cross; a process photo gives way. In the
+  run around it while held; a text link pulls its underline tight; an icon link is pushed in as a stamp; the chevron of a list dips the way the list
+  will go; a process photo gives way. In the
   admin, a work tool pressed all day, the press is quieter and never runs: a button and a checkbox
   or radio give way, an icon is pushed in, and the bar of a tab starts to grow under it.
 - A control with a press of its own carries `data-press`; any other dims to 60% (`base.css`), the same
   way everywhere. A new kind of control gets its own press only when it says something and is plainly
-  seen; otherwise the dim is right. Tried and dropped: a turning theme icon (it fought the change of
+  seen; otherwise the dim is right. Tried and dropped: the arrow of the newsletter drawn back as a bow and the
+  lines of the menu button starting to fold into the cross (neither looked good enough), a turning
+  theme icon (it fought the change of
   the icon that follows), the blurred work of a menu page coming closer (unseen), the letters of the
   name drawing together (unseen, and it lays the text out again on every frame), a navigation page
   of the admin leaning toward its bar (a jolt before the page changes).
