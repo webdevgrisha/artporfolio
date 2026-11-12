@@ -86,9 +86,9 @@ const { currencies, heroes, language, links, path } = Astro.props;
     const root = document.documentElement;
     let lastScroll = window.scrollY;
 
-    // A link followed within the page stops below the header, not under it.
+    // Its height, by which what the page scrolls to stops below it (see the style).
     new ResizeObserver(() => {
-      root.style.scrollPaddingBlockStart = `${header.offsetHeight}px`;
+      root.style.setProperty("--header-height", `${header.offsetHeight}px`);
     }).observe(header);
 
     header.dataset.smart = "";
@@ -121,6 +121,19 @@ const { currencies, heroes, language, links, path } = Astro.props;
    * With its script the header stays at the top of the screen, over the page, and slides out of
    * sight while the visitor scrolls down. A screen without motion shows and hides it at once.
    */
+  /*
+   * What the page scrolls to, by a link within it or by the focus of the keyboard, stops below the
+   * header, not under it (WCAG 2.4.11). The header itself is never under itself: what is in it
+   * takes the room back, or the browser would scroll up by its height to show it.
+   */
+  :global(html) {
+    scroll-padding-block-start: var(--header-height, 0px);
+  }
+
+  .site-header :global(*) {
+    scroll-margin-block-start: calc(-1 * var(--header-height, 0px));
+  }
+
   .site-header[data-smart] {
     position: sticky;
     inset-block-start: 0;

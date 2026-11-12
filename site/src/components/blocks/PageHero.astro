@@ -173,24 +173,9 @@ const style =
       if (target !== undefined && Math.abs(scroll - target) < 2) target = undefined;
       if (target !== undefined || scroll <= lineEnd + 1 || scroll >= pageStart - 1) return;
 
-      target = down || focusInPage() ? pageStart : lineEnd;
+      target = down ? pageStart : lineEnd;
       window.scrollTo({ behavior: "smooth", top: target });
     };
-
-    /*
-     * Whether the focus is on the page under the hero, as when the visitor goes through it by the
-     * keyboard: the browser then scrolls by itself to show what has the focus, up as well as down,
-     * which never takes them back to the hero.
-     */
-    const focusInPage = (): boolean => {
-      const focused = document.activeElement;
-
-      return focused !== null && focused !== document.body && !hero.contains(focused);
-    };
-
-    document.addEventListener("focusin", () => {
-      if (focusInPage()) finish();
-    });
 
     const rest = (): void => {
       target = undefined;
