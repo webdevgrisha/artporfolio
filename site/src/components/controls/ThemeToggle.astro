@@ -59,6 +59,9 @@ const { class: className, id, language } = Astro.props;
     }
   }
 
+  /** The part of the radius of the disc of the new theme that is solid; the rest fades out. */
+  const solidPart = 0.85;
+
   /** The time a token of motion names, such as `420ms`, in milliseconds. */
   function motionDuration(token: string): number {
     return Number.parseFloat(getComputedStyle(root).getPropertyValue(token)) || 0;
@@ -66,8 +69,8 @@ const { class: className, id, language } = Astro.props;
 
   /**
    * Turns on the other theme from `button`: the new one spreads over the page in a circle from the
-   * button until it covers the screen. Without View Transitions, or for a visitor who asked for less
-   * motion, the page takes it at once.
+   * button, with a soft edge, until it covers the screen. Without View Transitions, or for a
+   * visitor who asked for less motion, the page takes it at once.
    */
   function switchTheme(button: HTMLButtonElement): void {
     const theme = currentTheme() === "dark" ? "light" : "dark";
@@ -80,19 +83,29 @@ const { class: className, id, language } = Astro.props;
     const { height, left, top, width } = button.getBoundingClientRect();
     const x = left + width / 2;
     const y = top + height / 2;
-    // To the farthest corner of the screen, so the circle covers all of it.
-    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    // The new theme is a disc whose edge fades over the last part of its radius (see the mask in
+    // the styles), grown until its solid part reaches the farthest corner of the screen.
+    const reach = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    const size = (2 * reach) / solidPart;
 
-    // Tells the CSS to leave the page to this circle instead of the fade between pages.
+    // Tells the CSS to leave the page to this disc instead of the fade between pages.
     root.dataset.themeTransition = "";
     const transition = document.startViewTransition(() => applyTheme(theme));
 
     void transition.ready.then(() => {
+      const style = getComputedStyle(root);
+
+      // Grown from its middle, on the button: its box grows and moves back by half as much.
       root.animate(
-        { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
         {
-          duration: motionDuration("--motion-duration-panel"),
-          easing: getComputedStyle(root).getPropertyValue("--motion-easing-standard"),
+          maskPosition: [`${x}px ${y}px`, `${x - size / 2}px ${y - size / 2}px`],
+          maskSize: ["0px 0px", `${size}px ${size}px`],
+        },
+        {
+          duration: motionDuration("--motion-duration-screen"),
+          easing: style.getPropertyValue("--motion-easing-screen"),
+          // Covers the screen until the transition ends, in the same frame.
+          fill: "forwards",
           pseudoElement: "::view-transition-new(root)",
         },
       );
@@ -125,12 +138,21 @@ const { class: className, id, language } = Astro.props;
 
   /*
    * While the theme changes, the new page is not faded in over the old one, as between pages: the
-   * script spreads it over the old one in a circle from the button.
+   * script spreads it over the old one in a disc from the button.
    */
   :global(:root[data-theme-transition]::view-transition-old(root)),
   :global(:root[data-theme-transition]::view-transition-new(root)) {
     mix-blend-mode: normal;
     animation: none;
+  }
+
+  /*
+   * The disc the new theme shows through: solid to 85% of its radius (`solidPart` in the script),
+   * then fading out, so the two themes meet in a soft edge, which widens as the disc grows.
+   */
+  :global(:root[data-theme-transition]::view-transition-new(root)) {
+    mask-image: radial-gradient(closest-side, #000 85%, transparent);
+    mask-repeat: no-repeat;
   }
 
   .theme-toggle[hidden] {

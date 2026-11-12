@@ -8,6 +8,13 @@
     /* Between items that come one after another, such as the pages of the menu. */
     --motion-stagger: 40ms;
     --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+    /*
+     * What changes the whole screen, such as a theme spreading over it: slower, and easing in as
+     * well as out, as what covers the screen grows with the square of its reach, and would flood
+     * it at once with the sharp start of the standard curve.
+     */
+    --motion-duration-screen: 800ms;
+    --motion-easing-screen: cubic-bezier(0.65, 0, 0.35, 1);
   }
 
   /* Whoever asks the system for less motion gets none; what moves still ends where it should. */
@@ -17,6 +24,7 @@
       --motion-duration-standard: 0ms;
       --motion-duration-slow: 0ms;
       --motion-duration-panel: 0ms;
+      --motion-duration-screen: 0ms;
       --motion-stagger: 0ms;
     }
   }
