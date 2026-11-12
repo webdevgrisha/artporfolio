@@ -198,6 +198,12 @@ const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.lengt
     display: flex;
     flex-direction: column;
     min-block-size: 100lvh;
+    scroll-snap-align: start;
+    /*
+     * Where the scroll comes to rest as the hero leaves (see PageHero): the top of the page at the
+     * top of the screen, not as far below as the header keeps room for links within the page.
+     */
+    scroll-margin-block-start: calc(-1 * var(--header-height, 0px));
   }
 
   main {
