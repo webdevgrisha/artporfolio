@@ -8,6 +8,7 @@
  * button, by Escape or by a click beside it, without a script.
  */
 import NetworkLinks from "@/components/blocks/NetworkLinks.astro";
+import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
 import Container from "@/components/ui/Container.astro";
 import HomeLink from "@/components/ui/HomeLink.astro";
 import CloseIcon from "@/components/ui/icons/CloseIcon.astro";
@@ -57,6 +58,13 @@ const year = new Date().getFullYear();
         }
       </ul>
     </nav>
+    <div class="settings">
+      {
+        path !== undefined && (
+          <LanguageSwitch id="menu-language" language={language} path={path} />
+        )
+      }
+    </div>
     {
       links && (
         <div class="contacts">
@@ -137,9 +145,10 @@ const year = new Date().getFullYear();
     grid-template-areas:
       "name close"
       "pages pages"
+      "settings settings"
       "contacts contacts"
       "year year";
-    grid-template-rows: auto 1fr auto auto;
+    grid-template-rows: auto 1fr auto auto auto;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--layout-space-8) var(--grid-gap);
     min-block-size: inherit;
@@ -208,6 +217,24 @@ const year = new Date().getFullYear();
 
   .pages {
     grid-area: pages;
+  }
+
+  /*
+   * The switches of the page, which the header shows on a laptop only: on a smaller screen they
+   * are here, under the pages.
+   */
+  .settings {
+    display: flex;
+    flex-wrap: wrap;
+    grid-area: settings;
+    gap: 0 var(--layout-space-8);
+    align-items: center;
+  }
+
+  @media (width >= 75rem) {
+    .settings {
+      display: none;
+    }
   }
 
   .page-list {

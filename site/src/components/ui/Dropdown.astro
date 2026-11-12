@@ -1,0 +1,81 @@
+---
+/**
+ * A button that opens a panel under it, such as the list of languages: the label with a chevron,
+ * as in the mockup, and the panel in a box with a shadow. The panel is a popover: the browser
+ * opens and closes it, by Escape or a click beside it too, without a script.
+ */
+import ChevronDownIcon from "./icons/ChevronDownIcon.astro";
+import VisuallyHidden from "./VisuallyHidden.astro";
+
+interface Props {
+  class?: string | undefined;
+  /** The id of the panel, unique on the page; the button opens the panel by it. */
+  id: string;
+  /** What the button shows, such as «EN». */
+  label: string;
+  /**
+   * What the button chooses, such as «Language»: screen readers say it before the label, which
+   * alone would not tell.
+   */
+  name: string;
+}
+
+const { class: className, id, label, name } = Astro.props;
+---
+
+<div class:list={["dropdown", className]}>
+  <button class="trigger" popovertarget={id} style={`anchor-name: --${id}`} type="button">
+    <VisuallyHidden>{name}</VisuallyHidden>
+    <span class="label">{label}</span>
+    <ChevronDownIcon />
+  </button>
+  <div class="panel" id={id} popover style={`position-anchor: --${id}`}>
+    <slot />
+  </div>
+</div>
+
+<style>
+  .trigger {
+    display: inline-flex;
+    gap: 0.4em;
+    align-items: center;
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  @media (hover: hover) {
+    .trigger:hover {
+      opacity: 0.6;
+    }
+  }
+
+  .label {
+    text-box: trim-both cap alphabetic;
+  }
+
+  /*
+   * Under the button, from its start, as in the mockup; where there is no room there, the browser
+   * moves it to the other side, so it keeps the width of its lines rather than break their words.
+   * A browser that cannot place it by the button shows it in the middle of the screen.
+   */
+  .panel {
+    inline-size: max-content;
+    max-inline-size: calc(100vi - 2 * var(--page-gutter));
+    max-block-size: calc(100dvh - 2 * var(--page-gutter));
+    padding: var(--space-3) var(--space-6);
+    margin: var(--space-1) 0 0;
+    position-area: block-end span-inline-end;
+    position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline;
+    overflow-y: auto;
+    font-size: inherit;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: var(--line-width) solid light-dark(transparent, var(--color-line));
+    box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+  }
+</style>

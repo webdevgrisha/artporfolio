@@ -1,9 +1,11 @@
 ---
 /**
- * The header of every page: the name of the artist, which leads home, and the button that opens
- * the menu of the site.
+ * The header of every page: the name of the artist, which leads home, the switches of the page on
+ * a laptop, and the button that opens the menu of the site. On a smaller screen the switches are
+ * in the menu, and the header keeps the name and the button only, as in the mockups.
  */
 import SiteMenu from "@/components/blocks/SiteMenu.astro";
+import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
 import Container from "@/components/ui/Container.astro";
 import HomeLink from "@/components/ui/HomeLink.astro";
 import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
@@ -27,6 +29,13 @@ const menuId = "site-menu";
 <header>
   <Container class="bar">
     <HomeLink current={path === "/"} language={language} />
+    <div class="controls">
+      {
+        path !== undefined && (
+          <LanguageSwitch id="header-language" language={language} path={path} />
+        )
+      }
+    </div>
     <button
       aria-label={t(language, "header.menu")}
       class="menu-button"
@@ -56,6 +65,20 @@ const menuId = "site-menu";
   @media (width >= 40rem) {
     .bar {
       font-size: var(--font-size-1);
+    }
+  }
+
+  /* At the end of the row, before the button of the menu, as in the mockup. */
+  .controls {
+    display: none;
+    gap: var(--layout-space-8);
+    align-items: center;
+    margin-inline-start: auto;
+  }
+
+  @media (width >= 75rem) {
+    .controls {
+      display: flex;
     }
   }
 
