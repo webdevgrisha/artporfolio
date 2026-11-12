@@ -5,12 +5,12 @@
  * scrolls, only a chevron, also a window onto the work, says to scroll down. As they scroll, the
  * work stays: the line is written near its top, as by a brush, carried down over the work, each
  * letter showing the part of it under it at that moment, and wiped out at its bottom the same way.
- * Then the hero leaves upwards with the scroll, and the page comes to rest at its top; scrolling
- * back up from there brings the hero back, and the line goes back through it all.
+ * Then the hero leaves upwards at once, as a slide, and the page fills the screen; scrolling back
+ * up from the top of the page brings the whole hero back, and the line goes back through it all.
  *
- * The scroll drives it all in CSS (a scroll-driven animation, and snap points where it comes to
- * rest); the script fits the line to the width. Without the script, or with less motion, the hero
- * is a still screen with the line across its middle.
+ * The scroll drives it all in CSS (a scroll-driven animation); the script fits the line to the
+ * width and snaps the scroll between the hero and the page (snapHeroScroll). Without the script,
+ * or with less motion, the hero is a still screen with the line across its middle.
  * Without a photo, the letters are in the color of the text, on the page.
  *
  * The name is the heading of the page for screen readers; the line on the screen is drawing.
@@ -71,6 +71,7 @@ const style =
 <script>
   import { fitHeroLine } from "@/lib/site/fitHeroLine";
   import { followHeroScroll } from "@/lib/site/followHeroScroll";
+  import { snapHeroScroll } from "@/lib/site/snapHeroScroll";
 
   const hero = document.querySelector<HTMLElement>("[data-page-hero]");
   const stage = hero?.querySelector<HTMLElement>(".stage");
@@ -80,6 +81,7 @@ const style =
     fitHeroLine(hero, stage, line);
     hero.dataset.live = "";
     followHeroScroll(hero);
+    snapHeroScroll(hero);
   }
 </script>
 
@@ -113,19 +115,6 @@ const style =
   @media (prefers-reduced-motion: no-preference) {
     .page-hero[data-live] {
       block-size: 200lvh;
-      scroll-snap-align: end;
-    }
-
-    /*
-     * The scroll comes to rest by itself where the line is wiped (the end of the hero at the bottom
-     * of the screen) or where the page starts (see BaseLayout), once it stops near either: a small
-     * pull up from the top of the page springs back to it, by the feel of the browser and the
-     * device. Further from both, the scroll is free, as anywhere on the page. Mandatory snapping
-     * would never leave the hero half gone, but browsers disagree on it (2026): Firefox leaves the
-     * scroll between its points, Safari brings the hero back on any pull up.
-     */
-    :global(html:has(.page-hero[data-live])) {
-      scroll-snap-type: y proximity;
     }
 
     /*
