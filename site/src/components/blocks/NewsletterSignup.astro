@@ -247,8 +247,11 @@ const outcome = !result
 
   /*
    * The arrow ends where the line ends, as in the mockup, in the middle of a box a finger can hit,
-   * so the ring of the focus is even around it: the box reaches past the end of the line by as much
-   * as it is wider than the chevron (0.5em, see ChevronIcon).
+   * so the ring of the focus is even around it. The ring is there with the whole arrow, stem and
+   * lean (ChevronIcon): from 13 units before the box of the chevron to 17 after its start, in units
+   * of 1/24em, so 4 units before its middle. The padding moves the chevron forward by those 4, so the
+   * arrow is in the middle; the box then reaches past the end of the line by as much as it must for
+   * the tip (10 units after the middle) to stay there.
    */
   .submit {
     display: inline-flex;
@@ -257,8 +260,8 @@ const outcome = !result
     justify-content: center;
     min-inline-size: var(--min-tap-target-size);
     min-block-size: var(--min-tap-target-size);
-    padding: 0;
-    margin-inline-end: calc((0.5em - var(--min-tap-target-size)) / 2);
+    padding: 0 0 0 calc(8em / 24);
+    margin-inline-end: calc(10em / 24 - var(--min-tap-target-size) / 2);
     font-size: var(--font-size-1);
     color: inherit;
     cursor: pointer;
