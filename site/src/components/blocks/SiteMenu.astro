@@ -8,6 +8,7 @@
  * button, by Escape or by a click beside it, without a script.
  */
 import NetworkLinks from "@/components/blocks/NetworkLinks.astro";
+import CurrencySwitch from "@/components/controls/CurrencySwitch.astro";
 import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
 import ThemeToggle from "@/components/controls/ThemeToggle.astro";
 import Container from "@/components/ui/Container.astro";
@@ -21,6 +22,8 @@ import { localizedPath } from "@/lib/site/localizedPath";
 import { menu } from "@/lib/site/menu";
 
 interface Props {
+  /** The codes of the currencies in use, for the switch of currencies. */
+  currencies: string[];
   /** The id the button of the header opens the menu by. */
   id: string;
   language: Language;
@@ -30,7 +33,7 @@ interface Props {
   path: string | undefined;
 }
 
-const { id, language, links, path } = Astro.props;
+const { currencies, id, language, links, path } = Astro.props;
 
 // The year of the page as it is served, as in the footer.
 const year = new Date().getFullYear();
@@ -60,6 +63,7 @@ const year = new Date().getFullYear();
       </ul>
     </nav>
     <div class="settings">
+      <CurrencySwitch currencies={currencies} id="menu-currency" language={language} />
       {
         path !== undefined && (
           <LanguageSwitch id="menu-language" language={language} path={path} />

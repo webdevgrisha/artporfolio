@@ -4,11 +4,12 @@
  * when the `icon` slot has one, with a chevron, as in the mockup, and the panel in a box with a shadow. The panel is a popover: the browser
  * opens and closes it, by Escape or a click beside it too, without a script.
  */
+import type { HTMLAttributes } from "astro/types";
+
 import ChevronDownIcon from "./icons/ChevronDownIcon.astro";
 import VisuallyHidden from "./VisuallyHidden.astro";
 
-interface Props {
-  class?: string | undefined;
+interface Props extends Omit<HTMLAttributes<"div">, "id"> {
   /** The id of the panel, unique on the page; the button opens the panel by it. */
   id: string;
   /** What the button shows, such as «EN». */
@@ -20,14 +21,15 @@ interface Props {
   name: string;
 }
 
-const { class: className, id, label, name } = Astro.props;
+const { class: className, id, label, name, ...attributes } = Astro.props;
 ---
 
-<div class:list={["dropdown", className]}>
+<div class:list={["dropdown", className]} {...attributes}>
   <button class="trigger" popovertarget={id} style={`anchor-name: --${id}`} type="button">
     <VisuallyHidden>{name}</VisuallyHidden>
     <slot name="icon" />
-    <span class="label">{label}</span>
+    {/* A script may change it, such as to the currency the visitor picked. */}
+    <span class="label" data-dropdown-label>{label}</span>
     <ChevronDownIcon />
   </button>
   <div class="panel" id={id} popover style={`position-anchor: --${id}`}>
@@ -36,6 +38,11 @@ const { class: className, id, label, name } = Astro.props;
 </div>
 
 <style>
+  /* The button alone sets the height, so the label stands level with any other in its row. */
+  .dropdown {
+    display: flex;
+  }
+
   .trigger {
     display: inline-flex;
     gap: 0.4em;

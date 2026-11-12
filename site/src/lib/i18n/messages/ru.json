@@ -15,6 +15,7 @@
   "header.menu": "Меню",
   "header.close": "Закрыть",
   "header.language": "Язык",
+  "header.currency": "Валюта",
   "header.toDarkTheme": "Переключиться на тёмную тему",
   "header.toLightTheme": "Переключиться на светлую тему",
   "footer.menu": "Страницы",

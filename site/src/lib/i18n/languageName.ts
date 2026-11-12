@@ -1,3 +1,5 @@
+import { capitalized } from "@/lib/text/capitalized";
+
 import type { Language } from "./languages";
 import { languageTag } from "./languageTag";
 
@@ -10,5 +12,5 @@ export function languageName(language: Language): string {
   const tag = languageTag(language);
   const name = new Intl.DisplayNames([tag], { type: "language" }).of(language) ?? language;
 
-  return name.charAt(0).toLocaleUpperCase(tag) + name.slice(1);
+  return capitalized(name, tag);
 }

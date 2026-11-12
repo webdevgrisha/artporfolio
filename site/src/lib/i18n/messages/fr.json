@@ -15,6 +15,7 @@
   "header.menu": "Menu",
   "header.close": "Fermer",
   "header.language": "Langue",
+  "header.currency": "Devise",
   "header.toDarkTheme": "Passer au thème sombre",
   "header.toLightTheme": "Passer au thème clair",
   "footer.menu": "Pages",

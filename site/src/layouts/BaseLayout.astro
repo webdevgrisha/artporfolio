@@ -4,6 +4,7 @@ import { Font } from "astro:assets";
 import SiteFooter from "@/components/blocks/SiteFooter.astro";
 import SiteHeader from "@/components/blocks/SiteHeader.astro";
 import SkipLink from "@/components/ui/SkipLink.astro";
+import { availableCurrencies } from "@/lib/api/availableCurrencies";
 import { loadContactLinks } from "@/lib/api/contactLinks";
 import type { Language } from "@/lib/i18n/languages";
 import { languageTag } from "@/lib/i18n/languageTag";
@@ -40,8 +41,11 @@ interface Props {
 const { description, language, path, standalone = false, title } = Astro.props;
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
 
-// The menu and the footer both show the links of the artist: asked for once.
-const links = standalone ? undefined : await loadContactLinks(language);
+// The menu and the footer both show the links of the artist: asked for once, with the currencies
+// of the switches of the header and the menu.
+const [links, currencies] = standalone
+  ? [undefined, []]
+  : await Promise.all([loadContactLinks(language), availableCurrencies(language)]);
 ---
 
 <!doctype html>
@@ -92,7 +96,9 @@ const links = standalone ? undefined : await loadContactLinks(language);
   </head>
   <body>
     <SkipLink label={t(language, "layout.skipToContent")} target="content" />
-    {!standalone && <SiteHeader language={language} links={links} path={path} />}
+    {!standalone && (
+        <SiteHeader currencies={currencies} language={language} links={links} path={path} />
+      )}
     <main class:list={{ framed: !standalone }} id="content">
       <slot />
     </main>
