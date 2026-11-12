@@ -15,6 +15,14 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 50%;
+  transition: scale var(--motion-duration-release) var(--motion-easing-release);
+}
+
+/* Pressed, the circle is pushed in and springs back as it is let go, as the checkbox does. */
+.radio:active:not(:disabled) {
+  scale: 0.85;
+  transition-timing-function: var(--motion-easing-press);
+  transition-duration: var(--motion-duration-press);
 }
 
 .radio:checked {
