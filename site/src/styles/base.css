@@ -45,6 +45,26 @@
     outline: var(--focus-ring);
     outline-offset: 2px;
   }
+
+  /* Selected text turns the colors of the page around, as the site has no color of its own. */
+  ::selection {
+    color: var(--color-surface);
+    background: var(--color-text);
+  }
+
+  /*
+   * A tap on a phone does not flash the gray box of the browser around what it touches: a link or
+   * a button dims under the finger instead, as it does under a pointer.
+   */
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (hover: none) {
+    :is(a, button, summary, label):active {
+      opacity: 0.6;
+    }
+  }
 }
 
 /*

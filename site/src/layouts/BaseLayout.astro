@@ -117,6 +117,12 @@ const [links, currencies, heroes] = standalone
   </body>
 </html>
 
+<script>
+  // Safari on an iPhone shows the pressed state of a link or a button (:active, in base.css) only
+  // when the page listens to touches; this listener does nothing else.
+  document.addEventListener("touchstart", () => {}, { passive: true });
+</script>
+
 <style>
   /* A short page, such as an error, still has its footer at the bottom of the screen. */
   body {
