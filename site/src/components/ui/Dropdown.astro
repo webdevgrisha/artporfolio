@@ -1,7 +1,7 @@
 ---
 /**
- * A button that opens a panel under it, such as the list of languages: the label with a chevron,
- * as in the mockup, and the panel in a box with a shadow. The panel is a popover: the browser
+ * A button that opens a panel under it, such as the list of languages: the label, after an icon
+ * when the `icon` slot has one, with a chevron, as in the mockup, and the panel in a box with a shadow. The panel is a popover: the browser
  * opens and closes it, by Escape or a click beside it too, without a script.
  */
 import ChevronDownIcon from "./icons/ChevronDownIcon.astro";
@@ -26,6 +26,7 @@ const { class: className, id, label, name } = Astro.props;
 <div class:list={["dropdown", className]}>
   <button class="trigger" popovertarget={id} style={`anchor-name: --${id}`} type="button">
     <VisuallyHidden>{name}</VisuallyHidden>
+    <slot name="icon" />
     <span class="label">{label}</span>
     <ChevronDownIcon />
   </button>

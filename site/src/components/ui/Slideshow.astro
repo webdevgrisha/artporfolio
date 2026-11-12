@@ -1,0 +1,122 @@
+---
+/**
+ * Photos that follow one another by themselves, fading in place, as a slideshow; a visitor can also
+ * swipe them. The first loads with the page, each next one while the one before it is shown, so a
+ * slideshow of many photos costs no more at first than one photo. One photo is shown alone.
+ *
+ * Its box sets the shape: give it one, such as an aspect ratio, through `class`.
+ */
+import Picture from "@/components/ui/Picture.astro";
+import type { Photo } from "@/lib/api/image";
+
+interface Props {
+  class?: string;
+  /** At least one. */
+  photos: Photo[];
+  /** Whether the first photo is the largest image of the first screen; see `Picture`. */
+  priority?: boolean;
+  /** How wide the photos are shown at each width of the page, as `sizes` of <img>. */
+  sizes: string;
+}
+
+const { class: className, photos, priority = false, sizes } = Astro.props;
+---
+
+<div class:list={["slideshow", className]} data-slideshow>
+  <div class="viewport">
+    <div class="track">
+      {
+        photos.map((photo, index) => (
+          // Until the script runs, only the first is in view, and only it is read out.
+          <div class="slide" inert={index > 0}>
+            <Picture
+              alt={photo.alt}
+              class="picture"
+              deferred={index > 0}
+              image={photo}
+              priority={priority && index === 0}
+              sizes={sizes}
+            />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  import EmblaCarousel, { type EmblaCarouselType } from "embla-carousel";
+  import Autoplay from "embla-carousel-autoplay";
+  import Fade from "embla-carousel-fade";
+
+  import { loadDeferredImages } from "@/lib/images/deferredImages";
+
+  /** How long a photo is shown before the next one. */
+  const delay = 5000;
+
+  /**
+   * Leaves the photo in view alone for screen readers, and loads it and the next one, so the next
+   * is there by the time it comes.
+   */
+  function showSelected(carousel: EmblaCarouselType): void {
+    const slides = carousel.slideNodes();
+    const selected = carousel.selectedScrollSnap();
+
+    for (const [index, slide] of slides.entries()) {
+      slide.inert = index !== selected;
+    }
+
+    for (const index of [selected, (selected + 1) % slides.length]) {
+      const slide = slides[index];
+
+      if (slide) loadDeferredImages(slide);
+    }
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-slideshow]")) {
+    const viewport = root.querySelector<HTMLElement>(".viewport");
+
+    if (!viewport || root.querySelectorAll(".slide").length < 2) continue;
+
+    // A visitor who asked for less motion sees one photo until they swipe.
+    const playOnInit = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const carousel = EmblaCarousel(
+      viewport,
+      { direction: getComputedStyle(root).direction === "rtl" ? "rtl" : "ltr", loop: true },
+      [
+        Fade(),
+        // Waits while the pointer is over the photo, so it can be looked at; a swipe starts the
+        // wait for the next one anew.
+        Autoplay({ delay, playOnInit, stopOnInteraction: false, stopOnMouseEnter: true }),
+      ],
+    );
+
+    showSelected(carousel);
+    carousel.on("select", showSelected);
+  }
+</script>
+
+<style>
+  .viewport,
+  .track,
+  .slide,
+  .picture {
+    block-size: 100%;
+  }
+
+  .viewport {
+    overflow: hidden;
+  }
+
+  /* The slides in a row, of which the viewport shows one; Fade then lays them over each other. */
+  .track {
+    display: flex;
+    /* A vertical swipe still scrolls the page. */
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .slide {
+    flex: 0 0 100%;
+    min-inline-size: 0;
+  }
+</style>

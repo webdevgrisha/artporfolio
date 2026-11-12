@@ -10,6 +10,11 @@ import { srcset } from "@/lib/images/srcset";
 
 interface Props extends HTMLAttributes<"picture"> {
   alt: string;
+  /**
+   * Whether the image waits for a script of the page to load it (`loadDeferredImages`), such as a
+   * slide not shown yet: lying where the visitor looks, it would load at once even when lazy.
+   */
+  deferred?: boolean;
   image: Image;
   /**
    * Whether the visitor sees the image first: it then loads at once, before other images,
@@ -20,12 +25,26 @@ interface Props extends HTMLAttributes<"picture"> {
   sizes: string;
 }
 
-const { alt, class: className, image, priority = false, sizes, ...attributes } = Astro.props;
+const {
+  alt,
+  class: className,
+  deferred = false,
+  image,
+  priority = false,
+  sizes,
+  ...attributes
+} = Astro.props;
 const { avif, webp } = image.sources;
+const fallback = webp.at(-1)?.url;
+
+/** The files of the image, in data attributes while it is deferred, for the script to move. */
+function files(value: string) {
+  return deferred ? { "data-deferred-srcset": value } : { srcset: value };
+}
 ---
 
 <picture class:list={["picture", className]} {...attributes}>
-  <source type="image/avif" srcset={srcset(avif)} sizes={sizes} />
+  <source type="image/avif" sizes={sizes} {...files(srcset(avif))} />
   <img
     alt={alt}
     decoding="async"
@@ -33,9 +52,9 @@ const { avif, webp } = image.sources;
     height={image.height}
     loading={priority ? "eager" : "lazy"}
     sizes={sizes}
-    src={webp.at(-1)?.url}
-    srcset={srcset(webp)}
     width={image.width}
+    {...(deferred ? { "data-deferred-src": fallback } : { src: fallback })}
+    {...files(srcset(webp))}
   />
 </picture>
 

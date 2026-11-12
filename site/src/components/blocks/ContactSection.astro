@@ -1,15 +1,15 @@
 ---
 /**
- * The Contacts page: the title of the page for screen readers, the contact photo, and the heading
- * «Get in touch» with the ways to reach the artist beside the photo, or under it on a tablet or
- * a phone.
+ * The Contacts page: the title of the page for screen readers, the slideshow of photos, and the
+ * heading «Get in touch» with the ways to reach the artist beside the photos, or under them on a
+ * tablet or a phone.
  */
 import Container from "@/components/ui/Container.astro";
 import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
 import LinkedInIcon from "@/components/ui/icons/LinkedInIcon.astro";
 import MailIcon from "@/components/ui/icons/MailIcon.astro";
 import YouTubeIcon from "@/components/ui/icons/YouTubeIcon.astro";
-import Picture from "@/components/ui/Picture.astro";
+import Slideshow from "@/components/ui/Slideshow.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
@@ -20,12 +20,14 @@ import { splitTurnedInitial } from "@/lib/text/turnedInitial";
 interface Props {
   heading: string;
   links: ContactLinks;
-  photo: Photo | null;
+  /** The photos of the slideshow; none leaves the text the whole width. */
+  photos: Photo[];
   /** The title of the page; the hero will show it once pages have one. */
   title: string;
 }
 
-const { heading, links, photo, title } = Astro.props;
+const { heading, links, photos, title } = Astro.props;
+const hasPhotos = photos.length > 0;
 // Word by word, so a phone can set each word on a line of its own; only the first can be turned.
 const [firstWord = "", ...otherWords] = heading.split(" ");
 const turned = splitTurnedInitial(firstWord);
@@ -45,13 +47,12 @@ const contacts = [
 
 <Container as="section" aria-labelledby="contact-heading">
   <VisuallyHidden as="h1">{title}</VisuallyHidden>
-  <div class:list={["layout", { "has-photo": photo }]}>
+  <div class:list={["layout", { "has-photo": hasPhotos }]}>
     {
-      photo && (
-        <Picture
-          alt={photo.alt}
+      hasPhotos && (
+        <Slideshow
           class="photo"
-          image={photo}
+          photos={photos}
           priority
           sizes="(min-width: 75rem) 40vw, 100vw"
         />

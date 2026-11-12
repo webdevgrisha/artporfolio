@@ -1,10 +1,11 @@
 ---
 /**
- * The switch of languages: the code of the language of the page, which opens the list of all the
+ * The switch of languages: a globe and the code of the language of the page, which opens the list of all the
  * languages of the site, each by its own name. An item is a plain link to the same page in that
  * language, so it works without a script and a search engine follows it.
  */
 import Dropdown from "@/components/ui/Dropdown.astro";
+import GlobeIcon from "@/components/ui/icons/GlobeIcon.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import { languageName } from "@/lib/i18n/languageName";
 import { type Language, languages } from "@/lib/i18n/languages";
@@ -30,6 +31,7 @@ const { class: className, id, language, path } = Astro.props;
   label={language.toUpperCase()}
   name={t(language, "header.language")}
 >
+  <GlobeIcon slot="icon" />
   <ul class="languages" style={`--rows: ${Math.ceil(languages.length / 2)}`}>
     {
       languages.map((other) => (

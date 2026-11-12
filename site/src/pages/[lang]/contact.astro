@@ -12,7 +12,7 @@ if (!isLanguage(lang)) {
   return Astro.rewrite("/404");
 }
 
-const { links, photo } = await getJson("contacts", contactsSchema, { language: lang });
+const { links, photos } = await getJson("contacts", contactsSchema, { language: lang });
 const title = t(lang, "contact.title");
 ---
 
@@ -22,5 +22,5 @@ const title = t(lang, "contact.title");
   path="/contact"
   title={title}
 >
-  <ContactSection heading={t(lang, "contact.heading")} links={links} photo={photo} title={title} />
+  <ContactSection heading={t(lang, "contact.heading")} links={links} photos={photos} title={title} />
 </BaseLayout>

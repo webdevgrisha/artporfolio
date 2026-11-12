@@ -1,4 +1,4 @@
-import { type ContactLinks, contactsSchema } from "@/lib/api/contacts";
+import { type ContactLinks, contactLinksSchema } from "@/lib/api/contacts";
 import { getJson } from "@/lib/api/getJson";
 import type { Language } from "@/lib/i18n/languages";
 
@@ -8,9 +8,8 @@ import type { Language } from "@/lib/i18n/languages";
  */
 export async function loadContactLinks(language: Language): Promise<ContactLinks | undefined> {
   try {
-    const { links } = await getJson("contacts", contactsSchema, { language });
-
-    return links;
+    // Their own resource, without the photos of the Contacts page, which no other page needs.
+    return await getJson("contacts/links", contactLinksSchema, { language });
   } catch (error) {
     console.error("The page is shown without the links of the artist:", error);
 
