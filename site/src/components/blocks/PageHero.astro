@@ -2,7 +2,7 @@
 /**
  * The first screen of every page: a work of the artist, blurred, and the name of the page across
  * it from edge to edge, its letters windows onto the same work, sharp. Before the visitor
- * scrolls, only a chevron says to scroll down. As they scroll, the
+ * scrolls, only a chevron, also a window onto the work, says to scroll down. As they scroll, the
  * work stays: the line is written near its top, as by a brush, carried down over the work, each
  * letter showing the part of it under it at that moment, and wiped out at its bottom the same way.
  * Then the hero leaves upwards at once and the page fills the screen; scrolling back up from the
@@ -306,7 +306,8 @@ const style =
    * on its own, as --hero-image holds two images, the work and its preview, and each takes them.
    */
   .photo,
-  .line {
+  .line,
+  .chevron::before {
     --cover-width: calc(max(100cqw, 100cqh * var(--hero-ratio, 1)) * var(--hero-zoom));
     --cover-height: calc(var(--cover-width) / var(--hero-ratio, 1));
     --cover-x: calc((100cqw - var(--cover-width)) / 2);
@@ -433,20 +434,15 @@ const style =
   }
 
   /*
-   * In the middle of the first screen: the chevron of the mockup, nodding down, and its words under
-   * it. It fades out over the first steps of the scroll, before the line is written. A still hero
-   * has none. Both are white, as the button of the menu, with a soft dark glow behind, so they read
-   * on any work: a hint must always show (WCAG 1.4.11), which a window onto a dark work would not.
+   * In the middle of the first screen: the chevron of the mockup, a window onto the work as the
+   * letters are, nodding down, and its words under it. It fades out over the first steps of the
+   * scroll, before the line is written. A still hero has none.
    */
   .hint {
     position: absolute;
     inset: 0;
     display: none;
     pointer-events: none;
-  }
-
-  .photographed .hint {
-    color: var(--color-on-photo);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -456,28 +452,64 @@ const style =
     }
   }
 
-  /* 128 by 64px at 1920px, as in the mockup, its tip on the middle of the screen. */
+  @property --nod {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  /*
+   * 128 by 64px at 1920px, as in the mockup, its tip on the middle of the screen, at (--x, --y) of
+   * the stage. The work shows through its shape (::before), which moves the work back by as much,
+   * as the letters do; a hairline of light follows the edge of the shape (::after), as the letters
+   * have, so it shows on a dark ground too.
+   */
   .chevron {
-    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 64'%3E%3Cpath d='M4 3 64 59 124 3' fill='none' stroke='%23000' stroke-width='9'/%3E%3C/svg%3E");
+    --width: clamp(4rem, 6.667cqw, 8rem);
+    --x: calc(50cqw - var(--width) / 2);
+    --y: calc(50cqh - var(--width) / 2 + var(--nod));
 
     position: absolute;
-    inset-block-end: 50%;
-    inset-inline-start: 50%;
-    inline-size: clamp(4rem, 6.667cqw, 8rem);
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: var(--width);
     aspect-ratio: 2;
-    background-color: currentColor;
-    filter: drop-shadow(0 0 0.5rem rgb(0 0 0 / 0.45));
-    /* Safari before 15.4 knows only the prefixed name. */
-    -webkit-mask: var(--shape) center / contain no-repeat;
-    mask: var(--shape) center / contain no-repeat;
-    translate: -50% 0;
+    translate: var(--x) var(--y);
     animation: nod 1.6s var(--motion-easing-screen) infinite;
   }
 
   @keyframes nod {
     50% {
-      translate: -50% 0.75rem;
+      --nod: 0.75rem;
     }
+  }
+
+  .chevron::before,
+  .chevron::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    /* Safari before 15.4 knows only the prefixed name. */
+    -webkit-mask: var(--shape) center / contain no-repeat;
+    mask: var(--shape) center / contain no-repeat;
+  }
+
+  .chevron::before {
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 64'%3E%3Cpath d='M4 3 64 59 124 3' fill='none' stroke='%23000' stroke-width='9'/%3E%3C/svg%3E");
+
+    background-color: var(--color-text);
+  }
+
+  .photographed .chevron::before {
+    background-image: var(--hero-image);
+    background-position: calc(var(--cover-x) - var(--x)) calc(var(--cover-y) - var(--y));
+  }
+
+  /* The edge of the shape: the same stroke, wider, less the same stroke, narrower. */
+  .chevron::after {
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 64'%3E%3Cmask id='edge'%3E%3Cpath d='M4 3 64 59 124 3' fill='none' stroke='%23fff' stroke-width='10.5'/%3E%3Cpath d='M4 3 64 59 124 3' fill='none' stroke='%23000' stroke-width='7.5'/%3E%3C/mask%3E%3Crect width='128' height='64' mask='url(%23edge)'/%3E%3C/svg%3E");
+
+    background-color: rgb(255 255 255 / 0.5);
   }
 
   .hint-text {
@@ -489,6 +521,7 @@ const style =
   }
 
   .photographed .hint-text {
+    color: var(--color-on-photo);
     text-shadow:
       0 0 0.25em rgb(0 0 0 / 0.5),
       0 0 1em rgb(0 0 0 / 0.4);
