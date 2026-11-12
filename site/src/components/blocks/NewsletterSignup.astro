@@ -21,7 +21,8 @@ interface Props {
   language: Language;
 }
 
-const { class: className, language } = Astro.props;
+// The rest carries the scope of the styles of the block that places it, which style it by its class.
+const { class: className, language, ...attributes } = Astro.props;
 
 // The outcome of a form posted without JavaScript; the script below shows the same in place.
 const result = Astro.getActionResult(actions.subscribe);
@@ -32,6 +33,7 @@ const outcome = result && subscribeOutcome(result.error);
   aria-labelledby="newsletter-heading"
   class:list={["newsletter", className]}
   id="newsletter"
+  {...attributes}
 >
   {/* At most about 150px wide; each screen takes the file of its density, sharp on a Retina one. */}
   <Picture
