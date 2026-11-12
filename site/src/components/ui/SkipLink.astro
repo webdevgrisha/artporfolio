@@ -16,11 +16,16 @@ const { label, target } = Astro.props;
 <a class="skip-link" href={`#${target}`}>{label}</a>
 
 <style>
+  /*
+   * On the screen, not at the top of the page: the keyboard comes back to it from the end of the
+   * page, past the bar of the browser, and the page stays where the visitor is instead of jumping
+   * back to its top. Above the header, which sticks to the top of the screen too.
+   */
   .skip-link {
-    position: absolute;
+    position: fixed;
     inset-block-start: var(--space-2);
     inset-inline-start: var(--space-2);
-    z-index: 1;
+    z-index: 2;
     padding: var(--space-2) var(--space-4);
     color: var(--color-text);
     background: var(--color-surface);
