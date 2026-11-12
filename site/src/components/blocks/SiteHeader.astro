@@ -168,7 +168,7 @@ const { currencies, heroes, language, links, path } = Astro.props;
   }
 
   /* The link that skips to the content, while it has the focus, stands in the place of the name. */
-  :global(body:has(.skip-link:focus)) .bar > :global(:first-child) {
+  :global(body:has(.skip-link:focus)) .bar > :global(.home-link) {
     visibility: hidden;
   }
 
