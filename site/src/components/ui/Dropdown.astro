@@ -71,6 +71,15 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
     text-box: trim-both cap alphabetic;
   }
 
+  /* The chevron turns up while the panel is open, and back down as it closes. */
+  .trigger :global(.chevron-down) {
+    transition: rotate var(--motion-duration-standard) var(--motion-easing-standard);
+  }
+
+  .dropdown:has(.panel:popover-open) .trigger :global(.chevron-down) {
+    rotate: 180deg;
+  }
+
   /*
    * Under the button, from its start as in the mockup, or from its end; where there is no room
    * there, the browser moves it to the other side, so it keeps the width of its lines rather than
@@ -91,6 +100,26 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
     background: var(--color-surface);
     border: var(--line-width) solid light-dark(transparent, var(--color-line));
     box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+    /*
+     * It fades in and out, as everything that pops up over the page comes and goes with motion:
+     * only fades, as the browser may place it above the button as well as below. The browser
+     * keeps it in sight until it has faded out; a screen without motion shows it at once.
+     */
+    opacity: 0;
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-standard);
+    transition-property: opacity, display, overlay;
+    transition-behavior: allow-discrete;
+  }
+
+  .panel:popover-open {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .panel:popover-open {
+      opacity: 0;
+    }
   }
 
   .panel[data-align="end"] {
