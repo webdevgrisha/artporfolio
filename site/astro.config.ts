@@ -57,6 +57,8 @@ export default defineConfig({
       fallbacks: [],
       name: "Poppins",
       provider: fontProviders.google(),
+      // Poppins has an italic too, which the site never sets.
+      styles: ["normal"],
       subsets: ["devanagari"],
       weights: [300],
     },
