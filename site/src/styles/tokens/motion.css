@@ -21,14 +21,15 @@
      */
     --motion-duration-reveal: 900ms;
     /*
-     * Pressing and letting go (see «Pressed» in base.css): an element gives way under the finger at
-     * once, faster than a person can see a delay, and springs back past its place a little as it is
-     * let go, so the press feels physical.
+     * Pressing and letting go (see «Pressed» in base.css), timed as Josh Comeau times his buttons:
+     * an element gives way under the finger almost at once, faster than a person can see a delay,
+     * and comes back slowly, springing a little past its place, so the press feels physical. The
+     * difference between the two is what makes it.
      */
-    --motion-duration-press: 90ms;
+    --motion-duration-press: 40ms;
     --motion-easing-press: cubic-bezier(0.3, 0, 0.6, 1);
-    --motion-duration-release: 420ms;
-    --motion-easing-release: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --motion-duration-release: 600ms;
+    --motion-easing-release: cubic-bezier(0.3, 0.7, 0.4, 1.5);
     --motion-easing-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
