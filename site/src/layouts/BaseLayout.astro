@@ -121,9 +121,17 @@ const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.lengt
     <Font cssVariable="--font-manrope" />
     <Font cssVariable="--font-readex-pro" />
     <Font cssVariable="--font-poppins" />
-    <Font cssVariable="--font-noto-sans-kr" />
-    <Font cssVariable="--font-noto-sans-sc" />
-    <Font cssVariable="--font-noto-sans-jp" />
+    {
+      /*
+       * The font of Chinese, Japanese or Korean comes with the pages in that language only: each
+       * is cut into a hundred files or more, whose rules alone would weigh most of every page.
+       * Elsewhere the few words of those scripts, the names in the list of languages, take the
+       * system font of their language (see the tokens of typography).
+       */
+      language === "zh" && <Font cssVariable="--font-noto-sans-sc" />
+    }
+    {language === "ja" && <Font cssVariable="--font-noto-sans-jp" />}
+    {language === "ko" && <Font cssVariable="--font-noto-sans-kr" />}
     <link rel="icon" type="image/png" href="/favicon.png" />
     {
       path === undefined ? (
