@@ -62,6 +62,8 @@ const { as: Tag = "button", class: className, ...attributes } = Astro.props;
     inset-block-start: calc(-1 * var(--line-width));
     inset-inline-start: calc(-1 * var(--line-width));
     inline-size: calc(100% + 2 * var(--line-width));
+    /* Past the limit of the reset, which keeps any SVG within its box: this one covers the border. */
+    max-inline-size: none;
     block-size: calc(100% + 2 * var(--line-width));
     overflow: hidden;
     pointer-events: none;
@@ -89,20 +91,20 @@ const { as: Tag = "button", class: className, ...attributes } = Astro.props;
   }
 
   /* Pressed, the button is the page again, so the frame breaking apart is all there is to see. */
-  .framed-button:active {
+  .framed-button:is(:active, [data-pressed]) {
     color: var(--color-text);
     background: var(--color-surface);
     transition-duration: var(--motion-duration-press);
   }
 
-  .framed-button:active rect {
+  .framed-button:is(:active, [data-pressed]) rect {
     stroke-dasharray: 0.4em 0.3em;
     transition-duration: var(--motion-duration-press);
   }
 
   /* The dashes run around the button while it is held; still for a visitor who asked for less motion. */
   @media (prefers-reduced-motion: no-preference) {
-    .framed-button:active rect {
+    .framed-button:is(:active, [data-pressed]) rect {
       animation: run 0.5s linear infinite;
     }
   }

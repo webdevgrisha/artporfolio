@@ -44,7 +44,7 @@ const { class: className, href, label, ...attributes } = Astro.props;
     }
   }
 
-  .icon-link:active {
+  .icon-link:is(:active, [data-pressed]) {
     scale: 0.86;
     transition-timing-function: var(--motion-easing-standard), var(--motion-easing-press);
     transition-duration: var(--motion-duration-slow), var(--motion-duration-press);

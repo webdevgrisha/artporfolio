@@ -203,7 +203,7 @@ const firstInView = 2;
   }
 
   /* Pressed, the photo gives way a little, as a print pressed into the wall, and opens from there. */
-  .open:active .picture {
+  .open:is(:active, [data-pressed]) .picture {
     scale: 0.97;
     transition-timing-function: var(--motion-easing-press);
     transition-duration: var(--motion-duration-press);

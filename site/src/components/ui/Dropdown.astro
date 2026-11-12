@@ -82,6 +82,8 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
   /*
    * The chevron turns up while the panel is open, and back down as it closes. Pressed, it dips the
    * way the panel is about to go: down to open it, up to close it, and springs back as it is let go.
+   * Only while pressed (`:active`), not held on after a click (`data-pressed`): by then the panel
+   * moves, and the chevron would dip the other way.
    */
   .trigger :global(.chevron-down) {
     transition:
