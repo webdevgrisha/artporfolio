@@ -1,0 +1,100 @@
+---
+/**
+ * The top of the About page: the portrait of the artist in the middle, and the introduction under
+ * it in capitals, as a lead. Either one may be missing; the other then stands alone.
+ */
+import Picture from "@/components/ui/Picture.astro";
+import Reveal from "@/components/ui/Reveal.astro";
+import type { Photo } from "@/lib/api/image";
+
+interface Props {
+  photo: Photo | null;
+  /** Its paragraphs; none leaves the portrait alone. */
+  paragraphs: string[];
+}
+
+const { photo, paragraphs } = Astro.props;
+---
+
+<div class="intro">
+  {
+    photo && (
+      <Reveal class="portrait-frame" style={`aspect-ratio: ${photo.width} / ${photo.height}`}>
+        <Picture
+          alt={photo.alt}
+          class="portrait"
+          image={photo}
+          sizes="(min-width: 75rem) 30vw, (min-width: 40rem) 50vw, 100vw"
+        />
+      </Reveal>
+    )
+  }
+  {
+    paragraphs.length > 0 && (
+      <Reveal class="lead">
+        {paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+      </Reveal>
+    )
+  }
+</div>
+
+<style>
+  .intro {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+    gap: var(--layout-space-16) var(--grid-gap);
+  }
+
+  /*
+   * The whole width on a phone, the middle half on a tablet and a third on a laptop, as in the
+   * mockups. The photo keeps its own shape, uncropped: it is the artist's own portrait.
+   */
+  .portrait-frame {
+    grid-column: 1 / -1;
+  }
+
+  @media (width >= 40rem) {
+    .portrait-frame {
+      grid-column: 4 / span 6;
+    }
+  }
+
+  @media (width >= 75rem) {
+    .portrait-frame {
+      grid-column: 5 / span 4;
+    }
+  }
+
+  /* Picture fills the box it is given: the frame, in the shape of the photo. */
+  .portrait {
+    block-size: 100%;
+  }
+
+  /*
+   * In capitals and larger than the sections, from the start of the page to two thirds of it on a
+   * tablet and wider, as in the mockups.
+   */
+  .lead {
+    display: flex;
+    flex-direction: column;
+    grid-column: 1 / -1;
+    gap: 1em;
+    font-size: var(--font-size-1);
+    line-height: var(--line-height-lead);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    text-wrap: pretty;
+    white-space: pre-line;
+  }
+
+  @media (width >= 40rem) {
+    .lead {
+      grid-column: 1 / span 8;
+      font-size: var(--font-size-2);
+    }
+  }
+
+  .lead p {
+    margin: 0;
+  }
+</style>

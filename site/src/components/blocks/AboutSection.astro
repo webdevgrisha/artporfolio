@@ -1,0 +1,74 @@
+---
+/**
+ * A section of the About page, such as «Biography»: its name, small, over a line across the page,
+ * and its text under it, from a third of the page on a tablet and wider, as in the mockups. On a
+ * phone the text takes the whole width: a third of it would leave a narrow column.
+ */
+import Reveal from "@/components/ui/Reveal.astro";
+
+interface Props {
+  /** The id of its heading, which names the section. */
+  id: string;
+  heading: string;
+  /** At least one. */
+  paragraphs: string[];
+}
+
+const { heading, id, paragraphs } = Astro.props;
+---
+
+<Reveal as="section" aria-labelledby={id} class="section">
+  <h2 class="heading" id={id}>{heading}</h2>
+  <div class="text">
+    {paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+  </div>
+</Reveal>
+
+<style>
+  .section {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+    gap: var(--layout-space-10) var(--grid-gap);
+  }
+
+  .heading {
+    grid-column: 1 / -1;
+    padding-block-end: var(--space-2);
+    margin: 0;
+    font-size: var(--font-size-body);
+    border-block-end: var(--line-width) solid var(--color-line);
+  }
+
+  /*
+   * Large, as in the mockups, yet smaller on a phone, where a long biography in the size of a
+   * laptop would run for screens. Each paragraph keeps the line breaks the artist typed.
+   */
+  .text {
+    display: flex;
+    flex-direction: column;
+    grid-column: 1 / -1;
+    gap: 1em;
+    max-inline-size: var(--text-max-inline-size);
+    font-size: var(--font-size-1);
+    line-height: var(--line-height-lead);
+    text-wrap: pretty;
+    white-space: pre-line;
+  }
+
+  @media (width >= 40rem) {
+    .text {
+      grid-column: 4 / -1;
+      font-size: var(--font-size-2);
+    }
+  }
+
+  @media (width >= 75rem) {
+    .text {
+      grid-column: 5 / -1;
+    }
+  }
+
+  .text p {
+    margin: 0;
+  }
+</style>
