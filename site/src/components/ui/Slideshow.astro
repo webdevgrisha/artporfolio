@@ -1,7 +1,7 @@
 ---
 /**
- * Photos that follow one another by themselves, fading in place, as a slideshow; a visitor can also
- * swipe them. The first loads with the page, each next one while the one before it is shown, so a
+ * Photos that follow one another by themselves, fading slowly in place, each coming closer a
+ * little while it is shown (the Ken Burns effect), as a slideshow; a visitor can also swipe them. The first loads with the page, each next one while the one before it is shown, so a
  * slideshow of many photos costs no more at first than one photo. One photo is shown alone.
  *
  * Its box sets the shape: give it one, such as an aspect ratio, through `class`.
@@ -55,15 +55,32 @@ const { class: className, photos, priority = false, sizes } = Astro.props;
   const delay = 5000;
 
   /**
+   * How slowly a photo fades into the next, in the units of Embla: the slowest of the range its
+   * documentation advises, about a second.
+   */
+  const duration = 60;
+
+  /**
    * Leaves the photo in view alone for screen readers, and loads it and the next one, so the next
-   * is there by the time it comes.
+   * is there by the time it comes. The photo shown starts coming closer from its own size; the one
+   * it replaces keeps its size while it fades out, and every other one is back at its own.
    */
   function showSelected(carousel: EmblaCarouselType): void {
     const slides = carousel.slideNodes();
     const selected = carousel.selectedScrollSnap();
+    const previous = carousel.previousScrollSnap();
 
     for (const [index, slide] of slides.entries()) {
       slide.inert = index !== selected;
+
+      if (index === selected) {
+        // Taken off and put back, so the zoom starts anew even on a slide that has it still.
+        delete slide.dataset["zoom"];
+        void slide.offsetWidth;
+        slide.dataset["zoom"] = "";
+      } else if (index !== previous) {
+        delete slide.dataset["zoom"];
+      }
     }
 
     for (const index of [selected, (selected + 1) % slides.length]) {
@@ -82,7 +99,11 @@ const { class: className, photos, priority = false, sizes } = Astro.props;
     const playOnInit = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const carousel = EmblaCarousel(
       viewport,
-      { direction: getComputedStyle(root).direction === "rtl" ? "rtl" : "ltr", loop: true },
+      {
+        direction: getComputedStyle(root).direction === "rtl" ? "rtl" : "ltr",
+        duration,
+        loop: true,
+      },
       [
         Fade(),
         // Waits while the pointer is over the photo, so it can be looked at; a swipe starts the
@@ -118,5 +139,30 @@ const { class: className, photos, priority = false, sizes } = Astro.props;
   .slide {
     flex: 0 0 100%;
     min-inline-size: 0;
+    overflow: hidden;
+  }
+
+  /*
+   * The photo shown comes 4% closer, slowly, for as long as it stays and its fade out; it waits
+   * with the slideshow while the pointer is over it. Still for a visitor who asked for less motion.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    .slide[data-zoom] .picture {
+      animation: zoom 7s ease-out forwards;
+    }
+
+    .slideshow:hover .picture {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes zoom {
+    from {
+      scale: 1;
+    }
+
+    to {
+      scale: 1.04;
+    }
   }
 </style>
