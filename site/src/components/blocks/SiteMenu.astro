@@ -394,9 +394,10 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
     }
 
     /*
-     * Blurred as much as the hero, for the size it is shown at (0.75% of its longer side), so the
-     * plate is a small hero; blurred edges would let the page show through, so the photo is a
-     * little larger than its plate.
+     * Blurred twice as much as the hero for its size (1.5% of its longer side): the plate shows the
+     * work much smaller, so its detail is finer and, blurred as little, would stay sharp enough to
+     * cross the name; so blurred, it keeps the colors and the rhythm of the work, a small hero.
+     * Blurred edges would let the page show through, so the photo is a little larger than its plate.
      */
     .hero {
       position: absolute;
@@ -408,8 +409,8 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
       inline-size: 100%;
       block-size: 100%;
       object-fit: cover;
-      filter: blur(0.75cqmax) brightness(0.6);
-      scale: 1.05;
+      filter: blur(1.5cqmax) brightness(0.6);
+      scale: 1.1;
     }
 
     /* The name on the plate stands exactly over the one under it. */
