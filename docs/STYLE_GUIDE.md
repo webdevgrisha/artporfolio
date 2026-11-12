@@ -385,6 +385,28 @@ A script is the solution itself, not a stand-in, only where the platform has no 
 - Use shared duration and easing tokens.
 - Motion must communicate a state change, not exist only as decoration.
 
+### Pressed state
+
+Every control answers a press, by mouse, finger or keyboard, before what it does follows; this is the
+`:active` state, alongside hover, focus and disabled.
+
+- A pressed control shows what is about to happen (anticipation): each kind answers in its own way, in
+  its own material. On the site: a framed button (`FramedButton`) breaks its frame into dashes that
+  run around it while held; the arrow of the newsletter is drawn back as a bow; a text link pulls its
+  underline tight; an icon link is pushed in as a stamp; the chevron of a list dips the way the list
+  will go; the button of the menu starts to fold into its cross; the theme icon starts to turn; the
+  work of a page in the menu comes closer; a process photo gives way; the name of the artist draws
+  its letters together.
+- A control with a press of its own carries `data-press`; any other dims to 60% (`base.css`), the same
+  way everywhere. A new kind of control gets its own press only when it says something; otherwise
+  the dim is right.
+- It gives way at once (`--motion-duration-press`, `--motion-easing-press`) and springs back past
+  its place as it is let go (`--motion-duration-release`, `--motion-easing-release`). What runs
+  while held, such as the dashes, stops for `prefers-reduced-motion`; the change of shape stays.
+- Only `scale`, `translate`, `rotate`, opacity, and the strokes and decoration of a line move;
+  nothing that changes the room an element takes, but for the letters of the name, which only
+  narrow it.
+
 ## Figma-to-code rules
 
 - Treat Figma as the visual specification, not as production layout code.
@@ -406,7 +428,7 @@ Before approving a UI change, verify:
 - Dynamic content can wrap without overflow.
 - Text remains usable at 200% browser zoom.
 - Layout remains usable with the browser's default font size increased to at least 32px.
-- Keyboard focus, hover, reduced motion, and hidden states work correctly.
+- Keyboard focus, hover, pressed, reduced motion, and hidden states work correctly.
 - Repeated values have one source of truth.
 - Numeric values are readable and explainable.
 - No existing asset or component was recreated without a reason.
