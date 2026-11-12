@@ -73,37 +73,33 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
 
   /*
    * Stand in for what Safari and Firefox lack: keeping the menu in the top layer while it rolls up
-   * (`overlay`), without which it is gone at once as it closes. There it rolls up and the cross
-   * turns back to the lines first, as the style does elsewhere, and only then is it closed. Remove
-   * once both have `overlay`.
+   * (`overlay`), without which it is gone at once as it closes. There, still open, it is marked
+   * `data-rolling-up`, and the style rolls it up and turns the cross back to the lines by the same
+   * transitions as elsewhere; only then is it closed, into a style the same as the one it rolled
+   * up to, so nothing moves again. Remove once both have `overlay`.
    */
   const rollsUpItself = CSS.supports("overlay", "auto");
-  let rollingUp = false;
+
+  /** The transitions of the style that roll the menu up, not the others inside it, as of a hover. */
+  const rollingUp = new Set(["clip-path", "--menu-icon-cross"]);
 
   async function rollUp(dialog: HTMLDialogElement) {
-    if (rollingUp) return;
-    rollingUp = true;
-
-    // The time and the easing of the transition of the style, which is 0 on a screen without motion.
-    const style = getComputedStyle(dialog);
-    const options: KeyframeAnimationOptions = {
-      duration: Number.parseFloat(style.transitionDuration) * 1000,
-      easing: style.getPropertyValue("--motion-easing-standard"),
-      fill: "forwards",
-    };
-    const animations: Animation[] = [];
+    if (dialog.hasAttribute("data-rolling-up")) return;
+    dialog.setAttribute("data-rolling-up", "");
 
     try {
-      animations.push(dialog.animate({ clipPath: "inset(0 0 100% 0)" }, options));
-      for (const close of dialog.querySelectorAll(".close")) {
-        animations.push(close.animate({ "--menu-icon-cross": 0 }, options));
-      }
-      await Promise.all(animations.map((animation) => animation.finished));
+      // None on a screen without motion: it closes at once.
+      const transitions = dialog
+        .getAnimations({ subtree: true })
+        .filter(
+          (animation) =>
+            animation instanceof CSSTransition && rollingUp.has(animation.transitionProperty),
+        );
+      await Promise.all(transitions.map((transition) => transition.finished));
     } finally {
-      // Closed whatever the animation does, so the page never stays behind an open menu.
+      // Closed whatever the transitions do, so the page never stays behind an open menu.
       dialog.close();
-      for (const animation of animations) animation.cancel();
-      rollingUp = false;
+      dialog.removeAttribute("data-rolling-up");
     }
   }
 
@@ -271,6 +267,15 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
     .site-menu[open] .close {
       --menu-icon-cross: 0;
     }
+  }
+
+  /* Rolled up while still open, where the browser cannot keep it in sight as it closes (see the script). */
+  .site-menu[open][data-rolling-up] {
+    clip-path: inset(0 0 100% 0);
+  }
+
+  .site-menu[open][data-rolling-up] .close {
+    --menu-icon-cross: 0;
   }
 
   /* As tall as the button and without width: the first line fills the button, the second is out. */
