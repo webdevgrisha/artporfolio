@@ -50,6 +50,27 @@ describe("about routes", () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual(about);
+    expect(aboutService.getAbout).toHaveBeenCalledWith("ru");
+  });
+
+  it("returns the texts in the language of the query", async () => {
+    aboutService.getAbout.mockResolvedValue({ text, photo: null, processPhotos: [] });
+
+    const response = await fetch(`${server.baseUrl}/api/about?lang=pl`);
+
+    expect(response.status).toBe(200);
+    expect(aboutService.getAbout).toHaveBeenCalledWith("pl");
+  });
+
+  it("refuses a language the site does not have", async () => {
+    const response = await fetch(`${server.baseUrl}/api/about?lang=xx`);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      errors: [{ parameter: "lang" }],
+      status: 400,
+    });
+    expect(aboutService.getAbout).not.toHaveBeenCalled();
   });
 
   it("changes the texts only at their own resource", async () => {

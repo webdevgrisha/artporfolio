@@ -23,7 +23,7 @@ const field = "processPhotos";
 const folder = "about/process-photos";
 
 /** Where the translations of the alt texts go. */
-const translationResource = "about-process-photos";
+export const processPhotoTranslations = "about-process-photos";
 
 const storedProcessPhotosSchema = z.array(storedListPhotoSchema);
 
@@ -65,14 +65,14 @@ export function replaceProcessPhotos(
       transaction.set(document, { [field]: next }, { merge: true });
       saveSources(
         transaction,
-        translationResource,
+        processPhotoTranslations,
         textsById(next, ({ alt }) => alt),
       );
       return [current, next];
     });
 
     draft.removeUnused(saved, photos);
-    await requestTranslations(translationResource);
+    await requestTranslations(processPhotoTranslations);
 
     return toProcessPhotoList(photos);
   });
