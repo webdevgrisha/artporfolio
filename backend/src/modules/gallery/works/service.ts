@@ -16,6 +16,7 @@ import type {
   WorkSummary,
   WorkUsage,
 } from "#modules/gallery/works/schema";
+import { workTranslations } from "#modules/gallery/works/translations";
 import { ownGroups, usageByItem } from "#modules/gallery/works/usage";
 import { isVisibleTo } from "#modules/gallery/works/visibility";
 import { firestore } from "#shared/firebase/firestore";
@@ -52,11 +53,6 @@ function photoVersionFolder(id: string, version: string): string {
 /** Each process photo keeps its versions in a subfolder of its own. */
 function processPhotosFolder(id: string): string {
   return `${workFolder(id)}/process`;
-}
-
-/** Where the translations of the work go. */
-function workTranslations(id: string): string {
-  return `gallery-work-${id}`;
 }
 
 /**

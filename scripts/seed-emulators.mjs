@@ -607,15 +607,27 @@ async function seedAbout(api) {
 async function seedContacts(api) {
   await api.put("/contacts/links", contactLinks);
 
-  const photo = await uploadArtwork(api, {
-    kind: "painting",
-    name: "contacts",
-    palette: "dragonfly",
-    seed: 71,
-    size: [1200, 1500],
-  });
-  await api.put("/contacts/photo", { alt: "Рабочий стол с красками и кистями", uploadId: photo });
-  console.log("  contacts: links, photo");
+  // Landscape, as the frame of the slideshow; the artist may switch it to the gallery.
+  const slides = [
+    { alt: "Рабочий стол с красками и кистями", palette: "dragonfly", seed: 71 },
+    { alt: "Мастерская у окна", palette: "frog", seed: 72 },
+    { alt: "Холсты у стены мастерской", palette: "lion", seed: 73 },
+  ];
+  const photos = [];
+  for (const { alt, palette, seed } of slides) {
+    photos.push({
+      alt,
+      uploadId: await uploadArtwork(api, {
+        kind: "painting",
+        name: `contacts-${String(seed)}`,
+        palette,
+        seed,
+        size: [1500, 1050],
+      }),
+    });
+  }
+  await api.put("/contacts/slideshow", { photos, source: "uploaded" });
+  console.log(`  contacts: links, ${String(photos.length)} slideshow photos`);
 }
 
 async function seedCurrencies(api) {

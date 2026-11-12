@@ -1,3 +1,4 @@
+import { firestore } from "#shared/firebase/firestore";
 import { type Language, sourceLanguage } from "#shared/i18n/languages";
 import { readResource, resourceDocument } from "#shared/i18n/translation-document";
 import type { StoredTranslations } from "#shared/i18n/translations";
@@ -30,4 +31,21 @@ export function translatedText(
   }
 
   return translations[language]?.[key]?.text || translations.en?.[key]?.text || source;
+}
+
+/**
+ * The translations of each resource in one read, in the order of `resources`, or none when the
+ * texts are wanted in the source language.
+ */
+export async function readEachTranslations(
+  resources: readonly string[],
+  language: Language,
+): Promise<StoredTranslations[]> {
+  if (language === sourceLanguage || resources.length === 0) {
+    return resources.map(() => ({}));
+  }
+
+  const snapshots = await firestore().getAll(...resources.map(resourceDocument));
+
+  return snapshots.map((snapshot) => readResource(snapshot).translations);
 }

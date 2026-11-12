@@ -36,7 +36,7 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
-  contactsService.getContacts.mockResolvedValue({ links, photo: null });
+  contactsService.getContacts.mockResolvedValue({ links, photos: [] });
 });
 
 afterAll(() => server.close());
@@ -46,7 +46,7 @@ describe("contacts routes", () => {
     const response = await fetch(`${server.baseUrl}/api/contacts`);
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ links, photo: null });
+    await expect(response.json()).resolves.toEqual({ links, photos: [] });
     expect(auth.verifySession).not.toHaveBeenCalled();
     expect(contactsService.getContacts).toHaveBeenCalledWith("ru");
   });

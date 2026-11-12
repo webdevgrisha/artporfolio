@@ -64,7 +64,7 @@ describe("CORS", () => {
   it.each(["POST", "PUT", "PATCH", "DELETE"])(
     "allows %s requests in a preflight",
     async (method) => {
-      const response = await fetch(`${server.baseUrl}/api/contacts/photo`, {
+      const response = await fetch(`${server.baseUrl}/api/contacts/slideshow`, {
         headers: { "Access-Control-Request-Method": method, Origin: "http://localhost:5173" },
         method: "OPTIONS",
       });
