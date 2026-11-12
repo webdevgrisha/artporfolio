@@ -279,11 +279,20 @@ const style =
   @media (prefers-reduced-motion: no-preference) {
     .page-hero[data-live] {
       block-size: 200lvh;
-      animation: along linear both;
-      /* Of the whole screen: by default it would leave out the room the header keeps for links within
-         the page (scroll-padding), and start that much ahead. */
-      animation-timeline: view(0px);
-      animation-range: contain 0% contain 100%;
+    }
+
+    /*
+     * Only where the browser ties an animation to the scroll: elsewhere it would play at once and
+     * end at 1, over the --along the script sets in its place.
+     */
+    @supports (animation-timeline: view()) {
+      .page-hero[data-live] {
+        animation: along linear both;
+        /* Of the whole screen: by default it would leave out the room the header keeps for links
+           within the page (scroll-padding), and start that much ahead. */
+        animation-timeline: view(0px);
+        animation-range: contain 0% contain 100%;
+      }
     }
   }
 
@@ -324,8 +333,11 @@ const style =
   }
 
   /*
-   * The work, filling the screen, blurred as in the mockup: its colors and its big shapes. It
-   * reaches past the screen by the reach of the blur, which fades the edges of what it blurs.
+   * The work, filling the screen, blurred as in the mockup: its colors and its big shapes. It is
+   * darker than the work itself, as the plates of the menu are, so the letters, which show the work
+   * as it is, stand out from it on any work, pale or dark: everywhere about as much brighter than
+   * what is around them. It reaches past the screen by the reach of the blur, which fades the
+   * edges of what it blurs.
    */
   .photo {
     --blur: clamp(0.5rem, 0.75vmax, 1rem);
@@ -334,17 +346,12 @@ const style =
     inset: calc(-2 * var(--blur));
     background-image: var(--hero-image);
     background-position: calc(var(--cover-x) + 2 * var(--blur)) calc(var(--cover-y) + 2 * var(--blur));
-    filter: blur(var(--blur));
+    filter: blur(var(--blur)) brightness(0.6);
   }
 
-  /*
-   * The windows show the work a little darker than the blurred one, as in the mockup, so the
-   * letters read even on a pale work, such as a drawing on white paper. A shade over the work in
-   * the background itself, not a filter, which Firefox does not draw letters of a clipped
-   * background through.
-   */
+  /* The windows show the work itself, sharp. */
   .photographed :is(.line, .chevron) {
-    background-image: linear-gradient(rgb(0 0 0 / 0.3) 0 0), var(--hero-image);
+    background-image: var(--hero-image);
   }
 
   /*
@@ -357,7 +364,8 @@ const style =
     --y: calc((100cqh - var(--line-height, 1em)) / 2);
 
     position: absolute;
-    inset-block-start: 0;
+    /* Placed by its top, not moved: Firefox clips the work to letters where they would be unmoved. */
+    inset-block-start: var(--y);
     inset-inline: 0;
     display: flex;
     justify-content: space-between;
@@ -369,7 +377,6 @@ const style =
     line-height: 1;
     text-transform: uppercase;
     white-space: nowrap;
-    translate: 0 var(--y);
   }
 
   /*
@@ -416,6 +423,11 @@ const style =
 
   .photographed .line {
     color: transparent;
+    /*
+     * A hairline of light along the edge of each letter, as of glass: where the work is as dark in
+     * the letter as around it, as on a black ground, it still draws the letter.
+     */
+    -webkit-text-stroke: max(1px, 0.01em) rgb(255 255 255 / 0.35);
     background-position: var(--cover-x) calc(var(--cover-y) - var(--y));
     /* Safari on older iPhones knows only the prefixed name. */
     -webkit-background-clip: text;
