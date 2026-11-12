@@ -59,15 +59,15 @@ function files(value: string) {
 </picture>
 
 <style>
+  /* Holds the place of the image while it loads, under it, so the image fades in over it. */
   .picture {
     display: block;
+    background: var(--color-placeholder);
   }
 
   img {
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
-    /* Holds the place of the image while it loads. */
-    background: var(--color-placeholder);
   }
 </style>

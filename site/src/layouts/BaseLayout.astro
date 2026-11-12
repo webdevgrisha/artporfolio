@@ -80,6 +80,20 @@ const [links, currencies, heroes] = standalone
         // Blocked storage: the page follows the system.
       }
     </script>
+    <script is:inline>
+      // Before any image of the page, so none loads unseen: each is marked as it loads, or fails,
+      // and base.css fades it in. Without a script the images show as they come.
+      document.documentElement.dataset.fadeImages = "";
+      for (const type of ["load", "error"]) {
+        document.addEventListener(
+          type,
+          (event) => {
+            if (event.target instanceof HTMLImageElement) event.target.dataset.loaded = "";
+          },
+          { capture: true },
+        );
+      }
+    </script>
     <Font cssVariable="--font-absans" preload />
     <Font cssVariable="--font-manrope" />
     <link rel="icon" type="image/png" href="/favicon.png" />

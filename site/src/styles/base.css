@@ -41,6 +41,19 @@
     color: inherit;
   }
 
+  /*
+   * A photo fades in over its placeholder as it arrives instead of appearing at once, line by line
+   * (see the script of BaseLayout). Not the largest image of the first screen, which is never lazy:
+   * hidden, it would be seen later.
+   */
+  img {
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  :root[data-fade-images] img[loading="lazy"]:not([data-loaded]) {
+    opacity: 0;
+  }
+
   :focus-visible {
     outline: var(--focus-ring);
     outline-offset: 2px;
