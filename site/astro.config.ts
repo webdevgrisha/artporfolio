@@ -46,4 +46,7 @@ export default defineConfig({
     },
   ],
   output: "server",
+  // A link of the site fetches its page as the pointer rests on it, or as a finger touches it, so
+  // the page opens at once on the click. Astro skips it on a slow connection or with data saving.
+  prefetch: { defaultStrategy: "hover", prefetchAll: true },
 });

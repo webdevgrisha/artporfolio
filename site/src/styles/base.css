@@ -46,3 +46,21 @@
     outline-offset: 2px;
   }
 }
+
+/*
+ * Going from page to page of the site, the new page fades in over the old one instead of the
+ * screen blinking white: what both pages share, such as the header, stays still, as the two
+ * images of it are the same. Not in a layer: it is a setting of the document, not a style. A
+ * visitor who asked for less motion gets the page at once.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-duration-slow);
+  animation-timing-function: var(--motion-easing-standard);
+}
