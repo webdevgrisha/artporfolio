@@ -1,50 +1,85 @@
 /**
- * The hero never stays half gone: between the wiped line (the end of the hero at the bottom of the
- * screen) and the top of the page, the scroll is taken on to one or the other as soon as it comes
- * to rest, in the direction the visitor moved, as a slide. Within the hero, and within the page,
- * the scroll is free. With less motion the hero is a still screen, and nothing snaps.
+ * The hero never stays half gone. As soon as the visitor scrolls on past the wiped line (the end of
+ * the hero at the bottom of the screen), the page slides in at once and fills the screen; as soon
+ * as they scroll back up past the top of the page, the whole hero slides back. Within the hero, and
+ * within the page, the scroll is free. With less motion the hero is a still screen, and nothing
+ * slides.
  *
- * CSS can snap the scroll too (scroll-snap-type), but browsers disagree on it for a scene taller
- * than the screen (2026): Firefox leaves the scroll between the points, Safari brings the hero
- * back on any pull up. ScrollTrigger of GSAP snaps the same in every browser, by the direction and
- * the speed of the move, with its own easing. It is loaded once the visitor first scrolls, as
- * nothing snaps before: the first screen never waits for it.
+ * CSS can snap the scroll (scroll-snap-type), but only once it comes to rest, and browsers disagree
+ * on it for a scene taller than the screen (2026). GSAP does what slides of sections do on the web:
+ * ScrollTrigger sees the scroll cross either edge, ScrollToPlugin takes it to the other, and while
+ * it does, the wheel and the finger wait (ScrollTrigger.observe), so their own momentum never
+ * fights the slide. It is loaded once the visitor first scrolls, as nothing slides before: the
+ * first screen never waits for it.
  */
 export function snapHeroScroll(hero: HTMLElement): void {
   window.addEventListener(
     "scroll",
     () => {
       // Never loaded for a visitor who asked for less motion as the page opened.
-      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) void snap(hero);
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) void slide(hero);
     },
     { once: true, passive: true },
   );
 }
 
-async function snap(hero: HTMLElement): Promise<void> {
-  const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+async function slide(hero: HTMLElement): Promise<void> {
+  const [{ gsap }, { ScrollTrigger }, { ScrollToPlugin }] = await Promise.all([
     import("gsap"),
     import("gsap/ScrollTrigger"),
+    import("gsap/ScrollToPlugin"),
   ]);
 
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
   // The bars of a phone's browser come and go as the visitor scrolls: that is no new layout.
   ScrollTrigger.config({ ignoreMobileResize: true });
 
   // Undone by itself, should the visitor ask for less motion while the page is open.
   gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+    // Holds the wheel, the finger and the keys of scrolling while the page slides.
+    const hold = ScrollTrigger.observe({
+      type: "wheel,touch,scroll",
+      preventDefault: true,
+      allowClicks: true,
+    });
+
+    hold.disable();
+
+    let sliding = false;
+
     ScrollTrigger.create({
       trigger: hero,
       // From the bottom of the hero at the bottom of the screen to the top of the page at its top.
       start: "bottom bottom",
       end: "bottom top",
-      snap: {
-        snapTo: [0, 1],
-        directional: true,
-        delay: 0.05,
-        duration: { min: 0.3, max: 0.6 },
-        ease: "power2.inOut",
+      /*
+       * Whenever the scroll moves between the two, from either edge, even from one it rests
+       * exactly on, as after a slide: on to the other edge, the way it moved.
+       */
+      onUpdate: (self) => {
+        if (sliding || self.progress === 0 || self.progress === 1) return;
+
+        const root = document.documentElement;
+
+        sliding = true;
+        hold.enable();
+        // Each step of the slide is a scroll of its own: a smooth one, as the page has for links
+        // within it (base.css), would start over at every step and hardly move.
+        root.style.scrollBehavior = "auto";
+        gsap.to(window, {
+          duration: 0.8,
+          ease: "power2.inOut",
+          onComplete: () => {
+            root.style.removeProperty("scroll-behavior");
+            hold.disable();
+            sliding = false;
+          },
+          overwrite: true,
+          scrollTo: { autoKill: false, y: self.direction > 0 ? self.end : self.start },
+        });
       },
     });
+
+    return () => hold.kill();
   });
 }
