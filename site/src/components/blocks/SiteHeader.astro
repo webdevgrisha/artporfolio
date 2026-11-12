@@ -6,6 +6,7 @@
  */
 import SiteMenu from "@/components/blocks/SiteMenu.astro";
 import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
+import ThemeToggle from "@/components/controls/ThemeToggle.astro";
 import Container from "@/components/ui/Container.astro";
 import HomeLink from "@/components/ui/HomeLink.astro";
 import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
@@ -35,6 +36,7 @@ const menuId = "site-menu";
           <LanguageSwitch id="header-language" language={language} path={path} />
         )
       }
+      <ThemeToggle language={language} />
     </div>
     <button
       aria-label={t(language, "header.menu")}

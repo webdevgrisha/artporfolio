@@ -10,6 +10,7 @@ import { languageTag } from "@/lib/i18n/languageTag";
 import { textDirection } from "@/lib/i18n/textDirection";
 import { t } from "@/lib/i18n/translate";
 import { siteName } from "@/lib/site/siteName";
+import { themeColors, themeStorageKey } from "@/lib/site/theme";
 
 import PageMeta from "./PageMeta.astro";
 
@@ -48,18 +49,22 @@ const links = standalone ? undefined : await loadContactLinks(language);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
-    <script is:inline>
+    <meta
+      name="theme-color"
+      content={themeColors.light}
+      media="(prefers-color-scheme: light)"
+    />
+    <meta name="theme-color" content={themeColors.dark} media="(prefers-color-scheme: dark)" />
+    <script is:inline define:vars={{ themeColors, themeStorageKey }}>
       // Before the first paint, so a theme the visitor chose does not flash the other one first.
       // Without a choice the page follows the system, which the CSS reads by itself.
       try {
-        const theme = localStorage.getItem("theme");
+        const theme = localStorage.getItem(themeStorageKey);
 
         if (theme === "light" || theme === "dark") {
           document.documentElement.dataset.theme = theme;
           for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
-            meta.content = theme === "dark" ? "#141414" : "#fff";
+            meta.content = themeColors[theme];
           }
         }
       } catch {

@@ -15,6 +15,8 @@
   "header.menu": "メニュー",
   "header.close": "閉じる",
   "header.language": "言語",
+  "header.toDarkTheme": "ダークテーマに切り替える",
+  "header.toLightTheme": "ライトテーマに切り替える",
   "footer.menu": "ページ",
   "footer.networks": "ソーシャルネットワーク",
   "newsletter.heading": "ニュースレターを購読する",

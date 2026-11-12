@@ -15,6 +15,8 @@
   "header.menu": "Menu",
   "header.close": "Chiudi",
   "header.language": "Lingua",
+  "header.toDarkTheme": "Passa al tema scuro",
+  "header.toLightTheme": "Passa al tema chiaro",
   "footer.menu": "Pagine",
   "footer.networks": "Social network",
   "newsletter.heading": "Iscriviti alla mia newsletter",

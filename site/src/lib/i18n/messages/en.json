@@ -15,6 +15,8 @@
   "header.menu": "Menu",
   "header.close": "Close",
   "header.language": "Language",
+  "header.toDarkTheme": "Switch to the dark theme",
+  "header.toLightTheme": "Switch to the light theme",
   "footer.menu": "Pages",
   "footer.networks": "Social networks",
   "newsletter.heading": "Subscribe to my newsletter",

@@ -15,6 +15,8 @@
   "header.menu": "मेनू",
   "header.close": "बंद करें",
   "header.language": "भाषा",
+  "header.toDarkTheme": "डार्क थीम में स्विच करें",
+  "header.toLightTheme": "हल्के थीम में स्विच करें",
   "footer.menu": "पृष्ठ",
   "footer.networks": "सामाजिक नेटवर्क",
   "newsletter.heading": "मेरे न्यूज़लेटर की सदस्यता लें",

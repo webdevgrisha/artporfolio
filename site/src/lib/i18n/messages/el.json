@@ -15,6 +15,8 @@
   "header.menu": "Μενού",
   "header.close": "Κλείσιμο",
   "header.language": "Γλώσσα",
+  "header.toDarkTheme": "Μετάβαση στο σκούρο θέμα",
+  "header.toLightTheme": "Μετάβαση στο ανοιχτόχρωμο θέμα",
   "footer.menu": "Σελίδες",
   "footer.networks": "Κοινωνικά δίκτυα",
   "newsletter.heading": "Εγγραφείτε στο ενημερωτικό δελτίο μου",

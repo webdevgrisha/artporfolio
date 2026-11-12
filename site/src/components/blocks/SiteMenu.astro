@@ -9,6 +9,7 @@
  */
 import NetworkLinks from "@/components/blocks/NetworkLinks.astro";
 import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
+import ThemeToggle from "@/components/controls/ThemeToggle.astro";
 import Container from "@/components/ui/Container.astro";
 import HomeLink from "@/components/ui/HomeLink.astro";
 import CloseIcon from "@/components/ui/icons/CloseIcon.astro";
@@ -64,6 +65,7 @@ const year = new Date().getFullYear();
           <LanguageSwitch id="menu-language" language={language} path={path} />
         )
       }
+      <ThemeToggle language={language} />
     </div>
     {
       links && (

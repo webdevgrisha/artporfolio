@@ -1,0 +1,113 @@
+---
+/**
+ * The button that switches the theme of the site. It shows the theme it turns on, as the one of the
+ * admin does: a crescent on the light page, a sun on the dark one, with its label for screen
+ * readers. Which one shows is read by CSS from the theme the page has, so it is right from the
+ * first paint; the script only switches. Without a script it cannot work, so it is not shown.
+ */
+import MoonIcon from "@/components/ui/icons/MoonIcon.astro";
+import SunIcon from "@/components/ui/icons/SunIcon.astro";
+import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+
+interface Props {
+  class?: string | undefined;
+  language: Language;
+}
+
+const { class: className, language } = Astro.props;
+---
+
+<button class:list={["theme-toggle", className]} data-theme-toggle hidden type="button">
+  <span class="to-dark">
+    <MoonIcon />
+    <VisuallyHidden>{t(language, "header.toDarkTheme")}</VisuallyHidden>
+  </span>
+  <span class="to-light">
+    <SunIcon />
+    <VisuallyHidden>{t(language, "header.toLightTheme")}</VisuallyHidden>
+  </span>
+</button>
+
+<script>
+  import { type Theme, themeColors, themeStorageKey } from "@/lib/site/theme";
+
+  const root = document.documentElement;
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+  /** The theme the page has: the one the visitor chose, else the one of the system. */
+  function currentTheme(): Theme {
+    const chosen = root.dataset.theme;
+
+    if (chosen === "light" || chosen === "dark") return chosen;
+
+    return systemDark.matches ? "dark" : "light";
+  }
+
+  function applyTheme(theme: Theme): void {
+    root.dataset.theme = theme;
+    for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+      meta.content = themeColors[theme];
+    }
+    try {
+      localStorage.setItem(themeStorageKey, theme);
+    } catch {
+      // Blocked storage: the theme holds on this page only.
+    }
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")) {
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      applyTheme(currentTheme() === "dark" ? "light" : "dark");
+    });
+  }
+</script>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--min-tap-target-size);
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  .theme-toggle[hidden] {
+    display: none;
+  }
+
+  @media (hover: hover) {
+    .theme-toggle:hover {
+      opacity: 0.6;
+    }
+  }
+
+  .to-dark,
+  .to-light {
+    display: contents;
+  }
+
+  /* The page is dark when the visitor chose it, or when the system is and they chose nothing. */
+  :global(:root[data-theme="dark"]) .to-dark,
+  :global(:root:not([data-theme="dark"])) .to-light {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme])) .to-dark {
+      display: none;
+    }
+
+    :global(:root:not([data-theme])) .to-light {
+      display: contents;
+    }
+  }
+</style>

@@ -15,6 +15,8 @@
   "header.menu": "Meniu",
   "header.close": "Închide",
   "header.language": "Limba",
+  "header.toDarkTheme": "Comută la tema întunecată",
+  "header.toLightTheme": "Comută la tema deschisă",
   "footer.menu": "Pagini",
   "footer.networks": "Rețelele sociale",
   "newsletter.heading": "Abonați-vă la newsletter-ul meu",

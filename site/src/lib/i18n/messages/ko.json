@@ -15,6 +15,8 @@
   "header.menu": "메뉴",
   "header.close": "닫기",
   "header.language": "언어",
+  "header.toDarkTheme": "다크 테마로 전환",
+  "header.toLightTheme": "밝은 테마로 전환",
   "footer.menu": "페이지",
   "footer.networks": "소셜 네트워크",
   "newsletter.heading": "뉴스레터 구독하기",
