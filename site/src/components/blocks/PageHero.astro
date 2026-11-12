@@ -288,8 +288,14 @@ const style =
    * In the middle of the first screen: the chevron of the mockup, a window onto the work as the
    * letters are, nodding down, and its words under it. It fades out over the first steps of the
    * scroll, before the line is written. A still hero has none.
+   *
+   * The middle of what the visitor sees: on a phone the bars of the browser show as the page
+   * opens and cover the bottom of the stage (lvh), so the middle is that of the screen without
+   * them (svh); elsewhere the two are one.
    */
   .hint {
+    --middle: calc(min(100cqh, 100svh) / 2);
+
     position: absolute;
     inset: 0;
     display: none;
@@ -318,7 +324,7 @@ const style =
     --width: clamp(4rem, 6.667cqw, 8rem);
     --x: calc(50cqw - var(--width) / 2);
     /* The drawing is 134 units wide, its V 128 of them (--width), its tip 68 units down. */
-    --y: calc(50cqh - var(--width) * 68 / 128);
+    --y: calc(var(--middle) - var(--width) * 68 / 128);
     --nod: 0.75rem;
 
     /* By top and left, as its x and y are: from the left in a text from the right too. */
@@ -390,7 +396,7 @@ const style =
 
   .hint-text {
     position: absolute;
-    inset-block-start: calc(50% + var(--layout-space-4));
+    inset-block-start: calc(var(--middle) + var(--layout-space-4));
     inset-inline: var(--page-gutter);
     font-size: var(--font-size-1);
     text-align: center;
