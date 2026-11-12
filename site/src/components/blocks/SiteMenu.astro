@@ -72,7 +72,7 @@ const year = new Date().getFullYear();
                       alt=""
                       class="hero"
                       image={hero}
-                      sizes="(width >= 75rem) 20vw, 50vw"
+                      sizes="(width >= 75rem) 10vw, 25vw"
                       slot="icon"
                     />
                   )}
@@ -301,9 +301,10 @@ const year = new Date().getFullYear();
   /*
    * Under the pointer, or the focus of the keyboard, the hero of the page fills its plate behind
    * the text, as in the mockup: the plate is as wide as the word and half a letter more on each
-   * side, so the text keeps the line of the column. The work is darkened so the white text reads on any of
-   * them, and the underline gives way to it. Without a pointer, on a phone, the plates stay plain
-   * and their photos are never loaded: a hidden image is not fetched.
+   * side, so the text keeps the line of the column. The work is blurred, as the hero is at the
+   * top of its page, and darkened so the white text reads on any of them; the underline gives way
+   * to it. The blur hides the detail, so a small file is enough. Without a pointer, on a phone, the
+   * plates stay plain and their photos are never loaded: a hidden image is not fetched.
    */
   .hero {
     display: none;
@@ -327,11 +328,17 @@ const year = new Date().getFullYear();
       transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
     }
 
+    /* Blurred edges would let the page show through: the photo is cut to the plate, a little larger. */
+    .hero {
+      overflow: hidden;
+    }
+
     .hero :global(img) {
       inline-size: 100%;
       block-size: 100%;
       object-fit: cover;
-      filter: brightness(0.6);
+      filter: blur(0.2em) brightness(0.6);
+      scale: 1.15;
     }
 
     .with-hero {
