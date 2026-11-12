@@ -6,7 +6,6 @@
  */
 import { actions } from "astro:actions";
 import { Picture } from "astro:assets";
-import type { HTMLAttributes } from "astro/types";
 
 import portrait from "@/assets/images/portraitMark.png";
 import ChevronIcon from "@/components/ui/icons/ChevronIcon.astro";
@@ -15,11 +14,14 @@ import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
 import { subscribeOutcome } from "@/lib/newsletter/subscribeOutcome";
 
-interface Props extends HTMLAttributes<"section"> {
+// Its ids are its own, `newsletter` the one its form comes back to: a page has it once, in the
+// footer, which places it by its class.
+interface Props {
+  class?: string;
   language: Language;
 }
 
-const { class: className, language, ...attributes } = Astro.props;
+const { class: className, language } = Astro.props;
 
 // The outcome of a form posted without JavaScript; the script below shows the same in place.
 const result = Astro.getActionResult(actions.subscribe);
@@ -30,7 +32,6 @@ const outcome = result && subscribeOutcome(result.error);
   aria-labelledby="newsletter-heading"
   class:list={["newsletter", className]}
   id="newsletter"
-  {...attributes}
 >
   {/* At most about 150px wide; each screen takes the file of its density, sharp on a Retina one. */}
   <Picture
