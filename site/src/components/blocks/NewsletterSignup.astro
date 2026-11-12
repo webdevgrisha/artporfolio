@@ -34,6 +34,7 @@ const outcome = !result
 <section
   aria-labelledby="newsletter-heading"
   class:list={["newsletter", className]}
+  id="newsletter"
   {...attributes}
 >
   {/* At most about 150px wide; each screen takes the file of its density, sharp on a Retina one. */}
@@ -48,8 +49,9 @@ const outcome = !result
   />
   <div class="body">
     <h2 class="heading" id="newsletter-heading">{t(language, "newsletter.heading")}</h2>
+    {/* Without JavaScript the page comes back at the form, where its outcome is, not at the hero. */}
     <form
-      action={actions.subscribe}
+      action={`${actions.subscribe}#newsletter`}
       class="form"
       data-newsletter
       data-outcome={outcome}
@@ -102,24 +104,35 @@ const outcome = !result
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (form.dataset.sending !== undefined) return;
+
       // The last outcome goes while the form is sent, so the new one shows and is read anew.
       delete form.dataset.outcome;
       form.dataset.sending = "";
       submit.disabled = true;
+      const sent = email.value;
+      let outcome: "subscribed" | "invalid" | "failed";
 
-      const { error } = await actions.subscribe(new FormData(form));
-      const outcome = !error
-        ? "subscribed"
-        : isInputError(error) || error.code === "BAD_REQUEST"
-          ? "invalid"
-          : "failed";
+      try {
+        const { error } = await actions.subscribe(new FormData(form));
+        outcome = !error
+          ? "subscribed"
+          : isInputError(error) || error.code === "BAD_REQUEST"
+            ? "invalid"
+            : "failed";
+      } catch {
+        // No answer came, such as offline: the address stays, so the visitor can send it again.
+        outcome = "failed";
+      } finally {
+        delete form.dataset.sending;
+        submit.disabled = false;
+      }
 
       form.dataset.outcome = outcome;
       if (outcome === "invalid") email.setAttribute("aria-invalid", "true");
       else email.removeAttribute("aria-invalid");
-      if (outcome === "subscribed") email.value = "";
-      delete form.dataset.sending;
-      submit.disabled = false;
+      // Only the address that subscribed goes: one typed while it was sent is the visitor's next.
+      if (outcome === "subscribed" && email.value === sent) email.value = "";
     });
   }
 </script>
