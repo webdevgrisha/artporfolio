@@ -71,10 +71,89 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
    */
   const menu = document.querySelector<HTMLDialogElement>("[data-site-menu]");
 
+  /*
+   * Stand in for what Safari and Firefox lack: keeping the menu in the top layer while it rolls up
+   * (`overlay`), without which it is gone at once as it closes. There it rolls up and the cross
+   * turns back to the lines first, as the style does elsewhere, and only then is it closed. Remove
+   * once both have `overlay`.
+   */
+  const rollsUpItself = CSS.supports("overlay", "auto");
+  let rollingUp = false;
+
+  async function rollUp(dialog: HTMLDialogElement) {
+    if (rollingUp) return;
+    rollingUp = true;
+
+    // The time and the easing of the transition of the style, which is 0 on a screen without motion.
+    const style = getComputedStyle(dialog);
+    const options: KeyframeAnimationOptions = {
+      duration: Number.parseFloat(style.transitionDuration) * 1000,
+      easing: style.getPropertyValue("--motion-easing-standard"),
+      fill: "forwards",
+    };
+    const animations: Animation[] = [];
+
+    try {
+      animations.push(dialog.animate({ clipPath: "inset(0 0 100% 0)" }, options));
+      for (const close of dialog.querySelectorAll(".close")) {
+        animations.push(close.animate({ "--menu-icon-cross": 0 }, options));
+      }
+      await Promise.all(animations.map((animation) => animation.finished));
+    } finally {
+      // Closed whatever the animation does, so the page never stays behind an open menu.
+      dialog.close();
+      for (const animation of animations) animation.cancel();
+      rollingUp = false;
+    }
+  }
+
+  function closeMenu(dialog: HTMLDialogElement) {
+    if (rollsUpItself) dialog.close();
+    else void rollUp(dialog);
+  }
+
+  if (menu && !rollsUpItself) {
+    // The button that closes it, by `commandfor`.
+    menu.addEventListener("command", (event) => {
+      if ((event as CommandEvent).command !== "close") return;
+      event.preventDefault();
+      void rollUp(menu);
+    });
+    // Escape, and a click beside it where the browser has `closedby`.
+    menu.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      void rollUp(menu);
+    });
+  }
+
+  /*
+   * Closed by the mouse or a finger, the menu gives the focus back to the button that opened it
+   * without the ring of the keyboard. Safari draws it there, carried over from the list of pages
+   * it focused as the menu opened; by the keyboard, the ring stays.
+   */
+  if (menu) {
+    let byPointer = false;
+
+    menu.addEventListener("pointerdown", () => {
+      byPointer = true;
+    });
+    menu.addEventListener("keydown", () => {
+      byPointer = false;
+    });
+    menu.addEventListener("close", () => {
+      const opener = document.activeElement;
+
+      if (byPointer && opener instanceof HTMLElement && opener.matches(":focus-visible")) {
+        opener.blur();
+        opener.focus({ focusVisible: false, preventScroll: true });
+      }
+    });
+  }
+
   if (menu && !("command" in HTMLButtonElement.prototype)) {
     for (const button of document.querySelectorAll<HTMLButtonElement>(`[commandfor="${menu.id}"]`)) {
       button.addEventListener("click", () => {
-        if (button.getAttribute("command") === "close") menu.close();
+        if (button.getAttribute("command") === "close") closeMenu(menu);
         else menu.showModal();
       });
     }
@@ -90,7 +169,7 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
         event.clientY < box.top ||
         event.clientY > box.bottom;
 
-      if (event.target === menu && outside) menu.close();
+      if (event.target === menu && outside) closeMenu(menu);
     });
   }
 </script>
