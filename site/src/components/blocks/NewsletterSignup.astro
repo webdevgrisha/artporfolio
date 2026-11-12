@@ -96,8 +96,11 @@ const outcome = result && subscribeOutcome(result.error);
 
   // Sends the form in place, so the page keeps its scroll and shows the outcome under the field.
   for (const form of document.querySelectorAll<HTMLFormElement>("[data-newsletter]")) {
-    const email = form.elements.namedItem("email") as HTMLInputElement;
-    const submit = form.querySelector("button") as HTMLButtonElement;
+    const email = form.querySelector<HTMLInputElement>("input[name='email']");
+    const submit = form.querySelector<HTMLButtonElement>("button[type='submit']");
+
+    // Should the markup lose either, the form still posts to the page, as without JavaScript.
+    if (!email || !submit) continue;
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
