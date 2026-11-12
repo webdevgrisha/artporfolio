@@ -15,7 +15,8 @@
   border-radius: 0;
   transition:
     color var(--motion-duration-standard) var(--motion-easing-standard),
-    background-color var(--motion-duration-standard) var(--motion-easing-standard);
+    background-color var(--motion-duration-standard) var(--motion-easing-standard),
+    scale var(--motion-duration-release) var(--motion-easing-release);
 }
 
 @media (hover: hover) {
@@ -31,9 +32,13 @@
   }
 }
 
+/* Pressed, the button gives way a little under the finger and springs back as it is let go. */
 .root:active:not(:disabled) {
   color: var(--color-text-emphasis);
   background: var(--color-surface-emphasis);
+  scale: 0.97;
+  transition-timing-function: var(--motion-easing-press);
+  transition-duration: var(--motion-duration-press);
 }
 
 .text {

@@ -9,7 +9,7 @@ type ButtonLinkProps = ComponentPropsWithRef<typeof Link>;
 /** A link that looks like `Button`. */
 export function ButtonLink({ children, className, ref, ...linkProps }: ButtonLinkProps) {
   return (
-    <Link ref={ref} className={clsx(styles.root, className)} {...linkProps}>
+    <Link ref={ref} className={clsx(styles.root, className)} data-press {...linkProps}>
       {children}
     </Link>
   );
