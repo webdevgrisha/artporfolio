@@ -4,7 +4,7 @@
  * address. Without JavaScript the form posts to the page, which comes back with the outcome; with
  * it, the outcome shows in place.
  */
-import { actions, isInputError } from "astro:actions";
+import { actions } from "astro:actions";
 import { Picture } from "astro:assets";
 import type { HTMLAttributes } from "astro/types";
 
@@ -13,6 +13,7 @@ import ChevronIcon from "@/components/ui/icons/ChevronIcon.astro";
 import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
+import { subscribeOutcome } from "@/lib/newsletter/subscribeOutcome";
 
 interface Props extends HTMLAttributes<"section"> {
   language: Language;
@@ -20,15 +21,9 @@ interface Props extends HTMLAttributes<"section"> {
 
 const { class: className, language, ...attributes } = Astro.props;
 
-// The outcome of a form posted without JavaScript; the script below tells the same apart.
+// The outcome of a form posted without JavaScript; the script below shows the same in place.
 const result = Astro.getActionResult(actions.subscribe);
-const outcome = !result
-  ? undefined
-  : !result.error
-    ? "subscribed"
-    : isInputError(result.error) || result.error.code === "BAD_REQUEST"
-      ? "invalid"
-      : "failed";
+const outcome = result && subscribeOutcome(result.error);
 ---
 
 <section
@@ -95,7 +90,9 @@ const outcome = !result
 </section>
 
 <script>
-  import { actions, isInputError } from "astro:actions";
+  import { actions } from "astro:actions";
+
+  import { type SubscribeOutcome, subscribeOutcome } from "@/lib/newsletter/subscribeOutcome";
 
   // Sends the form in place, so the page keeps its scroll and shows the outcome under the field.
   for (const form of document.querySelectorAll<HTMLFormElement>("[data-newsletter]")) {
@@ -111,15 +108,11 @@ const outcome = !result
       form.dataset.sending = "";
       submit.disabled = true;
       const sent = email.value;
-      let outcome: "subscribed" | "invalid" | "failed";
+      let outcome: SubscribeOutcome;
 
       try {
         const { error } = await actions.subscribe(new FormData(form));
-        outcome = !error
-          ? "subscribed"
-          : isInputError(error) || error.code === "BAD_REQUEST"
-            ? "invalid"
-            : "failed";
+        outcome = subscribeOutcome(error);
       } catch {
         // No answer came, such as offline: the address stays, so the visitor can send it again.
         outcome = "failed";
