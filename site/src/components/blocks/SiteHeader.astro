@@ -7,16 +7,17 @@
 import SiteMenu from "@/components/blocks/SiteMenu.astro";
 import CurrencySwitch from "@/components/controls/CurrencySwitch.astro";
 import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
+import MenuButton from "@/components/controls/MenuButton.astro";
 import ThemeToggle from "@/components/controls/ThemeToggle.astro";
 import Container from "@/components/ui/Container.astro";
 import HomeLink from "@/components/ui/HomeLink.astro";
-import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import type { ContactLinks } from "@/lib/api/contacts";
 import type { Image } from "@/lib/api/image";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
 import { localizedPath } from "@/lib/site/localizedPath";
+import { menuId } from "@/lib/site/menu";
 
 interface Props {
   /** The codes of the currencies in use, for the switch of currencies. */
@@ -31,8 +32,6 @@ interface Props {
 }
 
 const { currencies, heroes, language, links, path } = Astro.props;
-
-const menuId = "site-menu";
 ---
 
 <header class="site-header" data-site-header>
@@ -59,14 +58,7 @@ const menuId = "site-menu";
       }
       <ThemeToggle id="header-theme" language={language} />
     </div>
-    <button
-      aria-label={t(language, "header.menu")}
-      class="menu-button"
-      popovertarget={menuId}
-      type="button"
-    >
-      <MenuIcon />
-    </button>
+    <MenuButton language={language} />
   </Container>
   <SiteMenu
     currencies={currencies}
@@ -109,7 +101,10 @@ const menuId = "site-menu";
         if (Math.abs(scroll - lastScroll) < minimumScroll) return;
 
         const inUse = header.matches(":focus-within") || header.querySelector(":popover-open");
-        const down = scroll > lastScroll && scroll > header.offsetHeight;
+        // The header hides only once it has been scrolled past its own place in the page, under
+        // the hero: it stays, as the page takes the visitor from the hero to the top of the page.
+        const place = (header.previousElementSibling?.getBoundingClientRect().bottom ?? 0) + scroll;
+        const down = scroll > lastScroll && scroll > place + header.offsetHeight;
 
         header.toggleAttribute("data-hidden", down && !inUse);
         lastScroll = scroll;
@@ -172,31 +167,6 @@ const menuId = "site-menu";
   @media (width >= 48rem) {
     .controls {
       display: flex;
-    }
-  }
-
-  /*
-   * A box a finger can hit, with the lines at its end: they end where the page does, as the cross
-   * that closes the menu.
-   */
-  .menu-button {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: end;
-    min-inline-size: var(--min-tap-target-size);
-    min-block-size: var(--min-tap-target-size);
-    padding: 0;
-    color: inherit;
-    cursor: pointer;
-    background: none;
-    border: 0;
-    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
-  }
-
-  @media (hover: hover) {
-    .menu-button:hover {
-      opacity: 0.6;
     }
   }
 </style>

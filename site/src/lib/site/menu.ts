@@ -17,3 +17,6 @@ export const menu = [
   { label: "menu.about", page: "about", path: "/about" },
   { label: "menu.contact", page: "contacts", path: "/contact" },
 ] as const satisfies readonly { label: MessageKey; page: string | undefined; path: string }[];
+
+/** The id of the menu, which the buttons that open it name: in the header and in the hero. */
+export const menuId = "site-menu";

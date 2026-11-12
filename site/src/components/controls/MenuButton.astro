@@ -1,0 +1,50 @@
+---
+/**
+ * The button that opens the menu of the site: the two lines of the mockup, in a box a finger can
+ * hit, with the lines at its end, where the page ends, as the cross that closes the menu. The
+ * header has one, and the hero of a page, over which the header is not yet.
+ */
+import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { menuId } from "@/lib/site/menu";
+
+interface Props {
+  class?: string | undefined;
+  language: Language;
+}
+
+const { class: className, language } = Astro.props;
+---
+
+<button
+  aria-label={t(language, "header.menu")}
+  class:list={["menu-button", className]}
+  popovertarget={menuId}
+  type="button"
+>
+  <MenuIcon />
+</button>
+
+<style>
+  .menu-button {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: end;
+    min-inline-size: var(--min-tap-target-size);
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  @media (hover: hover) {
+    .menu-button:hover {
+      opacity: 0.6;
+    }
+  }
+</style>
