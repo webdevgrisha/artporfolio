@@ -459,21 +459,23 @@ const style =
   }
 
   /*
-   * 128 by 64px at 1920px, as in the mockup, its tip on the middle of the screen, at (--x, --y) of
-   * the stage. The work shows through its shape (::before), which moves the work back by as much,
+   * 128 by 64px at 1920px, as in the mockup, with room for its edge, its tip on the middle of the
+   * screen, at (--x, --y) of the stage. The shape is the stroke of the mockup drawn as a closed
+   * outline, so it can be both filled and edged. The work shows through its shape (::before), which moves the work back by as much,
    * as the letters do; a hairline of light follows the edge of the shape (::after), as the letters
    * have, so it shows on a dark ground too.
    */
   .chevron {
     --width: clamp(4rem, 6.667cqw, 8rem);
     --x: calc(50cqw - var(--width) / 2);
-    --y: calc(50cqh - var(--width) / 2 + var(--nod));
+    /* The drawing is 134 units wide, its V 128 of them (--width), its tip 68 units down. */
+    --y: calc(50cqh - var(--width) * 68 / 128 + var(--nod));
 
     position: absolute;
     inset-block-start: 0;
     inset-inline-start: 0;
-    inline-size: var(--width);
-    aspect-ratio: 2;
+    inline-size: calc(var(--width) * 134 / 128);
+    aspect-ratio: 134 / 72;
     translate: var(--x) var(--y);
     animation: nod 1.6s var(--motion-easing-screen) infinite;
   }
@@ -495,7 +497,7 @@ const style =
   }
 
   .chevron::before {
-    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 64'%3E%3Cpath d='M4 3 64 59 124 3' fill='none' stroke='%23000' stroke-width='9'/%3E%3C/svg%3E");
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 134 72'%3E%3Cpolygon points='10.07,2.71 67.00,55.84 123.93,2.71 130.07,9.29 67.00,68.16 3.93,9.29'/%3E%3C/svg%3E");
 
     background-color: var(--color-text);
   }
@@ -505,9 +507,9 @@ const style =
     background-position: calc(var(--cover-x) - var(--x)) calc(var(--cover-y) - var(--y));
   }
 
-  /* The edge of the shape: the same stroke, wider, less the same stroke, narrower. */
+  /* The edge of the same shape, all round it: its arms, their ends and the tip. */
   .chevron::after {
-    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 64'%3E%3Cmask id='edge'%3E%3Cpath d='M4 3 64 59 124 3' fill='none' stroke='%23fff' stroke-width='10.5'/%3E%3Cpath d='M4 3 64 59 124 3' fill='none' stroke='%23000' stroke-width='7.5'/%3E%3C/mask%3E%3Crect width='128' height='64' mask='url(%23edge)'/%3E%3C/svg%3E");
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 134 72'%3E%3Cpolygon points='10.07,2.71 67.00,55.84 123.93,2.71 130.07,9.29 67.00,68.16 3.93,9.29' fill='none' stroke='%23000' stroke-width='3'/%3E%3C/svg%3E");
 
     background-color: rgb(255 255 255 / 0.5);
   }
