@@ -12,6 +12,7 @@
  * round from the last photo to the first. Photos that fit the page whole do not move, and have no
  * buttons. Without a script the row shows its first photos, and a photo opens as a file.
  */
+import FramedButton from "@/components/ui/FramedButton.astro";
 import Picture from "@/components/ui/Picture.astro";
 import Reveal from "@/components/ui/Reveal.astro";
 import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
@@ -52,6 +53,7 @@ const firstInView = 2;
           <li class="slide" style={`--ratio: ${photo.width / photo.height}`}>
             <a
               class="open"
+              data-press
               data-pswp-height={photo.height}
               data-pswp-srcset={srcset(photo.sources.webp)}
               data-pswp-width={photo.width}
@@ -72,8 +74,8 @@ const firstInView = 2;
   </div>
   {/* Shown by the script when the photos do not fit the page; until then there is nothing to move. */}
   <div class="controls" data-controls hidden>
-    <button class="control" data-step="-1" type="button">{previous}</button>
-    <button class="control" data-step="1" type="button">{next}</button>
+    <FramedButton as="button" class="control" data-step="-1" type="button">{previous}</FramedButton>
+    <FramedButton as="button" class="control" data-step="1" type="button">{next}</FramedButton>
   </div>
 </Reveal>
 
@@ -197,6 +199,14 @@ const firstInView = 2;
 
   .picture {
     block-size: 100%;
+    transition: scale var(--motion-duration-release) var(--motion-easing-release);
+  }
+
+  /* Pressed, the photo gives way a little, as a print pressed into the wall, and opens from there. */
+  .open:active .picture {
+    scale: 0.97;
+    transition-timing-function: var(--motion-easing-press);
+    transition-duration: var(--motion-duration-press);
   }
 
   /* The ring of the keyboard inside the photo: outside, the row would cut it off. */
@@ -213,29 +223,10 @@ const firstInView = 2;
     display: none;
   }
 
-  /* Framed capitals that turn around under the pointer, as every button of the site. */
   .control {
-    min-block-size: var(--min-tap-target-size);
-    padding: var(--space-1) var(--space-6);
-    font: inherit;
+    padding-inline: var(--space-6);
     font-size: var(--font-size-2);
     line-height: var(--line-height-heading);
-    color: var(--color-text);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-caps);
-    cursor: pointer;
-    background: var(--color-surface);
-    border: var(--line-width) solid var(--color-line);
-    transition-timing-function: var(--motion-easing-standard);
-    transition-duration: var(--motion-duration-standard);
-    transition-property: color, background-color;
-  }
-
-  @media (hover: hover) {
-    .control:hover {
-      color: var(--color-surface);
-      background: var(--color-text);
-    }
   }
 
   /*
