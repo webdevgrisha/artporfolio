@@ -21,6 +21,15 @@
     }
   }
 
+  /* A text in Japanese or Korean takes the font of its language before the others; see the tokens. */
+  :lang(ja) {
+    font-family: var(--font-family-ja);
+  }
+
+  :lang(ko) {
+    font-family: var(--font-family-ko);
+  }
+
   body {
     min-inline-size: 320px;
     min-block-size: 100dvh;

@@ -19,6 +19,10 @@ export default defineConfig({
   fonts: [
     {
       cssVariable: "--font-absans",
+      // Its fallback, fitted to it, is in styles/fonts.css: the generic family Astro would end it
+      // with must come last of all the fonts, after those of Chinese, Japanese and Korean (see the
+      // tokens of typography).
+      fallbacks: [],
       name: "Absans",
       options: {
         variants: [
@@ -27,22 +31,58 @@ export default defineConfig({
       },
       provider: fontProviders.local(),
     },
+    // Absans has Latin letters only. Each other script of the languages of the site has a font of its
+    // own, as near to Absans in shape and weight as there is, for its letters only (the subsets of
+    // Google, each with its unicode-range): a page loads one only when it shows that script.
+    // Where the font in Regular is darker than Absans, its Light matches it. None has a fallback
+    // of its own: the tokens of typography end the list with one for all of them.
     {
       cssVariable: "--font-manrope",
-      // Only the Cyrillic letters: Absans has none, and its own fallback covers the rest.
       fallbacks: [],
       name: "Manrope",
-      options: {
-        variants: [
-          {
-            src: ["./src/assets/fonts/Manrope-Cyrillic-Regular.woff2"],
-            style: "normal",
-            weight: 400,
-          },
-        ],
-      },
-      provider: fontProviders.local(),
-      unicodeRange: ["U+0301", "U+0400-045F", "U+0490-0491", "U+04B0-04B1", "U+2116"],
+      provider: fontProviders.google(),
+      subsets: ["cyrillic", "greek"],
+      weights: [400],
+    },
+    {
+      cssVariable: "--font-readex-pro",
+      fallbacks: [],
+      name: "Readex Pro",
+      provider: fontProviders.google(),
+      subsets: ["arabic"],
+      weights: [300],
+    },
+    {
+      cssVariable: "--font-poppins",
+      fallbacks: [],
+      name: "Poppins",
+      provider: fontProviders.google(),
+      subsets: ["devanagari"],
+      weights: [300],
+    },
+    {
+      cssVariable: "--font-noto-sans-kr",
+      fallbacks: [],
+      name: "Noto Sans KR",
+      provider: fontProviders.google(),
+      subsets: ["korean"],
+      weights: [300],
+    },
+    {
+      cssVariable: "--font-noto-sans-sc",
+      fallbacks: [],
+      name: "Noto Sans SC",
+      provider: fontProviders.google(),
+      subsets: ["chinese-simplified"],
+      weights: [300],
+    },
+    {
+      cssVariable: "--font-noto-sans-jp",
+      fallbacks: [],
+      name: "Noto Sans JP",
+      provider: fontProviders.google(),
+      subsets: ["japanese"],
+      weights: [300],
     },
   ],
   output: "server",
