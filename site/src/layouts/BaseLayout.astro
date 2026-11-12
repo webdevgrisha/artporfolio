@@ -88,7 +88,7 @@ const links = standalone ? undefined : await loadContactLinks(language);
   <body>
     <SkipLink label={t(language, "layout.skipToContent")} target="content" />
     {!standalone && <SiteHeader language={language} links={links} path={path} />}
-    <main id="content">
+    <main class:list={{ framed: !standalone }} id="content">
       <slot />
     </main>
     {!standalone && <SiteFooter language={language} links={links} path={path} />}
@@ -104,5 +104,14 @@ const links = standalone ? undefined : await loadContactLinks(language);
 
   main {
     flex-grow: 1;
+  }
+
+  /*
+   * Every page stands as far below the header as above the line of the footer, to the eye: the
+   * header already has room under its text, so the space above is the smaller of the two. A page
+   * only spaces its own sections.
+   */
+  .framed {
+    padding-block: var(--layout-space-8) var(--layout-space-16);
   }
 </style>
