@@ -105,6 +105,14 @@
     --motion-duration-standard: 180ms;
     --motion-duration-slow: 280ms;
     --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+    /*
+     * Pressing and letting go, timed as on the site and as Josh Comeau times his buttons: a control
+     * gives way almost at once and comes back slowly, springing a little past its place.
+     */
+    --motion-duration-press: 40ms;
+    --motion-easing-press: cubic-bezier(0.3, 0, 0.6, 1);
+    --motion-duration-release: 600ms;
+    --motion-easing-release: cubic-bezier(0.3, 0.7, 0.4, 1.5);
     font-family: "Absans", "Manrope", Arial, sans-serif;
     font-synthesis: none;
     color: var(--color-text);
@@ -172,7 +180,18 @@
       --motion-duration-fast: 0ms;
       --motion-duration-standard: 0ms;
       --motion-duration-slow: 0ms;
+      --motion-duration-press: 0ms;
+      --motion-duration-release: 0ms;
     }
+  }
+
+  /*
+   * Pressed: whatever is pressed answers at once, before what it does follows. A control with a
+   * press of its own, such as Button, is marked `data-press` and styles it; any other dims, the same
+   * way everywhere.
+   */
+  :where(a, button, summary, label):not([data-press], :disabled):active {
+    opacity: 0.6;
   }
 
   body {
