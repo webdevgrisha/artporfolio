@@ -60,22 +60,29 @@ async function slide(hero: HTMLElement): Promise<void> {
         if (sliding || self.progress === 0 || self.progress === 1) return;
 
         const root = document.documentElement;
+        const edge = self.direction > 0 ? self.end : self.start;
+        const left = Math.abs(edge - window.scrollY) / (self.end - self.start);
 
         sliding = true;
         hold.enable();
         // Each step of the slide is a scroll of its own: a smooth one, as the page has for links
         // within it (base.css), would start over at every step and hardly move.
         root.style.scrollBehavior = "auto";
+        /*
+         * The slide carries on the move of the visitor: it starts at its full speed and slows
+         * down to the edge, never from a standstill, which after a quick flick looks like a stop
+         * and a new start. The less of the way is left, the sooner it is there.
+         */
         gsap.to(window, {
-          duration: 0.8,
-          ease: "power2.inOut",
+          duration: 0.4 + 0.4 * left,
+          ease: "power3.out",
           onComplete: () => {
             root.style.removeProperty("scroll-behavior");
             hold.disable();
             sliding = false;
           },
           overwrite: true,
-          scrollTo: { autoKill: false, y: self.direction > 0 ? self.end : self.start },
+          scrollTo: { autoKill: false, y: edge },
         });
       },
     });
