@@ -396,7 +396,9 @@ Every control answers a press, by mouse, finger or keyboard, before what it does
   underline tight; an icon link is pushed in as a stamp; the chevron of a list dips the way the list
   will go; the button of the menu starts to fold into its cross; the theme icon starts to turn; the
   work of a page in the menu comes closer; a process photo gives way; the name of the artist draws
-  its letters together.
+  its letters together. In the admin, a work tool pressed all day, the press is quieter and never
+  runs: a button and a checkbox or radio give way, an icon is pushed in, the bar of a tab starts to
+  grow under it, and a page of the navigation leans toward its bar.
 - A control with a press of its own carries `data-press`; any other dims to 60% (`base.css`), the same
   way everywhere. A new kind of control gets its own press only when it says something; otherwise
   the dim is right.
