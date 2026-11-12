@@ -95,7 +95,6 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
     /* Of the room on its side of the button, as placed by it: a margin of the page short of the edge. */
     max-block-size: calc(100% - var(--page-gutter));
     padding: 0;
-    margin: var(--space-1) 0 0;
     position-area: block-end span-inline-end;
     position-try-order: most-block-size;
     position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline;
@@ -114,6 +113,16 @@ const { align = "start", class: className, id, label, name, ...attributes } = As
     transition-duration: var(--motion-duration-slow);
     transition-property: clip-path, display, overlay;
     transition-behavior: allow-discrete;
+  }
+
+  /*
+   * A little below the button. Only where the browser places it by the button: elsewhere (Safari
+   * before 26) it keeps its own centering in the screen, which a margin would undo.
+   */
+  @supports (position-area: block-end) {
+    .panel {
+      margin: var(--space-1) 0 0;
+    }
   }
 
   /* A column, so the list in it can be no higher than the panel and scroll inside it. */
