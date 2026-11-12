@@ -3,6 +3,9 @@
  * A section of the About page, such as «Biography»: its name, small, over a line across the page,
  * and its text under it, from a third of the page on a tablet and wider, as in the mockups. On a
  * phone the text takes the whole width: a third of it would leave a narrow column.
+ *
+ * A text of the artist takes its own direction (`dir="auto"`): one not yet translated, in English
+ * or Russian, reads from the left on an Arabic page, its full stops at its end.
  */
 import Reveal from "@/components/ui/Reveal.astro";
 
@@ -20,7 +23,9 @@ const { heading, id, paragraphs } = Astro.props;
 <Reveal as="section" aria-labelledby={id} class="section">
   <h2 class="heading" id={id}>{heading}</h2>
   <div class="text">
-    {paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+    {paragraphs.map((paragraph) => (
+      <p dir="auto">{paragraph}</p>
+    ))}
   </div>
 </Reveal>
 
