@@ -8,6 +8,6 @@ const language = languageOfPath(Astro.url.pathname);
 const title = t(language, "error.notFound.title");
 ---
 
-<BaseLayout standalone language={language} title={title}>
+<BaseLayout frame="none" language={language} title={title}>
   <ErrorNotice code={["4", "4"]} language={language} title={title} />
 </BaseLayout>

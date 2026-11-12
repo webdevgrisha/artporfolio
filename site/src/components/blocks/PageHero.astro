@@ -14,7 +14,8 @@
  * Without a photo, the letters are in the color of the text, on the page.
  *
  * The name is the heading of the page for screen readers; the line on the screen is drawing.
- * The header stands under the hero, as in the mockup, so the hero has the button of the menu.
+ * The header stands under the hero, as in the mockup, so the hero has the button of the menu; where
+ * the menu is the page under the hero, as on the home page, the button leads down to it.
  */
 import MenuButton from "@/components/controls/MenuButton.astro";
 import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
@@ -28,11 +29,13 @@ interface Props {
   lang?: string | undefined;
   /** The language of the page. */
   language: Language;
+  /** Whether the menu of the site is the page under the hero, as on the home page. */
+  menuBelow?: boolean;
   /** The name of the page, its heading. */
   name: string;
 }
 
-const { image, lang, language, name } = Astro.props;
+const { image, lang, language, menuBelow = false, name } = Astro.props;
 
 // The largest file of the work: the letters show it sharp across the whole screen, so even a phone
 // held upright, which crops the work to its height, needs it. The blurred work is the same file,
@@ -64,7 +67,9 @@ const style =
       <span class="hint-text">{t(language, "hero.scrollDown")}</span>
     </div>
     <VisuallyHidden as="h1" id="page-title" lang={lang}>{name}</VisuallyHidden>
-    <div class="menu"><MenuButton language={language} skipped /></div>
+    <div class="menu">
+      <MenuButton href={menuBelow ? "#content" : undefined} language={language} skipped />
+    </div>
   </div>
 </section>
 

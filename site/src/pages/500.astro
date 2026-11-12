@@ -9,7 +9,7 @@ const title = t(language, "error.server.title");
 ---
 
 {/* As a missing page: alone on the screen, without the footer, whose networks need the API. */}
-<BaseLayout standalone language={language} title={title}>
+<BaseLayout frame="none" language={language} title={title}>
   <ErrorNotice
     code={["5", "0"]}
     language={language}

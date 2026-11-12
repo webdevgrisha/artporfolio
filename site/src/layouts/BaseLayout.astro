@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 
+import MenuPanel from "@/components/blocks/MenuPanel.astro";
 import PageHero from "@/components/blocks/PageHero.astro";
 import SiteFooter from "@/components/blocks/SiteFooter.astro";
 import SiteHeader from "@/components/blocks/SiteHeader.astro";
@@ -40,10 +41,12 @@ interface Props {
    */
   path?: string;
   /**
-   * Whether the page stands alone, without the header and the footer, as an error does: with its
-   * way home only.
+   * What stands around the page. `page`, the default: the hero, the header and the footer. `menu`:
+   * the hero, then the menu of the site as the whole page, without a header or a footer, as the
+   * home page is, which leads to the others. `none`: the page alone, with its way home only, as an
+   * error.
    */
-  standalone?: boolean;
+  frame?: "page" | "menu" | "none";
   /**
    * The name of the page, which its hero shows; the home page has none: it is named after the
    * site, and its hero shows the name of the artist.
@@ -51,14 +54,14 @@ interface Props {
   title?: string;
 }
 
-const { description, image, language, path, standalone = false, title } = Astro.props;
+const { description, frame = "page", image, language, path, title } = Astro.props;
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
 
 const noHeroes: Record<string, Image> = {};
 
-// What the hero, the header, its menu and the footer show of the API, asked for together: the
+// What the hero, the menu, the header and the footer show of the API, asked for together: the
 // links of the artist (menu and footer), the currencies of the switch, and the heroes of the pages.
-const [links, currencies, heroes] = standalone
+const [links, currencies, heroes] = frame === "none"
   ? [undefined, [], noHeroes]
   : await Promise.all([
       loadContactLinks(language),
@@ -153,18 +156,19 @@ const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.lengt
   <body>
     <SkipLink label={t(language, "layout.skipToContent")} target="content" />
     {
-      !standalone && (
+      frame !== "none" && (
         <PageHero
           image={hero}
           lang={title === undefined ? "en" : undefined}
           language={language}
+          menuBelow={frame === "menu"}
           name={title ?? artistName}
         />
       )
     }
     <div class="page">
       {
-        !standalone && (
+        frame === "page" && (
           <SiteHeader
             currencies={currencies}
             heroes={heroes}
@@ -174,10 +178,22 @@ const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.lengt
           />
         )
       }
-      <main class:list={{ framed: !standalone }} id="content">
+      <main class:list={{ framed: frame === "page" }} id="content">
+        {
+          frame === "menu" && (
+            <MenuPanel
+              currencies={currencies}
+              heroes={heroes}
+              language={language}
+              links={links}
+              path={path}
+              place="page"
+            />
+          )
+        }
         <slot />
       </main>
-      {!standalone && <SiteFooter language={language} links={links} path={path} />}
+      {frame === "page" && <SiteFooter language={language} links={links} path={path} />}
     </div>
   </body>
 </html>
