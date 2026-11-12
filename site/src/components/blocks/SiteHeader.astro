@@ -33,7 +33,7 @@ const { currencies, language, links, path } = Astro.props;
 const menuId = "site-menu";
 ---
 
-<header>
+<header class="site-header" data-site-header>
   <Container class="bar">
     <HomeLink current={path === "/"} language={language} />
     <div class="controls">
@@ -74,7 +74,66 @@ const menuId = "site-menu";
   />
 </header>
 
+<script>
+  /*
+   * The header goes out of sight as the visitor scrolls down to read, and comes back as soon as
+   * they scroll up, wherever they are: the menu is never far, and the works keep the screen. It
+   * stays while the visitor is in it, by the keyboard or with a list of it open. Without this
+   * script the header scrolls away with the page, as any other part of it.
+   */
+  const header = document.querySelector<HTMLElement>("[data-site-header]");
+
+  /** A scroll shorter than this is a tremble of the hand or of the page, not a direction. */
+  const minimumScroll = 8;
+
+  if (header) {
+    const root = document.documentElement;
+    let lastScroll = window.scrollY;
+
+    // A link followed within the page stops below the header, not under it.
+    new ResizeObserver(() => {
+      root.style.scrollPaddingBlockStart = `${header.offsetHeight}px`;
+    }).observe(header);
+
+    header.dataset.smart = "";
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        const scroll = window.scrollY;
+
+        if (Math.abs(scroll - lastScroll) < minimumScroll) return;
+
+        const inUse = header.matches(":focus-within") || header.querySelector(":popover-open");
+        const down = scroll > lastScroll && scroll > header.offsetHeight;
+
+        header.toggleAttribute("data-hidden", down && !inUse);
+        lastScroll = scroll;
+      },
+      { passive: true },
+    );
+
+    header.addEventListener("focusin", () => header.removeAttribute("data-hidden"));
+  }
+</script>
+
 <style>
+  /*
+   * With its script the header stays at the top of the screen, over the page, and slides out of
+   * sight while the visitor scrolls down. A screen without motion shows and hides it at once.
+   */
+  .site-header[data-smart] {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    background: var(--color-surface);
+    transition: translate var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  .site-header[data-hidden] {
+    translate: 0 -100%;
+  }
+
   /*
    * One row: the name at the start, the button at the end. Its text is as large as the body on a
    * phone, where the name has to fit beside the button, and as in the mockup from a tablet on.
