@@ -6,8 +6,8 @@
  *
  * It is a modal dialog: the browser opens it from the buttons of the header and of the hero
  * (`commandfor`) and closes it from its own, by Escape or by a click beside it (`closedby`),
- * without a script; while it is open, the page under it is inert, and the focus starts on its
- * button that closes it and goes back to the button that opened it. It unrolls down from the header,
+ * without a script; while it is open, the page under it is inert, and the focus starts on its list
+ * of pages (see MenuPanel) and goes back to the button that opened it. It unrolls down from the header,
  * whose name and button stay where they are: the two lines of the button turn into the cross that
  * closes it, and the pages come in one after another.
  */
@@ -51,7 +51,6 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
     place="dialog"
   >
     <button
-      autofocus
       class="close"
       command="close"
       commandfor={id}

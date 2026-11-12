@@ -48,12 +48,16 @@ const year = new Date().getFullYear();
 // sets their size where the column is narrow.
 const pageNames = menu.map((page) => t(language, page.label));
 const longestWord = Math.max(...pageNames.map(longestWordLength));
+
+// In the menu, the focus starts on its pages as it opens (see the style). The modal dialog that
+// allows it is SiteMenu's, which a linter of this file alone cannot see.
+const focusStart = place === "dialog" ? { autofocus: true, tabindex: -1 } : {};
 ---
 
 <Container class="panel" data-place={place}>
   <HomeLink class="name" current={path === "/"} language={language} />
   <slot name="close" />
-  <nav aria-label={t(language, "header.menu")} class="pages">
+  <nav aria-label={t(language, "header.menu")} class="pages" {...focusStart}>
     <ul class="page-list" style={{ "--longest-word": longestWord }}>
       {
         menu.map((page, index) => {
@@ -175,6 +179,16 @@ const longestWord = Math.max(...pageNames.map(longestWordLength));
   .pages {
     grid-area: pages;
     container-type: inline-size;
+  }
+
+  /*
+   * As the menu opens, the focus starts on its pages, not on its first button: Safari draws the
+   * ring of the keyboard around a button focused so even after a click of the mouse, and Chrome
+   * passes over a mark on the dialog itself. A screen reader names the list, Tab goes on to its
+   * first page, Escape closes the menu. The list is no control, so it has no ring of its own.
+   */
+  .pages:focus-visible {
+    outline: none;
   }
 
   /* The switches of the page, under the pages. */
