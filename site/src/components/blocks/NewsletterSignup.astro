@@ -69,7 +69,7 @@ const outcome = result && subscribeOutcome(result.error);
             type="email"
           />
         </label>
-        <button class="submit" type="submit">
+        <button class="submit" data-press type="submit">
           <span class="arrow"><ChevronIcon /></span>
           <VisuallyHidden>{t(language, "newsletter.submit")}</VisuallyHidden>
         </button>
@@ -288,11 +288,15 @@ const outcome = result && subscribeOutcome(result.error);
    * grows back from its tip, so the chevron becomes an arrow, and it leans forward. While the
    * address is sent it breathes; once it is in, it flies off ahead and comes back. Forward is to
    * the left in Arabic.
+   *
+   * Pressed, it is drawn back as the string of a bow, whole, and let go it springs forward past its
+   * place and settles: the sending, before it starts.
    */
   .arrow {
     --forward: 1;
 
     display: inline-flex;
+    transition: translate var(--motion-duration-release) var(--motion-easing-release);
   }
 
   .arrow:dir(rtl) {
@@ -309,6 +313,15 @@ const outcome = result && subscribeOutcome(result.error);
   .submit:focus-visible .arrow {
     --chevron-stem: 1;
     --chevron-lean: 1;
+  }
+
+  .submit:active:not(:disabled) .arrow {
+    --chevron-stem: 1;
+    --chevron-lean: 1;
+
+    translate: calc(var(--forward) * -0.3em) 0;
+    transition-timing-function: var(--motion-easing-press);
+    transition-duration: var(--motion-duration-press);
   }
 
   @media (prefers-reduced-motion: no-preference) {
