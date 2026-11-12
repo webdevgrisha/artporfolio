@@ -32,6 +32,17 @@ describe("protecting changes", () => {
 
     expect(response.status).toBe(401);
   });
+
+  it("lets a visitor subscribe to the newsletter without a session", async () => {
+    // An invalid address stops at validation, past the check of the session, before Firestore.
+    const response = await fetch(`${server.baseUrl}/api/newsletter/subscribers`, {
+      body: JSON.stringify({ email: "not-an-email", language: "en" }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(400);
+  });
 });
 
 describe("CORS", () => {
@@ -53,7 +64,7 @@ describe("CORS", () => {
   it.each(["POST", "PUT", "PATCH", "DELETE"])(
     "allows %s requests in a preflight",
     async (method) => {
-      const response = await fetch(`${server.baseUrl}/api/contacts/photo`, {
+      const response = await fetch(`${server.baseUrl}/api/contacts/slideshow`, {
         headers: { "Access-Control-Request-Method": method, Origin: "http://localhost:5173" },
         method: "OPTIONS",
       });

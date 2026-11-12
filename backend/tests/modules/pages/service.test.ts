@@ -66,6 +66,7 @@ const published = {
   fileSize: 8,
   height: 320,
   originalPath: "pages/about/hero/new/original.png",
+  placeholder: "data:image/webp;base64,UklGRg==",
   sources: {
     avif: [{ path: "pages/about/hero/new/640.avif", token: "token", width: 640 }],
     webp: [{ path: "pages/about/hero/new/640.webp", token: "token", width: 640 }],
@@ -81,6 +82,7 @@ const storedHero = {
   fileSize: 100,
   height: 540,
   originalPath: "pages/about/hero/old/original.png",
+  placeholder: "data:image/webp;base64,UklGRg==",
   sources: {
     avif: [{ path: "pages/about/hero/old/960.avif", token: "avif-token", width: 960 }],
     webp: [{ path: "pages/about/hero/old/960.webp", token: "webp-token", width: 960 }],
@@ -112,6 +114,7 @@ describe("page service", () => {
     expect(database.getAll.mock.calls[0]?.map((document: FakeDocument) => document.path)).toEqual([
       "pages/home",
       "pages/gallery",
+      "pages/exhibitions",
       "pages/projects",
       "pages/about",
       "pages/contacts",
@@ -128,6 +131,7 @@ describe("page service", () => {
           fileSize: 100,
           height: 540,
           original: "/api/originals/pages/about/hero/old/original.png",
+          placeholder: "data:image/webp;base64,UklGRg==",
           version: "old",
           width: 960,
           sources: {
@@ -147,6 +151,7 @@ describe("page service", () => {
         },
       },
       contacts: { hero: null },
+      exhibitions: { hero: null },
       gallery: { hero: null },
       home: { hero: null },
       projects: { hero: null },

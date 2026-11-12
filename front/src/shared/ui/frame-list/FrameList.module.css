@@ -35,10 +35,12 @@
   background: var(--color-surface-disabled);
 }
 
-/* The rows reach the sides of the frame, so the one under the pointer is highlighted whole. */
+/*
+ * The rows reach every side of the frame, so the one under the pointer is highlighted whole, the
+ * first and the last too, and a single row, such as one checkbox, is as high as a text field.
+ */
 .scroller {
   min-block-size: 0;
-  padding-block: var(--space-2);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -68,6 +70,16 @@
 @media (hover: hover) {
   .row:hover:not(:has(:disabled)) {
     background: var(--color-surface-disabled);
+  }
+
+  /*
+   * The lines above and below the highlighted row give way to it, so it reads as one block. They
+   * turn clear rather than go, so no row moves. (A :has() cannot hold another, so the disabled
+   * check is on the item.)
+   */
+  .item:not(:has(:disabled)):has(> .row:hover)::before,
+  .item:not(:has(:disabled)):has(> .row:hover) + .item::before {
+    border-color: transparent;
   }
 }
 

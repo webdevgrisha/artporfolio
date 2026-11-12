@@ -1,0 +1,67 @@
+---
+/**
+ * A link that shows its text, after an icon when the `icon` slot has one, with room enough for a
+ * finger. Under the pointer its text is underlined; the link of the page being shown always is.
+ */
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"a"> {
+  href: string;
+  /**
+   * The text of the link, which also names it for screen readers: an icon only decorates it. The
+   * default slot may set the same words otherwise, such as with places a line may break.
+   */
+  label: string;
+}
+
+const { class: className, href, label, ...attributes } = Astro.props;
+---
+
+<a class:list={["text-link", className]} href={href} {...attributes}>
+  <slot name="icon" />
+  <span class="text"><slot>{label}</slot></span>
+</a>
+
+<style>
+  .text-link {
+    display: inline-flex;
+    gap: 0.75em;
+    align-items: center;
+    min-block-size: var(--min-tap-target-size);
+    text-decoration: none;
+  }
+
+  /*
+   * A long address breaks rather than widen the page on a phone. The box of the text ends at the
+   * top of its capitals and at its baseline, so the link lines up with what is beside it.
+   */
+  .text {
+    text-box: trim-both cap alphabetic;
+    overflow-wrap: anywhere;
+    /*
+     * The underline is always there, only unseen: under the pointer it shows and rises to the
+     * text, so it comes in softly instead of at once. A screen without motion shows it at once.
+     */
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--line-width);
+    text-decoration-color: transparent;
+    text-underline-offset: 0.45em;
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-slow);
+    transition-property: text-decoration-color, text-underline-offset;
+  }
+
+  /* Where the visitor is: the link to the page being shown. */
+  .text-link[aria-current="page"] .text {
+    text-decoration-color: currentColor;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Only under a pointer: a tap on a phone would leave the link underlined. */
+  @media (hover: hover) {
+    .text-link:hover .text {
+      text-decoration-color: currentColor;
+      text-underline-offset: 0.2em;
+    }
+  }
+</style>

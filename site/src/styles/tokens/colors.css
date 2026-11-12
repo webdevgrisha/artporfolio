@@ -19,6 +19,10 @@
     --color-focus: light-dark(#000, #f2f2f2);
     /* The price of a work on sale: the red of the mockup darkened to 5:1, so small text reads. */
     --color-sale: light-dark(#e00000, #ff6b6b);
+    /* What went wrong in a form, such as an address that is not one: as red as a sale, as legible. */
+    --color-error: light-dark(#e00000, #ff6b6b);
+    /* Text over a darkened photo, such as a page of the menu under the pointer: white in both themes. */
+    --color-on-photo: #fff;
     color-scheme: light dark;
   }
 

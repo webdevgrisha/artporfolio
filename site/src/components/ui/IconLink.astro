@@ -1,0 +1,43 @@
+---
+/**
+ * A link that shows only its icon (the `icon` slot), such as a social network in the footer, with
+ * room enough for a finger. Its label is text kept off the screen, which screen readers say.
+ */
+import type { HTMLAttributes } from "astro/types";
+
+import VisuallyHidden from "./VisuallyHidden.astro";
+
+interface Props extends HTMLAttributes<"a"> {
+  href: string;
+  /** What the link leads to, such as «Instagram»: the name screen readers give it. */
+  label: string;
+}
+
+const { class: className, href, label, ...attributes } = Astro.props;
+---
+
+<a class:list={["icon-link", className]} href={href} {...attributes}>
+  <slot name="icon" />
+  <VisuallyHidden>{label}</VisuallyHidden>
+</a>
+
+<style>
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--min-tap-target-size);
+    min-block-size: var(--min-tap-target-size);
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  /*
+   * An icon has no text to underline: under the pointer it fades a little instead, in the same
+   * time as the underline of a text link comes in. Only under a pointer, as a tap would leave it so.
+   */
+  @media (hover: hover) {
+    .icon-link:hover {
+      opacity: 0.6;
+    }
+  }
+</style>

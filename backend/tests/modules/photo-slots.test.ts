@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { aboutDocument } from "#modules/about/document";
 import { aboutPhoto } from "#modules/about/photo";
-import { contactsDocument } from "#modules/contacts/document";
-import { contactPhoto } from "#modules/contacts/photo";
 import { storedPhotoSchema } from "#shared/images/photo";
 
 describe("photo slots", () => {
@@ -13,17 +11,6 @@ describe("photo slots", () => {
       field: "photo",
       folder: "about/photo",
       resource: "about-photo",
-      saveAlong: expect.any(Function),
-      schema: storedPhotoSchema,
-    });
-  });
-
-  it("keeps the contact photo in the photo field of the contacts document", () => {
-    expect(contactPhoto).toEqual({
-      document: contactsDocument,
-      field: "photo",
-      folder: "contacts/photo",
-      resource: "contacts-photo",
       saveAlong: expect.any(Function),
       schema: storedPhotoSchema,
     });

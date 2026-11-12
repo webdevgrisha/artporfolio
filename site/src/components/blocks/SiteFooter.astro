@@ -1,0 +1,316 @@
+---
+/**
+ * The footer of every page: the newsletter, the networks of the artist and the menu of the site,
+ * then the name of the artist and the year across the page.
+ */
+import NetworkLinks from "@/components/blocks/NetworkLinks.astro";
+import NewsletterSignup from "@/components/blocks/NewsletterSignup.astro";
+import Container from "@/components/ui/Container.astro";
+import TextLink from "@/components/ui/TextLink.astro";
+import type { ContactLinks } from "@/lib/api/contacts";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { artistName } from "@/lib/site/artistName";
+import { localizedPath } from "@/lib/site/localizedPath";
+import { menu } from "@/lib/site/menu";
+
+interface Props {
+  language: Language;
+  /** The links of the artist; none when the API could not give them. */
+  links: ContactLinks | undefined;
+  /** The path of the page being shown under its language, such as `/contact`; none on an error. */
+  path?: string | undefined;
+}
+
+const { language, links, path } = Astro.props;
+
+// The year of the page as it is served, never one left in the code.
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <Container class="footer">
+    <div class="layout">
+      <div class="top" style={`--menu-links: ${menu.length}`}>
+        <NewsletterSignup class="signup" language={language} />
+        <div class="links">
+          {
+            /* Every way to reach the artist, as on the Contacts page. */
+            links && (
+              <NetworkLinks
+                class="networks"
+                email
+                label={t(language, "footer.networks")}
+                links={links}
+              />
+            )
+          }
+          <nav aria-label={t(language, "footer.menu")} class="menu-nav">
+            <ul class="menu">
+              {
+                menu.map((page) => (
+                  <li>
+                    <TextLink
+                      class="menu-link"
+                      aria-current={page.path === path ? "page" : undefined}
+                      href={localizedPath(language, page.path)}
+                      label={t(language, page.label)}
+                    />
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div class="signature">
+        <p lang="en">{artistName}</p>
+        {/*
+          The sign before the year in every language, as a page written right to left would move it
+          after; the line itself stays at the start of the page, as the name does.
+        */}
+        <p><span dir="ltr">©{year}</span></p>
+      </div>
+    </div>
+  </Container>
+</footer>
+
+<style>
+  /* The sizes of the name and the year follow the width of the page within its margins. */
+  .footer {
+    container-type: inline-size;
+  }
+
+  /*
+   * The line across the page that ends what is above, as in the mockup. Three layouts, one a step
+   * from the other:
+   *
+   * - On a phone the newsletter takes the width of the page, and the menu and the networks a row
+   *   under it, the menu at the start and the networks at the end, as in the mockup of a phone.
+   *   From 36rem the portrait stands beside the heading, which still has room for one line there.
+   * - From 40rem, a tablet, the three stand on one row, as in the mockup of a tablet: the portrait
+   *   and the newsletter at the start, and at the end a column of the networks above the menu,
+   *   narrow enough to leave the heading two lines at the least, one from about 850px.
+   * - From 60rem, a laptop, the networks stand beside the menu, as in the mockup of a laptop: the
+   *   heading has room for one line there, and the longest of the other languages for two.
+   */
+  .top {
+    /*
+     * A row of the menu is as high as a finger needs on a touch screen; under a mouse the rows
+     * stand as close as in the mockup, 1.4 times the text. Its capitals are 0.7 of its size.
+     */
+    --menu-font-size: var(--font-size-1);
+    --menu-row-close: calc(1.4 * var(--menu-font-size));
+    --menu-row: var(--min-tap-target-size);
+
+    display: flex;
+    flex-wrap: wrap;
+    /*
+     * Under the newsletter, the menu stands apart from it as a part of its own, closer than the
+     * name below.
+     */
+    gap: var(--layout-space-12) var(--layout-space-8);
+    align-items: start;
+    justify-content: space-between;
+    padding-block-start: var(--layout-space-8);
+    border-block-start: var(--line-width) solid currentColor;
+  }
+
+  @media (pointer: fine) {
+    .top {
+      --menu-row: var(--menu-row-close);
+    }
+  }
+
+  /*
+   * The portrait is as high as the menu with its rows as close as in the mockup: under a mouse the
+   * newsletter beside the menu is as high as it, from the top of the capitals of the first link to
+   * the baseline of the last. Elsewhere the two do not line up, and the newsletter keeps that size
+   * rather than follow the menu. On a narrow phone the heading needs the room of the portrait.
+   */
+  .signup {
+    --portrait-display: none;
+    --portrait-size: calc(
+      (var(--menu-links) - 1) * var(--menu-row-close) + 0.7 * var(--menu-font-size)
+    );
+
+    flex: 1 1 100%;
+  }
+
+  /*
+   * On a row of its own the field reaches the end of the page, as the row under it does; beside
+   * the menu it is as wide as an address needs.
+   */
+  @container (width < 40rem) {
+    .signup {
+      --form-max-size: none;
+    }
+  }
+
+  @container (width >= 36rem) {
+    .signup {
+      --portrait-display: block;
+    }
+  }
+
+  .links {
+    /*
+     * An icon draws at 1.25 times its text. A little larger than the menu, the frames are about as
+     * large as on the Contacts page (30px at the width of the mockup): one icon, one size.
+     */
+    --icon-font-size: calc(1.125 * var(--menu-font-size));
+    --icon-size: calc(1.25 * var(--icon-font-size));
+
+    display: flex;
+    flex-grow: 1;
+    /*
+     * A name of a page never breaks inside a word, as a link may break an address: the menu keeps
+     * the width of its names, and on a narrow phone in a language of long names the networks go
+     * under it.
+     */
+    flex-wrap: wrap;
+    gap: var(--layout-space-8);
+    align-items: start;
+    justify-content: space-between;
+    /*
+     * A link has its text in the middle of its row: the box of the links ends at the top of the
+     * capitals of the first and at the baseline of the last, as the text of the newsletter does.
+     */
+    margin-block: calc((var(--menu-row) - 0.7 * var(--menu-font-size)) / -2);
+  }
+
+  .menu-nav {
+    flex-shrink: 0;
+    order: -1;
+  }
+
+  /*
+   * From the tablet on the footer has two columns, the newsletter and the name in the first, and the
+   * networks with the menu and the year in the second, as in the mockups: the year starts where the
+   * column of the networks and the menu does. The second column is as wide as the wider of the two,
+   * and the heading takes the lines.
+   */
+  @container (width >= 40rem) {
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: var(--layout-space-8);
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: subgrid;
+      grid-column: 1 / -1;
+      /* The gap between the columns is the one of the footer, so the columns line up. */
+      column-gap: normal;
+    }
+
+    .links {
+      flex-direction: column;
+    }
+
+    .menu-nav {
+      order: 0;
+    }
+  }
+
+  @container (width >= 60rem) {
+    .links {
+      flex-direction: row;
+    }
+  }
+
+  .menu {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  /*
+   * The top of the frames of the icons stands at the top of the capitals of the first link of the
+   * menu beside them, or of the heading where they stand above the menu, as in the mockups. The
+   * capitals of Absans are 0.7 of its size, centered in their row; an icon is centered in a box a
+   * finger can hit, and its frame starts 2 units of 24 below its top.
+   */
+  .networks {
+    /* The room a finger needs around each icon is the gap: about half an icon between frames. */
+    gap: 0;
+    margin-block-start: calc(
+      (var(--menu-row) - 0.7 * var(--menu-font-size)) / 2 -
+      (max(var(--min-tap-target-size), var(--icon-size)) - var(--icon-size)) / 2 -
+      var(--icon-size) / 12
+    );
+    font-size: var(--icon-font-size);
+  }
+
+  /*
+   * Where the networks stand at the end of a row under the newsletter, or at the start of a column
+   * above the menu, the frames of the outer icons, not the room a finger needs around them, line
+   * up with the edge of the page or with the menu, as the arrow of the newsletter does.
+   */
+  @container (width < 60rem) {
+    .networks {
+      margin-inline: calc(
+        (var(--icon-size) - max(var(--min-tap-target-size), var(--icon-size))) / 2 -
+        var(--icon-size) / 12
+      );
+    }
+  }
+
+  .menu {
+    font-size: var(--menu-font-size);
+  }
+
+  /* One link under another. */
+  .menu > li {
+    display: flex;
+  }
+
+  .menu .menu-link {
+    min-block-size: var(--menu-row);
+  }
+
+  /*
+   * The name and the year span the page on one line: «Anastasia Turkevich» in Absans is 12.34
+   * times as wide as its size, «©2026» 3.49 times, and about three times the size apart, as in the
+   * mockup. On a phone that would be too small: the year goes above the name, both as large as the
+   * heading of the newsletter, as in the mockup; the name fits a 320px screen at that size (12.34
+   * × 23px), and 8cqi keeps it within a narrower one. Toward the width where they go on one line,
+   * they grow to the size they take there (5.25cqi), so the name never jumps in size.
+   */
+  .signature {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5em;
+    /* As far below the menu as in the mockup, which a closing block of the page needs. */
+    padding-block: var(--layout-space-16) var(--layout-space-8);
+    font-size: min(8cqi, max(var(--font-size-2), 5.25cqi));
+    line-height: var(--line-height-display);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    white-space: nowrap;
+  }
+
+  @container (width >= 40rem) {
+    .signature {
+      display: grid;
+      grid-template-columns: subgrid;
+      grid-column: 1 / -1;
+      column-gap: normal;
+      font-size: 5.25cqi;
+    }
+  }
+
+  /* Beside the menu the year ends where the page does, as the menu does. */
+  @container (width >= 60rem) {
+    .signature > :last-child {
+      text-align: end;
+    }
+  }
+
+  /* The boxes end at the top of the capitals and at the baseline, so the spacing is as it looks. */
+  .signature > p {
+    margin: 0;
+    text-box: trim-both cap alphabetic;
+  }
+</style>

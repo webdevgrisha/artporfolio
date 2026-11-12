@@ -4,7 +4,7 @@ export const routes = {
   aboutProcess: "/admin/about/process",
   aboutText: "/admin/about/text",
   contactLinks: "/admin/contacts/links",
-  contactPhoto: "/admin/contacts/photo",
+  contactSlideshow: "/admin/contacts/photos",
   contacts: "/admin/contacts",
   currencies: "/admin/currencies",
   gallery: "/admin/gallery",

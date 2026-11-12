@@ -1,0 +1,195 @@
+---
+/**
+ * The button that switches the theme of the site. It shows the theme it turns on, as the one of the
+ * admin does: a crescent on the light page, a sun on the dark one, which turn into each other, with
+ * its label for screen readers. Which one shows is read by CSS from the theme the page has, so it
+ * is right from the first paint; the script only switches. Without a script it cannot work, so it
+ * is not shown.
+ */
+import ThemeIcon from "@/components/ui/icons/ThemeIcon.astro";
+import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+
+interface Props {
+  class?: string | undefined;
+  /** Unique on the page, such as `header-theme`: names the parts of its icon. */
+  id: string;
+  language: Language;
+}
+
+const { class: className, id, language } = Astro.props;
+---
+
+<button class:list={["theme-toggle", className]} data-theme-toggle hidden type="button">
+  <ThemeIcon id={id} />
+  <span class="to-dark">
+    <VisuallyHidden>{t(language, "header.toDarkTheme")}</VisuallyHidden>
+  </span>
+  <span class="to-light">
+    <VisuallyHidden>{t(language, "header.toLightTheme")}</VisuallyHidden>
+  </span>
+</button>
+
+<script>
+  import { type Theme, themeColors, themeStorageKey } from "@/lib/site/theme";
+
+  const root = document.documentElement;
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  /** The theme the page has: the one the visitor chose, else the one of the system. */
+  function currentTheme(): Theme {
+    const chosen = root.dataset.theme;
+
+    if (chosen === "light" || chosen === "dark") return chosen;
+
+    return systemDark.matches ? "dark" : "light";
+  }
+
+  function applyTheme(theme: Theme): void {
+    root.dataset.theme = theme;
+    for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+      meta.content = themeColors[theme];
+    }
+    try {
+      localStorage.setItem(themeStorageKey, theme);
+    } catch {
+      // Blocked storage: the theme holds on this page only.
+    }
+  }
+
+  /** The part of the radius of the disc of the new theme that is solid; the rest fades out. */
+  const solidPart = 0.85;
+
+  /** A transition the browser skipped needs nothing: its update has run or will. */
+  function ignoreSkipped(): void {}
+
+  /** The time a token of motion names, such as `420ms`, in milliseconds. */
+  function motionDuration(token: string): number {
+    return Number.parseFloat(getComputedStyle(root).getPropertyValue(token)) || 0;
+  }
+
+  /**
+   * Turns on the other theme from `button`: the new one spreads over the page in a circle from the
+   * button, with a soft edge, until it covers the screen. Without View Transitions, or for a
+   * visitor who asked for less motion, the page takes it at once.
+   */
+  function switchTheme(button: HTMLButtonElement): void {
+    const theme = currentTheme() === "dark" ? "light" : "dark";
+
+    if (!document.startViewTransition || reducedMotion.matches) {
+      applyTheme(theme);
+      return;
+    }
+
+    const { height, left, top, width } = button.getBoundingClientRect();
+    const x = left + width / 2;
+    const y = top + height / 2;
+    // The new theme is a disc whose edge fades over the last part of its radius (see the mask in
+    // the styles), grown until its solid part reaches the farthest corner of the screen.
+    const reach = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    const size = (2 * reach) / solidPart;
+
+    // Tells the CSS to leave the page to this disc instead of the fade between pages.
+    root.dataset.themeTransition = "";
+    const transition = document.startViewTransition(() => applyTheme(theme));
+
+    // `ready` rejects when the browser skips the transition, as when another one starts: the theme
+    // is on all the same, only without the disc.
+    void transition.ready.then(() => {
+      const style = getComputedStyle(root);
+
+      // Grown from its middle, on the button: its box grows and moves back by half as much.
+      root.animate(
+        {
+          maskPosition: [`${x}px ${y}px`, `${x - size / 2}px ${y - size / 2}px`],
+          maskSize: ["0px 0px", `${size}px ${size}px`],
+        },
+        {
+          duration: motionDuration("--motion-duration-screen"),
+          easing: style.getPropertyValue("--motion-easing-screen"),
+          // Covers the screen until the transition ends, in the same frame.
+          fill: "forwards",
+          pseudoElement: "::view-transition-new(root)",
+        },
+      );
+    }, ignoreSkipped);
+    // Whether the transition ran or not, the page goes back to the fade between pages.
+    const endTransition = (): void => {
+      delete root.dataset.themeTransition;
+    };
+    void transition.finished.then(endTransition, endTransition);
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")) {
+    button.hidden = false;
+    button.addEventListener("click", () => switchTheme(button));
+  }
+</script>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--min-tap-target-size);
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  /*
+   * While the theme changes, the new page is not faded in over the old one, as between pages: the
+   * script spreads it over the old one in a disc from the button.
+   */
+  :global(:root[data-theme-transition]::view-transition-old(root)),
+  :global(:root[data-theme-transition]::view-transition-new(root)) {
+    mix-blend-mode: normal;
+    animation: none;
+  }
+
+  /*
+   * The disc the new theme shows through: solid to 85% of its radius (`solidPart` in the script),
+   * then fading out, so the two themes meet in a soft edge, which widens as the disc grows.
+   */
+  :global(:root[data-theme-transition]::view-transition-new(root)) {
+    mask-image: radial-gradient(closest-side, #000 85%, transparent);
+    mask-repeat: no-repeat;
+  }
+
+  .theme-toggle[hidden] {
+    display: none;
+  }
+
+  @media (hover: hover) {
+    .theme-toggle:hover {
+      opacity: 0.6;
+    }
+  }
+
+  .to-dark,
+  .to-light {
+    display: contents;
+  }
+
+  /* The page is dark when the visitor chose it, or when the system is and they chose nothing. */
+  :global(:root[data-theme="dark"]) .to-dark,
+  :global(:root:not([data-theme="dark"])) .to-light {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme])) .to-dark {
+      display: none;
+    }
+
+    :global(:root:not([data-theme])) .to-light {
+      display: contents;
+    }
+  }
+</style>

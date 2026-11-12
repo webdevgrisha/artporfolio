@@ -365,6 +365,19 @@ const indicatorStyle = {
 - Reuse an existing asset only when its crop, resolution, and aspect ratio match the design slot.
 - Gallery and content images should eventually use responsive sources, modern formats, and lazy loading below the fold.
 
+## Platform first
+
+What the browser or the language does by itself is used as it is: HTML elements and attributes (`<dialog>`, `popover`, `inert`, forms), CSS (`position: sticky`, scroll snap, scroll-driven animations, anchor positioning, container queries, view transitions), and the standard APIs (`Intl`, `IntersectionObserver`, `ResizeObserver`). They are faster, accessible by default, and need no code to maintain.
+
+Where a major browser does not support a feature yet:
+
+1. The page still works without it (progressive enhancement): the content and the controls are there, only the effect is simpler.
+2. Where the effect matters, a small script stands in for the missing feature only, behind feature detection (`CSS.supports(...)`, `"onscrollend" in window`, `@supports`), never for the browsers that have it.
+3. Each such script says in a comment what it replaces and when it can go (the feature and the browser it waits for), so it is deleted once that browser ships it.
+4. A library is taken only when the platform has no answer and the library is the better solution than our own code.
+
+A script is the solution itself, not a stand-in, only where the platform has no feature for the job at all, such as fitting a line of text to a width.
+
 ## Motion
 
 - Animate `transform` and `opacity` where possible.
@@ -423,9 +436,11 @@ The site (`site/`, Astro) keeps every rule above, with these differences.
 
 ### Text
 
-- Fonts come from Astro's Fonts API (`astro.config.ts`): Absans, and Manrope for the Cyrillic letters only. It preloads Absans and fits its fallback to it, so the text does not move when the font arrives.
+- Fonts come from Astro's Fonts API (`astro.config.ts`). Absans sets the Latin letters; every other script of the site's languages has a font as near to it as there is, for its letters only (`unicode-range`), so a page loads it only when it shows that script: Manrope for Cyrillic and Greek, Readex Pro for Arabic, Poppins for Devanagari, Noto Sans SC, JP and KR for Chinese, Japanese and Korean, in Light where Regular is darker than Absans. Astro preloads Absans; its fallback, fitted to it so the text does not move when it arrives, is in `styles/fonts.css`.
+- The order of the fonts is in the tokens of typography: first those that cover their own script only, then Absans, then Chinese, Japanese and Korean, whose files hold Latin letters too, and the generic `sans-serif` last: on a page in Chinese or Japanese it is a system font of that script and would take it first. A page in Japanese or Korean puts its own font before the other two (`:lang` in `base.css`), as Chinese and Japanese draw the same characters differently.
 - Capitals are a style: write texts and translations in their normal case and set `text-transform: uppercase` with `--letter-spacing-caps`. Some languages have no capitals, and others change letters in them (German ß, Turkish i). Keep capitals for short text: long paragraphs in capitals read slowly.
 - The site is translated into right-to-left languages, so use logical properties only (`margin-inline-start`, `inset-inline-end`, `text-align: start`).
+- A text the page shows goes through `typeset` (`lib/text`), as `t()` does for the texts of the interface: in the Slavic languages of the site it keeps a short word from ending a line and sets the quotes of the language. A text of the API shown on a page goes through it too. Text split into words for layout splits on plain spaces only, so words joined by a no-break space stay together.
 
 ## Evolving this guide
 

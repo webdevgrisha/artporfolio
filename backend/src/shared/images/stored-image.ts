@@ -21,6 +21,8 @@ export const storedImageSchema = z.object({
   height: z.number().int().positive(),
   /** The uploaded file, which only the admin can download; see modules/originals. */
   originalPath: z.string(),
+  /** A preview of the image, a few pixels wide, as a data URL; see processing.ts. */
+  placeholder: z.string(),
   sources: z.object({
     avif: z.array(storedImageFileSchema),
     webp: z.array(storedImageFileSchema),
@@ -50,6 +52,11 @@ export interface Image {
   height: number;
   /** URL of the uploaded file, from the site's origin; only the admin can download it. */
   original: string;
+  /**
+   * A preview of the image 16px wide, as a `data:` URL of about 200 bytes: a page stretches and
+   * blurs it in the place of the image while the image loads.
+   */
+  placeholder: string;
   sources: { avif: ImageSource[]; webp: ImageSource[] };
   /** Changes with every upload. */
   version: string;
@@ -73,6 +80,7 @@ export function toImage({
   fileSize,
   height,
   originalPath,
+  placeholder,
   sources,
   version,
   width,
@@ -82,6 +90,7 @@ export function toImage({
     fileSize,
     height,
     original: originalUrl(originalPath),
+    placeholder,
     sources: {
       avif: sources.avif.map(toImageSource),
       webp: sources.webp.map(toImageSource),

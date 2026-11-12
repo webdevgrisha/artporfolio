@@ -1,0 +1,78 @@
+---
+/**
+ * The button that opens the menu of the site: the two lines of the mockup, in the middle of a box a
+ * finger can hit, so the ring of the focus is even around them. The box reaches past the margin
+ * of the page by as much as it is wider than the lines, which end where the page ends, as the
+ * cross that closes the menu. The header has one, and the hero of a page, over which the header is
+ * not yet. Where the menu is the page itself, as on the home page, the button is a link to it, and
+ * the page slides in.
+ */
+import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { menuId } from "@/lib/site/menu";
+
+interface Props {
+  class?: string | undefined;
+  /** The menu on the page itself, such as `#content`, which the button leads to as a link. */
+  href?: string | undefined;
+  language: Language;
+  /**
+   * Whether the keyboard goes past the button: for a second one on the screen, such as the one of
+   * the hero, as the header has the same.
+   */
+  skipped?: boolean;
+}
+
+const { class: className, href, language, skipped = false } = Astro.props;
+---
+
+{
+  href === undefined ? (
+    <button
+      aria-label={t(language, "header.menu")}
+      class:list={["menu-button", className]}
+      command="show-modal"
+      commandfor={menuId}
+      tabindex={skipped ? -1 : undefined}
+      type="button"
+    >
+      <MenuIcon />
+    </button>
+  ) : (
+    <a
+      aria-label={t(language, "header.menu")}
+      class:list={["menu-button", className]}
+      href={href}
+      tabindex={skipped ? -1 : undefined}
+    >
+      <MenuIcon />
+    </a>
+  )
+}
+
+<style>
+  .menu-button {
+    --menu-icon-size: 1.3em;
+
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--min-tap-target-size);
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    margin-inline-end: calc((var(--menu-icon-size) - var(--min-tap-target-size)) / 2);
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  @media (hover: hover) {
+    .menu-button:hover {
+      opacity: 0.6;
+    }
+  }
+</style>

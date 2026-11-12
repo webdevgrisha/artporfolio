@@ -1,9 +1,6 @@
 ---
-import Container from "@/components/ui/Container.astro";
-import Stack from "@/components/ui/Stack.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { isLanguage } from "@/lib/i18n/languages";
-import { siteName } from "@/lib/site/siteName";
 
 const { lang } = Astro.params;
 
@@ -12,10 +9,5 @@ if (!isLanguage(lang)) {
 }
 ---
 
-<BaseLayout language={lang} path="/">
-  <Container>
-    <Stack gap="layout-space-8">
-      <h1>{siteName}</h1>
-    </Stack>
-  </Container>
-</BaseLayout>
+{/* The home page is the way to the others: under its hero, the menu of the site. */}
+<BaseLayout frame="menu" language={lang} path="/" />

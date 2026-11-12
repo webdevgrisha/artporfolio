@@ -1,0 +1,45 @@
+---
+/** A link that looks like a button of the admin: its text in capitals inside a frame. */
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"a"> {
+  href: string;
+  /** The text of the button. */
+  label: string;
+}
+
+const { class: className, href, label, ...attributes } = Astro.props;
+---
+
+<a class:list={["button-link", className]} href={href} {...attributes}>
+  {label}
+</a>
+
+<style>
+  .button-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-inline-size: 100%;
+    min-block-size: var(--min-tap-target-size);
+    padding: var(--space-1) var(--space-4);
+    color: var(--color-text);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    text-decoration: none;
+    background: var(--color-surface);
+    border: var(--line-width) solid var(--color-line);
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-standard);
+    transition-property: color, background-color;
+  }
+
+  /* The site has one color and its background: under the pointer the two change places. */
+  @media (hover: hover) {
+    .button-link:hover {
+      color: var(--color-surface);
+      background: var(--color-text);
+    }
+  }
+</style>

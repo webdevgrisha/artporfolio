@@ -1,0 +1,225 @@
+---
+/**
+ * The menu the button of the header opens: a panel over the top of the page, as in the mockup,
+ * with the name of the artist and the button that closes it where the header has its own. What it
+ * holds is the MenuPanel, which the home page shows as itself.
+ *
+ * It is a modal dialog: the browser opens it from the buttons of the header and of the hero
+ * (`commandfor`) and closes it from its own, by Escape or by a click beside it (`closedby`),
+ * without a script; while it is open, the page under it is inert, and the focus starts on its list
+ * of pages (see MenuPanel) and goes back to the button that opened it. It unrolls down from the header,
+ * whose name and button stay where they are: the two lines of the button turn into the cross that
+ * closes it, and the pages come in one after another.
+ */
+import MenuPanel from "@/components/blocks/MenuPanel.astro";
+import MenuIcon from "@/components/ui/icons/MenuIcon.astro";
+import type { ContactLinks } from "@/lib/api/contacts";
+import type { Image } from "@/lib/api/image";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+
+interface Props {
+  /** The codes of the currencies in use, for the switch of currencies. */
+  currencies: string[];
+  /** The heroes of the pages by their id: each fills the plate of its page under the pointer. */
+  heroes: Record<string, Image>;
+  /** The id the button of the header opens the menu by. */
+  id: string;
+  language: Language;
+  /** The links of the artist; none when the API could not give them. */
+  links: ContactLinks | undefined;
+  /** The path of the page being shown under its language, such as `/contact`. */
+  path: string | undefined;
+}
+
+const { currencies, heroes, id, language, links, path } = Astro.props;
+---
+
+<dialog
+  aria-label={t(language, "header.menu")}
+  class="site-menu"
+  closedby="any"
+  data-site-menu
+  id={id}
+>
+  <MenuPanel
+    currencies={currencies}
+    heroes={heroes}
+    language={language}
+    links={links}
+    path={path}
+    place="dialog"
+  >
+    <button
+      class="close"
+      command="close"
+      commandfor={id}
+      slot="close"
+      type="button"
+    >
+      <MenuIcon />
+      <span class="close-text">{t(language, "header.close")}</span>
+    </button>
+  </MenuPanel>
+</dialog>
+
+<script>
+  /*
+   * Stand in for what Safari lacks: buttons that open and close the menu by `commandfor` (before
+   * 26.2), and a click beside it that closes it (`closedby`, not in Safari yet). Remove each once
+   * Safari has it.
+   */
+  const menu = document.querySelector<HTMLDialogElement>("[data-site-menu]");
+
+  if (menu && !("command" in HTMLButtonElement.prototype)) {
+    for (const button of document.querySelectorAll<HTMLButtonElement>(`[commandfor="${menu.id}"]`)) {
+      button.addEventListener("click", () => {
+        if (button.getAttribute("command") === "close") menu.close();
+        else menu.showModal();
+      });
+    }
+  }
+
+  if (menu && !("closedBy" in HTMLDialogElement.prototype)) {
+    // A click on the backdrop lands on the dialog itself, outside its box.
+    menu.addEventListener("click", (event) => {
+      const box = menu.getBoundingClientRect();
+      const outside =
+        event.clientX < box.left ||
+        event.clientX > box.right ||
+        event.clientY < box.top ||
+        event.clientY > box.bottom;
+
+      if (event.target === menu && outside) menu.close();
+    });
+  }
+</script>
+
+<style>
+  /*
+   * A panel across the top of the screen, over the page, with the shadow of the mockup under it.
+   * On a phone it takes the whole screen; from a tablet on it leaves the bottom of the page in
+   * sight, as in the mockup. Higher than the screen, it scrolls itself, and the page under it
+   * stays where it was.
+   */
+  .site-menu {
+    inset: 0 0 auto;
+    inline-size: 100%;
+    max-inline-size: none;
+    min-block-size: 100dvh;
+    max-block-size: 100dvh;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 0;
+    box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+    /*
+     * It unrolls from the top of the screen and rolls back up: it is cut, not moved, so what it
+     * holds stays still and its name and button cover those of the header exactly. The cut leaves
+     * room for the shadow below. The browser keeps it in sight until it is rolled up; on a screen
+     * without motion it comes and goes at once.
+     */
+    clip-path: inset(0 0 100% 0);
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-panel);
+    transition-property: clip-path, display, overlay;
+    transition-behavior: allow-discrete;
+  }
+
+  .site-menu[open] {
+    clip-path: inset(0 0 -1rem 0);
+  }
+
+  /* The page stays in sight under it, as it was. */
+  .site-menu::backdrop {
+    background: none;
+  }
+
+  @starting-style {
+    .site-menu[open] {
+      clip-path: inset(0 0 100% 0);
+    }
+  }
+
+  @media (width >= 40rem) {
+    .site-menu {
+      min-block-size: 80dvh;
+    }
+  }
+
+  /* The page under the open menu does not scroll with it. */
+  :global(html:has(.site-menu[open])) {
+    overflow: hidden;
+  }
+
+  /*
+   * The word, then the cross at the end of the page, where the header has the button that opens.
+   * Where the word does not fit beside the name, as in a narrow phone in a language of a long word
+   * or with a large text size, only the cross is shown, and the word still names the button for
+   * screen readers: laid from the end, the cross first, the word wraps to a second line, which the
+   * button cuts off.
+   */
+  .close {
+    display: flex;
+    flex-flow: row-reverse wrap;
+    grid-area: close;
+    /* The second line a whole button lower: no ascender of the word peeks over the edge. */
+    row-gap: 100%;
+    align-items: center;
+    justify-self: end;
+    max-inline-size: 100%;
+    block-size: max(var(--min-tap-target-size), 1lh);
+    padding: 0;
+    overflow: hidden;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition:
+      opacity var(--motion-duration-slow) var(--motion-easing-standard),
+      --menu-icon-cross var(--motion-duration-panel) var(--motion-easing-standard);
+  }
+
+  /* The lines of the button of the header become a cross as the menu opens, and back as it closes. */
+  .site-menu[open] .close {
+    --menu-icon-cross: 1;
+  }
+
+  @starting-style {
+    .site-menu[open] .close {
+      --menu-icon-cross: 0;
+    }
+  }
+
+  /* As tall as the button and without width: the first line fills the button, the second is out. */
+  .close::before {
+    block-size: 100%;
+    content: "";
+  }
+
+  .close-text {
+    margin-inline-end: var(--space-3);
+    text-box: trim-both cap alphabetic;
+    white-space: nowrap;
+  }
+
+  /* At the start of the last third, the cross at its end, as in the mockup. */
+  @media (width >= 75rem) {
+    .close {
+      justify-self: stretch;
+    }
+
+    .close-text {
+      margin-inline-end: auto;
+    }
+  }
+
+  @media (hover: hover) {
+    .close:hover {
+      opacity: 0.6;
+    }
+  }
+</style>

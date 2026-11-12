@@ -1,12 +1,23 @@
 ---
 import { Font } from "astro:assets";
 
+import MenuPanel from "@/components/blocks/MenuPanel.astro";
+import PageHero from "@/components/blocks/PageHero.astro";
+import SiteFooter from "@/components/blocks/SiteFooter.astro";
+import SiteHeader from "@/components/blocks/SiteHeader.astro";
 import SkipLink from "@/components/ui/SkipLink.astro";
+import { availableCurrencies } from "@/lib/api/availableCurrencies";
+import { loadContactLinks } from "@/lib/api/contactLinks";
+import type { Image } from "@/lib/api/image";
+import { pageHeroes } from "@/lib/api/pageHeroes";
 import type { Language } from "@/lib/i18n/languages";
 import { languageTag } from "@/lib/i18n/languageTag";
 import { textDirection } from "@/lib/i18n/textDirection";
 import { t } from "@/lib/i18n/translate";
+import { artistName } from "@/lib/site/artistName";
+import { menu } from "@/lib/site/menu";
 import { siteName } from "@/lib/site/siteName";
+import { themeColors, themeStorageKey } from "@/lib/site/theme";
 
 import PageMeta from "./PageMeta.astro";
 
@@ -18,18 +29,54 @@ interface Props {
    * cut to about 160 characters. Without it, a search engine quotes the page itself.
    */
   description?: string;
+  /**
+   * The picture of a link card to the page, such as the work a page shows. Without it, the hero of
+   * the page in the admin, when it has one.
+   */
+  image?: Image;
   language: Language;
   /**
    * The path of the page under its language, such as `/contact`. A page without one is not a page
    * of the site, such as an error: it has no address of its own, and search engines skip it.
    */
   path?: string;
-  /** The name of the page; the home page has none and is named after the site. */
+  /**
+   * What stands around the page. `page`, the default: the hero, the header and the footer. `menu`:
+   * the hero, then the menu of the site as the whole page, without a header or a footer, as the
+   * home page is, which leads to the others. `none`: the page alone, with its way home only, as an
+   * error.
+   */
+  frame?: "page" | "menu" | "none";
+  /**
+   * The name of the page, which its hero shows; the home page has none: it is named after the
+   * site, and its hero shows the name of the artist.
+   */
   title?: string;
 }
 
-const { description, language, path, title } = Astro.props;
+const { description, frame = "page", image, language, path, title } = Astro.props;
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
+
+const noHeroes: Record<string, Image> = {};
+
+// What the hero, the menu, the header and the footer show of the API, asked for together: the
+// links of the artist (menu and footer), the currencies of the switch, and the heroes of the pages.
+const [links, currencies, heroes] = frame === "none"
+  ? [undefined, [], noHeroes]
+  : await Promise.all([
+      loadContactLinks(language),
+      availableCurrencies(language),
+      pageHeroes(language),
+    ]);
+
+// The page of the admin this one is, whose hero a link card shows when the page gives no picture.
+const page = path === "/" ? "home" : menu.find((entry) => entry.path === path)?.page;
+const ownHero = page === undefined ? undefined : heroes[page];
+const cardImage = image ?? ownHero;
+
+// A page always opens on a work: its own, else one of another page, a new one at each visit.
+const otherHeroes = Object.values(heroes);
+const hero = ownHero ?? otherHeroes[Math.floor(Math.random() * otherHeroes.length)];
 ---
 
 <!doctype html>
@@ -37,26 +84,57 @@ const fullTitle = title ? `${title} — ${siteName}` : siteName;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
-    <script is:inline>
+    <meta
+      name="theme-color"
+      content={themeColors.light}
+      media="(prefers-color-scheme: light)"
+    />
+    <meta name="theme-color" content={themeColors.dark} media="(prefers-color-scheme: dark)" />
+    <script is:inline define:vars={{ themeColors, themeStorageKey }}>
       // Before the first paint, so a theme the visitor chose does not flash the other one first.
       // Without a choice the page follows the system, which the CSS reads by itself.
       try {
-        const theme = localStorage.getItem("theme");
+        const theme = localStorage.getItem(themeStorageKey);
 
         if (theme === "light" || theme === "dark") {
           document.documentElement.dataset.theme = theme;
           for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
-            meta.content = theme === "dark" ? "#141414" : "#fff";
+            meta.content = themeColors[theme];
           }
         }
       } catch {
         // Blocked storage: the page follows the system.
       }
     </script>
+    <script is:inline>
+      // Before any image of the page, so none loads unseen: each is marked as it loads, or fails,
+      // and base.css fades it in. Without a script the images show as they come.
+      document.documentElement.dataset.fadeImages = "";
+      for (const type of ["load", "error"]) {
+        document.addEventListener(
+          type,
+          (event) => {
+            if (event.target instanceof HTMLImageElement) event.target.dataset.loaded = "";
+          },
+          { capture: true },
+        );
+      }
+    </script>
     <Font cssVariable="--font-absans" preload />
     <Font cssVariable="--font-manrope" />
+    <Font cssVariable="--font-readex-pro" />
+    <Font cssVariable="--font-poppins" />
+    {
+      /*
+       * The font of Chinese, Japanese or Korean comes with the pages in that language only: each
+       * is cut into a hundred files or more, whose rules alone would weigh most of every page.
+       * Elsewhere the few words of those scripts, the names in the list of languages, take the
+       * system font of their language (see the tokens of typography).
+       */
+      language === "zh" && <Font cssVariable="--font-noto-sans-sc" />
+    }
+    {language === "ja" && <Font cssVariable="--font-noto-sans-jp" />}
+    {language === "ko" && <Font cssVariable="--font-noto-sans-kr" />}
     <link rel="icon" type="image/png" href="/favicon.png" />
     {
       path === undefined ? (
@@ -67,6 +145,7 @@ const fullTitle = title ? `${title} — ${siteName}` : siteName;
       ) : (
         <PageMeta
           description={description}
+          image={cardImage}
           language={language}
           path={path}
           title={fullTitle}
@@ -76,8 +155,77 @@ const fullTitle = title ? `${title} — ${siteName}` : siteName;
   </head>
   <body>
     <SkipLink label={t(language, "layout.skipToContent")} target="content" />
-    <main id="content">
-      <slot />
-    </main>
+    {
+      frame !== "none" && (
+        <PageHero
+          image={hero}
+          lang={title === undefined ? "en" : undefined}
+          language={language}
+          menuBelow={frame === "menu"}
+          name={title ?? artistName}
+        />
+      )
+    }
+    <div class="page">
+      {
+        frame === "page" && (
+          <SiteHeader
+            currencies={currencies}
+            heroes={heroes}
+            language={language}
+            links={links}
+            path={path}
+          />
+        )
+      }
+      <main class:list={{ framed: frame === "page" }} id="content">
+        {
+          frame === "menu" && (
+            <MenuPanel
+              currencies={currencies}
+              heroes={heroes}
+              language={language}
+              links={links}
+              path={path}
+              place="page"
+            />
+          )
+        }
+        <slot />
+      </main>
+      {frame === "page" && <SiteFooter language={language} links={links} path={path} />}
+    </div>
   </body>
 </html>
+
+<script>
+  // Safari on an iPhone shows the pressed state of a link or a button (:active, in base.css) only
+  // when the page listens to touches; this listener does nothing else.
+  document.addEventListener("touchstart", () => {}, { passive: true });
+</script>
+
+<style>
+  /*
+   * The page under the hero: at least a screen tall, so the hero can always leave it the whole
+   * screen, and a short page, such as an error or one without content yet, still has its footer
+   * at the bottom of the screen.
+   */
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 100lvh;
+  }
+
+  main {
+    flex-grow: 1;
+  }
+
+  /*
+   * Every page stands as far below the header as above the line of the footer, to the eye: the
+   * header already has room under its text, so the space above is the smaller of the two. A page
+   * only spaces its own sections.
+   */
+  .framed {
+    padding-block: var(--layout-space-8) var(--layout-space-16);
+  }
+</style>

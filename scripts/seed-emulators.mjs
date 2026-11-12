@@ -153,6 +153,66 @@ function paintingSvg({ height, palette, seed, width }) {
   </svg>`;
 }
 
+/** Bold waves of colour across a deep ground, one over another, like a printed textile. */
+function wavesSvg({ height, palette, seed, width }) {
+  const next = random(seed);
+  const [ground, ...colors] = palette;
+  const count = 28;
+  const bands = Array.from({ length: count }, (_, index) => {
+    const base = (index / (count - 1)) * height;
+    const amplitude = 30 + next() * 90;
+    const frequency = ((1.5 + next() * 2) * 2 * Math.PI) / width;
+    const phase = next() * 2 * Math.PI;
+    const points = Array.from({ length: Math.ceil(width / 20) + 1 }, (_, step) => {
+      const x = step * 20;
+
+      return `${x},${(base + amplitude * Math.sin(x * frequency + phase)).toFixed(1)}`;
+    });
+
+    return `<polyline points="${points.join(" ")}" fill="none" stroke="${colors[index % colors.length]}" stroke-width="${(6 + next() * 22).toFixed(1)}" stroke-opacity="${(0.55 + next() * 0.35).toFixed(2)}" stroke-linecap="round"/>`;
+  });
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <rect width="100%" height="100%" fill="${ground}"/>
+    ${bands.join("")}
+  </svg>`;
+}
+
+/** A geometric mosaic: squares of the palette, each with a circle, a quarter or a stripe. */
+function mosaicSvg({ height, palette, seed, width }) {
+  const next = random(seed);
+  const size = 96;
+  const pick = () => palette[Math.floor(next() * palette.length)];
+  const cells = [];
+
+  for (let y = 0; y < height; y += size) {
+    for (let x = 0; x < width; x += size) {
+      const shape = Math.floor(next() * 3);
+      const half = size / 2;
+      const inner =
+        shape === 0
+          ? `<circle cx="${x + half}" cy="${y + half}" r="${half * 0.8}" fill="${pick()}"/>`
+          : shape === 1
+            ? `<path d="M${x} ${y}h${size}a${size} ${size} 0 0 1 -${size} ${size}z" fill="${pick()}"/>`
+            : `<rect x="${x}" y="${y + size / 3}" width="${size}" height="${size / 3}" fill="${pick()}"/>`;
+
+      cells.push(
+        `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="${pick()}"/>${inner}`,
+      );
+    }
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${cells.join("")}</svg>`;
+}
+
+/** The pictures the seed can draw, by kind; each takes a palette but the etching. */
+const drawings = {
+  etching: etchingSvg,
+  mosaic: mosaicSvg,
+  painting: paintingSvg,
+  waves: wavesSvg,
+};
+
 async function toJpeg(svg) {
   return sharp(Buffer.from(svg)).jpeg({ mozjpeg: true, quality: 88 }).toBuffer();
 }
@@ -166,16 +226,22 @@ const palettes = {
   elephant: ["#ece7e1", "#3a3530", "#b9aa98", "#d8cbbb", "#7d6f62"],
   frog: ["#eef0e2", "#2f3a1f", "#a6b86a", "#d9e0a8", "#5f7a35"],
   lion: ["#f4ebdc", "#4a2f17", "#e0a55a", "#f1d29c", "#b4692a"],
+  mosaic: ["#e9c46a", "#264653", "#2a9d8f", "#e76f51", "#f4a261", "#f1faee"],
+  night: ["#0d1330", "#2e5aac", "#c4426b", "#e8b04a", "#7fc8d8"],
+  sunset: ["#2b0f2e", "#ff6b35", "#f7c59f", "#ef3e6b", "#ffd23f"],
   owl: ["#ebe8f0", "#2c2740", "#9b90bf", "#d6d0e6", "#5b4f86"],
   tiger: ["#f6ece4", "#3d1f12", "#e07a3f", "#f3c39b", "#a8492a"],
 };
 
+// Each page a work of another kind and colour, so the heroes show how the site meets them all:
+// warm, deep, pale, patterned and monochrome.
 const heroPages = [
-  { page: "home", seed: 11 },
-  { page: "gallery", seed: 23 },
-  { page: "projects", seed: 37 },
-  { page: "about", seed: 41 },
-  { page: "contacts", seed: 53 },
+  { kind: "painting", page: "home", palette: "tiger", seed: 11 },
+  { kind: "waves", page: "gallery", palette: "night", seed: 23 },
+  { kind: "painting", page: "exhibitions", palette: "owl", seed: 29 },
+  { kind: "etching", page: "projects", seed: 37 },
+  { kind: "mosaic", page: "about", palette: "mosaic", seed: 41 },
+  { kind: "waves", page: "contacts", palette: "sunset", seed: 53 },
 ];
 
 const aboutText = {
@@ -557,22 +623,20 @@ function slug(text) {
   return text.toLowerCase().replaceAll(/[^a-zа-яё0-9]+/g, "-");
 }
 
-/** Draws a photo of a list and uploads it: an etching, or a painting in the given palette. */
+/** Draws a photo of a list in its kind and palette, and uploads it. */
 async function uploadArtwork(api, { kind, name, palette, seed, size = [1600, 1200] }) {
   const [width, height] = size;
-  const svg =
-    kind === "etching"
-      ? etchingSvg({ height, seed, width })
-      : paintingSvg({ height, palette: palettes[palette], seed, width });
+  const svg = drawings[kind]({ height, palette: palettes[palette], seed, width });
 
   return api.upload(`${slug(name)}.jpg`, await toJpeg(svg));
 }
 
 async function seedHeroes(api) {
-  for (const { page, seed } of heroPages) {
+  for (const { kind, page, palette, seed } of heroPages) {
     const uploadId = await uploadArtwork(api, {
-      kind: "etching",
+      kind,
       name: `hero-${page}`,
+      palette,
       seed,
       size: [1920, 1080],
     });
@@ -607,15 +671,27 @@ async function seedAbout(api) {
 async function seedContacts(api) {
   await api.put("/contacts/links", contactLinks);
 
-  const photo = await uploadArtwork(api, {
-    kind: "painting",
-    name: "contacts",
-    palette: "dragonfly",
-    seed: 71,
-    size: [1200, 1500],
-  });
-  await api.put("/contacts/photo", { alt: "Рабочий стол с красками и кистями", uploadId: photo });
-  console.log("  contacts: links, photo");
+  // Landscape, as the frame of the slideshow; the artist may switch it to the gallery.
+  const slides = [
+    { alt: "Рабочий стол с красками и кистями", palette: "dragonfly", seed: 71 },
+    { alt: "Мастерская у окна", palette: "frog", seed: 72 },
+    { alt: "Холсты у стены мастерской", palette: "lion", seed: 73 },
+  ];
+  const photos = [];
+  for (const { alt, palette, seed } of slides) {
+    photos.push({
+      alt,
+      uploadId: await uploadArtwork(api, {
+        kind: "painting",
+        name: `contacts-${String(seed)}`,
+        palette,
+        seed,
+        size: [1500, 1050],
+      }),
+    });
+  }
+  await api.put("/contacts/slideshow", { photos, source: "uploaded" });
+  console.log(`  contacts: links, ${String(photos.length)} slideshow photos`);
 }
 
 async function seedCurrencies(api) {

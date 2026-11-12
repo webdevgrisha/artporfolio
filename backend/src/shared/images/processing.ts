@@ -7,6 +7,12 @@ const targetWidths = [320, 640, 960, 1_280, 1_920];
 
 export const outputFormats = ["avif", "webp"] as const;
 
+/**
+ * The width of the preview a page shows, stretched and blurred, while the image loads: enough for
+ * its colors and the shape of what it shows in about 200 bytes, so the page can carry it inline.
+ */
+const placeholderWidth = 16;
+
 // Source photos only: WebP and AVIF are already compressed for the web, and compressing them
 // again would visibly lower the quality.
 export const sourceFormats = ["jpeg", "png"] as const;
@@ -29,6 +35,8 @@ export interface EncodedImage {
 
 export interface ProcessedImage {
   images: EncodedImage[];
+  /** A preview of the image, a few pixels wide, as a data URL; see `placeholderWidth`. */
+  placeholder: string;
   sourceFormat: SourceFormat;
 }
 
@@ -84,8 +92,23 @@ async function toEncodedImage(image: Sharp, format: OutputFormat): Promise<Encod
   return { data, format, height: info.height, width: info.width };
 }
 
+/** The preview a page shows while the image loads, as a data URL: WebP, which every browser reads. */
+async function toPlaceholder(input: Buffer): Promise<string> {
+  const data = await sharp(input, { limitInputPixels: maxInputPixels })
+    .autoOrient()
+    .resize({ width: placeholderWidth })
+    .webp({ quality: 50 })
+    .toBuffer()
+    .catch(() => {
+      throw new BadRequestError("The image is damaged");
+    });
+
+  return `data:image/webp;base64,${data.toString("base64")}`;
+}
+
 /**
- * Turns an upload into web images: every target width in every format. The image is rotated
+ * Turns an upload into web images, every target width in every format, and the preview a page
+ * shows while they load. The image is rotated
  * according to its EXIF orientation and resized without cropping. sharp converts the output to
  * sRGB and drops all metadata, including the location.
  */
@@ -103,5 +126,5 @@ export async function processImage(input: Buffer): Promise<ProcessedImage> {
     }
   }
 
-  return { images, sourceFormat: source.format };
+  return { images, placeholder: await toPlaceholder(input), sourceFormat: source.format };
 }

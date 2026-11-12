@@ -28,7 +28,7 @@ interface EditPhotoFormProps {
   slot: PhotoSlot;
 }
 
-/** Edits a single photo with its description, such as «Моё фото» or the contacts photo. */
+/** Edits a single photo with its description, such as «Моё фото». */
 export function EditPhotoForm({
   altPlaceholder,
   className,

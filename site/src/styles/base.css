@@ -8,12 +8,26 @@
     line-height: var(--line-height-body);
     /* The text keeps its size when a phone turns sideways. */
     text-size-adjust: 100%;
+    /*
+     * The room of a scrollbar that takes room stays, so the page does not move sideways when the
+     * open menu stops it from scrolling.
+     */
+    scrollbar-gutter: stable;
   }
 
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;
     }
+  }
+
+  /* A text in Japanese or Korean takes the font of its language before the others; see the tokens. */
+  :lang(ja) {
+    font-family: var(--font-family-ja);
+  }
+
+  :lang(ko) {
+    font-family: var(--font-family-ko);
   }
 
   body {
@@ -36,8 +50,59 @@
     color: inherit;
   }
 
+  /*
+   * A photo fades in over its placeholder as it arrives instead of appearing at once, line by line
+   * (see the script of BaseLayout). Not the largest image of the first screen, which is never lazy:
+   * hidden, it would be seen later.
+   */
+  img {
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  :root[data-fade-images] img[loading="lazy"]:not([data-loaded]) {
+    opacity: 0;
+  }
+
   :focus-visible {
     outline: var(--focus-ring);
     outline-offset: 2px;
   }
+
+  /* Selected text turns the colors of the page around, as the site has no color of its own. */
+  ::selection {
+    color: var(--color-surface);
+    background: var(--color-text);
+  }
+
+  /*
+   * A tap on a phone does not flash the gray box of the browser around what it touches: a link or
+   * a button dims under the finger instead, as it does under a pointer.
+   */
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (hover: none) {
+    :is(a, button, summary, label):active {
+      opacity: 0.6;
+    }
+  }
+}
+
+/*
+ * Going from page to page of the site, the new page fades in over the old one instead of the
+ * screen blinking white: what both pages share, such as the header, stays still, as the two
+ * images of it are the same. Not in a layer: it is a setting of the document, not a style. A
+ * visitor who asked for less motion gets the page at once.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-duration-slow);
+  animation-timing-function: var(--motion-easing-standard);
 }

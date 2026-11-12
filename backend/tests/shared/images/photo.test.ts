@@ -58,6 +58,7 @@ const published = {
   fileSize: 8,
   height: 480,
   originalPath: "contacts/photo/new-version/original.png",
+  placeholder: "data:image/webp;base64,UklGRg==",
   sources: {
     avif: [{ path: "contacts/photo/new-version/960.avif", token: "token", width: 960 }],
     webp: [{ path: "contacts/photo/new-version/960.webp", token: "token", width: 960 }],
@@ -72,6 +73,7 @@ const storedPhoto = {
   fileSize: 100,
   height: 700,
   originalPath: "old/original.png",
+  placeholder: "data:image/webp;base64,UklGRg==",
   sources: {
     avif: [{ path: "old/1000.avif", token: "avif-token", width: 1_000 }],
     webp: [{ path: "old/1000.webp", token: "webp-token", width: 1_000 }],
@@ -87,6 +89,7 @@ const returnedPhoto = {
   fileSize: 100,
   height: 700,
   original: "/api/originals/old/original.png",
+  placeholder: "data:image/webp;base64,UklGRg==",
   version: "old-version",
   width: 1_000,
   sources: {

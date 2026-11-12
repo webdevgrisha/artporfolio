@@ -1,0 +1,14 @@
+---
+// Only its hero for now: the content of the page comes with its own task.
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { isLanguage } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+
+const { lang } = Astro.params;
+
+if (!isLanguage(lang)) {
+  return Astro.rewrite("/404");
+}
+---
+
+<BaseLayout language={lang} path="/exhibitions" title={t(lang, "menu.exhibitions")} />

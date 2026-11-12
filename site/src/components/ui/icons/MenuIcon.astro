@@ -1,0 +1,75 @@
+---
+/**
+ * The two lines of the mockup that open the menu, wider than an icon of the grid, as drawn there.
+ * They turn into a cross that closes it: `--menu-icon-cross` from 0 to 1 moves each line to the
+ * middle and turns it by 45°, so a transition of it draws the one into the other. Drawn for the
+ * site.
+ *
+ * The lines are boxes, not the paths of an SVG, which Safari turned about another point than
+ * Chrome and Firefox: every browser turns a box about its own middle.
+ */
+---
+
+<span aria-hidden="true" class="menu-icon">
+  <span class="line top"></span>
+  <span class="line bottom"></span>
+</span>
+
+<style>
+  /* A number, so a transition can move it, and inherited, so the button around sets it. */
+  @property --menu-icon-cross {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  /* 31 by 14px beside a text of 24px, as in the mockup (32 by 14 units); the cross reaches past it. */
+  .menu-icon {
+    --size: var(--menu-icon-size, 1.3em);
+
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    inline-size: var(--size);
+    aspect-ratio: 32 / 14;
+  }
+
+  /*
+   * Both lines stand in the middle of the box, 2 units thick, and are moved apart by 6 units each,
+   * to its top and its bottom: as they cross, they come back to the one place they stand in, so the
+   * cross meets at their middles in every browser, whichever way it rounds the box of a line
+   * thinner than a pixel. Safari did so for a move by a share of the line, and its cross came out
+   * crooked.
+   *
+   * Two lines of 32 crossed at a right angle make a cross of about 23 by 23 (32 × cos 45°), the
+   * size of the one in the mockup. It then moves the 4.7 units it is narrower on each side to the
+   * end of the box, so it ends where the page ends, as the lines did.
+   */
+  .line {
+    --end: 1;
+
+    position: absolute;
+    inset-block-start: calc(50% - var(--size) / 32);
+    inset-inline: 0;
+    block-size: calc(var(--size) / 16);
+    background: currentColor;
+    rotate: calc(var(--menu-icon-cross) * var(--turn));
+    translate: calc(var(--menu-icon-cross) * var(--end) * var(--size) * 4.69 / 32)
+      calc((1 - var(--menu-icon-cross)) * var(--side) * var(--size) * 6 / 32);
+  }
+
+  /* The end of the box is on the left in a text from the right. */
+  .menu-icon:dir(rtl) .line {
+    --end: -1;
+  }
+
+  .top {
+    --turn: 45deg;
+    --side: -1;
+  }
+
+  .bottom {
+    --turn: -45deg;
+    --side: 1;
+  }
+</style>

@@ -1,0 +1,198 @@
+---
+/**
+ * The header of every page: the name of the artist, which leads home, the switches of the page and
+ * the link to the gallery from a tablet on, and the button that opens the menu of the site. On a
+ * phone the switches are in the menu, and the header keeps the name and the button only.
+ */
+import SiteMenu from "@/components/blocks/SiteMenu.astro";
+import CurrencySwitch from "@/components/controls/CurrencySwitch.astro";
+import LanguageSwitch from "@/components/controls/LanguageSwitch.astro";
+import MenuButton from "@/components/controls/MenuButton.astro";
+import ThemeToggle from "@/components/controls/ThemeToggle.astro";
+import Container from "@/components/ui/Container.astro";
+import HomeLink from "@/components/ui/HomeLink.astro";
+import TextLink from "@/components/ui/TextLink.astro";
+import type { ContactLinks } from "@/lib/api/contacts";
+import type { Image } from "@/lib/api/image";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { localizedPath } from "@/lib/site/localizedPath";
+import { menuId } from "@/lib/site/menu";
+
+interface Props {
+  /** The codes of the currencies in use, for the switch of currencies. */
+  currencies: string[];
+  /** The heroes of the pages by their id, which the menu shows under the pointer. */
+  heroes: Record<string, Image>;
+  language: Language;
+  /** The links of the artist for the menu; none when the API could not give them. */
+  links: ContactLinks | undefined;
+  /** The path of the page being shown under its language, such as `/contact`. */
+  path: string | undefined;
+}
+
+const { currencies, heroes, language, links, path } = Astro.props;
+---
+
+<header class="site-header" data-site-header>
+  <Container class="bar">
+    <HomeLink current={path === "/"} language={language} />
+    <div class="controls">
+      {/* The works, which the site is for, a click away on every page, as in the mockup. */}
+      <TextLink
+        class="gallery"
+        aria-current={path === "/gallery" ? "page" : undefined}
+        href={localizedPath(language, "/gallery")}
+        label={t(language, "menu.gallery")}
+      />
+      <CurrencySwitch
+        align="end"
+        currencies={currencies}
+        id="header-currency"
+        language={language}
+      />
+      {
+        path !== undefined && (
+          <LanguageSwitch align="end" id="header-language" language={language} path={path} />
+        )
+      }
+      <ThemeToggle id="header-theme" language={language} />
+    </div>
+    <MenuButton language={language} />
+  </Container>
+  <SiteMenu
+    currencies={currencies}
+    heroes={heroes}
+    id={menuId}
+    language={language}
+    links={links}
+    path={path}
+  />
+</header>
+
+<script>
+  /*
+   * The header goes out of sight as the visitor scrolls down to read, and comes back as soon as
+   * they scroll up, wherever they are: the menu is never far, and the works keep the screen. It
+   * stays while the visitor is in it, by the keyboard or with a list of it open. Without this
+   * script the header scrolls away with the page, as any other part of it.
+   */
+  const header = document.querySelector<HTMLElement>("[data-site-header]");
+
+  /** A scroll shorter than this is a tremble of the hand or of the page, not a direction. */
+  const minimumScroll = 8;
+
+  if (header) {
+    const root = document.documentElement;
+    let lastScroll = window.scrollY;
+
+    // Its height, by which what the page scrolls to stops below it (see the style).
+    new ResizeObserver(() => {
+      root.style.setProperty("--header-height", `${header.offsetHeight}px`);
+    }).observe(header);
+
+    header.dataset.smart = "";
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        const scroll = window.scrollY;
+
+        if (Math.abs(scroll - lastScroll) < minimumScroll) return;
+
+        const inUse = header.matches(":focus-within") || header.querySelector(":popover-open, [open]");
+        // The header hides only once it has been scrolled past its own place, at the top of the
+        // page under the hero: it stays as the visitor scrolls from the hero to its top.
+        const place = (header.parentElement?.getBoundingClientRect().top ?? 0) + scroll;
+        const down = scroll > lastScroll && scroll > place + header.offsetHeight;
+
+        header.toggleAttribute("data-hidden", down && !inUse);
+        lastScroll = scroll;
+      },
+      { passive: true },
+    );
+
+    header.addEventListener("focusin", () => header.removeAttribute("data-hidden"));
+  }
+</script>
+
+<style>
+  /*
+   * With its script the header stays at the top of the screen, over the page, and slides out of
+   * sight while the visitor scrolls down. A screen without motion shows and hides it at once.
+   */
+  /*
+   * What the page scrolls to, by a link within it or by the focus of the keyboard, stops below the
+   * header, not under it (WCAG 2.4.11). The header itself is never under itself: what is in it
+   * takes the room back, or the browser would scroll up by its height to show it.
+   */
+  :global(html) {
+    scroll-padding-block-start: var(--header-height, 0px);
+  }
+
+  .site-header :global(*) {
+    scroll-margin-block-start: calc(-1 * var(--header-height, 0px));
+  }
+
+  .site-header[data-smart] {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    background: var(--color-surface);
+    transition: translate var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  .site-header[data-hidden] {
+    translate: 0 -100%;
+  }
+
+  /*
+   * One row: the name at the start, the button at the end. Its text is as large as the body, a
+   * size smaller than in the mockup: a line of service, it leaves the page the larger type.
+   */
+  .bar {
+    /*
+     * The name may take the row but for the button of the menu and the gap before it: with a
+     * large text size of the browser it gets smaller instead of pushing the button off the screen.
+     * The menu gives it the same room, so its name stays exactly over this one.
+     */
+    --home-link-room: calc(100cqi - var(--grid-gap) - var(--min-tap-target-size));
+    display: flex;
+    gap: var(--grid-gap);
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--layout-space-6);
+
+    container-type: inline-size;
+    font-size: var(--font-size-body);
+  }
+
+  /* The link that skips to the content, while it has the focus, stands in the place of the name. */
+  :global(body:has(.skip-link:focus)) .bar > :global(.home-link) {
+    visibility: hidden;
+  }
+
+  /* At the end of the row, before the button of the menu, as in the mockup. */
+  .controls {
+    display: none;
+    gap: var(--layout-space-6);
+    align-items: center;
+    margin-inline-start: auto;
+  }
+
+  /* The link stands apart from the switches after it: a way to go, then the ways to see. */
+  .gallery {
+    margin-inline-end: var(--layout-space-6);
+  }
+
+  /*
+   * The whole row from 48rem: below it the name, the link, the switches and the button no longer
+   * fit side by side in the longest languages (about 650px), and the switches go into the menu.
+   * The breakpoint is the width of this row, not of a device.
+   */
+  @media (width >= 48rem) {
+    .controls {
+      display: flex;
+    }
+  }
+</style>

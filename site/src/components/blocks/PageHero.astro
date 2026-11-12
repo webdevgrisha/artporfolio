@@ -1,0 +1,489 @@
+---
+/**
+ * The first screen of every page: a work of the artist, blurred, and the name of the page across
+ * it from edge to edge, its letters windows onto the same work, sharp. Before the visitor
+ * scrolls, only a chevron, also a window onto the work, says to scroll down. As they scroll, the
+ * work stays: the line is written near its top, as by a brush, carried down over the work, each
+ * letter showing the part of it under it at that moment, and wiped out at its bottom the same way.
+ * Then the hero leaves upwards at once, as a slide, and the page fills the screen; scrolling back
+ * up from the top of the page brings the whole hero back, and the line goes back through it all.
+ *
+ * The scroll drives it all in CSS (a scroll-driven animation); the script fits the line to the
+ * width and snaps the scroll between the hero and the page (snapHeroScroll). Without the script,
+ * or with less motion, the hero is a still screen with the line across its middle.
+ * Without a photo, the letters are in the color of the text, on the page.
+ *
+ * The name is the heading of the page for screen readers; the line on the screen is drawing.
+ * The header stands under the hero, as in the mockup, so the hero has the button of the menu; where
+ * the menu is the page under the hero, as on the home page, the button leads down to it.
+ */
+import MenuButton from "@/components/controls/MenuButton.astro";
+import VisuallyHidden from "@/components/ui/VisuallyHidden.astro";
+import type { Image } from "@/lib/api/image";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+
+interface Props {
+  image: Image | undefined;
+  /** The language of the name when it is not the language of the page, as the name of the artist. */
+  lang?: string | undefined;
+  /** The language of the page. */
+  language: Language;
+  /** Whether the menu of the site is the page under the hero, as on the home page. */
+  menuBelow?: boolean;
+  /** The name of the page, its heading. */
+  name: string;
+}
+
+const { image, lang, language, menuBelow = false, name } = Astro.props;
+
+// The largest file of the work: the letters show it sharp across the whole screen, so even a phone
+// held upright, which crops the work to its height, needs it. The blurred work is the same file,
+// so it is loaded once. Its preview, under it, shows at once.
+const avif = image?.sources.avif.at(-1)?.url;
+const webp = image?.sources.webp.at(-1)?.url;
+const style =
+  image &&
+  [
+    `--hero-image: image-set(url("${avif}") type("image/avif"), url("${webp}") type("image/webp")), url("${image.placeholder}")`,
+    `--hero-ratio: ${image.width / image.height}`,
+  ].join("; ");
+---
+
+{image && <link as="image" fetchpriority="high" href={avif} rel="preload" type="image/avif" />}
+<section
+  aria-labelledby="page-title"
+  class:list={["page-hero", { photographed: image }]}
+  data-page-hero
+  style={style}
+>
+  <div class="stage">
+    {image && <div class="photo" />}
+    <div aria-hidden="true" class="line" data-name={name} lang={lang}>
+      <span class="copy">{name}</span>
+    </div>
+    <div aria-hidden="true" class="hint">
+      <span class="chevron"><span class="window"></span></span>
+      <span class="hint-text">{t(language, "hero.scrollDown")}</span>
+    </div>
+    <VisuallyHidden as="h1" id="page-title" lang={lang}>{name}</VisuallyHidden>
+    <div class="menu">
+      <MenuButton href={menuBelow ? "#content" : undefined} language={language} skipped />
+    </div>
+  </div>
+</section>
+
+<script>
+  import { fitHeroLine } from "@/lib/site/fitHeroLine";
+  import { followHeroScroll } from "@/lib/site/followHeroScroll";
+  import { snapHeroScroll } from "@/lib/site/snapHeroScroll";
+
+  const hero = document.querySelector<HTMLElement>("[data-page-hero]");
+  const stage = hero?.querySelector<HTMLElement>(".stage");
+  const line = hero?.querySelector<HTMLElement>(".line");
+
+  if (hero && stage && line) {
+    fitHeroLine(hero, stage, line);
+    hero.dataset.live = "";
+    followHeroScroll(hero);
+    snapHeroScroll(hero);
+  }
+</script>
+
+<style>
+  /*
+   * The hero is as tall as the screen with its bars hidden (lvh), so it never leaves a strip as
+   * they hide; while they show, its bottom is under them. Moving, it is two screens tall: its stage
+   * stays at the top of the screen for one screen of scrolling, then leaves with the hero.
+   *
+   * It moves when its script runs (data-live) and the visitor has not asked for less motion. Its
+   * progress through that screen of scrolling, --along from 0 to 1, comes from a scroll-driven
+   * animation: from the hero filling the screen at the top of the page (contain 0%) to its bottom
+   * reaching the bottom of the screen (contain 100%). Everything that moves follows --along.
+   */
+  @property --along {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  .page-hero {
+    /* The blurred work is a little larger, as the blur fades its edges; the windows follow it. */
+    --hero-zoom: 1.1;
+
+    position: relative;
+    block-size: 100lvh;
+    color: var(--color-text);
+    background: var(--color-surface);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .page-hero[data-live] {
+      block-size: 200lvh;
+    }
+
+    /*
+     * Only where the browser ties an animation to the scroll: elsewhere it would play at once and
+     * end at 1, over the --along the script sets in its place.
+     */
+    @supports (animation-timeline: view()) {
+      .page-hero[data-live] {
+        animation: along linear both;
+        /* Of the whole screen: by default it would leave out the room the header keeps for links
+           within the page (scroll-padding), and start that much ahead. */
+        animation-timeline: view(0px);
+        animation-range: contain 0% contain 100%;
+      }
+    }
+  }
+
+  @keyframes along {
+    from {
+      --along: 0;
+    }
+
+    to {
+      --along: 1;
+    }
+  }
+
+  .stage {
+    position: sticky;
+    inset-block-start: 0;
+    block-size: 100lvh;
+    container-type: size;
+    overflow: hidden;
+  }
+
+  /*
+   * The work and the windows onto it share one size and place: the cover of the stage, zoomed as
+   * the blurred one is, centered. A window placed at (x, y) of the stage moves its work back by as
+   * much, so the work in it stays where the blurred one is. Each part of the background is set
+   * on its own, as --hero-image holds two images, the work and its preview, and each takes them.
+   */
+  .photo,
+  .line,
+  .window::before {
+    --cover-width: calc(max(100cqw, 100cqh * var(--hero-ratio, 1)) * var(--hero-zoom));
+    --cover-height: calc(var(--cover-width) / var(--hero-ratio, 1));
+    --cover-x: calc((100cqw - var(--cover-width)) / 2);
+    --cover-y: calc((100cqh - var(--cover-height)) / 2);
+
+    background-repeat: no-repeat;
+    background-size: var(--cover-width) var(--cover-height);
+  }
+
+  /*
+   * The work, filling the screen, blurred as in the mockup: its colors and its big shapes. It is
+   * darker than the work itself, as the plates of the menu are, so the letters, which show the work
+   * as it is, stand out from it on any work, pale or dark: everywhere about as much brighter than
+   * what is around them. It reaches past the screen by the reach of the blur, which fades the
+   * edges of what it blurs.
+   */
+  .photo {
+    --blur: clamp(0.5rem, 0.75vmax, 1rem);
+
+    position: absolute;
+    inset: calc(-2 * var(--blur));
+    background-image: var(--hero-image);
+    background-position: calc(var(--cover-x) + 2 * var(--blur)) calc(var(--cover-y) + 2 * var(--blur));
+    filter: blur(var(--blur)) brightness(0.6);
+  }
+
+  /*
+   * The line, across the page as wide as its content: its copies of the name spread to its edges,
+   * or its words one under another. Still, it stands in the middle of the stage; --y is its place
+   * from the top, by which the work in its letters moves back. --line-height is its height, which
+   * the script measures once it is laid out.
+   */
+  .line {
+    --y: calc((100cqh - var(--line-height, 1em)) / 2);
+
+    position: absolute;
+    /* Placed by its top, not moved: Firefox clips the work to letters where they would be unmoved. */
+    inset-block-start: var(--y);
+    inset-inline: 0;
+    display: flex;
+    justify-content: space-between;
+    /*
+     * Room above and below the capitals, which the line is cut to (see .copy): round letters, such
+     * as O, reach a little past them, as every typeface draws them so they look as tall, and the
+     * work in the letters is drawn only within the box.
+     */
+    padding-block: 0.1em;
+    padding-inline: max(
+      var(--page-gutter),
+      (100% - var(--page-max-inline-size)) / 2 + var(--page-gutter)
+    );
+    font-size: var(--line-size, var(--font-size-display));
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /*
+   * Moving, the first quarter of the way writes the line near the top of the stage: a soft edge,
+   * as of a brush, goes from its start to its end and leaves the letters drawn. The next half
+   * carries it down to as near the bottom; the last quarter wipes it out there the same way.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-live] .line {
+      --written: clamp(0, var(--along) * 4, 1);
+      --moved: clamp(0, var(--along) * 2 - 0.5, 1);
+      --wiped: clamp(0, var(--along) * 4 - 3, 1);
+      --top: 8cqh;
+      --y: calc(var(--top) + var(--moved) * (100cqh - var(--line-height, 1em) - 2 * var(--top)));
+      --write-edge: calc(var(--written) * 125% - 25%);
+      --wipe-edge: calc(var(--wiped) * 125% - 25%);
+      --writing: linear-gradient(
+        to right,
+        transparent var(--wipe-edge),
+        #000 calc(var(--wipe-edge) + 25%),
+        #000 var(--write-edge),
+        transparent calc(var(--write-edge) + 25%)
+      );
+
+      -webkit-mask-image: var(--writing);
+      mask-image: var(--writing);
+    }
+
+    [data-live] .line:dir(rtl) {
+      --writing: linear-gradient(
+        to left,
+        transparent var(--wipe-edge),
+        #000 calc(var(--wipe-edge) + 25%),
+        #000 var(--write-edge),
+        transparent calc(var(--write-edge) + 25%)
+      );
+    }
+  }
+
+  .line[data-by-word] {
+    flex-direction: column;
+    gap: 0.3em;
+  }
+
+  /* The letters show the work itself, sharp. */
+  .photographed .line {
+    color: transparent;
+    /*
+     * A hairline of light along the edge of each letter, as of glass: where the work is as dark in
+     * the letter as around it, as on a black ground, it still draws the letter.
+     */
+    -webkit-text-stroke: max(1px, 0.01em) rgb(255 255 255 / 0.35);
+    background-image: var(--hero-image);
+    background-position: var(--cover-x) calc(var(--cover-y) - var(--y));
+    /* Safari on older iPhones knows only the prefixed name. */
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  /* The capitals stand without the room of the lowercase, so the line is as high as they are. */
+  .line :global(.copy) {
+    text-box: trim-both cap alphabetic;
+  }
+
+  .line :global(.probe) {
+    position: absolute;
+    visibility: hidden;
+    white-space: pre;
+  }
+
+  /*
+   * In the middle of the first screen: the chevron of the mockup, a window onto the work as the
+   * letters are, nodding down, and its words under it. It fades out over the first steps of the
+   * scroll, before the line is written. A still hero has none.
+   *
+   * The middle of what the visitor sees: on a phone the bars of the browser show as the page
+   * opens and cover the bottom of the stage (lvh), so the middle is that of the screen without
+   * them (svh); elsewhere the two are one.
+   */
+  .hint {
+    --middle: calc(min(100cqh, 100svh) / 2);
+
+    position: absolute;
+    inset: 0;
+    display: none;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-live] .hint {
+      display: block;
+      opacity: clamp(0, 1 - var(--along) * 20, 1);
+    }
+  }
+
+  /*
+   * 128 by 64px at 1920px, as in the mockup, with room for its edge, its tip on the middle of the
+   * screen, at (--x, --y) of the stage. The shape is the stroke of the mockup drawn as a closed
+   * outline, so it can be both filled and edged. The work shows through its shape (.window), moved
+   * back by as much as the letters' is; a hairline of light follows the edge of the shape (::after),
+   * as the letters have, so it shows on a dark ground too.
+   *
+   * It nods down and back: the chevron moves, and the work in its window moves the other way by as
+   * much, so the work stays where the blurred one is. Both are moves of transform, which the
+   * browser plays off the main thread, as the nod never stops while the page is open.
+   */
+  .chevron {
+    --width: clamp(4rem, 6.667cqw, 8rem);
+    --x: calc(50cqw - var(--width) / 2);
+    /* The drawing is 134 units wide, its V 128 of them (--width), its tip 68 units down. */
+    --y: calc(var(--middle) - var(--width) * 68 / 128);
+    --nod: 0.75rem;
+
+    /* By top and left, as its x and y are: from the left in a text from the right too. */
+    position: absolute;
+    top: 0;
+    left: 0;
+    inline-size: calc(var(--width) * 134 / 128);
+    aspect-ratio: 134 / 72;
+    translate: var(--x) var(--y);
+    animation: nod 1.6s var(--motion-easing-screen) infinite;
+  }
+
+  @keyframes nod {
+    50% {
+      transform: translateY(var(--nod));
+    }
+  }
+
+  @keyframes nod-back {
+    50% {
+      transform: translateY(calc(-1 * var(--nod)));
+    }
+  }
+
+  .window,
+  .chevron::after {
+    position: absolute;
+    inset: 0;
+    /* Safari before 15.4 knows only the prefixed name. */
+    -webkit-mask: var(--shape) center / contain no-repeat;
+    mask: var(--shape) center / contain no-repeat;
+  }
+
+  .window {
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 134 72'%3E%3Cpolygon points='10.07,2.71 67.00,55.84 123.93,2.71 130.07,9.29 67.00,68.16 3.93,9.29'/%3E%3C/svg%3E");
+
+    background-color: var(--color-text);
+  }
+
+  /* The work, as large as the stage and placed as it is there, moving against the chevron. */
+  .photographed .window {
+    background-color: transparent;
+  }
+
+  /* Placed by top and left, as the work and the chevron are: by their x and y, whatever the
+     direction of the text. */
+  .photographed .window::before {
+    position: absolute;
+    top: calc(-1 * var(--y));
+    left: calc(-1 * var(--x));
+    inline-size: 100cqw;
+    block-size: 100cqh;
+    content: "";
+    background-image: var(--hero-image);
+    background-position: var(--cover-x) var(--cover-y);
+    animation: nod-back 1.6s var(--motion-easing-screen) infinite;
+  }
+
+  .chevron::after {
+    content: "";
+  }
+
+  /* The edge of the same shape, all round it: its arms, their ends and the tip. */
+  .chevron::after {
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 134 72'%3E%3Cpolygon points='10.07,2.71 67.00,55.84 123.93,2.71 130.07,9.29 67.00,68.16 3.93,9.29' fill='none' stroke='%23000' stroke-width='3'/%3E%3C/svg%3E");
+
+    background-color: rgb(255 255 255 / 0.5);
+  }
+
+  .hint-text {
+    position: absolute;
+    inset-block-start: calc(var(--middle) + var(--layout-space-4));
+    inset-inline: var(--page-gutter);
+    font-size: var(--font-size-1);
+    text-align: center;
+  }
+
+  .photographed .hint-text {
+    color: var(--color-on-photo);
+    text-shadow:
+      0 0 0.25em rgb(0 0 0 / 0.5),
+      0 0 1em rgb(0 0 0 / 0.4);
+  }
+
+  /* At the top of the screen, where the header has it. */
+  .menu {
+    position: absolute;
+    inset-block-start: var(--layout-space-6);
+    inset-inline-end: max(
+      var(--page-gutter),
+      (100% - var(--page-max-inline-size)) / 2 + var(--page-gutter)
+    );
+    font-size: var(--font-size-body);
+  }
+
+  .photographed .menu {
+    color: var(--color-on-photo);
+    filter: drop-shadow(0 0 0.5rem rgb(0 0 0 / 0.35));
+  }
+
+  /*
+   * For a visitor who asked for more contrast, the name and the chevron are drawn solid, in the
+   * color for text on a photo, over the darkened work: letters that are windows onto the work can
+   * be about as light as what is around them.
+   */
+  @media (prefers-contrast: more) {
+    .photographed .line {
+      color: var(--color-on-photo);
+      -webkit-text-stroke: 0;
+      background-image: none;
+    }
+
+    .photographed .window {
+      background-color: var(--color-on-photo);
+    }
+
+    .photographed .window::before,
+    .chevron::after {
+      display: none;
+    }
+  }
+
+  /*
+   * With colors forced by the system, as in the high contrast of Windows, the work is left out:
+   * the name and the chevron are in the color of the text, on the color of the page.
+   */
+  @media (forced-colors: active) {
+    .photo {
+      display: none;
+    }
+
+    .line,
+    .photographed .line {
+      color: CanvasText;
+      -webkit-text-stroke: 0;
+      background-image: none;
+    }
+
+    .window,
+    .photographed .window {
+      forced-color-adjust: none;
+      background-color: CanvasText;
+    }
+
+    .photographed .window::before,
+    .chevron::after {
+      display: none;
+    }
+  }
+
+  /* A printed page starts with its content: the hero is a scene for the screen. */
+  @media print {
+    .page-hero {
+      display: none;
+    }
+  }
+</style>

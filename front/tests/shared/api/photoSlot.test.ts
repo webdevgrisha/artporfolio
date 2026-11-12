@@ -11,7 +11,7 @@ import { recordRequests, server } from "../../support/server";
 /** The ETag of the photo the form was made from, and of the photo each change saves. */
 const etag = '"read"';
 const savedEtag = '"saved"';
-const slot = photoSlot("/contacts/photo", ["contacts", "photo"]);
+const slot = photoSlot("/about/photo", ["about", "photo"]);
 const altBody = { alt: "Автопортрет" };
 
 /** The body, CSRF token and If-Match of each change the API received, by `METHOD /path`. */
@@ -33,8 +33,8 @@ beforeEach(() => {
   received = {};
   server.use(
     csrfHandler,
-    mswHttp.get("/api/contacts/photo", () => tagged(null)),
-    mswHttp.put("/api/contacts/photo", async ({ request }) => {
+    mswHttp.get("/api/about/photo", () => tagged(null)),
+    mswHttp.put("/api/about/photo", async ({ request }) => {
       const body = (await request.json()) as { alt: string };
       receive(request, body);
       return tagged(apiPhoto(body.alt));
@@ -58,7 +58,7 @@ describe("saveSlotPhoto", () => {
     const saved = await saveSlotPhoto(slot, { body: { alt: "Портрет", uploadId }, etag });
 
     expect(received).toEqual({
-      "PUT /api/contacts/photo": {
+      "PUT /api/about/photo": {
         body: { alt: "Портрет", uploadId },
         ifMatch: etag,
         token: csrfToken,
@@ -68,7 +68,7 @@ describe("saveSlotPhoto", () => {
   });
 
   it("rejects with the error of the server", async () => {
-    server.use(mswHttp.put("/api/contacts/photo", () => problem(412)));
+    server.use(mswHttp.put("/api/about/photo", () => problem(412)));
 
     await expect(saveSlotPhoto(slot, { body: altBody, etag })).rejects.toMatchObject({
       status: 412,

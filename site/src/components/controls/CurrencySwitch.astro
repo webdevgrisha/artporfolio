@@ -1,0 +1,191 @@
+---
+/**
+ * The switch of currencies: the code of the currency the prices are shown in, which opens the list
+ * of the currencies in use, each by its code and its name in the language of the page.
+ *
+ * The choice belongs to the visitor, not to the page: it is kept in the browser and never in the
+ * address, so every page stays one page for the cache and for search engines. The prices read it
+ * there, and hear of a change by the `currencychange` event on the document. It needs a script,
+ * so without one the switch is not shown, and with one currency only there is nothing to switch.
+ */
+import Dropdown from "@/components/ui/Dropdown.astro";
+import { currencyName } from "@/lib/i18n/currencyName";
+import type { Language } from "@/lib/i18n/languages";
+import { t } from "@/lib/i18n/translate";
+import { baseCurrency } from "@/lib/site/currency";
+
+interface Props {
+  /** Which edge of the button the list lines up with; see Dropdown. */
+  align?: "start" | "end";
+  class?: string | undefined;
+  /** The codes of the currencies in use, the one the prices are set in first. */
+  currencies: string[];
+  /** The id of the list, unique on the page. */
+  id: string;
+  language: Language;
+}
+
+const { align, class: className, currencies, id, language } = Astro.props;
+---
+
+{
+  currencies.length > 1 && (
+    <Dropdown
+  align={align}
+      class:list={["currency-switch", className]}
+      data-currency-switch
+      hidden
+      id={id}
+      label={baseCurrency}
+      name={t(language, "header.currency")}
+    >
+      <ul class="currencies">
+        {currencies.map((code) => (
+          <li>
+            <button
+              aria-pressed={code === baseCurrency ? "true" : "false"}
+              class="currency"
+              data-currency={code}
+              type="button"
+            >
+              <span class="code">{code}</span>
+              <span class="name">{currencyName(code, language)}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Dropdown>
+  )
+}
+
+<script>
+  import { baseCurrency, currencyStorageKey } from "@/lib/site/currency";
+
+  const switches = document.querySelectorAll<HTMLElement>("[data-currency-switch]");
+
+  function storedCurrency(): string | null {
+    try {
+      return localStorage.getItem(currencyStorageKey);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Shows the currency on every switch of the page, the header's and the menu's alike. */
+  function showCurrency(code: string): void {
+    for (const currencySwitch of switches) {
+      const label = currencySwitch.querySelector("[data-dropdown-label]");
+
+      if (label) label.textContent = code;
+      for (const option of currencySwitch.querySelectorAll<HTMLElement>("[data-currency]")) {
+        option.setAttribute("aria-pressed", String(option.dataset.currency === code));
+      }
+    }
+  }
+
+  function chooseCurrency(code: string): void {
+    try {
+      localStorage.setItem(currencyStorageKey, code);
+    } catch {
+      // Blocked storage: the choice holds on this page only.
+    }
+    showCurrency(code);
+    document.dispatchEvent(new CustomEvent("currencychange", { detail: code }));
+  }
+
+  // A currency kept from before that is no longer in use falls back to the one of the prices.
+  const offered = new Set(
+    [...document.querySelectorAll<HTMLElement>("[data-currency]")].map(
+      (option) => option.dataset.currency,
+    ),
+  );
+  const stored = storedCurrency();
+
+  showCurrency(stored !== null && offered.has(stored) ? stored : baseCurrency);
+
+  for (const currencySwitch of switches) {
+    currencySwitch.hidden = false;
+    for (const option of currencySwitch.querySelectorAll<HTMLElement>("[data-currency]")) {
+      option.addEventListener("click", () => {
+        const code = option.dataset.currency;
+
+        if (code === undefined) return;
+        chooseCurrency(code);
+        option.closest<HTMLElement>("[popover]")?.hidePopover();
+      });
+    }
+  }
+</script>
+
+<style>
+  .currency-switch[hidden] {
+    display: none;
+  }
+
+  /* One currency under another: the code, then its name, in two columns that line up. */
+  .currencies {
+    display: grid;
+    grid-template-columns: auto auto;
+    padding: 0;
+    margin: 0;
+    font-size: var(--font-size-body);
+    list-style: none;
+  }
+
+  .currencies > li {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+  }
+
+  .currency {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    column-gap: var(--space-6);
+    align-items: center;
+    min-block-size: var(--min-tap-target-size);
+    padding: 0;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+    background: none;
+    border: 0;
+  }
+
+  @media (pointer: fine) {
+    .currency {
+      min-block-size: 2.25em;
+    }
+  }
+
+  .name {
+    color: var(--color-text-muted);
+  }
+
+  /*
+   * The chosen currency is underlined, as the language of the page is in its list; under the
+   * pointer, any other, as a link is.
+   */
+  .code {
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--line-width);
+    text-decoration-color: transparent;
+    text-underline-offset: 0.45em;
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-slow);
+    transition-property: text-decoration-color, text-underline-offset;
+  }
+
+  .currency[aria-pressed="true"] .code {
+    text-decoration-color: currentColor;
+    text-underline-offset: 0.2em;
+  }
+
+  @media (hover: hover) {
+    .currency:hover .code {
+      text-decoration-color: currentColor;
+      text-underline-offset: 0.2em;
+    }
+  }
+</style>

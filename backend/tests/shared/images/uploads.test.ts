@@ -32,6 +32,7 @@ const manifest = {
     { format: "avif", width: 960 },
     { format: "webp", width: 960 },
   ],
+  placeholder: "data:image/webp;base64,UklGRg==",
   sourceFormat: "png",
   width: 960,
 };
@@ -62,6 +63,7 @@ beforeEach(() => {
       encoded("avif", 960),
       encoded("webp", 960),
     ],
+    placeholder: manifest.placeholder,
     sourceFormat: "png",
   });
 });
@@ -145,6 +147,7 @@ describe("publishUpload", () => {
       fileSize: 8,
       height: 480,
       originalPath: `${target}/original.png`,
+      placeholder: "data:image/webp;base64,UklGRg==",
       sources: {
         avif: [
           { path: `${target}/640.avif`, token: `${target}/640.avif token`, width: 640 },

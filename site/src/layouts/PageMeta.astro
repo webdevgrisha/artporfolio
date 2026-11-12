@@ -5,21 +5,26 @@
  */
 import { SITE_URL } from "astro:env/server";
 
+import type { Image } from "@/lib/api/image";
 import type { Language } from "@/lib/i18n/languages";
 import { alternateLinks } from "@/lib/seo/alternateLinks";
+import { shareImage } from "@/lib/seo/shareImage";
 import { localizedPath } from "@/lib/site/localizedPath";
 import { siteName } from "@/lib/site/siteName";
 
 interface Props {
   description?: string | undefined;
+  /** The picture of a link card to the page; without one, the card has none. */
+  image?: Image | undefined;
   language: Language;
   /** The path of the page under its language, such as `/contact`. */
   path: string;
   title: string;
 }
 
-const { description, language, path, title } = Astro.props;
+const { description, image, language, path, title } = Astro.props;
 const url = new URL(localizedPath(language, path), SITE_URL).href;
+const card = image && shareImage(image);
 ---
 
 <title>{title}</title>
@@ -33,3 +38,15 @@ const url = new URL(localizedPath(language, path), SITE_URL).href;
 <meta property="og:title" content={title} />
 {description && <meta property="og:description" content={description} />}
 <meta property="og:url" content={url} />
+{
+  card && (
+    <>
+      <meta property="og:image" content={card.url} />
+      <meta property="og:image:type" content="image/webp" />
+      <meta property="og:image:width" content={String(card.width)} />
+      <meta property="og:image:height" content={String(card.height)} />
+    </>
+  )
+}
+{/* A card with the picture across it, rather than a small one beside the title. */}
+<meta name="twitter:card" content={card ? "summary_large_image" : "summary"} />

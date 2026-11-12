@@ -1,0 +1,260 @@
+---
+/**
+ * The Contacts page under its hero: the slideshow of photos, and the heading «Get in touch» with
+ * the ways to reach the artist beside the photos, or under them on a tablet or a phone.
+ */
+import Container from "@/components/ui/Container.astro";
+import InstagramIcon from "@/components/ui/icons/InstagramIcon.astro";
+import LinkedInIcon from "@/components/ui/icons/LinkedInIcon.astro";
+import MailIcon from "@/components/ui/icons/MailIcon.astro";
+import YouTubeIcon from "@/components/ui/icons/YouTubeIcon.astro";
+import Slideshow from "@/components/ui/Slideshow.astro";
+import TextLink from "@/components/ui/TextLink.astro";
+import type { ContactLinks } from "@/lib/api/contacts";
+import type { Photo } from "@/lib/api/image";
+import { emailBreaks } from "@/lib/text/emailBreaks";
+import { longestWordLength } from "@/lib/text/longestWord";
+import { splitTurnedInitial } from "@/lib/text/turnedInitial";
+
+interface Props {
+  heading: string;
+  links: ContactLinks;
+  /** The photos of the slideshow; none leaves the text the whole width. */
+  photos: Photo[];
+}
+
+const { heading, links, photos } = Astro.props;
+const hasPhotos = photos.length > 0;
+// Word by word, so a phone can set each word on a line of its own; only the first can be turned.
+const [firstWord = "", ...otherWords] = heading.split(" ");
+const turned = splitTurnedInitial(firstWord);
+
+// In the order of the mockup. The email is shown as the address, which a visitor can copy when
+// no mail app opens; a network by its name. A link the artist left empty is not shown.
+//
+// The name of a network is English in every language of the page: set as such, it keeps its letters
+// in capitals (in Turkish, «LinkedIn» would get the dotted İ) and a screen reader says it right.
+const contacts = [
+  { href: links.instagram, Icon: InstagramIcon, label: "Instagram", lang: "en" },
+  { href: links.linkedin, Icon: LinkedInIcon, label: "LinkedIn", lang: "en" },
+  { href: links.email && `mailto:${links.email}`, Icon: MailIcon, label: links.email },
+  { href: links.youtube, Icon: YouTubeIcon, label: "YouTube", lang: "en" },
+].filter(({ href }) => href !== "");
+---
+
+<Container as="section" aria-labelledby="contact-heading">
+  <div class:list={["layout", { "has-photo": hasPhotos }]}>
+    {
+      hasPhotos && (
+        <Slideshow
+          class="photo"
+          photos={photos}
+          sizes="(min-width: 75rem) 40vw, 100vw"
+        />
+      )
+    }
+    <div class="body">
+      <h2
+        class="heading"
+        id="contact-heading"
+        style={{ "--longest-word": longestWordLength(heading) }}
+      >
+        <span class="word">
+          {
+            turned ? (
+              <>
+                <span class="turned">{turned.initial}</span>
+                {turned.rest}
+              </>
+            ) : (
+              firstWord
+            )
+          }
+        </span>
+        {
+          otherWords.map((word) => (
+            <>
+              {" "}
+              <span class="word">{word}</span>
+            </>
+          ))
+        }
+      </h2>
+      <ul class="links">
+        {
+          contacts.map(({ href, Icon, label, lang }) => {
+            const email = href.startsWith("mailto:");
+
+            return (
+              <li>
+                <TextLink class:list={["link", { email }]} href={href} label={label} lang={lang}>
+                  <Icon slot="icon" />
+                  {
+                    // A long address goes on the next line after its @ or before a dot.
+                    email
+                      ? emailBreaks(label).map((piece, index) => (
+                          <>
+                            {index > 0 && <wbr />}
+                            {piece}
+                          </>
+                        ))
+                      : label
+                  }
+                </TextLink>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </div>
+</Container>
+
+<style>
+  .layout {
+    display: grid;
+    /* One column on a phone, which never grows past the screen to fit a long word or the photo. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--layout-space-12) var(--layout-space-16);
+  }
+
+  /* The sizes of the text follow the width of its column, as the heading spans it whole. */
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-space-12);
+    container-type: inline-size;
+  }
+
+  .photo {
+    /* The frame of the mockup, which the admin previews the photo in too. */
+    aspect-ratio: 764 / 534;
+  }
+
+  /*
+   * On a phone the heading goes word by word, each word on a line of its own, as in its mockup:
+   * the longest word fills its line. A letter of Absans in capitals is about 0.74 times as wide as
+   * its size; 0.8 leaves room for a wider one, and a word wider still breaks by its syllables
+   * rather than run off the screen. A word shorter than «touch» counts as five letters, so a
+   * heading of short words, such as the Swedish «Hör av dig», is no larger than «Get in touch».
+   * Never larger than the largest display size, which a wide phone in landscape would pass.
+   */
+  .heading {
+    font-size: min(10rem, 100cqi / (0.8 * max(var(--longest-word), 5)));
+    line-height: var(--line-height-display);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    text-wrap: balance;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    /* Only a long word: balancing the lines must not break a word that fits. */
+    hyphenate-limit-chars: 14 6 6;
+    /* The box ends at the top of the capitals, so they line up with the top of the photo. */
+    text-box: trim-both cap alphabetic;
+  }
+
+  @media (width < 40rem) {
+    .heading .word {
+      display: block;
+    }
+  }
+
+  /*
+   * From a tablet on, on one line as wide as its column, under the photo or beside it alike:
+   * «Get in touch» in Absans is about 7.4 times as wide as its size, so it fills the column from
+   * edge to edge at every width. The mockup of a tablet breaks it in two only as it keeps the size
+   * of a laptop; one line leaves no empty half of the screen and brings the links up. A longer
+   * heading of another language goes on two lines.
+   *
+   * A letter has some empty room at its sides, and the last one is followed by the spacing between
+   * letters: at this size the last letter itself ends on the margin of the page, as far from the
+   * edge as the photo is, while its box goes past the column by that room (0.085em after the H of
+   * Absans) and a little more, so a browser that measures the text a hair wider never wraps it.
+   */
+  @media (width >= 40rem) {
+    .heading {
+      margin-inline-end: calc(-0.085em - var(--letter-spacing-caps) - 0.05em);
+      font-size: min(10rem, 13.63cqi);
+    }
+  }
+
+  /*
+   * Beside each other on a laptop and wider, in the proportions of the mockup: the photo, then the
+   * text as high as the photo, with the heading at its top and the links at its bottom. Narrower,
+   * the photo shrinks while a link keeps the size a finger and an eye need, so the links would run
+   * below the photo: a tablet has the text under the photo, as a phone. The links fit from 1190px
+   * on, at the default size of the browser; the width is in rem, as those sizes are.
+   */
+  @media (width >= 75rem) {
+    .layout.has-photo {
+      grid-template-columns: minmax(0, 764fr) minmax(0, 904fr);
+    }
+
+    .has-photo .body {
+      justify-content: space-between;
+    }
+
+    .has-photo .photo {
+      align-self: start;
+    }
+  }
+
+  /* The G upside down, as in the mockup. */
+  .turned {
+    display: inline-block;
+    rotate: 180deg;
+  }
+
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75em;
+    padding: 0;
+    margin: 0;
+    /*
+     * Large under the photo on a phone and a tablet, as their mockups have them, and smaller with
+     * the screen, so that on a phone they do not compete with the heading. Never so large that a
+     * name breaks: its icon, the gap and «INSTAGRAM», the longest of the names, are about 8.2
+     * times as wide as their size, which only a large text size of the browser would pass. An
+     * address is the artist's own and may be long: it breaks where it must.
+     */
+    font-size: min(var(--font-size-2), 100cqi / 8.4);
+    list-style: none;
+  }
+
+  @media (width >= 75rem) {
+    /*
+     * Smaller than the heading in step with it, but not so small on a laptop that the list looks
+     * weak, nor so large on a wide screen that it competes with the heading.
+     */
+    .links {
+      font-size: clamp(var(--font-size-1), 3cqi, var(--font-size-3));
+    }
+
+    /*
+     * A link is as high as a finger needs, with its icon in the middle: the list goes down by the
+     * room under the last icon, so the bottom of its frame is the bottom of the photo, as the top
+     * of the heading is its top. The frame of an icon (1.25em, drawn on 24 units) reaches 10.75
+     * units below its middle, its line included.
+     */
+    .has-photo .links {
+      margin-block-end: calc(10.75 / 24 * 1.25em - max(var(--min-tap-target-size), 1.25em) / 2);
+    }
+  }
+
+  /* The link alone, without the line of text an inline box sits on and its room for descenders. */
+  .links > li {
+    display: flex;
+  }
+
+  .link {
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+  }
+
+  /* An address keeps its letters, so it reads and copies as it is written. */
+  .link.email {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+</style>

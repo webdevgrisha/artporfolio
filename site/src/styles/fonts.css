@@ -1,0 +1,17 @@
+/*
+ * The fallback of Absans until it loads: Arial, resized and spaced to take the room Absans will,
+ * so the text does not move when it arrives. The values are those Astro computes for it from the
+ * metrics of the file; they change only with the file. It is written here, not by Astro, as Astro
+ * would end it with `sans-serif`, which on a page in Chinese or Japanese is a system font of those
+ * scripts and would take them before their own fonts.
+ */
+@font-face {
+  font-family: "Absans fallback";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Arial");
+  size-adjust: 105.6526%;
+  ascent-override: 97.4893%;
+  descent-override: 31.2344%;
+  line-gap-override: 3.786%;
+}

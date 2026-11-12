@@ -1,0 +1,29 @@
+---
+/**
+ * Content for screen readers and search engines only, such as the title of a page whose design
+ * shows none: it stays in the text of the page but takes no room on the screen.
+ */
+import type { HTMLTag, Polymorphic } from "astro/types";
+
+type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }>;
+
+const { as: Tag = "span", class: className, ...attributes } = Astro.props;
+---
+
+<Tag class:list={["visually-hidden", className]} {...attributes}>
+  <slot />
+</Tag>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+    clip-path: inset(50%);
+  }
+</style>

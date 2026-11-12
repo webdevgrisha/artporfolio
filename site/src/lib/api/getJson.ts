@@ -1,9 +1,9 @@
-import { API_URL } from "astro:env/server";
 import type { z } from "zod";
 
 import type { Language } from "@/lib/i18n/languages";
 
 import { ApiError } from "./apiError";
+import { apiUrl } from "./apiUrl";
 
 /** A page waits this long for the API before it shows an error instead of hanging. */
 const timeoutMilliseconds = 5_000;
@@ -18,7 +18,7 @@ export async function getJson<Schema extends z.ZodType>(
   schema: Schema,
   { language }: { language: Language },
 ): Promise<z.output<Schema>> {
-  const url = new URL(`${API_URL.replace(/\/$/, "")}/${path}`);
+  const url = apiUrl(path);
   url.searchParams.set("lang", language);
 
   let response: Response;

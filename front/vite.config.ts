@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { imagetools } from "vite-imagetools";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -20,7 +21,8 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react()],
+  // AVIF and WebP of the images of the app, at the widths an import asks for.
+  plugins: [react(), imagetools()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { imageSchema } from "./image";
 
 /**
- * A single photo with its description, such as «Моё фото» or the contacts photo
+ * A single photo with its description, such as «Моё фото»
  * (backend/src/shared/images/photo.ts → PhotoSlot).
  */
 export const photoSchema = imageSchema.extend({

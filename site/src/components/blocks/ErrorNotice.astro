@@ -1,34 +1,108 @@
 ---
-/** What a page that could not be shown says instead: what happened, and the way back home. */
+/**
+ * What a page that could not be shown says instead, as the admin does: the code of the error with
+ * the portrait for its zero, what happened, and the way back home, alone on the screen.
+ */
+import { Picture } from "astro:assets";
+
+import portrait from "@/assets/images/portraitMark.png";
+import ButtonLink from "@/components/ui/ButtonLink.astro";
 import Container from "@/components/ui/Container.astro";
-import Stack from "@/components/ui/Stack.astro";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
 import { localizedPath } from "@/lib/site/localizedPath";
 
 interface Props {
+  /** The digits around the zero: «4», «4» for 404, «5», «0» for 500. */
+  code: readonly [string, string];
   language: Language;
-  text: string;
+  /** What to do about it, where the title alone does not say. */
+  text?: string | undefined;
   title: string;
 }
 
-const { language, text, title } = Astro.props;
+const { code, language, text, title } = Astro.props;
 ---
 
-<Container>
-  <Stack class="notice" gap="layout-space-6">
-    <h1 class="title">{title}</h1>
-    <p>{text}</p>
-    <a href={localizedPath(language, "/")}>{t(language, "error.toHome")}</a>
-  </Stack>
+<Container class="notice">
+  <div aria-hidden="true" class="code">
+    <span>{code[0]}</span>
+    {/*
+      The zero of the code, seen at once: it loads with the page. At most about 170px wide; each
+      screen takes the file of its density, up to the 473px of the file.
+    */}
+    <Picture
+      alt=""
+      densities={[1, 2, 3]}
+      fallbackFormat="webp"
+      formats={["avif"]}
+      loading="eager"
+      pictureAttributes={{ class: "portrait" }}
+      src={portrait}
+      width={170}
+    />
+    <span>{code[1]}</span>
+  </div>
+  <h1 class="title">{title}</h1>
+  {text && <p class="text">{text}</p>}
+  <ButtonLink class="home" href={localizedPath(language, "/")} label={t(language, "error.toHome")} />
 </Container>
 
 <style>
+  /* Alone on the screen, in its middle, as in the admin. */
   .notice {
-    padding-block: var(--layout-space-16);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 100dvh;
+    padding-block: var(--layout-space-8);
+    text-align: center;
+  }
+
+  /*
+   * The digits grow with the screen up to a cap, as in the admin; the gap and the portrait are in
+   * em, so they follow the digits.
+   */
+  .code {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 0.08em;
+    align-items: center;
+    font-size: clamp(5rem, 23vw, 15rem);
+    line-height: 1;
+  }
+
+  .portrait {
+    display: block;
+    inline-size: max(7rem, 0.7em);
+    aspect-ratio: 1;
+  }
+
+  .portrait > img {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    border-radius: 50%;
   }
 
   .title {
-    font-size: var(--font-size-4);
+    margin-block-start: var(--layout-space-8);
+    font-size: var(--font-size-body);
+  }
+
+  .text {
+    max-inline-size: 30rem;
+    margin-block: var(--space-3) 0;
+    color: var(--color-text-muted);
+    text-wrap: balance;
+  }
+
+  .home {
+    inline-size: min(20rem, 100%);
+    min-block-size: 3.5rem;
+    margin-block-start: var(--layout-space-8);
+    font-size: var(--font-size-2);
   }
 </style>

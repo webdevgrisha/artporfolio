@@ -10,6 +10,8 @@
  */
 import { readFile, writeFile } from "node:fs/promises";
 
+import { z } from "zod";
+
 import { type Language, languages } from "../src/lib/i18n/languages.ts";
 
 type Texts = Record<string, string>;
@@ -20,12 +22,22 @@ const sourcesFile = new URL("translatedFrom.json", i18nDirectory);
 /** DeepL asks for a regional variant of Portuguese and a script of Chinese. */
 const deeplLanguages: Partial<Record<Language, string>> = { pt: "PT-BR", zh: "ZH-HANS" };
 
-/** What DeepL is told the texts are, so a word such as «Gallery» is read as on a website. */
+/**
+ * What DeepL is told the texts are, so a word such as «Gallery» is read as on a website. The site
+ * is one person's, so «Get in touch» must not become «Contact us».
+ */
 const context =
-  "Short texts of the interface of the website of a painter: links of the menu, buttons, labels.";
+  "Short texts of the interface of the personal website of one painter: links of the menu, " +
+  "buttons, labels, headings. The site belongs to one person, not a company: never say «we» or «us».";
 
 /** DeepL takes at most 50 texts in one request. */
 const batchSize = 50;
+
+/** How long a request waits for DeepL before the run stops, instead of hanging. */
+const timeoutMilliseconds = 60_000;
+
+/** The answer of DeepL, checked before anything is written: one translation for each text. */
+const answerSchema = z.object({ translations: z.array(z.object({ text: z.string() })) });
 
 /** DeepL answers a burst of requests with 429, so a refused request waits and goes again. */
 const retryDelaysMilliseconds = [2_000, 5_000];
@@ -76,6 +88,7 @@ async function requestTranslations(texts: string[], language: Language): Promise
       }),
       headers: { Authorization: `DeepL-Auth-Key ${key}`, "Content-Type": "application/json" },
       method: "POST",
+      signal: AbortSignal.timeout(timeoutMilliseconds),
     });
     const delay = retryDelaysMilliseconds[attempt];
 
@@ -88,7 +101,13 @@ async function requestTranslations(texts: string[], language: Language): Promise
       throw new Error(`DeepL refused ${language}: ${response.status} ${await response.text()}`);
     }
 
-    const { translations } = (await response.json()) as { translations: { text: string }[] };
+    const { translations } = answerSchema.parse(await response.json());
+
+    if (translations.length !== texts.length) {
+      throw new Error(
+        `DeepL gave ${language} ${translations.length} translations for ${texts.length} texts`,
+      );
+    }
 
     return translations.map(({ text }) => text);
   }

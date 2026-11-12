@@ -31,3 +31,8 @@ export const targetLanguages = [
 ] as const;
 
 export type TargetLanguage = (typeof targetLanguages)[number];
+
+/** Every language of the site: the source one and those translated from it. */
+export const languages = [sourceLanguage, ...targetLanguages] as const;
+
+export type Language = (typeof languages)[number];
