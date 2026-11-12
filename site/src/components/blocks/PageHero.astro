@@ -424,4 +424,61 @@ const style =
     color: var(--color-on-photo);
     filter: drop-shadow(0 0 0.5rem rgb(0 0 0 / 0.35));
   }
+
+  /*
+   * For a visitor who asked for more contrast, the name and the chevron are drawn solid, in the
+   * color for text on a photo, over the darkened work: letters that are windows onto the work can
+   * be about as light as what is around them.
+   */
+  @media (prefers-contrast: more) {
+    .photographed .line {
+      color: var(--color-on-photo);
+      -webkit-text-stroke: 0;
+      background-image: none;
+    }
+
+    .photographed .window {
+      background-color: var(--color-on-photo);
+    }
+
+    .photographed .window::before,
+    .chevron::after {
+      display: none;
+    }
+  }
+
+  /*
+   * With colors forced by the system, as in the high contrast of Windows, the work is left out:
+   * the name and the chevron are in the color of the text, on the color of the page.
+   */
+  @media (forced-colors: active) {
+    .photo {
+      display: none;
+    }
+
+    .line,
+    .photographed .line {
+      color: CanvasText;
+      -webkit-text-stroke: 0;
+      background-image: none;
+    }
+
+    .window,
+    .photographed .window {
+      forced-color-adjust: none;
+      background-color: CanvasText;
+    }
+
+    .photographed .window::before,
+    .chevron::after {
+      display: none;
+    }
+  }
+
+  /* A printed page starts with its content: the hero is a scene for the screen. */
+  @media print {
+    .page-hero {
+      display: none;
+    }
+  }
 </style>
