@@ -509,10 +509,32 @@ const style =
     }
   }
 
-  /* A printed page starts with its content: the hero is a scene for the screen. */
+  /*
+   * A printed page starts with its content: the hero is a scene for the screen. Only its heading,
+   * the name of the page, stays, printed as a plain heading.
+   */
   @media print {
-    .page-hero {
+    .page-hero,
+    .stage {
+      display: contents;
+    }
+
+    .stage > :not(#page-title) {
       display: none;
+    }
+
+    .stage > :global(#page-title) {
+      position: static;
+      inline-size: auto;
+      block-size: auto;
+      padding-inline: var(--page-gutter);
+      margin: 0 0 var(--space-8);
+      overflow: visible;
+      font-size: var(--font-size-display);
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: normal;
+      clip-path: none;
     }
   }
 </style>
