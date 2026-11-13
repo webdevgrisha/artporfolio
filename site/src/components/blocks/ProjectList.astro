@@ -43,9 +43,21 @@ const { carousel, heading, id, projects } = Astro.props;
 </Reveal>
 
 <script>
+  /**
+   * The anchor of the address, decoded; empty when it is not valid percent-encoding, as one cut
+   * short when copied, which names no project.
+   */
+  function decodedHash(): string {
+    try {
+      return decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      return "";
+    }
+  }
+
   /** The project the address names, opened and brought into view. */
   function openNamed(list: Element): void {
-    const anchor = decodeURIComponent(window.location.hash.slice(1));
+    const anchor = decodedHash();
     const project = anchor && list.querySelector<HTMLDetailsElement>(`[data-project][id="${CSS.escape(anchor)}"]`);
 
     if (!project) return;
