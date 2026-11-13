@@ -1,14 +1,82 @@
 ---
-// Only its hero for now: the content of the page comes with its own task.
+import ProjectList from "@/components/blocks/ProjectList.astro";
+import ProjectsIntro from "@/components/blocks/ProjectsIntro.astro";
+import Container from "@/components/ui/Container.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getJson } from "@/lib/api/getJson";
+import { projectsIntroSchema, projectsSchema } from "@/lib/api/projects";
 import { isLanguage } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
+import { projectAnchors } from "@/lib/site/projectAnchors";
+import { paragraphs } from "@/lib/text/paragraphs";
+import { summary } from "@/lib/text/summary";
+import { typeset } from "@/lib/text/typeset";
 
 const { lang } = Astro.params;
 
 if (!isLanguage(lang)) {
   return Astro.rewrite("/404");
 }
+
+const language = lang;
+const [intro, { projects }] = await Promise.all([
+  getJson("projects/intro", projectsIntroSchema, { language }),
+  getJson("projects", projectsSchema, { language }),
+]);
+
+/** A text of the artist as the paragraphs of the page, set by the rules of its language. */
+function paragraphsOf(source: string): string[] {
+  return paragraphs(typeset(language, source));
+}
+
+const introParagraphs = paragraphsOf(intro.text);
+const description = summary(intro.text);
+const anchors = projectAnchors(projects);
+const items = projects.map(({ description: text, link, photos, title }, index) => ({
+  anchor: anchors[index] ?? "",
+  link,
+  paragraphs: paragraphsOf(text),
+  photos,
+  title,
+}));
 ---
 
-<BaseLayout language={lang} path="/projects" title={t(lang, "menu.projects")} />
+<BaseLayout
+  {...(description && { description })}
+  language={lang}
+  path="/projects"
+  title={t(lang, "menu.projects")}
+>
+  <Container class="projects">
+    {introParagraphs.length > 0 && <ProjectsIntro paragraphs={introParagraphs} />}
+    {
+      items.length > 0 && (
+        <ProjectList
+          carousel={{
+            next: t(lang, "carousel.next"),
+            previous: t(lang, "carousel.previous"),
+            viewer: {
+              close: t(lang, "viewer.close"),
+              error: t(lang, "viewer.error"),
+              next: t(lang, "viewer.next"),
+              previous: t(lang, "viewer.previous"),
+              zoom: t(lang, "viewer.zoom"),
+            },
+          }}
+          heading={t(lang, "projects.all")}
+          id="all-projects"
+          projects={items}
+        />
+      )
+    }
+  </Container>
+</BaseLayout>
+
+<style>
+  /* Its parts one under another, as far apart as the intro and the list of the mockup. */
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-space-16);
+  }
+</style>
