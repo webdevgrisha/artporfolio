@@ -57,6 +57,11 @@ const style =
   data-page-hero
   style={style}
 >
+  <script is:inline>
+    // Set the initial scroll state before the title is parsed. Waiting for the module would
+    // briefly show the static, unfitted title while its dependencies download.
+    document.currentScript.parentElement.setAttribute("data-live", "");
+  </script>
   <div class="stage">
     {image && <div class="photo" />}
     <div aria-hidden="true" class="line" data-name={name} lang={lang}>
@@ -84,7 +89,6 @@ const style =
 
   if (hero && stage && line) {
     fitHeroLine(hero, stage, line);
-    hero.dataset.live = "";
     followHeroScroll(hero);
     snapHeroScroll(hero);
   }
