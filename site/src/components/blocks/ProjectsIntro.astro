@@ -1,0 +1,63 @@
+---
+/**
+ * The text above the list of projects, in capitals, as a lead: from a third of the page on a
+ * tablet and wider, as in the mockups; the whole width on a phone.
+ *
+ * A text of the artist takes its own direction (`dir="auto"`): one not yet translated, in English
+ * or Russian, reads from the left on an Arabic page, its full stops at its end.
+ */
+import Reveal from "@/components/ui/Reveal.astro";
+
+interface Props {
+  /** At least one. */
+  paragraphs: string[];
+}
+
+const { paragraphs } = Astro.props;
+---
+
+<div class="intro">
+  <Reveal class="lead">
+    {paragraphs.map((paragraph) => (
+      <p dir="auto">{paragraph}</p>
+    ))}
+  </Reveal>
+</div>
+
+<style>
+  .intro {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+  }
+
+  .lead {
+    display: flex;
+    flex-direction: column;
+    grid-column: 1 / -1;
+    gap: 1em;
+    font-size: var(--font-size-1);
+    line-height: var(--line-height-lead);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    text-wrap: pretty;
+    white-space: pre-line;
+  }
+
+  @media (width >= 40rem) {
+    .lead {
+      grid-column: 4 / -1;
+      font-size: var(--font-size-2);
+    }
+  }
+
+  @media (width >= 75rem) {
+    .lead {
+      grid-column: 5 / -1;
+    }
+  }
+
+  .lead p {
+    margin: 0;
+  }
+</style>
