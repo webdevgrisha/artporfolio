@@ -42,7 +42,7 @@ const { anchor, carousel, link, paragraphs, photos, title } = Astro.props;
   </summary>
   <div class="body">
     <div class="content">
-      {photos.length > 0 && <PhotoCarousel {...carousel} photos={photos} />}
+      {photos.length > 0 && <PhotoCarousel {...carousel} fit="slots" photos={photos} />}
       {
         paragraphs.length > 0 && (
           <div class="description">
@@ -101,6 +101,25 @@ const { anchor, carousel, link, paragraphs, photos, title } = Astro.props;
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
     overflow-wrap: anywhere;
+    /*
+     * As a link of the site: the underline is always there, only unseen; under the pointer it
+     * shows and rises to the title, so the row reads as one to press.
+     */
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--line-width);
+    text-decoration-color: transparent;
+    text-underline-offset: 0.45em;
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-slow);
+    transition-property: text-decoration-color, text-underline-offset;
+  }
+
+  /* Only under a pointer: a tap on a phone would leave the title underlined. */
+  @media (hover: hover) {
+    .summary:hover .title {
+      text-decoration-color: currentColor;
+      text-underline-offset: 0.2em;
+    }
   }
 
   /*
