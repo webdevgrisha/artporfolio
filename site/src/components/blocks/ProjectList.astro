@@ -43,8 +43,6 @@ const { carousel, heading, id, projects } = Astro.props;
 </Reveal>
 
 <script>
-  import { followPointer } from "@/lib/site/followPointer";
-
   /** The project the address names, opened and brought into view. */
   function openNamed(list: Element): void {
     const anchor = decodeURIComponent(window.location.hash.slice(1));
@@ -93,9 +91,8 @@ const { carousel, heading, id, projects } = Astro.props;
     });
   }
 
-  for (const list of document.querySelectorAll<HTMLElement>("[data-project-list]")) {
+  for (const list of document.querySelectorAll("[data-project-list]")) {
     openNamed(list);
-    followPointer(list);
     window.addEventListener("hashchange", () => openNamed(list));
     // Before the browser opens the project: a click on a row, or Enter or Space on it.
     list.addEventListener("click", (event) => holdInPlace(list, event));
