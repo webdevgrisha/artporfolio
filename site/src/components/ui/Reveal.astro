@@ -1,0 +1,63 @@
+---
+/**
+ * A block that rises a little and fades in the first time it comes into the screen, so a page
+ * unfolds as it is read. Shown at once without a script, and still for a visitor who asked for
+ * less motion.
+ *
+ * A script, not a scroll-driven animation: that one follows the scroll back and forth, and
+ * Firefox has none, while a block that plays once as it comes into view has no CSS of its own in
+ * any browser but Chrome (`animation-trigger`). An IntersectionObserver plays it the same way in
+ * every browser.
+ */
+import type { HTMLTag, Polymorphic } from "astro/types";
+
+type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }>;
+
+const { as: Tag = "div", class: className, ...attributes } = Astro.props;
+---
+
+<Tag class:list={["reveal", className]} data-reveal {...attributes}>
+  <slot />
+</Tag>
+
+<script>
+  /** How much of a block is in the screen before it shows: enough to be seen, not more. */
+  const threshold = 0.15;
+
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+
+          (entry.target as HTMLElement).dataset.revealed = "";
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold },
+    );
+
+    for (const block of document.querySelectorAll<HTMLElement>("[data-reveal]")) {
+      // A block in the screen already, such as one the page opens on, stays as it is.
+      const { top } = block.getBoundingClientRect();
+
+      if (top < window.innerHeight) continue;
+
+      block.dataset.hidden = "";
+      observer.observe(block);
+    }
+  }
+</script>
+
+<style>
+  .reveal {
+    transition:
+      opacity var(--motion-duration-reveal) var(--motion-easing-reveal),
+      translate var(--motion-duration-reveal) var(--motion-easing-reveal);
+  }
+
+  .reveal[data-hidden]:not([data-revealed]) {
+    opacity: 0;
+    translate: 0 var(--layout-space-8);
+  }
+</style>

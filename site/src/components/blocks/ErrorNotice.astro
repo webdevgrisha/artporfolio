@@ -6,8 +6,8 @@
 import { Picture } from "astro:assets";
 
 import portrait from "@/assets/images/portraitMark.png";
-import ButtonLink from "@/components/ui/ButtonLink.astro";
 import Container from "@/components/ui/Container.astro";
+import FramedButton from "@/components/ui/FramedButton.astro";
 import type { Language } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
 import { localizedPath } from "@/lib/site/localizedPath";
@@ -45,7 +45,9 @@ const { code, language, text, title } = Astro.props;
   </div>
   <h1 class="title">{title}</h1>
   {text && <p class="text">{text}</p>}
-  <ButtonLink class="home" href={localizedPath(language, "/")} label={t(language, "error.toHome")} />
+  <FramedButton as="a" class="home" href={localizedPath(language, "/")}>
+    {t(language, "error.toHome")}
+  </FramedButton>
 </Container>
 
 <style>

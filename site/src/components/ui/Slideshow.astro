@@ -19,10 +19,11 @@ interface Props {
   sizes: string;
 }
 
-const { class: className, photos, priority = false, sizes } = Astro.props;
+// The rest carries the scope of the styles of the block that places it, which give it its shape.
+const { class: className, photos, priority = false, sizes, ...attributes } = Astro.props;
 ---
 
-<div class:list={["slideshow", className]} data-slideshow>
+<div class:list={["slideshow", className]} data-slideshow {...attributes}>
   <div class="viewport">
     <div class="track">
       {

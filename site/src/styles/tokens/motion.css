@@ -15,6 +15,12 @@
      */
     --motion-duration-screen: 800ms;
     --motion-easing-screen: cubic-bezier(0.65, 0, 0.35, 1);
+    /*
+     * A block of the page coming into the screen as it is read (Reveal): slow, and fast at first,
+     * so it is there at once and settles gently, as a page that unfolds rather than moves.
+     */
+    --motion-duration-reveal: 900ms;
+    --motion-easing-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Whoever asks the system for less motion gets none; what moves still ends where it should. */
@@ -25,6 +31,7 @@
       --motion-duration-slow: 0ms;
       --motion-duration-panel: 0ms;
       --motion-duration-screen: 0ms;
+      --motion-duration-reveal: 0ms;
       --motion-stagger: 0ms;
     }
   }

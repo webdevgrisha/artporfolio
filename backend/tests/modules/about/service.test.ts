@@ -4,7 +4,23 @@ const document = vi.hoisted(() => ({
   get: vi.fn(),
 }));
 
-vi.mock("#modules/about/document", () => ({ aboutDocument: () => document }));
+/** The translation documents by their resource, as `getAll` returns them; none exists by default. */
+const translations = vi.hoisted(() => new Map<string, Record<string, unknown>>());
+
+vi.mock("#shared/firebase/firestore", () => ({
+  firestore: () => ({
+    collection: () => ({ doc: (resource: string) => resource }),
+    doc: () => document,
+    getAll: (...resources: string[]) =>
+      Promise.resolve(
+        resources.map((resource) => {
+          const data = translations.get(resource);
+
+          return { data: () => data, exists: data !== undefined };
+        }),
+      ),
+  }),
+}));
 vi.mock("#shared/firebase/storage", () => ({
   downloadUrl: ({ path, token }: { path: string; token: string }) =>
     `https://storage.test/${path}?token=${token}`,
@@ -32,15 +48,32 @@ function storedAs(fields: Record<string, unknown>) {
   document.get.mockResolvedValue({ get: (field: string) => fields[field] });
 }
 
+/** The translations of `resource` into each language, by key, as the translator stores them. */
+function translated(resource: string, byLanguage: Record<string, Record<string, string>>) {
+  const stored = Object.fromEntries(
+    Object.entries(byLanguage).map(([language, texts]) => [
+      language,
+      Object.fromEntries(
+        Object.entries(texts).map(([key, text]) => [key, { edited: false, source: key, text }]),
+      ),
+    ]),
+  );
+
+  translations.set(resource, { failed: false, sources: {}, translations: stored });
+}
+
+const processId = "11111111-1111-4111-8111-111111111111";
+
 beforeEach(() => {
   vi.clearAllMocks();
+  translations.clear();
 });
 
 describe("about service", () => {
   it("returns an empty page before anything is saved", async () => {
     storedAs({});
 
-    await expect(getAbout()).resolves.toEqual({
+    await expect(getAbout("pl")).resolves.toEqual({
       text: { about: "", biography: "", creation: "" },
       photo: null,
       processPhotos: [],
@@ -48,14 +81,13 @@ describe("about service", () => {
   });
 
   it("returns the texts and both kinds of photos from one read", async () => {
-    const processId = "11111111-1111-4111-8111-111111111111";
     storedAs({
       text,
       photo: { ...storedImage, alt: "Portrait" },
       processPhotos: [{ ...storedImage, alt: "Sketch", id: processId }],
     });
 
-    const about = await getAbout();
+    const about = await getAbout("ru");
 
     expect(about.text).toEqual(text);
     expect(about.photo).toMatchObject({ alt: "Portrait" });
@@ -66,5 +98,43 @@ describe("about service", () => {
       expect.objectContaining({ alt: "Sketch", id: processId }),
     ]);
     expect(document.get).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns the texts and the alt texts in the language asked for", async () => {
+    storedAs({
+      text,
+      photo: { ...storedImage, alt: "Портрет" },
+      processPhotos: [{ ...storedImage, alt: "Эскиз", id: processId }],
+    });
+    translated("about-text", {
+      pl: {
+        about: "Ilustratorka.",
+        biography: "Urodziła się w Mińsku.",
+        creation: "Maluje olejem.",
+      },
+    });
+    translated("about-photo", { pl: { alt: "Portret" } });
+    translated("about-process-photos", { pl: { [processId]: "Szkic" } });
+
+    const about = await getAbout("pl");
+
+    expect(about.text).toEqual({
+      about: "Ilustratorka.",
+      biography: "Urodziła się w Mińsku.",
+      creation: "Maluje olejem.",
+    });
+    expect(about.photo).toMatchObject({ alt: "Portret" });
+    expect(about.processPhotos).toEqual([expect.objectContaining({ alt: "Szkic", id: processId })]);
+  });
+
+  it("returns the English texts while the language has none, and the source without either", async () => {
+    storedAs({ text, photo: { ...storedImage, alt: "Портрет" } });
+    translated("about-text", { en: { about: "Illustrator." } });
+    translated("about-photo", { en: { alt: "Portrait" } });
+
+    const about = await getAbout("de");
+
+    expect(about.text).toEqual({ ...text, about: "Illustrator." });
+    expect(about.photo).toMatchObject({ alt: "Portrait" });
   });
 });

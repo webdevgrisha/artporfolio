@@ -1,8 +1,10 @@
+import { heroReturnScroll } from "@/lib/site/heroReturnScroll";
+
 /**
  * The hero never stays half gone. As soon as the visitor scrolls on past the wiped line (the end of
  * the hero at the bottom of the screen), the page slides in at once and fills the screen. Back up
  * from the top of the page, the whole hero slides back once the visitor means it: they pulled up
- * far enough, or flicked up fast; a smaller, slower pull, as of an unsure hand or to read the top
+ * far enough, or flicked up fast; it comes back with its line written (heroReturnScroll); a smaller, slower pull, as of an unsure hand or to read the top
  * of the page, slides back to the page as soon as the scroll rests. Within the hero, and within
  * the page, the scroll is free. With less motion the hero is a still screen, and nothing slides.
  *
@@ -100,7 +102,12 @@ async function slide(hero: HTMLElement): Promise<void> {
 
         const pulled = (self.end - window.scrollY) / window.innerHeight;
 
-        if (pulled >= returnPull || self.getVelocity() <= -returnSpeed) slideTo(self.start, way);
+        if (pulled >= returnPull || self.getVelocity() <= -returnSpeed) {
+          const heroTop = hero.getBoundingClientRect().top + window.scrollY;
+          const back = heroReturnScroll(heroTop, self.start);
+
+          slideTo(back, self.end - back);
+        }
       },
     });
 

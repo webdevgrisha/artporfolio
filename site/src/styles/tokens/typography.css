@@ -60,6 +60,11 @@
 
     --line-height-body: 1.5;
     --line-height-heading: 1.15;
+    /*
+     * A text set large, such as the sections of the About page: a large size needs less room
+     * between its lines than text to stay one block, and more than a heading to read at length.
+     */
+    --line-height-lead: 1.3;
     --line-height-display: 1;
 
     /* Capitals need more room between letters than lowercase to read evenly. */

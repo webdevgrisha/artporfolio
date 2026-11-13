@@ -1,33 +1,38 @@
 ---
-/** A link that looks like a button of the admin: its text in capitals inside a frame. */
-import type { HTMLAttributes } from "astro/types";
+/**
+ * A button of the site, or a link that looks like one: its text in capitals inside a frame. Under
+ * the pointer its colors change places.
+ *
+ * A button gets its `type` from where it stands, as any: `button`, or `submit` in a form.
+ */
+import type { HTMLTag, Polymorphic } from "astro/types";
 
-interface Props extends HTMLAttributes<"a"> {
-  href: string;
-  /** The text of the button. */
-  label: string;
-}
+/** A `button`, or an `a` to another page. */
+type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }>;
 
-const { class: className, href, label, ...attributes } = Astro.props;
+const { as: Tag = "button", class: className, ...attributes } = Astro.props;
 ---
 
-<a class:list={["button-link", className]} href={href} {...attributes}>
-  {label}
-</a>
+<Tag class:list={["framed-button", className]} {...attributes}>
+  <slot />
+</Tag>
 
 <style>
-  .button-link {
+  /* Without weight, so the block that places the button can size it, as the row of photos does. */
+  :where(.framed-button) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     max-inline-size: 100%;
     min-block-size: var(--min-tap-target-size);
     padding: var(--space-1) var(--space-4);
+    font: inherit;
     color: var(--color-text);
     text-align: center;
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
     text-decoration: none;
+    cursor: pointer;
     background: var(--color-surface);
     border: var(--line-width) solid var(--color-line);
     transition-timing-function: var(--motion-easing-standard);
@@ -37,7 +42,7 @@ const { class: className, href, label, ...attributes } = Astro.props;
 
   /* The site has one color and its background: under the pointer the two change places. */
   @media (hover: hover) {
-    .button-link:hover {
+    .framed-button:hover {
       color: var(--color-surface);
       background: var(--color-text);
     }
