@@ -1,9 +1,11 @@
 ---
 /**
  * The name of the artist that leads to the home page, as a logo: in Latin capitals in every
- * language, which a translator of the browser leaves as it is, and on one line. Its size comes
- * from where it stands; where that gives `--home-link-room`, the width it may take, the name gets
- * smaller to fit it rather than run off the screen, as with a large text size of the browser.
+ * language, which a translator of the browser leaves as it is, and on one line where it fits. Its
+ * size comes from where it stands; where that gives `--home-link-room`, the width it may take, a
+ * name too wide for it, as with a large text size of the browser, goes on two lines, a word on
+ * each, rather than get smaller than the visitor asked for; only a word wider than the room
+ * still gets smaller, so it never runs off the screen.
  */
 import type { HTMLAttributes } from "astro/types";
 
@@ -35,15 +37,15 @@ const { class: className, current = false, language, ...attributes } = Astro.pro
   .home-link {
     display: inline-flex;
     align-items: center;
+    max-inline-size: var(--home-link-room, none);
     min-block-size: var(--min-tap-target-size);
     /*
-     * «ANASTASIA TURKEVICH» in Absans, its capitals spaced, is about 12.33 times as wide as its
-     * size; 12.5 leaves it a little air. Without a room, the room is the screen.
+     * Each word of «ANASTASIA TURKEVICH» in Absans, its capitals spaced, is about 6.08 times as
+     * wide as its size; 6.25 leaves it a little air. Without a room, the room is the screen.
      */
-    font-size: min(1em, var(--home-link-room, 100vw) / 12.5);
+    font-size: min(1em, var(--home-link-room, 100vw) / 6.25);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-caps);
-    white-space: nowrap;
     text-decoration: none;
   }
 </style>
