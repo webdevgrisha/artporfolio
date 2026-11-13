@@ -14,6 +14,7 @@
  * or Russian, reads from the left on an Arabic page, its full stops at its end.
  */
 import PhotoCarousel from "@/components/ui/PhotoCarousel.astro";
+import Picture from "@/components/ui/Picture.astro";
 import TextLink from "@/components/ui/TextLink.astro";
 import type { Photo } from "@/lib/api/image";
 import type { ViewerLabels } from "@/lib/site/photoViewer";
@@ -33,12 +34,28 @@ interface Props {
 }
 
 const { anchor, carousel, link, paragraphs, photos, title } = Astro.props;
+
+/** The first photo, which shows beside the pointer on the row of a closed project. */
+const cover = photos[0];
 ---
 
 <details class="project" id={anchor} name="projects" data-project>
   <summary class="summary">
     <h3 class="title" dir="auto">{title}</h3>
     <span class="icon" aria-hidden="true"></span>
+    {
+      cover && (
+        <Picture
+          alt=""
+          aria-hidden="true"
+          class="preview"
+          data-preview
+          deferred
+          image={cover}
+          sizes="22rem"
+        />
+      )
+    }
   </summary>
   <div class="body">
     <div class="content">
@@ -131,6 +148,52 @@ const { anchor, carousel, link, paragraphs, photos, title } = Astro.props;
     .summary:hover .title {
       text-decoration-color: currentColor;
       text-underline-offset: 0.2em;
+    }
+  }
+
+  /*
+   * The first photo of a closed project, beside the mouse while it is on the row, so the list
+   * shows the work before a click: it opens out from its middle and follows the pointer a little
+   * behind it (followPointer), on the side of the screen with more room. Not on a touch screen,
+   * which has no pointer to follow, nor for an open project, whose photos are there already.
+   */
+  .preview {
+    display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .preview {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      display: block;
+      inline-size: clamp(14rem, 18vw, 22rem);
+      pointer-events: none;
+      opacity: 0;
+      clip-path: inset(50% 0);
+      scale: 0.92;
+      /* Beside the pointer and level with it; on the right half of the screen, to its left. */
+      translate:
+        calc(var(--pointer-x, -100vw) + var(--space-8) - var(--flip, 0) * (100% + 2 * var(--space-8)))
+        calc(var(--pointer-y, 0px) - 50%);
+      transition:
+        opacity var(--motion-duration-slow) var(--motion-easing-standard),
+        clip-path var(--motion-duration-panel) var(--motion-easing-reveal),
+        scale var(--motion-duration-panel) var(--motion-easing-reveal);
+    }
+
+    :global([data-project-list][data-following]) .preview {
+      transition-duration:
+        var(--motion-duration-slow), var(--motion-duration-panel), var(--motion-duration-panel),
+        var(--motion-duration-panel);
+      transition-property: opacity, clip-path, scale, translate;
+    }
+
+    .project:not([open]) > .summary:hover .preview {
+      opacity: 1;
+      clip-path: inset(0);
+      scale: 1;
     }
   }
 
