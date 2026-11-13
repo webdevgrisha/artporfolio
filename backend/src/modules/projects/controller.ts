@@ -14,13 +14,16 @@ import {
   listProjects,
   replaceProject,
 } from "#modules/projects/service";
+import type { LanguageQuery } from "#shared/i18n/language-query";
 import { ifMatchHeader, isCreateOnly } from "#shared/middleware/preconditions";
 
-export const readProjects: RequestHandler<object, ProjectsResponse> = async (
-  _request,
-  response,
-) => {
-  const { data, etag } = await listProjects();
+export const readProjects: RequestHandler<
+  object,
+  ProjectsResponse,
+  unknown,
+  LanguageQuery
+> = async (request, response) => {
+  const { data, etag } = await listProjects(request.query.lang);
 
   response.status(200).set("ETag", etag).json({ projects: data });
 };

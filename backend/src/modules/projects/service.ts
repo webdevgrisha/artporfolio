@@ -5,11 +5,14 @@ import type { Project, ProjectBody, StoredProject } from "#modules/projects/sche
 import { firestore } from "#shared/firebase/firestore";
 import { ConflictError, PreconditionFailedError } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
+import type { Language } from "#shared/i18n/languages";
+import { readEachTranslations, translatedText } from "#shared/i18n/translated-text";
 import {
   deleteTranslations,
   requestTranslations,
   saveSources,
 } from "#shared/i18n/translation-requests";
+import type { StoredTranslations } from "#shared/i18n/translations";
 import { textsById } from "#shared/i18n/translations";
 import { preparePhotoList, toListPhoto } from "#shared/images/photo-list";
 import { saveWithImages } from "#shared/images/saving";
@@ -78,15 +81,42 @@ function toSavedProject(id: string, project: StoredProject): Tagged<Project> {
   return { data, etag: entityTag(data) };
 }
 
-/** Every project in the order the site shows them, tagged by the stored list. */
-export async function listProjects(): Promise<Tagged<Project[]>> {
-  const { docs } = await orderedProjects().get();
-  const projects = docs.map((snapshot) => ({ id: snapshot.id, project: readProject(snapshot) }));
-
+/** The project with its title, description and alt texts in `language`. */
+function translatedProject(
+  project: Project,
+  translations: StoredTranslations,
+  language: Language,
+): Project {
   return {
-    data: projects.map(({ id, project }) => toProject(id, project)),
-    etag: entityTag(projects),
+    ...project,
+    description: translatedText(translations, language, "description", project.description),
+    photos: project.photos.map((photo) => ({
+      ...photo,
+      alt: translatedText(translations, language, photo.id, photo.alt),
+    })),
+    title: translatedText(translations, language, "title", project.title),
   };
+}
+
+/**
+ * Every project in the order the site shows them, with the texts in `language`, tagged by that
+ * list. The admin reads them in the source language, in which they are saved.
+ */
+export async function listProjects(language: Language): Promise<Tagged<Project[]>> {
+  const { docs } = await orderedProjects().get();
+  const translations = await readEachTranslations(
+    docs.map(({ id }) => projectTranslations(id)),
+    language,
+  );
+  const data = docs.map((snapshot, index) =>
+    translatedProject(
+      toProject(snapshot.id, readProject(snapshot)),
+      translations[index] ?? {},
+      language,
+    ),
+  );
+
+  return { data, etag: entityTag(data) };
 }
 
 export async function getProject(id: string): Promise<Tagged<Project>> {
