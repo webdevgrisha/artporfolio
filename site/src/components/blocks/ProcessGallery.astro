@@ -26,5 +26,5 @@ const { heading, id, ...carousel } = Astro.props;
 
 <Reveal as="section" aria-labelledby={id}>
   <VisuallyHidden as="h2" id={id}>{heading}</VisuallyHidden>
-  <PhotoCarousel {...carousel} fit="row" />
+  <PhotoCarousel {...carousel} />
 </Reveal>

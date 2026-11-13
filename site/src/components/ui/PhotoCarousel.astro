@@ -4,12 +4,8 @@
  * opens on the whole screen, where it can be zoomed and the others followed. The photos of the
  * About page and of each project.
  *
- * Its photos are laid out one of two ways (`fit`):
- * - "row", the About page: each photo keeps its own shape, all of one height, a sketch upright and
- *   a studio wide side by side, uncropped, as works hang on a wall. Two fit the width of a laptop,
- *   and the row runs to the edge of the screen, where the next one shows.
- * - "slots", a project: two equal slots on a laptop, one on a tablet and a phone, within the
- *   column, as in the mockups; each photo fills its slot, cropped, and opens whole.
+ * The photos stand in equal slots within the column, as in the mockups: two on a laptop, one on a
+ * tablet and a phone. Each photo fills its slot, cropped, and opens whole.
  *
  * The row is Embla, as the slideshow of the Contacts page: the browser's own scrolling cannot come
  * round from the last photo to the first. Photos that fit the page whole do not move, and have no
@@ -28,8 +24,6 @@ import type { ViewerLabels } from "@/lib/site/photoViewer";
 import { graphemeCount } from "@/lib/text/graphemeCount";
 
 interface Props extends HTMLAttributes<"div"> {
-  /** How the photos stand in the row; see above. */
-  fit: "row" | "slots";
   /** The texts of the buttons under the row. */
   next: string;
   previous: string;
@@ -38,7 +32,7 @@ interface Props extends HTMLAttributes<"div"> {
   viewer: ViewerLabels;
 }
 
-const { class: className, fit, next, photos, previous, viewer, ...attributes } = Astro.props;
+const { class: className, next, photos, previous, viewer, ...attributes } = Astro.props;
 
 // How many letters the two buttons hold, which sets how large they can be on a narrow screen.
 const labelsLength = graphemeCount(previous) + graphemeCount(next);
@@ -48,7 +42,7 @@ const firstInView = 2;
 ---
 
 <div
-  class:list={["carousel", fit, className]}
+  class:list={["carousel", className]}
   data-photo-carousel
   data-viewer={JSON.stringify(viewer)}
   {...attributes}
@@ -57,10 +51,10 @@ const firstInView = 2;
     <ul class="track">
       {
         photos.map((photo, index) => (
-          <li class="slide" style={`--ratio: ${photo.width / photo.height}`}>
+          <li class="slide">
             <a
               class="open"
-              data-cropped={fit === "slots" ? "true" : undefined}
+              data-cropped="true"
               data-pswp-height={photo.height}
               data-pswp-srcset={srcset(photo.sources.webp)}
               data-pswp-width={photo.width}
@@ -165,21 +159,22 @@ const firstInView = 2;
 </script>
 
 <style>
+  /* Two slots on a laptop, one below, as in the mockups. */
   .carousel {
-    /* The height of the row: a third of a phone screen, and as in the mockup on a laptop. */
-    --row-height: clamp(16rem, 12rem + 20vw, 30rem);
+    --slots-in-view: 1;
 
     display: flex;
     flex-direction: column;
     gap: var(--layout-space-6);
   }
 
-  /*
-   * To the edge of the screen at the end, past the margin of the page: the next photo is cut by the
-   * screen, as a row that goes on, not by the margin, where a sliver of it would look like a fault.
-   */
+  @media (width >= 75rem) {
+    .carousel {
+      --slots-in-view: 2;
+    }
+  }
+
   .viewport {
-    margin-inline-end: calc(-1 * var(--page-gutter));
     overflow: hidden;
   }
 
@@ -199,57 +194,27 @@ const firstInView = 2;
   }
 
   /*
-   * As wide as its shape at the height of the row, and narrower than the column of the page by a
-   * margin where the next photo shows, so even a photo as wide as a phone reads as one of a row.
-   * A wide photo on a phone gets lower instead of cropped.
+   * Its share of the track, which is the column and one gap wider, less the gap at its start, so
+   * the slots and the gaps between them fill the column exactly.
    */
   .slide {
     box-sizing: content-box;
     flex: none;
-    inline-size: min(
-      100% - var(--grid-gap) - var(--page-gutter) - var(--layout-space-8),
-      var(--row-height) * var(--ratio)
-    );
+    inline-size: calc(100% / var(--slots-in-view) - var(--grid-gap));
     min-inline-size: 0;
     padding-inline-start: var(--grid-gap);
   }
 
+  /* The shape of the slots of the mockups (863 × 481 on the About page, 634 × 353 in a project). */
   .open {
     position: relative;
     display: block;
-    aspect-ratio: var(--ratio);
+    aspect-ratio: 16 / 9;
     cursor: zoom-in;
   }
 
   .picture {
     block-size: 100%;
-  }
-
-  /*
-   * A project: equal slots within the column, the shape of those in the mockup, two on a laptop
-   * and one below. A slot is its share of the track, which is the column and one gap wider, less
-   * the gap at its start, so the slots and the gaps between them fill the column exactly.
-   */
-  .slots {
-    --slots-in-view: 1;
-  }
-
-  @media (width >= 75rem) {
-    .slots {
-      --slots-in-view: 2;
-    }
-  }
-
-  .slots .viewport {
-    margin-inline-end: 0;
-  }
-
-  .slots .slide {
-    inline-size: calc(100% / var(--slots-in-view) - var(--grid-gap));
-  }
-
-  .slots .open {
-    aspect-ratio: 16 / 9;
   }
 
   /*

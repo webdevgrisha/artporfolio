@@ -42,7 +42,7 @@ const { anchor, carousel, link, paragraphs, photos, title } = Astro.props;
   </summary>
   <div class="body">
     <div class="content">
-      {photos.length > 0 && <PhotoCarousel {...carousel} fit="slots" photos={photos} />}
+      {photos.length > 0 && <PhotoCarousel {...carousel} photos={photos} />}
       {
         paragraphs.length > 0 && (
           <div class="description">
