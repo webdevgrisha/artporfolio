@@ -320,6 +320,11 @@ const focusStart = place === "dialog" ? { autofocus: true, tabindex: -1 } : {};
       position: absolute;
       inset: 0;
       max-inline-size: none;
+      /*
+       * Blurred once, on a layer of its own, and then only cut: otherwise Chrome blurs the work
+       * again on every frame the stroke fills or drains, twice the work of the GPU (2026).
+       */
+      will-change: transform;
     }
 
     .hero :global(img) {
