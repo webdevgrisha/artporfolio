@@ -77,6 +77,18 @@ const { anchor, carousel, link, paragraphs, photos, title } = Astro.props;
     padding-block: var(--layout-space-8);
     cursor: pointer;
     list-style: none;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  /*
+   * Under the pointer, the other rows of the list step back, so the one it is on stands alone, as
+   * a title lit on a dark stage. Only the rows: an open project's photos keep their light. Dimmed,
+   * a title still reads as large text should, at 3:1 in either theme.
+   */
+  @media (hover: hover) {
+    :global([data-project-list]:has([data-project] > summary:hover)) .summary:not(:hover) {
+      opacity: 0.45;
+    }
   }
 
   /* Safari draws its own triangle here, not as a list marker. */
