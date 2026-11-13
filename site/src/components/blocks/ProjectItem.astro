@@ -85,12 +85,12 @@ const { anchor, carousel, link, paragraphs, photos, title } = Astro.props;
   }
 
   /*
-   * The ring of the keyboard around the whole row, inside it, as the list runs to the edges of the
-   * page, where a ring outside would be cut.
+   * The ring of the keyboard around the whole row, a little outside it, in the margin of the page:
+   * inside, it would cross the first letter of the title and the plus, which touch the row's ends.
    */
   .summary:focus-visible {
     outline: var(--focus-ring);
-    outline-offset: calc(-1 * var(--space-1));
+    outline-offset: var(--space-1);
   }
 
   .title {
