@@ -30,6 +30,8 @@ async function rollUp(dialog: HTMLDialogElement): Promise<void> {
       );
 
     await Promise.all(transitions.map((transition) => transition.finished));
+  } catch {
+    // A transition cancelled before its end, as by another style: the dialog closes all the same.
   } finally {
     // Closed whatever the transitions do, so the page never stays behind an open menu.
     dialog.close();
