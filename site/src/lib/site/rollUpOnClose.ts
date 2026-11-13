@@ -1,6 +1,3 @@
-/** The transitions of the style that roll a dialog up, not the others inside it, as of a hover. */
-const rollingUp = new Set(["clip-path", "--menu-icon-cross"]);
-
 /**
  * Rolls `dialog` up before it closes, in every browser the same way. Every way of closing it asks
  * first by a `cancel` event: Escape, a click beside it (`closedby`) and its button
@@ -26,10 +23,10 @@ async function rollUp(dialog: HTMLDialogElement): Promise<void> {
   try {
     // Asked for after the mark, so the style has started them.
     const transitions = dialog
-      .getAnimations({ subtree: true })
+      .getAnimations()
       .filter(
         (animation) =>
-          animation instanceof CSSTransition && rollingUp.has(animation.transitionProperty),
+          animation instanceof CSSTransition && animation.transitionProperty === "clip-path",
       );
 
     await Promise.all(transitions.map((transition) => transition.finished));

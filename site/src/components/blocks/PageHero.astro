@@ -99,11 +99,12 @@ const style =
    * It moves when its script runs (data-live) and the visitor has not asked for less motion. Its
    * progress through that screen of scrolling, --along from 0 to 1, comes from a scroll-driven
    * animation: from the hero filling the screen at the top of the page (contain 0%) to its bottom
-   * reaching the bottom of the screen (contain 100%). Everything that moves follows --along.
+   * reaching the bottom of the screen (contain 100%). Only the line and hint animate --along:
+   * inheriting it from the hero would invalidate the still photo and every other descendant.
    */
   @property --along {
     syntax: "<number>";
-    inherits: true;
+    inherits: false;
     initial-value: 0;
   }
 
@@ -128,10 +129,16 @@ const style =
      */
     @supports (animation-timeline: view()) {
       .page-hero[data-live] {
+        /* Keep the progress on the moving elements, with one shared timeline. */
+        view-timeline: --hero-scroll block;
+        view-timeline-inset: 0px;
+      }
+
+      .page-hero[data-live] :is(.line, .hint) {
         animation: along linear both;
         /* Of the whole screen: by default it would leave out the room the header keeps for links
            within the page (scroll-padding), and start that much ahead. */
-        animation-timeline: view(0px);
+        animation-timeline: --hero-scroll;
         animation-range: contain 0% contain 100%;
       }
     }
@@ -206,8 +213,7 @@ const style =
     --y: calc((100cqh - var(--line-height, 1em)) / 2);
 
     position: absolute;
-    /* Placed by its top, not moved: Firefox clips the work to letters where they would be unmoved. */
-    inset-block-start: var(--y);
+    inset-block-start: 0;
     inset-inline: 0;
     display: flex;
     justify-content: space-between;
@@ -225,6 +231,17 @@ const style =
     line-height: 1;
     text-transform: uppercase;
     white-space: nowrap;
+    translate: 0 var(--y);
+    /* The moving, painted text stays separate from the full-screen blurred photo. */
+    will-change: transform;
+  }
+
+  /* Firefox clips a transformed background to the letters' old position. Keep its layout path. */
+  @supports (-moz-appearance: none) {
+    .line {
+      inset-block-start: var(--y);
+      translate: none;
+    }
   }
 
   /*
@@ -392,6 +409,12 @@ const style =
     background-image: var(--hero-image);
     background-position: var(--cover-x) var(--cover-y);
     animation: nod-back 1.6s var(--motion-easing-screen) infinite;
+  }
+
+  /* The large photo in the chevron needs no animation behind an open modal menu. */
+  :global(html:has(.site-menu[open])) .chevron,
+  :global(html:has(.site-menu[open])) .window::before {
+    animation-play-state: paused;
   }
 
   .chevron::after {

@@ -112,6 +112,8 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
 
   .site-menu[open] {
     clip-path: inset(0 0 -1rem 0);
+    /* Cache the panel while its clipping edge moves, including the blurred plates inside it. */
+    will-change: clip-path;
   }
 
   .site-menu[open][data-closing] {
@@ -163,9 +165,7 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
     cursor: pointer;
     background: none;
     border: 0;
-    transition:
-      opacity var(--motion-duration-slow) var(--motion-easing-standard),
-      --menu-icon-cross var(--motion-duration-panel) var(--motion-easing-standard);
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
   }
 
   /* The lines of the button of the header become a cross as the menu opens, and back as it closes. */
@@ -175,12 +175,6 @@ const { currencies, heroes, id, language, links, path } = Astro.props;
 
   .site-menu[open][data-closing] .close {
     --menu-icon-cross: 0;
-  }
-
-  @starting-style {
-    .site-menu[open] .close {
-      --menu-icon-cross: 0;
-    }
   }
 
   /* As tall as the button and without width: the first line fills the button, the second is out. */

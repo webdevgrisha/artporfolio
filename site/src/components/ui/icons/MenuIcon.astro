@@ -2,8 +2,8 @@
 /**
  * The two lines of the mockup that open the menu, wider than an icon of the grid, as drawn there.
  * They turn into a cross that closes it: `--menu-icon-cross` from 0 to 1 brings each line to the
- * middle and turns it by 45°, so a transition of it draws the one into the other. Drawn for the
- * site.
+ * middle and turns it by 45°. Each line transitions its transforms; the shared number changes
+ * only when the menu opens or closes. Drawn for the site.
  */
 ---
 
@@ -22,7 +22,7 @@
 </svg>
 
 <style>
-  /* A number, so a transition can move it, and inherited, so the button around sets it. */
+  /* Inherited, so the button around the icon can set its open or closed state. */
   @property --menu-icon-cross {
     syntax: "<number>";
     inherits: true;
@@ -56,6 +56,16 @@
     rotate: calc(var(--menu-icon-cross) * var(--turn));
     translate: calc(var(--menu-icon-cross) * var(--end) * 4.69px)
       calc((1 - var(--menu-icon-cross)) * var(--side) * 6px);
+    transition:
+      rotate var(--motion-duration-panel) var(--motion-easing-standard),
+      translate var(--motion-duration-panel) var(--motion-easing-standard);
+  }
+
+  @starting-style {
+    .line {
+      rotate: 0deg;
+      translate: 0 calc(var(--side) * 6px);
+    }
   }
 
   /* The end of the line is on the left in a text from the right. */
