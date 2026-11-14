@@ -6,6 +6,8 @@ import { photoSchema } from "@/lib/api/image";
 const projectSchema = z.object({
   /** Stable across saves and languages: it names the project when its title cannot. */
   id: z.uuid(),
+  /** Its anchor in a link to it, the same in every language; it never changes. */
+  slug: z.string(),
   title: z.string(),
   /** Plain text; paragraphs are separated by a blank line. */
   description: z.string(),

@@ -7,7 +7,6 @@ import { getJson } from "@/lib/api/getJson";
 import { projectsIntroSchema, projectsSchema } from "@/lib/api/projects";
 import { isLanguage } from "@/lib/i18n/languages";
 import { t } from "@/lib/i18n/translate";
-import { projectAnchors } from "@/lib/site/projectAnchors";
 import { paragraphs } from "@/lib/text/paragraphs";
 import { summary } from "@/lib/text/summary";
 import { typeset } from "@/lib/text/typeset";
@@ -31,9 +30,8 @@ function paragraphsOf(source: string): string[] {
 
 const introParagraphs = paragraphsOf(intro.text);
 const description = summary(intro.text);
-const anchors = projectAnchors(projects);
-const items = projects.map(({ description: text, link, photos, title }, index) => ({
-  anchor: anchors[index] ?? "",
+const items = projects.map(({ description: text, link, photos, slug, title }) => ({
+  anchor: slug,
   link,
   paragraphs: paragraphsOf(text),
   photos,
