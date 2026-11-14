@@ -399,21 +399,23 @@ const style =
     background-color: transparent;
   }
 
-  /* Placed by top and left, as the work and the chevron are: by their x and y, whatever the
-     direction of the text. */
+  /* As large as the window and the reach of its nod, not the whole screen: a full-screen layer
+     behind the mask would be drawn and moved for the nod forever. The work in it is offset to
+     match the work under it. Placed by top and left, as the chevron is, whatever the direction
+     of the text. */
   .photographed .window::before {
     position: absolute;
-    top: calc(-1 * var(--y));
-    left: calc(-1 * var(--x));
-    inline-size: 100cqw;
-    block-size: 100cqh;
+    top: 0;
+    left: 0;
+    inline-size: 100%;
+    block-size: calc(100% + var(--nod));
     content: "";
     background-image: var(--hero-image);
-    background-position: var(--cover-x) var(--cover-y);
+    background-position: calc(var(--cover-x) - var(--x)) calc(var(--cover-y) - var(--y));
     animation: nod-back 1.6s var(--motion-easing-screen) infinite;
   }
 
-  /* The large photo in the chevron needs no animation behind an open modal menu. */
+  /* The chevron needs no animation behind an open modal menu. */
   :global(html:has(.site-menu[open])) .chevron,
   :global(html:has(.site-menu[open])) .window::before {
     animation-play-state: paused;
