@@ -304,6 +304,8 @@ const focusStart = place === "dialog" ? { autofocus: true, tabindex: -1 } : {};
       color: var(--color-on-photo);
       clip-path: inset(0 100% 0 0);
       transition: clip-path var(--motion-duration-panel) var(--motion-easing-standard);
+      /* The reveal clips a cached plate rather than repainting its photo and text each frame. */
+      will-change: clip-path;
     }
 
     .plate:dir(rtl) {
@@ -320,6 +322,11 @@ const focusStart = place === "dialog" ? { autofocus: true, tabindex: -1 } : {};
       position: absolute;
       inset: 0;
       max-inline-size: none;
+      /*
+       * Blurred once, on a layer of its own, and then only cut: otherwise Chrome blurs the work
+       * again on every frame the stroke fills or drains, twice the work of the GPU (2026).
+       */
+      will-change: transform;
     }
 
     .hero :global(img) {
@@ -356,6 +363,15 @@ const focusStart = place === "dialog" ? { autofocus: true, tabindex: -1 } : {};
       .with-hero[aria-current="page"]:not(:hover, :focus-visible)
       .plate:dir(rtl) {
       clip-path: inset(0 0 0 100%);
+    }
+
+    /*
+     * The plate is the hover effect. Moving an invisible underline underneath would repaint the
+     * link, including its blurred photo, on every frame even though the line is never seen.
+     */
+    .page-link.with-hero :global(.text) {
+      text-underline-offset: 0.2em;
+      transition: none;
     }
 
     /* The stroke is the sign of the pointer here: the underline of a link gives way to it. */

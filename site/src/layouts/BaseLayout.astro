@@ -8,6 +8,7 @@ import SiteHeader from "@/components/blocks/SiteHeader.astro";
 import SkipLink from "@/components/ui/SkipLink.astro";
 import { availableCurrencies } from "@/lib/api/availableCurrencies";
 import { loadContactLinks } from "@/lib/api/contactLinks";
+import type { ContactLinks } from "@/lib/api/contacts";
 import type { Image } from "@/lib/api/image";
 import { pageHeroes } from "@/lib/api/pageHeroes";
 import type { Language } from "@/lib/i18n/languages";
@@ -36,6 +37,11 @@ interface Props {
   image?: Image;
   language: Language;
   /**
+   * The links of the artist when the page has them already, as the Contacts page does: the layout
+   * then does not ask the API for them again.
+   */
+  links?: ContactLinks;
+  /**
    * The path of the page under its language, such as `/contact`. A page without one is not a page
    * of the site, such as an error: it has no address of its own, and search engines skip it.
    */
@@ -54,7 +60,8 @@ interface Props {
   title?: string;
 }
 
-const { description, frame = "page", image, language, path, title } = Astro.props;
+const { description, frame = "page", image, language, links: pageLinks, path, title } =
+  Astro.props;
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
 
 const noHeroes: Record<string, Image> = {};
@@ -64,7 +71,7 @@ const noHeroes: Record<string, Image> = {};
 const [links, currencies, heroes] = frame === "none"
   ? [undefined, [], noHeroes]
   : await Promise.all([
-      loadContactLinks(language),
+      pageLinks ?? loadContactLinks(language),
       availableCurrencies(language),
       pageHeroes(language),
     ]);

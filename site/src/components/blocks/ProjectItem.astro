@@ -1,0 +1,268 @@
+---
+/**
+ * A project in the list: its title on a row with a plus, which opens it into its photos, its
+ * description and the link to its site; open, the plus becomes a minus.
+ *
+ * The browser's own disclosure, <details>: it opens with a click, Enter or Space without a script,
+ * and the projects share its `name`, so opening one closes the one open before. Its content, in a
+ * closed project, is found by the search of the page, which opens it.
+ *
+ * The opening slides down where the browser lets the content of <details> be styled
+ * (`::details-content`): its row grows from 0fr to 1fr; elsewhere the project opens at once.
+ *
+ * A text of the artist takes its own direction (`dir="auto"`): one not yet translated, in English
+ * or Russian, reads from the left on an Arabic page, its full stops at its end.
+ */
+import PhotoCarousel from "@/components/ui/PhotoCarousel.astro";
+import TextLink from "@/components/ui/TextLink.astro";
+import type { Photo } from "@/lib/api/image";
+import type { ViewerLabels } from "@/lib/site/photoViewer";
+import { linkHost } from "@/lib/text/linkHost";
+
+interface Props {
+  /** The id of the project on the page, its anchor in a link to it. */
+  anchor: string;
+  title: string;
+  /** Its description; none leaves only the photos and the link. */
+  paragraphs: string[];
+  /** The site of the project, or "" for none. */
+  link: string;
+  photos: Photo[];
+  /** The texts of the buttons under the photos and of the viewer. */
+  carousel: { next: string; previous: string; viewer: ViewerLabels };
+}
+
+const { anchor, carousel, link, paragraphs, photos, title } = Astro.props;
+---
+
+<details class="project" id={anchor} name="projects" data-project>
+  <summary class="summary">
+    <h3 class="title" dir="auto">{title}</h3>
+    <span class="icon" aria-hidden="true"></span>
+  </summary>
+  <div class="body">
+    <div class="content">
+      {photos.length > 0 && <PhotoCarousel {...carousel} photos={photos} />}
+      {
+        paragraphs.length > 0 && (
+          <div class="description">
+            {paragraphs.map((paragraph) => (
+              <p dir="auto">{paragraph}</p>
+            ))}
+          </div>
+        )
+      }
+      {
+        link && (
+          <div class="link">
+            <TextLink href={link} label={linkHost(link)} />
+          </div>
+        )
+      }
+    </div>
+  </div>
+</details>
+
+<style>
+  .project {
+    border-block-end: var(--line-width) solid var(--color-line);
+  }
+
+  /* A row as tall as in the mockups, the title at its start and the plus at its end. */
+  .summary {
+    display: flex;
+    gap: var(--grid-gap);
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--layout-space-8);
+    cursor: pointer;
+    list-style: none;
+    transition: opacity var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  /*
+   * Under the pointer, the other rows of the list step back, so the one it is on stands alone, as
+   * a title lit on a dark stage. Only the rows: an open project's photos keep their light. Dimmed,
+   * a title still reads as large text should, at 3:1 in either theme.
+   */
+  @media (hover: hover) {
+    :global([data-project-list]:has([data-project] > summary:hover)) .summary:not(:hover) {
+      opacity: 0.45;
+    }
+  }
+
+  /* Safari draws its own triangle here, not as a list marker. */
+  .summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /*
+   * The ring of the keyboard around the whole row, a little outside it, in the margin of the page:
+   * inside, it would cross the first letter of the title and the plus, which touch the row's ends.
+   */
+  .summary:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--space-1);
+  }
+
+  .title {
+    margin: 0;
+    font-size: var(--font-size-2);
+    font-weight: inherit;
+    line-height: var(--line-height-heading);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    overflow-wrap: anywhere;
+    /*
+     * As a link of the site: the underline is always there, only unseen; under the pointer it
+     * shows and rises to the title, so the row reads as one to press.
+     */
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--line-width);
+    text-decoration-color: transparent;
+    text-underline-offset: 0.45em;
+    transition-timing-function: var(--motion-easing-standard);
+    transition-duration: var(--motion-duration-slow);
+    transition-property: text-decoration-color, text-underline-offset;
+  }
+
+  /* Only under a pointer: a tap on a phone would leave the title underlined. */
+  @media (hover: hover) {
+    .summary:hover .title {
+      text-decoration-color: currentColor;
+      text-underline-offset: 0.2em;
+    }
+  }
+
+  /*
+   * A plus of two thin lines, a little wider than the capitals are tall, as in the mockups. Open,
+   * its upright line turns down onto the other one: a minus.
+   */
+  .icon {
+    position: relative;
+    flex: none;
+    inline-size: 1.35em;
+    block-size: 1.35em;
+    font-size: var(--font-size-2);
+  }
+
+  /* Each line a border, which the browser snaps to whole pixels: every plus as crisp as the rows. */
+  .icon::before,
+  .icon::after {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline: 0;
+    content: "";
+    border-block-start: var(--line-width) solid currentColor;
+  }
+
+  .icon::after {
+    rotate: 90deg;
+    transition: rotate var(--motion-duration-slow) var(--motion-easing-standard);
+  }
+
+  .project[open] .icon::after {
+    rotate: 0deg;
+  }
+
+  /*
+   * Where the browser lets the content of <details> be styled, it slides open and shut: its row
+   * grows from nothing to its height, and stays rendered while it shuts (`allow-discrete`). The
+   * content is clipped downwards only, so the row of photos still runs to the edge of the screen.
+   */
+  @supports selector(::details-content) {
+    .project::details-content {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition:
+        grid-template-rows var(--motion-duration-panel) var(--motion-easing-standard),
+        content-visibility var(--motion-duration-panel) allow-discrete;
+    }
+
+    .project[open]::details-content {
+      grid-template-rows: 1fr;
+    }
+
+    /* Shut by another project opening below it, which holds its row in place (ProjectList). */
+    .project[data-shut-at-once]::details-content {
+      transition: none;
+    }
+
+    .body {
+      min-block-size: 0;
+      overflow-y: clip;
+    }
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-space-10);
+    padding-block-end: var(--layout-space-12);
+  }
+
+  /*
+   * Opening, the project unfolds in turn as its row grows: its photos rise into place and settle
+   * from a little closer, then its description, then its link, as a page that is turned rather
+   * than a drawer pulled out. Shutting, it goes at once with its row. An animation, not a
+   * transition: a closed project is not rendered, so it has no style to move from.
+   */
+  @keyframes rise {
+    from {
+      opacity: 0;
+      translate: 0 var(--layout-space-8);
+    }
+  }
+
+  @keyframes settle {
+    from {
+      scale: 1.08;
+    }
+  }
+
+  .project[open] .content > * {
+    animation: rise var(--motion-duration-reveal) var(--motion-easing-reveal) backwards;
+  }
+
+  .project[open] .content > :nth-child(2) {
+    animation-delay: calc(3 * var(--motion-stagger));
+  }
+
+  .project[open] .content > :nth-child(3) {
+    animation-delay: calc(6 * var(--motion-stagger));
+  }
+
+  /* The photos settle within their slots, which crop them. */
+  .project[open] .content :global(img) {
+    animation: settle calc(1.5 * var(--motion-duration-reveal)) var(--motion-easing-reveal);
+  }
+
+  /*
+   * The description in the size of the sections of the About page, as wide as a line reads well;
+   * the paragraphs keep the line breaks the artist typed.
+   */
+  .description {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    max-inline-size: var(--text-max-inline-size);
+    font-size: var(--font-size-1);
+    line-height: var(--line-height-lead);
+    text-wrap: pretty;
+    white-space: pre-line;
+  }
+
+  .description p {
+    margin: 0;
+  }
+
+  /* The site of the project in capitals, under a line as wide as the description, as in the mockup. */
+  .link {
+    max-inline-size: var(--text-max-inline-size);
+    padding-block-start: var(--space-2);
+    font-size: var(--font-size-1);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-caps);
+    border-block-start: var(--line-width) solid var(--color-line);
+  }
+</style>

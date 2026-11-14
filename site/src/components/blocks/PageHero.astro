@@ -2,14 +2,15 @@
 /**
  * The first screen of every page: a work of the artist, blurred, and the name of the page across
  * it from edge to edge, its letters windows onto the same work, sharp. Before the visitor
- * scrolls, only a chevron, also a window onto the work, says to scroll down. As they scroll, the
+ * scrolls, only a chevron, also a window onto the work, says to scroll down; a click on it scrolls
+ * down to the page. As they scroll, the
  * work stays: the line is written near its top, as by a brush, carried down over the work, each
  * letter showing the part of it under it at that moment, and wiped out at its bottom the same way.
- * Then the hero leaves upwards at once, as a slide, and the page fills the screen; scrolling back
- * up from the top of the page brings the whole hero back, and the line goes back through it all.
+ * Then the hero scrolls away upwards as any content does, and the page follows; scrolling back up
+ * brings the hero back, and the line goes back through it all.
  *
  * The scroll drives it all in CSS (a scroll-driven animation); the script fits the line to the
- * width and snaps the scroll between the hero and the page (snapHeroScroll). Without the script,
+ * width. The scroll itself stays the visitor's own: nothing snaps or slides it. Without the script,
  * or with less motion, the hero is a still screen with the line across its middle.
  * Without a photo, the letters are in the color of the text, on the page.
  *
@@ -57,15 +58,20 @@ const style =
   data-page-hero
   style={style}
 >
+  <script is:inline>
+    // Set the initial scroll state before the title is parsed. Waiting for the module would
+    // briefly show the static, unfitted title while its dependencies download.
+    document.currentScript.parentElement.setAttribute("data-live", "");
+  </script>
   <div class="stage">
     {image && <div class="photo" />}
     <div aria-hidden="true" class="line" data-name={name} lang={lang}>
       <span class="copy">{name}</span>
     </div>
-    <div aria-hidden="true" class="hint">
+    <a class="hint" href="#content" tabindex="-1">
       <span class="chevron"><span class="window"></span></span>
       <span class="hint-text">{t(language, "hero.scrollDown")}</span>
-    </div>
+    </a>
     <VisuallyHidden as="h1" id="page-title" lang={lang}>{name}</VisuallyHidden>
     <div class="menu">
       <MenuButton href={menuBelow ? "#content" : undefined} language={language} skipped />
@@ -76,7 +82,6 @@ const style =
 <script>
   import { fitHeroLine } from "@/lib/site/fitHeroLine";
   import { followHeroScroll } from "@/lib/site/followHeroScroll";
-  import { snapHeroScroll } from "@/lib/site/snapHeroScroll";
 
   const hero = document.querySelector<HTMLElement>("[data-page-hero]");
   const stage = hero?.querySelector<HTMLElement>(".stage");
@@ -84,9 +89,7 @@ const style =
 
   if (hero && stage && line) {
     fitHeroLine(hero, stage, line);
-    hero.dataset.live = "";
     followHeroScroll(hero);
-    snapHeroScroll(hero);
   }
 </script>
 
@@ -99,11 +102,12 @@ const style =
    * It moves when its script runs (data-live) and the visitor has not asked for less motion. Its
    * progress through that screen of scrolling, --along from 0 to 1, comes from a scroll-driven
    * animation: from the hero filling the screen at the top of the page (contain 0%) to its bottom
-   * reaching the bottom of the screen (contain 100%). Everything that moves follows --along.
+   * reaching the bottom of the screen (contain 100%). Only the line and hint animate --along:
+   * inheriting it from the hero would invalidate the still photo and every other descendant.
    */
   @property --along {
     syntax: "<number>";
-    inherits: true;
+    inherits: false;
     initial-value: 0;
   }
 
@@ -128,10 +132,16 @@ const style =
      */
     @supports (animation-timeline: view()) {
       .page-hero[data-live] {
+        /* Keep the progress on the moving elements, with one shared timeline. */
+        view-timeline: --hero-scroll block;
+        view-timeline-inset: 0px;
+      }
+
+      .page-hero[data-live] :is(.line, .hint) {
         animation: along linear both;
         /* Of the whole screen: by default it would leave out the room the header keeps for links
            within the page (scroll-padding), and start that much ahead. */
-        animation-timeline: view(0px);
+        animation-timeline: --hero-scroll;
         animation-range: contain 0% contain 100%;
       }
     }
@@ -206,8 +216,7 @@ const style =
     --y: calc((100cqh - var(--line-height, 1em)) / 2);
 
     position: absolute;
-    /* Placed by its top, not moved: Firefox clips the work to letters where they would be unmoved. */
-    inset-block-start: var(--y);
+    inset-block-start: 0;
     inset-inline: 0;
     display: flex;
     justify-content: space-between;
@@ -225,6 +234,17 @@ const style =
     line-height: 1;
     text-transform: uppercase;
     white-space: nowrap;
+    translate: 0 var(--y);
+    /* The moving, painted text stays separate from the full-screen blurred photo. */
+    will-change: transform;
+  }
+
+  /* Firefox clips a transformed background to the letters' old position. Keep its layout path. */
+  @supports (-moz-appearance: none) {
+    .line {
+      inset-block-start: var(--y);
+      translate: none;
+    }
   }
 
   /*
@@ -303,6 +323,12 @@ const style =
    * The middle of what the visitor sees: on a phone the bars of the browser show as the page
    * opens and cover the bottom of the stage (lvh), so the middle is that of the screen without
    * them (svh); elsewhere the two are one.
+   *
+   * It is also a link down to the page: a click scrolls there, smoothly, through the line. Only the
+   * chevron and its words take the pointer, not the rest of the screen. A mouse or a finger needs
+   * it; the keys scroll the page by themselves, so it stays out of the order of Tab, as the button
+   * of the menu here does. A screen reader reads it as a link by its words; the chevron is drawn
+   * by CSS alone, with nothing to read.
    */
   .hint {
     --middle: calc(min(100cqh, 100svh) / 2);
@@ -310,13 +336,22 @@ const style =
     position: absolute;
     inset: 0;
     display: none;
+    color: inherit;
+    text-decoration: none;
     pointer-events: none;
   }
 
+  .hint > * {
+    pointer-events: auto;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
+    /* Faded out, it is scaled to nothing as well, so the empty place cannot be clicked: the scale
+       is 1 until the opacity reaches 0, then 0 at once. */
     [data-live] .hint {
       display: block;
       opacity: clamp(0, 1 - var(--along) * 20, 1);
+      scale: clamp(0, (1 - var(--along) * 20) * 1000, 1);
     }
   }
 
@@ -380,18 +415,26 @@ const style =
     background-color: transparent;
   }
 
-  /* Placed by top and left, as the work and the chevron are: by their x and y, whatever the
-     direction of the text. */
+  /* As large as the window and the reach of its nod, not the whole screen: a full-screen layer
+     behind the mask would be drawn and moved for the nod forever. The work in it is offset to
+     match the work under it. Placed by top and left, as the chevron is, whatever the direction
+     of the text. */
   .photographed .window::before {
     position: absolute;
-    top: calc(-1 * var(--y));
-    left: calc(-1 * var(--x));
-    inline-size: 100cqw;
-    block-size: 100cqh;
+    top: 0;
+    left: 0;
+    inline-size: 100%;
+    block-size: calc(100% + var(--nod));
     content: "";
     background-image: var(--hero-image);
-    background-position: var(--cover-x) var(--cover-y);
+    background-position: calc(var(--cover-x) - var(--x)) calc(var(--cover-y) - var(--y));
     animation: nod-back 1.6s var(--motion-easing-screen) infinite;
+  }
+
+  /* The chevron needs no animation behind an open modal menu. */
+  :global(html:has(.site-menu[open])) .chevron,
+  :global(html:has(.site-menu[open])) .window::before {
+    animation-play-state: paused;
   }
 
   .chevron::after {
@@ -403,14 +446,32 @@ const style =
     --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 134 72'%3E%3Cpolygon points='10.07,2.71 67.00,55.84 123.93,2.71 130.07,9.29 67.00,68.16 3.93,9.29' fill='none' stroke='%23000' stroke-width='3'/%3E%3C/svg%3E");
 
     background-color: rgb(255 255 255 / 0.5);
+    transition: background-color var(--motion-duration-standard) var(--motion-easing-standard);
   }
 
+  /* As wide as its words, in the middle, so only they take the pointer. */
   .hint-text {
     position: absolute;
     inset-block-start: calc(var(--middle) + var(--layout-space-4));
     inset-inline: var(--page-gutter);
+    inline-size: fit-content;
+    margin-inline: auto;
     font-size: var(--font-size-1);
     text-align: center;
+    text-decoration: underline 1px transparent;
+    text-underline-offset: 0.3em;
+    transition: text-decoration-color var(--motion-duration-standard) var(--motion-easing-standard);
+  }
+
+  /* Under the pointer, the edge of the chevron lights up and its words are underlined. */
+  @media (hover: hover) {
+    .hint:hover .chevron::after {
+      background-color: rgb(255 255 255 / 0.95);
+    }
+
+    .hint:hover .hint-text {
+      text-decoration-color: currentcolor;
+    }
   }
 
   .photographed .hint-text {
@@ -486,10 +547,32 @@ const style =
     }
   }
 
-  /* A printed page starts with its content: the hero is a scene for the screen. */
+  /*
+   * A printed page starts with its content: the hero is a scene for the screen. Only its heading,
+   * the name of the page, stays, printed as a plain heading.
+   */
   @media print {
-    .page-hero {
+    .page-hero,
+    .stage {
+      display: contents;
+    }
+
+    .stage > :not(#page-title) {
       display: none;
+    }
+
+    .stage > :global(#page-title) {
+      position: static;
+      inline-size: auto;
+      block-size: auto;
+      padding-inline: var(--page-gutter);
+      margin: 0 0 var(--space-8);
+      overflow: visible;
+      font-size: var(--font-size-display);
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: normal;
+      clip-path: none;
     }
   }
 </style>

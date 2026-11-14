@@ -48,6 +48,8 @@ export const projectBodySchema = z.strictObject({
  * never makes a saved project unreadable.
  */
 export const storedProjectSchema = z.object({
+  /** Its anchor on the site, made from the title when the project is created; see newProjectSlug. */
+  slug: z.string(),
   title: z.string(),
   description: z.string(),
   link: z.string(),
@@ -75,6 +77,8 @@ export type ProjectsOrder = z.infer<typeof projectsOrderBodySchema>;
 /** A project as the API returns it. */
 export interface Project {
   id: string;
+  /** Its anchor on the site, the same in every language; it never changes. */
+  slug: string;
   title: string;
   description: string;
   link: string;

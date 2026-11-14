@@ -59,25 +59,27 @@ const { code, language, text, title } = Astro.props;
     justify-content: center;
     min-block-size: 100dvh;
     padding-block: var(--layout-space-8);
+    container-type: inline-size;
     text-align: center;
   }
 
   /*
    * The digits grow with the screen up to a cap, as in the admin; the gap and the portrait are in
-   * em, so they follow the digits.
+   * em, so they follow the digits. Neither is ever wider than its share of the page (cqi), however
+   * large a text the visitor sets.
    */
   .code {
     display: grid;
     grid-template-columns: repeat(3, auto);
     gap: 0.08em;
     align-items: center;
-    font-size: clamp(5rem, 23vw, 15rem);
+    font-size: min(clamp(5rem, 23vw, 15rem), 30cqi);
     line-height: 1;
   }
 
   .portrait {
     display: block;
-    inline-size: max(7rem, 0.7em);
+    inline-size: min(max(7rem, 0.7em), 40cqi);
     aspect-ratio: 1;
   }
 

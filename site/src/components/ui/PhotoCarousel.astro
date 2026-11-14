@@ -1,0 +1,282 @@
+---
+/**
+ * A row of photos the visitor swipes or drags, endless, with «Prev» and «Next» under it; a photo
+ * opens on the whole screen, where it can be zoomed and the others followed. The photos of the
+ * About page and of each project.
+ *
+ * The photos stand in equal slots within the column, as in the mockups: two on a laptop, one on a
+ * tablet and a phone. Each photo fills its slot, cropped, and opens whole.
+ *
+ * The row is Embla, as the slideshow of the Contacts page: the browser's own scrolling cannot come
+ * round from the last photo to the first. Photos that fit the page whole do not move, and have no
+ * buttons. Without a script the row shows its first photos, and a photo opens as a file.
+ *
+ * It starts once it has a size, so a row in a closed project waits until the project opens: it
+ * has nothing to measure before, and its photos do not load for a project nobody opened.
+ */
+import type { HTMLAttributes } from "astro/types";
+
+import FramedButton from "@/components/ui/FramedButton.astro";
+import Picture from "@/components/ui/Picture.astro";
+import type { Photo } from "@/lib/api/image";
+import { srcset } from "@/lib/images/srcset";
+import type { ViewerLabels } from "@/lib/site/photoViewer";
+import { graphemeCount } from "@/lib/text/graphemeCount";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** The texts of the buttons under the row. */
+  next: string;
+  previous: string;
+  /** At least one. */
+  photos: Photo[];
+  viewer: ViewerLabels;
+}
+
+const { class: className, next, photos, previous, viewer, ...attributes } = Astro.props;
+
+// How many letters the two buttons hold, which sets how large they can be on a narrow screen.
+const labelsLength = graphemeCount(previous) + graphemeCount(next);
+
+/** As many as a wide screen shows at first: they load with the row, the others as they come. */
+const firstInView = 2;
+---
+
+<div
+  class:list={["carousel", className]}
+  data-photo-carousel
+  data-viewer={JSON.stringify(viewer)}
+  {...attributes}
+>
+  <div class="viewport">
+    <ul class="track">
+      {
+        photos.map((photo, index) => (
+          <li class="slide">
+            <a
+              class="open"
+              data-cropped="true"
+              data-pswp-height={photo.height}
+              data-pswp-srcset={srcset(photo.sources.webp)}
+              data-pswp-width={photo.width}
+              href={photo.sources.webp.at(-1)?.url}
+            >
+              <Picture
+                alt={photo.alt}
+                class="picture"
+                deferred={index >= firstInView}
+                image={photo}
+                sizes="(min-width: 75rem) 50vw, 100vw"
+              />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+  {/* Shown by the script when the photos do not fit the page; until then there is nothing to move. */}
+  <div class="controls" data-controls hidden style={`--labels-length: ${labelsLength}`}>
+    <FramedButton as="button" class="control" data-step="-1" type="button">{previous}</FramedButton>
+    <FramedButton as="button" class="control" data-step="1" type="button">{next}</FramedButton>
+  </div>
+</div>
+
+<script>
+  import EmblaCarousel, { type EmblaCarouselType } from "embla-carousel";
+
+  import { loadDeferredImages } from "@/lib/images/deferredImages";
+  import { setUpPhotoViewer, type ViewerLabels } from "@/lib/site/photoViewer";
+
+  /** How far on either side of the photos in view their neighbors load, so a step finds them there. */
+  const preload = 3;
+
+  /** Loads the photos in view and their neighbors on both sides, the row being endless. */
+  function loadAround(carousel: EmblaCarouselType): void {
+    const slides = carousel.slideNodes();
+    const count = slides.length;
+
+    for (const index of carousel.slidesInView()) {
+      for (let offset = -preload; offset <= preload; offset += 1) {
+        const slide = slides[(((index + offset) % count) + count) % count];
+
+        if (slide) loadDeferredImages(slide);
+      }
+    }
+  }
+
+  /** Starts the row: from then on it moves, loads its photos as they come and opens them. */
+  function start(root: HTMLElement): void {
+    const viewport = root.querySelector<HTMLElement>(".viewport");
+    const controls = root.querySelector<HTMLElement>("[data-controls]");
+    const [previous, next] = root.querySelectorAll<HTMLButtonElement>("[data-step]");
+
+    if (!viewport || !controls || !previous || !next) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const carousel = EmblaCarousel(viewport, {
+      align: "start",
+      direction: getComputedStyle(root).direction === "rtl" ? "rtl" : "ltr",
+      loop: true,
+    });
+
+    // Photos that fit the page whole leave Embla nothing to move: the buttons stay hidden.
+    const update = () => {
+      controls.hidden = !carousel.canScrollNext();
+      loadAround(carousel);
+    };
+
+    // A visitor who asked for less motion sees the next photos at once instead of gliding there,
+    // as soon as they ask, on a page already open.
+    previous.addEventListener("click", () => carousel.scrollPrev(reducedMotion.matches));
+    next.addEventListener("click", () => carousel.scrollNext(reducedMotion.matches));
+
+    carousel.on("init", update).on("reInit", update).on("slidesInView", loadAround);
+    update();
+
+    // The row follows the viewer, so the photo it closes on is there to shrink back into.
+    setUpPhotoViewer(
+      viewport,
+      ".open",
+      JSON.parse(root.dataset.viewer ?? "{}") as ViewerLabels,
+      (index) => {
+        if (!carousel.slidesInView().includes(index)) carousel.scrollTo(index, true);
+      },
+    );
+  }
+
+  // A row starts the first time it has a width: at once on the page, when its project opens in
+  // the list of projects.
+  const sized = new ResizeObserver((entries) => {
+    for (const { contentRect, target } of entries) {
+      if (contentRect.width === 0) continue;
+
+      sized.unobserve(target);
+      start(target as HTMLElement);
+    }
+  });
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-photo-carousel]")) {
+    sized.observe(root);
+  }
+</script>
+
+<style>
+  /* Two slots on a laptop, one below, as in the mockups. */
+  .carousel {
+    --slots-in-view: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-space-6);
+  }
+
+  @media (width >= 75rem) {
+    .carousel {
+      --slots-in-view: 2;
+    }
+  }
+
+  .viewport {
+    overflow: hidden;
+  }
+
+  /*
+   * The photos in a row, apart by the gap of the grid. Embla moves the row, so the gap is room at
+   * the start of each photo, which it measures, not the gap of flex, which it does not.
+   */
+  .track {
+    display: flex;
+    align-items: start;
+    padding: 0;
+    margin: 0;
+    margin-inline-start: calc(-1 * var(--grid-gap));
+    /* A vertical swipe still scrolls the page. */
+    touch-action: pan-y pinch-zoom;
+    list-style: none;
+  }
+
+  /*
+   * Its share of the track, which is the column and one gap wider, less the gap at its start, so
+   * the slots and the gaps between them fill the column exactly.
+   */
+  .slide {
+    box-sizing: content-box;
+    flex: none;
+    inline-size: calc(100% / var(--slots-in-view) - var(--grid-gap));
+    min-inline-size: 0;
+    padding-inline-start: var(--grid-gap);
+  }
+
+  /* The shape of the slots of the mockups (863 × 481 on the About page, 634 × 353 in a project). */
+  .open {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    cursor: zoom-in;
+  }
+
+  .picture {
+    block-size: 100%;
+  }
+
+  /*
+   * The ring of the keyboard inside the photo, as outside the row would cut it off: over the photo,
+   * in two tones, the color of the ring on a band of the page, so it shows on a light work and a
+   * dark one alike (WCAG 2.4.13).
+   */
+  .open:focus-visible {
+    outline: none;
+  }
+
+  .open::after {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    content: "";
+  }
+
+  .open:focus-visible::after {
+    box-shadow:
+      inset 0 0 0 2px var(--color-focus),
+      inset 0 0 0 5px var(--color-surface);
+  }
+
+  .controls {
+    display: flex;
+    gap: var(--grid-gap);
+    justify-content: space-between;
+    container-type: inline-size;
+  }
+
+  .controls[hidden] {
+    display: none;
+  }
+
+  /*
+   * Large, as in the mockup, but never so large that the two leave the row: a letter of Absans in
+   * capitals is about 0.74 times as wide as its size, 0.8 with room to spare, and each button adds
+   * its padding (0.8em a side) and its border. So «Prev» and «Next» keep the large size on a phone,
+   * and the longer «Précédent» and «Suivant» shrink to fit it. A label of two words, as the
+   * Vietnamese «Tiếp theo», stays on one line, its space counted as a letter.
+   */
+  .control {
+    padding-inline: 0.8em;
+    font-size: min(
+      var(--font-size-2),
+      (100cqi - var(--grid-gap)) / (0.8 * var(--labels-length) + 3.4)
+    );
+    line-height: var(--line-height-heading);
+    white-space: nowrap;
+  }
+
+  /*
+   * The viewer in the colors of the site: a photo on the page, with the controls in its text color.
+   * Through the root, as the styles of PhotoSwipe come after these and set the same.
+   */
+  :global(:root .pswp) {
+    --pswp-bg: var(--color-surface);
+    --pswp-icon-color: var(--color-text);
+    --pswp-icon-color-secondary: var(--color-surface);
+    --pswp-icon-stroke-color: var(--color-surface);
+    --pswp-error-text-color: var(--color-text);
+  }
+</style>

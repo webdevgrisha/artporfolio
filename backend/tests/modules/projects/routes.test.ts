@@ -10,6 +10,10 @@ const auth = vi.hoisted(() => ({
   verifySession: vi.fn(),
 }));
 
+const intro = vi.hoisted(() => ({
+  getProjectsIntro: vi.fn(),
+}));
+
 const service = vi.hoisted(() => ({
   createProject: vi.fn(),
   deleteProject: vi.fn(),
@@ -23,6 +27,7 @@ const service = vi.hoisted(() => ({
 vi.mock("#modules/auth/service", () => auth);
 vi.mock("#modules/projects/service", () => service);
 vi.mock("#modules/projects/order", () => service);
+vi.mock("#modules/projects/intro/service", () => intro);
 
 import { projectsRouter } from "#modules/projects/routes";
 import {
@@ -81,6 +86,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   auth.verifySession.mockResolvedValue(admin);
   service.listProjects.mockResolvedValue({ data: [project], etag });
+  intro.getProjectsIntro.mockResolvedValue({ data: { text: "Intro" }, etag });
   service.getProject.mockResolvedValue({ data: project, etag, id });
   service.createProject.mockResolvedValue({ data: project, etag: savedEtag, id });
   service.replaceProject.mockResolvedValue({ data: project, etag: savedEtag, id });
@@ -101,6 +107,27 @@ describe("reading the projects", () => {
     expect(response.headers.get("ETag")).toBe(etag);
     await expect(response.json()).resolves.toEqual({ projects: [project] });
     expect(auth.verifySession).not.toHaveBeenCalled();
+    expect(service.listProjects).toHaveBeenCalledWith("ru");
+  });
+
+  it("lists the projects in the language of the page", async () => {
+    expect((await send("GET", "?lang=de")).status).toBe(200);
+    expect(service.listProjects).toHaveBeenCalledWith("de");
+  });
+
+  it("returns 400 for a language the site does not have", async () => {
+    expect((await send("GET", "?lang=xx")).status).toBe(400);
+    expect((await send("GET", "/intro?lang=xx")).status).toBe(400);
+    expect(service.listProjects).not.toHaveBeenCalled();
+  });
+
+  it("returns the intro to every visitor in the language of the page, with its ETag", async () => {
+    const response = await send("GET", "/intro?lang=de");
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("ETag")).toBe(etag);
+    await expect(response.json()).resolves.toEqual({ text: "Intro" });
+    expect(intro.getProjectsIntro).toHaveBeenCalledWith("de");
   });
 
   it("returns one project with its ETag", async () => {

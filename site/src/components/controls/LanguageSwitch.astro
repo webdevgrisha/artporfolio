@@ -2,7 +2,9 @@
 /**
  * The switch of languages: a globe and the code of the language of the page, which opens the list of all the
  * languages of the site, each by its own name. An item is a plain link to the same page in that
- * language, so it works without a script and a search engine follows it.
+ * language, so it works without a script and a search engine follows it. The script takes the
+ * anchor of the address along, such as the project open in the list of projects: an anchor is the
+ * same in every language.
  */
 import Dropdown from "@/components/ui/Dropdown.astro";
 import GlobeIcon from "@/components/ui/icons/GlobeIcon.astro";
@@ -38,7 +40,7 @@ const ordered = languagesByName();
   name={t(language, "header.language")}
 >
   <GlobeIcon slot="icon" />
-  <ul class="languages" style={`--rows: ${Math.ceil(ordered.length / 2)}`}>
+  <ul class="languages" data-languages style={`--rows: ${Math.ceil(ordered.length / 2)}`}>
     {
       ordered.map((other) => (
         <li lang={languageTag(other)}>
@@ -54,6 +56,25 @@ const ordered = languagesByName();
     }
   </ul>
 </Dropdown>
+
+<script>
+  /**
+   * The anchor of the address, set as the visitor follows a link to another language: the page
+   * changes its anchor as they open and shut its parts, without telling the links.
+   */
+  function takeAnchor(event: MouseEvent): void {
+    const link =
+      event.target instanceof Element
+        ? event.target.closest<HTMLAnchorElement>("[data-languages] a[href]")
+        : null;
+
+    if (link) link.hash = window.location.hash;
+  }
+
+  // A click opens a link, a click of the middle button opens it in a new tab.
+  document.addEventListener("click", takeAnchor);
+  document.addEventListener("auxclick", takeAnchor);
+</script>
 
 <style>
   /*

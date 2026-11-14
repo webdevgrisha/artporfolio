@@ -27,4 +27,14 @@
     /* What a finger can hit, however small the control looks (WCAG 2.5.8 asks for 24px). */
     --min-tap-target-size: 44px;
   }
+
+  /*
+   * A phone has room for one column: its blocks span the page. Twelve would keep eleven gaps,
+   * wider than the screen when the visitor sets a larger text.
+   */
+  @media (width < 40rem) {
+    :root {
+      --grid-columns: 1;
+    }
+  }
 }

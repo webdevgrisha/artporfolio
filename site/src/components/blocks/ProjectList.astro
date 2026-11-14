@@ -1,0 +1,131 @@
+---
+/**
+ * The projects of the artist, under a small heading over a line across the page, as the sections
+ * of the About page: a list of rows, one open at a time (see ProjectItem).
+ *
+ * The address names the open project (`#elephant`), so a visitor can share it: a link with it
+ * opens that project, and opening another one changes it, without a new step in the history.
+ */
+import ProjectItem from "@/components/blocks/ProjectItem.astro";
+import Reveal from "@/components/ui/Reveal.astro";
+import type { Photo } from "@/lib/api/image";
+import type { ViewerLabels } from "@/lib/site/photoViewer";
+
+interface Props {
+  /** The id of its heading, which names the list. */
+  id: string;
+  heading: string;
+  /** At least one. */
+  projects: {
+    anchor: string;
+    title: string;
+    paragraphs: string[];
+    link: string;
+    photos: Photo[];
+  }[];
+  carousel: { next: string; previous: string; viewer: ViewerLabels };
+}
+
+const { carousel, heading, id, projects } = Astro.props;
+---
+
+<Reveal as="section" aria-labelledby={id} data-project-list>
+  <h2 class="heading" id={id}>{heading}</h2>
+  <ul class="list">
+    {
+      projects.map((project) => (
+        <li>
+          <ProjectItem {...project} carousel={carousel} />
+        </li>
+      ))
+    }
+  </ul>
+</Reveal>
+
+<script>
+  /**
+   * The anchor of the address, decoded; empty when it is not valid percent-encoding, as one cut
+   * short when copied, which names no project.
+   */
+  function decodedHash(): string {
+    try {
+      return decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      return "";
+    }
+  }
+
+  /** The project the address names, opened and brought into view. */
+  function openNamed(list: Element): void {
+    const anchor = decodedHash();
+    const project = anchor && list.querySelector<HTMLDetailsElement>(`[data-project][id="${CSS.escape(anchor)}"]`);
+
+    if (!project) return;
+
+    project.open = true;
+    project.scrollIntoView({ block: "start" });
+  }
+
+  /** The address with the anchor of the open project, or with none when every one is shut. */
+  function nameOpen(list: Element): void {
+    const open = list.querySelector<HTMLDetailsElement>("[data-project][open]");
+    const url = new URL(window.location.href);
+
+    url.hash = open ? open.id : "";
+    // An empty hash still leaves the "#" in the address.
+    const address = open ? url.href : url.href.replace(/#$/u, "");
+
+    if (address !== window.location.href) window.history.replaceState(window.history.state, "", address);
+  }
+
+  /**
+   * Keeps the row the visitor opens where it is when the project open before it is above it: that
+   * one shuts, and the page would rise under the pointer by all its height, the row with it, off
+   * the screen. It shuts at once instead of sliding, and the page scrolls by as much, so only the
+   * project opened moves: it slides open under its row.
+   */
+  function holdInPlace(list: Element, event: Event): void {
+    const summary = event.target instanceof Element ? event.target.closest("summary") : null;
+    const project = summary?.parentElement;
+    const before = list.querySelector<HTMLElement>("[data-project][open]");
+
+    if (!summary || !(project instanceof HTMLDetailsElement) || project.open || !before) return;
+    if (!(before.compareDocumentPosition(project) & Node.DOCUMENT_POSITION_FOLLOWING)) return;
+
+    const top = summary.getBoundingClientRect().top;
+
+    before.dataset.shutAtOnce = "";
+    // After the browser has opened the one and shut the other, before it draws either: `toggle`
+    // comes later, a frame after in Chrome, where the row would flash off the screen.
+    requestAnimationFrame(() => {
+      window.scrollBy({ behavior: "instant", top: summary.getBoundingClientRect().top - top });
+      delete before.dataset.shutAtOnce;
+    });
+  }
+
+  for (const list of document.querySelectorAll("[data-project-list]")) {
+    openNamed(list);
+    window.addEventListener("hashchange", () => openNamed(list));
+    // Before the browser opens the project: a click on a row, or Enter or Space on it.
+    list.addEventListener("click", (event) => holdInPlace(list, event));
+
+    // `toggle` does not bubble: it is caught on its way down. Opening one project shuts the other,
+    // so both fire; the address follows whichever is open once they have.
+    list.addEventListener("toggle", () => nameOpen(list), { capture: true });
+  }
+</script>
+
+<style>
+  .heading {
+    padding-block-end: var(--space-2);
+    margin: 0;
+    font-size: var(--font-size-body);
+    border-block-end: var(--line-width) solid var(--color-line);
+  }
+
+  .list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+</style>

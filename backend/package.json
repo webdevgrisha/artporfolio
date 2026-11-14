@@ -24,6 +24,7 @@
     "check": "pnpm type-check"
   },
   "dependencies": {
+    "@sindresorhus/slugify": "3.0.1",
     "busboy": "1.6.0",
     "content-disposition": "^3.0.0",
     "cookie-parser": "^1.4.7",

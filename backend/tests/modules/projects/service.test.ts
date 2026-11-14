@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 /** The `projects` collection: documents by id. Transactions write to it at once. */
 const projects = vi.hoisted(() => new Map<string, Record<string, unknown>>());
 
+/** The `translations` collection: documents by resource; none exists by default. */
+const translations = vi.hoisted(() => new Map<string, Record<string, unknown>>());
+
 const storage = vi.hoisted(() => ({
   deleteFolder: vi.fn(),
   downloadUrl: ({ path, token }: { path: string; token: string }) =>
@@ -51,9 +54,20 @@ vi.mock("#shared/firebase/firestore", () => {
       projects.set(ref.id, { ...projects.get(ref.id), ...fields }),
   };
 
+  function translationDocument(resource: string) {
+    const data = translations.get(resource);
+
+    return { get: async () => ({ data: () => data, exists: data !== undefined }), id: resource };
+  }
+
   return {
     firestore: () => ({
-      collection: () => ({ doc: document, orderBy: () => query() }),
+      collection: (name: string) =>
+        name === "translations"
+          ? { doc: translationDocument }
+          : { doc: document, orderBy: () => query() },
+      getAll: (...references: { get: () => Promise<unknown> }[]) =>
+        Promise.all(references.map((reference) => reference.get())),
       runTransaction: (update: (current: typeof transaction) => unknown) => update(transaction),
     }),
   };
@@ -111,13 +125,14 @@ function storedPhoto(projectId: string) {
 /** When the seeded projects were made and last saved. */
 const seededAt = Timestamp.fromDate(new Date("2026-01-15T10:00:00.000Z"));
 
-function storedProject(id: string, title: string, position: number) {
+function storedProject(id: string, title: string, position: number, slug: string) {
   return {
     createdAt: seededAt,
     description: "",
     link: "",
     photos: [storedPhoto(id)],
     position,
+    slug,
     title,
     updatedAt: seededAt,
   };
@@ -152,11 +167,26 @@ const body = {
   title: "Слон",
 };
 
+/** The translations of `resource` into each language, by key, as the translator stores them. */
+function translated(resource: string, byLanguage: Record<string, Record<string, string>>) {
+  const stored = Object.fromEntries(
+    Object.entries(byLanguage).map(([language, texts]) => [
+      language,
+      Object.fromEntries(
+        Object.entries(texts).map(([key, text]) => [key, { edited: false, source: key, text }]),
+      ),
+    ]),
+  );
+
+  translations.set(resource, { failed: false, sources: {}, translations: stored });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   projects.clear();
-  projects.set(elephantId, storedProject(elephantId, "Слон", 0));
-  projects.set(tigerId, storedProject(tigerId, "Тигр", 1));
+  translations.clear();
+  projects.set(elephantId, storedProject(elephantId, "Слон", 0, "slon"));
+  projects.set(tigerId, storedProject(tigerId, "Тигр", 1, "tigr"));
   storage.deleteFolder.mockResolvedValue(undefined);
   uploads.publishUpload.mockImplementation(async (_uploadId: string, folder: string) =>
     publishedImage(folder),
@@ -165,9 +195,9 @@ beforeEach(() => {
 
 describe("listProjects", () => {
   it("lists the projects by position, with download URLs", async () => {
-    projects.set(elephantId, storedProject(elephantId, "Слон", 5));
+    projects.set(elephantId, storedProject(elephantId, "Слон", 5, "slon"));
 
-    const { data } = await listProjects();
+    const { data } = await listProjects("ru");
 
     expect(data.map((project) => project.title)).toEqual(["Тигр", "Слон"]);
     expect(data[0]?.photos[0]?.sources.avif[0]?.url).toBe(
@@ -179,7 +209,40 @@ describe("listProjects", () => {
   it("lists nothing before the first project", async () => {
     projects.clear();
 
-    await expect(listProjects()).resolves.toEqual({ data: [], etag: entityTag([]) });
+    await expect(listProjects("ru")).resolves.toEqual({ data: [], etag: entityTag([]) });
+  });
+
+  it("gives the title, description and alt texts in the language asked, else in English, else as saved", async () => {
+    translated(`project-${elephantId}`, {
+      de: { [photoId]: "Umschlag", title: "Elefant" },
+      en: { description: "Book illustrations.", title: "Elephant" },
+    });
+
+    const { data } = await listProjects("de");
+
+    expect(data[0]).toMatchObject({
+      description: "Book illustrations.",
+      photos: [{ alt: "Umschlag", id: photoId }],
+      title: "Elefant",
+    });
+    expect(data[1]).toMatchObject({ photos: [{ alt: "Обложка" }], title: "Тигр" });
+  });
+
+  it("gives the saved texts in the source language, which the admin reads", async () => {
+    translated(`project-${elephantId}`, { en: { title: "Elephant" } });
+
+    const { data } = await listProjects("ru");
+
+    expect(data.map((project) => project.title)).toEqual(["Слон", "Тигр"]);
+  });
+
+  it("tags each language by its own texts", async () => {
+    translated(`project-${elephantId}`, { de: { title: "Elefant" } });
+
+    const [german, polish] = await Promise.all([listProjects("de"), listProjects("pl")]);
+
+    expect(german.etag).not.toBe(polish.etag);
+    expect(german.etag).toBe(entityTag(german.data));
   });
 });
 
@@ -229,6 +292,18 @@ describe("createProject", () => {
     expect(etag).toBe(await readTag(newId));
     // The upload stays for a save repeated after a lost response.
     expect(storage.deleteFolder).not.toHaveBeenCalled();
+  });
+
+  it("gives the new project a slug of its title in Latin letters", async () => {
+    const { data } = await createProject(newId, newProject);
+
+    expect(data.slug).toBe("zhiraf");
+  });
+
+  it("numbers a slug another project has", async () => {
+    const { data } = await createProject(newId, { ...newProject, title: "Слон!" });
+
+    expect(data.slug).toBe("slon-2");
   });
 
   it("dates the new project by the server clock", async () => {
@@ -288,6 +363,16 @@ describe("replaceProject", () => {
     expect(data.photos.map((photo) => photo.alt)).toEqual(["Новое фото"]);
     expect(projects.get(elephantId)?.position).toBe(0);
     expect(storage.deleteFolder).toHaveBeenCalledWith(`projects/${elephantId}/photos/${photoId}`);
+  });
+
+  it("keeps the slug of the project when it is renamed, so links to it still lead to it", async () => {
+    const { data } = await replaceProject(
+      elephantId,
+      { ...body, title: "Жираф" },
+      await readTag(elephantId),
+    );
+
+    expect(data).toMatchObject({ slug: "slon", title: "Жираф" });
   });
 
   it("keeps its own title, in another case too", async () => {
