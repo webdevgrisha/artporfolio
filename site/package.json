@@ -18,7 +18,7 @@
     "i18n:translate": "node --env-file=../backend/.secret.local scripts/translate-messages.ts"
   },
   "dependencies": {
-    "@astrojs/node": "^11.1.11",
+    "@astrojs/node": "^11.1.13",
     "astro": "^7.4.8",
     "embla-carousel": "8.6.0",
     "embla-carousel-autoplay": "8.6.0",
