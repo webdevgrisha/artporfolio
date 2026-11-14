@@ -51,6 +51,7 @@ const { class: className, photos, priority = false, sizes, ...attributes } = Ast
   import Fade from "embla-carousel-fade";
 
   import { loadDeferredImages } from "@/lib/images/deferredImages";
+  import { observeVisibility } from "@/lib/site/observeVisibility";
 
   /** How long a photo is shown before the next one. */
   const delay = 5000;
@@ -97,7 +98,13 @@ const { class: className, photos, priority = false, sizes, ...attributes } = Ast
     if (!viewport || root.querySelectorAll(".slide").length < 2) continue;
 
     // A visitor who asked for less motion sees one photo until they swipe.
-    const playOnInit = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const autoplay = Autoplay({
+      delay,
+      playOnInit: false,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true,
+    });
     const carousel = EmblaCarousel(
       viewport,
       {
@@ -109,12 +116,37 @@ const { class: className, photos, priority = false, sizes, ...attributes } = Ast
         Fade(),
         // Waits while the pointer is over the photo, so it can be looked at; a swipe starts the
         // wait for the next one anew.
-        Autoplay({ delay, playOnInit, stopOnInteraction: false, stopOnMouseEnter: true }),
+        autoplay,
       ],
     );
 
     showSelected(carousel);
     carousel.on("select", showSelected);
+
+    let visible = false;
+    const updatePlayback = (): void => {
+      const playing = visible && !reducedMotion.matches;
+
+      root.toggleAttribute("data-paused", !playing);
+      if (!playing) autoplay.stop();
+      else if (!viewport.matches(":hover, :focus-within") && !autoplay.isPlaying()) autoplay.play();
+    };
+    const stopObserving = observeVisibility(root, (inView) => {
+      visible = inView;
+      updatePlayback();
+    });
+
+    // Plays only while it is on the screen, of a visible tab, and motion is welcome, so a visitor
+    // who scrolls back to it finds the photo they left, not several photos on. Autoplay restarts by itself on
+    // pointer-up, mouse-leave, focus-out and a tab shown again: each restart is checked once its
+    // play event is over, as the plugin marks itself playing only after it (Embla 8.6).
+    carousel.on("autoplay:play", () => queueMicrotask(updatePlayback));
+    carousel.on("reInit", updatePlayback);
+    reducedMotion.addEventListener("change", updatePlayback);
+    carousel.on("destroy", () => {
+      stopObserving();
+      reducedMotion.removeEventListener("change", updatePlayback);
+    });
   }
 </script>
 
@@ -152,7 +184,8 @@ const { class: className, photos, priority = false, sizes, ...attributes } = Ast
       animation: zoom 7s ease-out forwards;
     }
 
-    .slideshow:hover .picture {
+    .slideshow:hover .picture,
+    .slideshow[data-paused] .picture {
       animation-play-state: paused;
     }
   }
