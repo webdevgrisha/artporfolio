@@ -4,8 +4,6 @@ import { photoSchema } from "@/lib/api/image";
 
 /** A project of the artist, with its texts in the language of the page. */
 const projectSchema = z.object({
-  /** Stable across saves and languages: it names the project when its title cannot. */
-  id: z.uuid(),
   /** Its anchor in a link to it, the same in every language; it never changes. */
   slug: z.string(),
   title: z.string(),
@@ -26,5 +24,3 @@ export const projectsSchema = z.object({
 export const projectsIntroSchema = z.object({
   text: z.string(),
 });
-
-export type Project = z.infer<typeof projectSchema>;
