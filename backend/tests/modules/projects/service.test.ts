@@ -125,13 +125,14 @@ function storedPhoto(projectId: string) {
 /** When the seeded projects were made and last saved. */
 const seededAt = Timestamp.fromDate(new Date("2026-01-15T10:00:00.000Z"));
 
-function storedProject(id: string, title: string, position: number) {
+function storedProject(id: string, title: string, position: number, slug: string) {
   return {
     createdAt: seededAt,
     description: "",
     link: "",
     photos: [storedPhoto(id)],
     position,
+    slug,
     title,
     updatedAt: seededAt,
   };
@@ -184,8 +185,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   projects.clear();
   translations.clear();
-  projects.set(elephantId, storedProject(elephantId, "Слон", 0));
-  projects.set(tigerId, storedProject(tigerId, "Тигр", 1));
+  projects.set(elephantId, storedProject(elephantId, "Слон", 0, "slon"));
+  projects.set(tigerId, storedProject(tigerId, "Тигр", 1, "tigr"));
   storage.deleteFolder.mockResolvedValue(undefined);
   uploads.publishUpload.mockImplementation(async (_uploadId: string, folder: string) =>
     publishedImage(folder),
@@ -194,7 +195,7 @@ beforeEach(() => {
 
 describe("listProjects", () => {
   it("lists the projects by position, with download URLs", async () => {
-    projects.set(elephantId, storedProject(elephantId, "Слон", 5));
+    projects.set(elephantId, storedProject(elephantId, "Слон", 5, "slon"));
 
     const { data } = await listProjects("ru");
 
@@ -293,6 +294,18 @@ describe("createProject", () => {
     expect(storage.deleteFolder).not.toHaveBeenCalled();
   });
 
+  it("gives the new project a slug of its title in Latin letters", async () => {
+    const { data } = await createProject(newId, newProject);
+
+    expect(data.slug).toBe("zhiraf");
+  });
+
+  it("numbers a slug another project has", async () => {
+    const { data } = await createProject(newId, { ...newProject, title: "Слон!" });
+
+    expect(data.slug).toBe("slon-2");
+  });
+
   it("dates the new project by the server clock", async () => {
     const { data } = await createProject(newId, newProject);
 
@@ -350,6 +363,16 @@ describe("replaceProject", () => {
     expect(data.photos.map((photo) => photo.alt)).toEqual(["Новое фото"]);
     expect(projects.get(elephantId)?.position).toBe(0);
     expect(storage.deleteFolder).toHaveBeenCalledWith(`projects/${elephantId}/photos/${photoId}`);
+  });
+
+  it("keeps the slug of the project when it is renamed, so links to it still lead to it", async () => {
+    const { data } = await replaceProject(
+      elephantId,
+      { ...body, title: "Жираф" },
+      await readTag(elephantId),
+    );
+
+    expect(data).toMatchObject({ slug: "slon", title: "Жираф" });
   });
 
   it("keeps its own title, in another case too", async () => {

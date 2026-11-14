@@ -2,6 +2,7 @@ import { type QuerySnapshot, Timestamp } from "firebase-admin/firestore";
 
 import { orderedProjects, projectDocument, readProject } from "#modules/projects/document";
 import type { Project, ProjectBody, StoredProject } from "#modules/projects/schema";
+import { newProjectSlug } from "#modules/projects/slug";
 import { firestore } from "#shared/firebase/firestore";
 import { ConflictError, PreconditionFailedError } from "#shared/http/errors";
 import { assertIfMatch, entityTag, type Tagged } from "#shared/http/etag";
@@ -58,7 +59,7 @@ function assertTitleIsFree(id: string, title: string, { docs }: QuerySnapshot): 
 /** The stored project as the API returns it, with download URLs and ISO 8601 dates. */
 function toProject(
   id: string,
-  { createdAt, description, link, photos, title, updatedAt }: StoredProject,
+  { createdAt, description, link, photos, slug, title, updatedAt }: StoredProject,
 ): Project {
   return {
     createdAt: createdAt.toDate().toISOString(),
@@ -66,6 +67,7 @@ function toProject(
     id,
     link,
     photos: photos.map(toListPhoto),
+    slug,
     title,
     updatedAt: updatedAt.toDate().toISOString(),
   };
@@ -142,12 +144,14 @@ export function createProject(id: string, body: ProjectBody): Promise<Tagged<Pro
 
       const first = saved.docs[0];
       const position = first ? readProject(first).position - 1 : 0;
+      const slugs = new Set(saved.docs.map((snapshot) => readProject(snapshot).slug));
       const now = Timestamp.now();
       const created: StoredProject = {
         ...body,
         createdAt: now,
         photos: draft.build([]),
         position,
+        slug: newProjectSlug(body.title, slugs),
         updatedAt: now,
       };
 
