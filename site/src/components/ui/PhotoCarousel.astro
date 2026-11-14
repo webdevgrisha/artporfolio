@@ -111,7 +111,7 @@ const firstInView = 2;
 
     if (!viewport || !controls || !previous || !next) return;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const carousel = EmblaCarousel(viewport, {
       align: "start",
       direction: getComputedStyle(root).direction === "rtl" ? "rtl" : "ltr",
@@ -124,9 +124,10 @@ const firstInView = 2;
       loadAround(carousel);
     };
 
-    // A visitor who asked for less motion sees the next photos at once instead of gliding there.
-    previous.addEventListener("click", () => carousel.scrollPrev(reduceMotion));
-    next.addEventListener("click", () => carousel.scrollNext(reduceMotion));
+    // A visitor who asked for less motion sees the next photos at once instead of gliding there,
+    // as soon as they ask, on a page already open.
+    previous.addEventListener("click", () => carousel.scrollPrev(reducedMotion.matches));
+    next.addEventListener("click", () => carousel.scrollNext(reducedMotion.matches));
 
     carousel.on("init", update).on("reInit", update).on("slidesInView", loadAround);
     update();
